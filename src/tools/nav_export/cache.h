@@ -7,8 +7,8 @@
 #include <mutex>
 #include <set>
 
-#include "pcb.h"
-#include "lgb.h"
+#include "bg/pcb.h"
+#include "bg/lgb.h"
 
 #include <datReader/GameData.h>
 #include <datReader/File.h>
