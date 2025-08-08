@@ -6,9 +6,7 @@
 #include <Exd/ExdData.h>
 #include <Network/CommonActorControl.h>
 #include <Service.h>
-#include <datReader/DatCategories/bg/pcb.h>
 #include <datReader/DatCategories/bg/lgb.h>
-#include <datReader/DatCategories/bg/sgb.h>
 #include "Event/Director.h"
 #include "Event/EventDefs.h"
 #include "Script/ScriptMgr.h"

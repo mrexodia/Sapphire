@@ -18,9 +18,7 @@
 #include "exportmgr.h"
 
 #include "cache.h"
-#include "pcb.h"
 #include "lgb.h"
-#include "sgb.h"
 
 #include <GameData.h>
 #include <File.h>

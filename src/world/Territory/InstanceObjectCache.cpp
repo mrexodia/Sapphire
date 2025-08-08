@@ -1,9 +1,7 @@
 #include "InstanceObjectCache.h"
 #include "Exd/ExdData.h"
 
-#include <datReader/DatCategories/bg/pcb.h>
 #include <datReader/DatCategories/bg/lgb.h>
-#include <datReader/DatCategories/bg/sgb.h>
 #include <GameData.h>
 #include <File.h>
 #include <DatCat.h>

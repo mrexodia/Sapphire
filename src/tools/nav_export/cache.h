@@ -9,7 +9,6 @@
 
 #include "pcb.h"
 #include "lgb.h"
-#include "sgb.h"
 
 #include <datReader/GameData.h>
 #include <datReader/File.h>

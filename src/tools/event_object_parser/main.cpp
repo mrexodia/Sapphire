@@ -12,9 +12,7 @@
 #include <Util/Util.h>
 #include <Util/CrashHandler.h>
 
-#include <datReader/DatCategories/bg/pcb.h>
 #include <datReader/DatCategories/bg/lgb.h>
-#include <datReader/DatCategories/bg/sgb.h>
 
 #include <Exd/ExdData.h>
 #include <Logging/Logger.h>

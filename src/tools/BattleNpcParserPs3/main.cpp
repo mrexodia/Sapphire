@@ -13,9 +13,7 @@
 
 #include <Util/Util.h>
 
-#include <datReaderPs3/DatCategories/bg/pcb.h>
 #include <datReaderPs3/DatCategories/bg/lgb.h>
-#include <datReaderPs3/DatCategories/bg/sgb.h>
 #include "tex.h"
 #include "tex_decode.h"
 
