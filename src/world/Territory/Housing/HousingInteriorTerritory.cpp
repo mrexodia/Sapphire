@@ -21,7 +21,7 @@
 #include "Inventory/ItemContainer.h"
 #include "Inventory/HousingItem.h"
 
-#include "Forwards.h"
+#include <ForwardsCommon.h>
 #include "HousingInteriorTerritory.h"
 
 using namespace Sapphire::Common;

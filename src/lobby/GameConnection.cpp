@@ -20,7 +20,7 @@
 #include "RestConnector.h"
 #include "LobbySession.h"
 
-#include "Forwards.h"
+#include "ForwardsLobby.h"
 
 using namespace Sapphire;
 using namespace Sapphire::Common;

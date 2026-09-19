@@ -5,7 +5,7 @@
 #include <Network/CommonActorControl.h>
 #include <Service.h>
 
-#include "Forwards.h"
+#include <ForwardsCommon.h>
 
 #include "Territory/Territory.h"
 
