@@ -1104,6 +1104,8 @@ void Chara::onTick()
         thisTickHeal += thisEffect.second;
         break;
       }
+      default:
+        break;
     }
   }
 

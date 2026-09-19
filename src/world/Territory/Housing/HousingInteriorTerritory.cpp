@@ -107,6 +107,8 @@ void Sapphire::World::Territory::Housing::HousingInteriorTerritory::onPlayerZone
       server.queueForPlayer( player.getCharacterId(), objectInitPacket );
       break;
     }
+    default:
+      break;
   }
 
   if( isFcHouse )

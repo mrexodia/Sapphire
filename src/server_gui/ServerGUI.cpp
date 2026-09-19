@@ -335,7 +335,7 @@ void ServerGUI::showConsole()
       else if( logLevel == "fatal" )
         color = ImVec4( 1.0f, 0.0f, 0.0f, 1.0f ); // Red
 
-      ImGui::TextColored( color, message.c_str() );
+      ImGui::TextColored( color, "%s", message.c_str() );
       shouldScrollToBottom = true;
     }
 
