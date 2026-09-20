@@ -51,6 +51,14 @@ def zone_opcodes() -> dict[str, str]:
     }
 
 
+def normalized_handler_name(name: str) -> str:
+    short_name = name.rsplit("::", 1)[-1]
+    for prefix in ("OnReceive", "Receive", "Response", "On"):
+        if short_name.startswith(prefix):
+            return short_name[len(prefix) :]
+    return short_name
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -97,7 +105,7 @@ def main() -> None:
         if packet is None:
             continue
         ps3_name = ps3_call["name"]
-        if not ps3_name or ps3_name.rsplit("::", 1)[-1] != packet:
+        if not ps3_name or normalized_handler_name(ps3_name) != packet:
             continue
         windows_address = int(windows_call["address"], 16)
         if windows_address in existing_addresses or ("zone-down", opcode) in existing_keys:
@@ -114,7 +122,7 @@ def main() -> None:
                 "confidence": "high",
                 "evidence": [
                     f"ThreePointThree ServerZoneIpcType independently identifies {opcode} as {packet}.",
-                    f"The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to {ps3_name}.",
+                    f"The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to {ps3_name}; its conventional On/Receive/Response prefix normalizes to {packet}.",
                     "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate.",
                 ],
                 "ps3IdbUrl": f"idb://ffxivgame.ppu.elf.i64:{ps3_address:08X}",

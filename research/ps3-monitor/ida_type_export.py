@@ -8,6 +8,7 @@ from typing import Any
 TYPE_SUFFIX_OVERRIDES = {
     "RequestItmeResult": "RequestItemResult",
     "Create": "Create",
+    "HousingGetHouseBuddyStableListResult": "Housing_GetHouseBuddyStableListResult",
 }
 
 

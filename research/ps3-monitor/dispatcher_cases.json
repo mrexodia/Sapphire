@@ -2243,7 +2243,7 @@
               "name": "Client::Game::Item::StorageManager::ReceiveAttachMateriaRequest"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01A9"
         },
         {
@@ -2409,7 +2409,7 @@
               "name": "Client::Game::Network::Packet::ReceiveTradeCommand"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01B4"
         },
         {
@@ -2431,7 +2431,7 @@
               "name": "Client::Game::Network::Packet::ReceiveItemMessage"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01B5"
         },
         {
@@ -2491,7 +2491,7 @@
               "name": "Client::Game::Network::Packet::OnOpenTreasure"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01B8"
         },
         {
@@ -2513,7 +2513,7 @@
               "name": "Client::Game::Network::Packet::OnLootRight"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01B9"
         },
         {
@@ -2535,7 +2535,7 @@
               "name": "Client::Game::Network::Packet::OnLootActionResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01BA"
         },
         {
@@ -2557,7 +2557,7 @@
               "name": "Client::Game::Network::Packet::OnGameLog"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01BB"
         },
         {
@@ -2579,7 +2579,7 @@
               "name": "Client::Game::Network::Packet::OnTreasureOpenRight"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01BC"
         },
         {
@@ -2623,7 +2623,7 @@
               "name": "Client::Game::Network::Packet::OnLootItems"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01BE"
         },
         {
@@ -2683,7 +2683,7 @@
               "name": "Client::Game::Network::Packet::OnReceiveMonsterNoteCategory"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01C1"
         },
         {
@@ -2897,7 +2897,7 @@
               "name": "Client::Game::Network::EventPacket::ReceivePushEventState"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01CC"
         },
         {
@@ -2919,7 +2919,7 @@
               "name": "Client::Game::Network::EventPacket::ReceivePopEventState"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01CD"
         },
         {
@@ -3221,7 +3221,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveQuests"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E0"
         },
         {
@@ -3243,7 +3243,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveQuest"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E1"
         },
         {
@@ -3265,7 +3265,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveQuestCompleteFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E2"
         },
         {
@@ -3329,7 +3329,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveGuildleves"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E4"
         },
         {
@@ -3351,7 +3351,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveGuildleve"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E5"
         },
         {
@@ -3373,7 +3373,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveLeveCompleteFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E6"
         },
         {
@@ -3559,7 +3559,7 @@
               "name": "Client::Game::Item::StorageManager::ReceiveIsMarket"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01EF"
         },
         {
@@ -3581,7 +3581,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveLegacyQuestCompleteFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01F0"
         },
         {
@@ -3823,7 +3823,7 @@
               "name": "Client::Game::Network::Packet::OnMount"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0200"
         },
         {
@@ -3845,7 +3845,7 @@
               "name": "Client::Game::Network::EventPacket::ReceiveDirector"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0226"
         },
         {
@@ -4140,7 +4140,7 @@
               "name": "Client::Game::Network::EventPacket::ReceiveEventReject"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x026C"
         },
         {
@@ -4479,7 +4479,7 @@
               "name": "Client::Game::Network::Packet::OnWeatherId"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x028A"
         },
         {
@@ -4501,7 +4501,7 @@
               "name": "Client::Game::Network::Packet::ReceiveTitleList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x028B"
         },
         {
@@ -4523,7 +4523,7 @@
               "name": "Client::Game::Network::Packet::OnDiscoveryReply"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x028C"
         },
         {
@@ -4545,7 +4545,7 @@
               "name": "Client::Game::Network::Packet::OnChocoboTaxiStart"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x028E"
         },
         {
@@ -4717,7 +4717,7 @@
               "name": "Client::Game::Network::Packet::OnReceiveConfig"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02C6"
         },
         {
@@ -4739,7 +4739,7 @@
               "name": "Client::Game::Network::Packet::OnNpcYell"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D0"
         },
         {
@@ -4761,7 +4761,7 @@
               "name": "Client::Game::Network::Packet::OnSwapSystem"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D1"
         },
         {
@@ -4783,7 +4783,7 @@
               "name": "Client::Game::Network::EventPacket::ReceiveFatePcWork"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D2"
         },
         {
@@ -4805,7 +4805,7 @@
               "name": "Client::Game::Network::Packet::OnLootResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D3"
         },
         {
@@ -4827,7 +4827,7 @@
               "name": "Client::Game::Network::EventPacket::ReceiveFateAccessCollectionEventObject"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D4"
         },
         {
@@ -4929,7 +4929,7 @@
               "name": "Client::Game::Network::EventPacket::ReceiveFateContextWork"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D9"
         },
         {
@@ -4951,7 +4951,7 @@
               "name": "Client::Game::Network::EventPacket::ReceiveFateActiveRange"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02DA"
         },
         {
@@ -4995,7 +4995,7 @@
               "name": "Client::Game::Network::Packet::OnCabinet"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02DC"
         },
         {
@@ -5017,7 +5017,7 @@
               "name": "Client::Game::Network::Packet::OnAchievement"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02DD"
         },
         {
@@ -5127,7 +5127,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveContentClearFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E2"
         },
         {
@@ -5149,7 +5149,7 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveContentAttainFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E3"
         },
         {
@@ -5193,7 +5193,7 @@
               "name": "Client::Game::Network::Packet::OnText"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E5"
         },
         {
@@ -5258,7 +5258,7 @@
               "name": "Client::Game::Network::Packet::OnSetEventBehavior"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E8"
         },
         {
@@ -5280,7 +5280,7 @@
               "name": "Client::Game::Network::Packet::OnBallistaStart"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E9"
         },
         {
@@ -5302,7 +5302,7 @@
               "name": "Client::Game::Item::StorageManager::ReceiveRetainerCustomizePreset"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02EA"
         },
         {
@@ -5351,7 +5351,7 @@
               "name": "Client::Game::Network::Packet::OnHouseList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02EC"
         },
         {
@@ -5373,7 +5373,7 @@
               "name": "Client::Game::Network::Packet::OnHouse"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02ED"
         },
         {
@@ -5395,7 +5395,7 @@
               "name": "Client::Game::Network::Packet::OnYardObjectList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02EE"
         },
         {
@@ -5417,7 +5417,7 @@
               "name": "Client::Game::Network::Packet::OnYardObject"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F0"
         },
         {
@@ -5439,7 +5439,7 @@
               "name": "Client::Game::Network::Packet::OnInterior"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F1"
         },
         {
@@ -5461,7 +5461,7 @@
               "name": "Client::Game::Network::Packet::OnHousingAuction"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F2"
         },
         {
@@ -5483,7 +5483,7 @@
               "name": "Client::Game::Network::Packet::OnHousingProfile"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F3"
         },
         {
@@ -5505,7 +5505,7 @@
               "name": "Client::Game::Network::Packet::OnHousingHouseName"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F4"
         },
         {
@@ -5527,7 +5527,7 @@
               "name": "Client::Game::Network::Packet::OnHousingGreeting"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F5"
         },
         {
@@ -5549,7 +5549,7 @@
               "name": "Client::Game::Network::Packet::OnCharaHousingLandData"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F6"
         },
         {
@@ -5571,7 +5571,7 @@
               "name": "Client::Game::Network::Packet::OnCharaHousing"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F7"
         },
         {
@@ -5593,7 +5593,7 @@
               "name": "Client::Game::Network::Packet::OnHousingWelcome"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F8"
         },
         {
@@ -5615,7 +5615,7 @@
               "name": "Client::Game::Network::Packet::OnFurnitureListS"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F9"
         },
         {
@@ -5637,7 +5637,7 @@
               "name": "Client::Game::Network::Packet::OnFurnitureListM"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FA"
         },
         {
@@ -5659,7 +5659,7 @@
               "name": "Client::Game::Network::Packet::OnFurnitureListL"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FB"
         },
         {
@@ -5681,7 +5681,7 @@
               "name": "Client::Game::Network::Packet::OnFurniture"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FC"
         },
         {
@@ -5703,7 +5703,7 @@
               "name": "Client::Game::Network::Packet::OnVoteKickConfirm"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FD"
         },
         {
@@ -5725,7 +5725,7 @@
               "name": "Client::Game::Network::Packet::OnHousingProfileList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FE"
         },
         {
@@ -5747,7 +5747,7 @@
               "name": "Client::Game::Network::Packet::OnHousingObjectTransform"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FF"
         },
         {
@@ -5769,7 +5769,7 @@
               "name": "Client::Game::Network::Packet::OnHousingObjectColor"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0300"
         },
         {
@@ -5791,7 +5791,7 @@
               "name": "Client::Game::Network::Packet::OnHousingObjectTransformMulti"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0301"
         },
         {
@@ -5813,7 +5813,7 @@
               "name": "Client::Game::Network::Packet::OnConfusionApproach"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0302"
         },
         {
@@ -5835,7 +5835,7 @@
               "name": "Client::Game::Network::Packet::OnConfusionTurn"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0303"
         },
         {
@@ -5857,7 +5857,7 @@
               "name": "Client::Game::Network::Packet::OnConfusionTurnCancel"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0304"
         },
         {
@@ -5879,7 +5879,7 @@
               "name": "Client::Game::Network::Packet::OnConfusionCancel"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0305"
         },
         {
@@ -5901,7 +5901,7 @@
               "name": "Client::Game::Network::Packet::OnMIPMemberList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0306"
         },
         {
@@ -5923,7 +5923,7 @@
               "name": "Client::Game::Network::Packet::OnHousingGetPersonalRoomProfileListResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0307"
         },
         {
@@ -5945,7 +5945,7 @@
               "name": "Client::Game::Network::Packet::OnHousingGetHouseBuddyStableListResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0308"
         },
         {
@@ -5967,7 +5967,7 @@
               "name": "Client::Game::Network::Packet::OnHouseTrainBuddyData"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0309"
         },
         {
@@ -6011,7 +6011,7 @@
               "name": "Client::Game::Item::StorageManager::ReceiveFcChestLog"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0316"
         },
         {
@@ -6151,7 +6151,7 @@
               "name": "Client::Game::Network::Packet::OnHousingObjectTransformMultiResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032A"
         },
         {
@@ -6173,7 +6173,7 @@
               "name": "Client::Game::Network::Packet::OnHousingLogWithHouseName"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032B"
         },
         {
@@ -6195,7 +6195,7 @@
               "name": "Client::Game::Network::Packet::OnTreasureHuntReward"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032C"
         },
         {
@@ -6217,7 +6217,7 @@
               "name": "Client::Game::Network::Packet::OnHousingCombinedObjectStatus"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032D"
         },
         {
@@ -6239,7 +6239,7 @@
               "name": "Client::Game::Network::Packet::OnHouseBuddyModelData"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032E"
         },
         {
@@ -6371,7 +6371,7 @@
               "name": "Client::Game::Network::Packet::OnUnMountLink"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x033E"
         },
         {
@@ -6396,8 +6396,8 @@
           "shared": 9
         },
         "statuses": {
-          "candidate": 174,
-          "confirmed": 93,
+          "candidate": 95,
+          "confirmed": 172,
           "unresolved": 19
         }
       }
@@ -9289,17 +9289,17 @@
             {
               "callsite": "0x0000000140DD9A56",
               "address": "0x00000001404D5B00",
-              "name": "sub_1404D5B00"
+              "name": "Client__Game__Item__StorageManager__ReceiveAttachMateriaRequest"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9A56",
               "address": "0x00000001404D5B00",
-              "name": "sub_1404D5B00"
+              "name": "Client__Game__Item__StorageManager__ReceiveAttachMateriaRequest"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01A9"
         },
         {
@@ -9455,17 +9455,17 @@
             {
               "callsite": "0x0000000140DD99AB",
               "address": "0x0000000140CC00D0",
-              "name": "sub_140CC00D0"
+              "name": "Client__Game__Network__Packet__ReceiveTradeCommand"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD99AB",
               "address": "0x0000000140CC00D0",
-              "name": "sub_140CC00D0"
+              "name": "Client__Game__Network__Packet__ReceiveTradeCommand"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01B4"
         },
         {
@@ -9477,17 +9477,17 @@
             {
               "callsite": "0x0000000140DD99C0",
               "address": "0x0000000140CC00F0",
-              "name": "sub_140CC00F0"
+              "name": "Client__Game__Network__Packet__ReceiveItemMessage"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD99C0",
               "address": "0x0000000140CC00F0",
-              "name": "sub_140CC00F0"
+              "name": "Client__Game__Network__Packet__ReceiveItemMessage"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01B5"
         },
         {
@@ -9537,17 +9537,17 @@
             {
               "callsite": "0x0000000140DD9ABF",
               "address": "0x0000000140CC0130",
-              "name": "sub_140CC0130"
+              "name": "Client__Game__Network__Packet__OnOpenTreasure"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9ABF",
               "address": "0x0000000140CC0130",
-              "name": "sub_140CC0130"
+              "name": "Client__Game__Network__Packet__OnOpenTreasure"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01B8"
         },
         {
@@ -9559,17 +9559,17 @@
             {
               "callsite": "0x0000000140DD9AD4",
               "address": "0x0000000140CC0170",
-              "name": "sub_140CC0170"
+              "name": "Client__Game__Network__Packet__OnLootRight"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9AD4",
               "address": "0x0000000140CC0170",
-              "name": "sub_140CC0170"
+              "name": "Client__Game__Network__Packet__OnLootRight"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01B9"
         },
         {
@@ -9581,17 +9581,17 @@
             {
               "callsite": "0x0000000140DD9AE9",
               "address": "0x0000000140CC0190",
-              "name": "sub_140CC0190"
+              "name": "Client__Game__Network__Packet__OnLootActionResult"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9AE9",
               "address": "0x0000000140CC0190",
-              "name": "sub_140CC0190"
+              "name": "Client__Game__Network__Packet__OnLootActionResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01BA"
         },
         {
@@ -9603,17 +9603,17 @@
             {
               "callsite": "0x0000000140DD9B13",
               "address": "0x0000000140CC0350",
-              "name": "sub_140CC0350"
+              "name": "Client__Game__Network__Packet__OnGameLog"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9B13",
               "address": "0x0000000140CC0350",
-              "name": "sub_140CC0350"
+              "name": "Client__Game__Network__Packet__OnGameLog"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01BB"
         },
         {
@@ -9625,17 +9625,17 @@
             {
               "callsite": "0x0000000140DD9AFE",
               "address": "0x0000000140CC01B0",
-              "name": "sub_140CC01B0"
+              "name": "Client__Game__Network__Packet__OnTreasureOpenRight"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9AFE",
               "address": "0x0000000140CC01B0",
-              "name": "sub_140CC01B0"
+              "name": "Client__Game__Network__Packet__OnTreasureOpenRight"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01BC"
         },
         {
@@ -9647,17 +9647,17 @@
             {
               "callsite": "0x0000000140DD9B28",
               "address": "0x0000000140CC0360",
-              "name": "sub_140CC0360"
+              "name": "Client__Game__Network__Packet__OnLootItems"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9B28",
               "address": "0x0000000140CC0360",
-              "name": "sub_140CC0360"
+              "name": "Client__Game__Network__Packet__OnLootItems"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01BE"
         },
         {
@@ -9707,17 +9707,17 @@
             {
               "callsite": "0x0000000140DD9A3A",
               "address": "0x0000000140CC0110",
-              "name": "sub_140CC0110"
+              "name": "Client__Game__Network__Packet__OnReceiveMonsterNoteCategory"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9A3A",
               "address": "0x0000000140CC0110",
-              "name": "sub_140CC0110"
+              "name": "Client__Game__Network__Packet__OnReceiveMonsterNoteCategory"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01C1"
         },
         {
@@ -9905,17 +9905,17 @@
             {
               "callsite": "0x0000000140DDA2FA",
               "address": "0x0000000140CBE510",
-              "name": "sub_140CBE510"
+              "name": "Client__Game__Network__EventPacket__ReceivePushEventState"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA2FA",
               "address": "0x0000000140CBE510",
-              "name": "sub_140CBE510"
+              "name": "Client__Game__Network__EventPacket__ReceivePushEventState"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01CC"
         },
         {
@@ -9927,17 +9927,17 @@
             {
               "callsite": "0x0000000140DDA324",
               "address": "0x0000000140CBE570",
-              "name": "sub_140CBE570"
+              "name": "Client__Game__Network__EventPacket__ReceivePopEventState"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA324",
               "address": "0x0000000140CBE570",
-              "name": "sub_140CBE570"
+              "name": "Client__Game__Network__EventPacket__ReceivePopEventState"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01CD"
         },
         {
@@ -10301,17 +10301,17 @@
             {
               "callsite": "0x0000000140DDA33C",
               "address": "0x0000000140CC8D20",
-              "name": "sub_140CC8D20"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveQuests"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA33C",
               "address": "0x0000000140CC8D20",
-              "name": "sub_140CC8D20"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveQuests"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E0"
         },
         {
@@ -10323,7 +10323,7 @@
             {
               "callsite": "0x0000000140DDA355",
               "address": "0x0000000140CC7F20",
-              "name": "sub_140CC7F20"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveQuest"
             }
           ],
           "directCalls": [
@@ -10335,10 +10335,10 @@
             {
               "callsite": "0x0000000140DDA355",
               "address": "0x0000000140CC7F20",
-              "name": "sub_140CC7F20"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveQuest"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E1"
         },
         {
@@ -10350,14 +10350,14 @@
             {
               "callsite": "0x0000000140DDA36E",
               "address": "0x0000000140CC6990",
-              "name": "sub_140CC6990"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA36E",
               "address": "0x0000000140CC6990",
-              "name": "sub_140CC6990"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags"
             },
             {
               "callsite": "0x0000000140DDA389",
@@ -10365,7 +10365,7 @@
               "name": "sub_140CC6A20"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E2"
         },
         {
@@ -10409,17 +10409,17 @@
             {
               "callsite": "0x0000000140DDA43F",
               "address": "0x0000000140CC80E0",
-              "name": "sub_140CC80E0"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveGuildleves"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA43F",
               "address": "0x0000000140CC80E0",
-              "name": "sub_140CC80E0"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveGuildleves"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E4"
         },
         {
@@ -10431,17 +10431,17 @@
             {
               "callsite": "0x0000000140DDA45D",
               "address": "0x0000000140CC6BE0",
-              "name": "sub_140CC6BE0"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveGuildleve"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA45D",
               "address": "0x0000000140CC6BE0",
-              "name": "sub_140CC6BE0"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveGuildleve"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E5"
         },
         {
@@ -10453,17 +10453,17 @@
             {
               "callsite": "0x0000000140DDA475",
               "address": "0x0000000140CC26C0",
-              "name": "sub_140CC26C0"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA475",
               "address": "0x0000000140CC26C0",
-              "name": "sub_140CC26C0"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01E6"
         },
         {
@@ -10634,17 +10634,17 @@
             {
               "callsite": "0x0000000140DD9996",
               "address": "0x00000001404D5AC0",
-              "name": "sub_1404D5AC0"
+              "name": "Client__Game__Item__StorageManager__ReceiveIsMarket"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9996",
               "address": "0x00000001404D5AC0",
-              "name": "sub_1404D5AC0"
+              "name": "Client__Game__Item__StorageManager__ReceiveIsMarket"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01EF"
         },
         {
@@ -10656,17 +10656,17 @@
             {
               "callsite": "0x0000000140DDA3C8",
               "address": "0x0000000140CD5A00",
-              "name": "sub_140CD5A00"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA3C8",
               "address": "0x0000000140CD5A00",
-              "name": "sub_140CD5A00"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x01F0"
         },
         {
@@ -10744,17 +10744,17 @@
             {
               "callsite": "0x0000000140DDAE3F",
               "address": "0x0000000140CC1810",
-              "name": "sub_140CC1810"
+              "name": "Client__Game__Network__Packet__OnMount"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAE3F",
               "address": "0x0000000140CC1810",
-              "name": "sub_140CC1810"
+              "name": "Client__Game__Network__Packet__OnMount"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0200"
         },
         {
@@ -10788,17 +10788,17 @@
             {
               "callsite": "0x0000000140DDA57F",
               "address": "0x0000000140CBE750",
-              "name": "sub_140CBE750"
+              "name": "Client__Game__Network__EventPacket__ReceiveDirector"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA57F",
               "address": "0x0000000140CBE750",
-              "name": "sub_140CBE750"
+              "name": "Client__Game__Network__EventPacket__ReceiveDirector"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0226"
         },
         {
@@ -10986,17 +10986,17 @@
             {
               "callsite": "0x0000000140DDA5DD",
               "address": "0x0000000140CBE820",
-              "name": "sub_140CBE820"
+              "name": "Client__Game__Network__EventPacket__ReceiveEventReject"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA5DD",
               "address": "0x0000000140CBE820",
-              "name": "sub_140CBE820"
+              "name": "Client__Game__Network__EventPacket__ReceiveEventReject"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x026C"
         },
         {
@@ -11228,17 +11228,17 @@
             {
               "callsite": "0x0000000140DDA600",
               "address": "0x0000000140CC0450",
-              "name": "sub_140CC0450"
+              "name": "Client__Game__Network__Packet__OnWeatherId"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA600",
               "address": "0x0000000140CC0450",
-              "name": "sub_140CC0450"
+              "name": "Client__Game__Network__Packet__OnWeatherId"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x028A"
         },
         {
@@ -11250,17 +11250,17 @@
             {
               "callsite": "0x0000000140DDA62A",
               "address": "0x0000000140CC0490",
-              "name": "sub_140CC0490"
+              "name": "Client__Game__Network__Packet__ReceiveTitleList"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA62A",
               "address": "0x0000000140CC0490",
-              "name": "sub_140CC0490"
+              "name": "Client__Game__Network__Packet__ReceiveTitleList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x028B"
         },
         {
@@ -11272,17 +11272,17 @@
             {
               "callsite": "0x0000000140DDA615",
               "address": "0x0000000140CC0470",
-              "name": "sub_140CC0470"
+              "name": "Client__Game__Network__Packet__OnDiscoveryReply"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA615",
               "address": "0x0000000140CC0470",
-              "name": "sub_140CC0470"
+              "name": "Client__Game__Network__Packet__OnDiscoveryReply"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x028C"
         },
         {
@@ -11304,17 +11304,17 @@
             {
               "callsite": "0x0000000140DDA78E",
               "address": "0x0000000140CC0860",
-              "name": "sub_140CC0860"
+              "name": "Client__Game__Network__Packet__OnChocoboTaxiStart"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA78E",
               "address": "0x0000000140CC0860",
-              "name": "sub_140CC0860"
+              "name": "Client__Game__Network__Packet__OnChocoboTaxiStart"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x028E"
         },
         {
@@ -11524,17 +11524,17 @@
             {
               "callsite": "0x0000000140DDA7A3",
               "address": "0x0000000140CC7000",
-              "name": "sub_140CC7000"
+              "name": "Client__Game__Network__Packet__OnReceiveConfig"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA7A3",
               "address": "0x0000000140CC7000",
-              "name": "sub_140CC7000"
+              "name": "Client__Game__Network__Packet__OnReceiveConfig"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02C6"
         },
         {
@@ -11546,17 +11546,17 @@
             {
               "callsite": "0x0000000140DDA7B6",
               "address": "0x0000000140CC0880",
-              "name": "sub_140CC0880"
+              "name": "Client__Game__Network__Packet__OnNpcYell"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA7B6",
               "address": "0x0000000140CC0880",
-              "name": "sub_140CC0880"
+              "name": "Client__Game__Network__Packet__OnNpcYell"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D0"
         },
         {
@@ -11568,17 +11568,17 @@
             {
               "callsite": "0x0000000140DDA7C9",
               "address": "0x0000000140CC0910",
-              "name": "sub_140CC0910"
+              "name": "Client__Game__Network__Packet__OnSwapSystem"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA7C9",
               "address": "0x0000000140CC0910",
-              "name": "sub_140CC0910"
+              "name": "Client__Game__Network__Packet__OnSwapSystem"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D1"
         },
         {
@@ -11590,17 +11590,17 @@
             {
               "callsite": "0x0000000140DDA7DF",
               "address": "0x0000000140CBE8B0",
-              "name": "void InstanceIDToLocalSerializedObjectIdentifier"
+              "name": "Client__Game__Network__EventPacket__ReceiveFatePcWork"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA7DF",
               "address": "0x0000000140CBE8B0",
-              "name": "void InstanceIDToLocalSerializedObjectIdentifier"
+              "name": "Client__Game__Network__EventPacket__ReceiveFatePcWork"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D2"
         },
         {
@@ -11612,17 +11612,17 @@
             {
               "callsite": "0x0000000140DDA7F2",
               "address": "0x0000000140CC0950",
-              "name": "sub_140CC0950"
+              "name": "Client__Game__Network__Packet__OnLootResult"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA7F2",
               "address": "0x0000000140CC0950",
-              "name": "sub_140CC0950"
+              "name": "Client__Game__Network__Packet__OnLootResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D3"
         },
         {
@@ -11634,17 +11634,17 @@
             {
               "callsite": "0x0000000140DDA807",
               "address": "0x0000000140CBE8F0",
-              "name": "public: static void QCursor::setPos"
+              "name": "Client__Game__Network__EventPacket__ReceiveFateAccessCollectionEventObject"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA807",
               "address": "0x0000000140CBE8F0",
-              "name": "public: static void QCursor::setPos"
+              "name": "Client__Game__Network__EventPacket__ReceiveFateAccessCollectionEventObject"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D4"
         },
         {
@@ -11720,17 +11720,17 @@
             {
               "callsite": "0x0000000140DDA838",
               "address": "0x0000000140CBE970",
-              "name": "sub_140CBE970"
+              "name": "Client__Game__Network__EventPacket__ReceiveFateContextWork"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA838",
               "address": "0x0000000140CBE970",
-              "name": "sub_140CBE970"
+              "name": "Client__Game__Network__EventPacket__ReceiveFateContextWork"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02D9"
         },
         {
@@ -11742,17 +11742,17 @@
             {
               "callsite": "0x0000000140DDA84B",
               "address": "0x0000000140CBE9B0",
-              "name": "sub_140CBE9B0"
+              "name": "Client__Game__Network__EventPacket__ReceiveFateActiveRange"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA84B",
               "address": "0x0000000140CBE9B0",
-              "name": "sub_140CBE9B0"
+              "name": "Client__Game__Network__EventPacket__ReceiveFateActiveRange"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02DA"
         },
         {
@@ -11786,17 +11786,17 @@
             {
               "callsite": "0x0000000140DDA91C",
               "address": "0x0000000140CC0970",
-              "name": "sub_140CC0970"
+              "name": "Client__Game__Network__Packet__OnCabinet"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA91C",
               "address": "0x0000000140CC0970",
-              "name": "sub_140CC0970"
+              "name": "Client__Game__Network__Packet__OnCabinet"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02DC"
         },
         {
@@ -11808,17 +11808,17 @@
             {
               "callsite": "0x0000000140DDA92F",
               "address": "0x0000000140CC0990",
-              "name": "sub_140CC0990"
+              "name": "Client__Game__Network__Packet__OnAchievement"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA92F",
               "address": "0x0000000140CC0990",
-              "name": "sub_140CC0990"
+              "name": "Client__Game__Network__Packet__OnAchievement"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02DD"
         },
         {
@@ -11918,17 +11918,17 @@
             {
               "callsite": "0x0000000140DDA4ED",
               "address": "0x0000000140CC2790",
-              "name": "sub_140CC2790"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveContentClearFlags"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA4ED",
               "address": "0x0000000140CC2790",
-              "name": "sub_140CC2790"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveContentClearFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E2"
         },
         {
@@ -11940,17 +11940,17 @@
             {
               "callsite": "0x0000000140DDA556",
               "address": "0x0000000140CC2880",
-              "name": "sub_140CC2880"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveContentAttainFlags"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDA556",
               "address": "0x0000000140CC2880",
-              "name": "sub_140CC2880"
+              "name": "Client__Game__Network__SyncTagPacket__ReceiveContentAttainFlags"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E3"
         },
         {
@@ -11984,17 +11984,17 @@
             {
               "callsite": "0x0000000140DDAA26",
               "address": "0x0000000140CC09B0",
-              "name": "sub_140CC09B0"
+              "name": "Client__Game__Network__Packet__OnText"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAA26",
               "address": "0x0000000140CC09B0",
-              "name": "sub_140CC09B0"
+              "name": "Client__Game__Network__Packet__OnText"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E5"
         },
         {
@@ -12049,17 +12049,17 @@
             {
               "callsite": "0x0000000140DDAA9B",
               "address": "0x0000000140CC0410",
-              "name": "sub_140CC0410"
+              "name": "Client__Game__Network__Packet__OnSetEventBehavior"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAA9B",
               "address": "0x0000000140CC0410",
-              "name": "sub_140CC0410"
+              "name": "Client__Game__Network__Packet__OnSetEventBehavior"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E8"
         },
         {
@@ -12071,17 +12071,17 @@
             {
               "callsite": "0x0000000140DDAAAE",
               "address": "0x0000000140CC09E0",
-              "name": "sub_140CC09E0"
+              "name": "Client__Game__Network__Packet__OnBallistaStart"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAAAE",
               "address": "0x0000000140CC09E0",
-              "name": "sub_140CC09E0"
+              "name": "Client__Game__Network__Packet__OnBallistaStart"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02E9"
         },
         {
@@ -12093,17 +12093,17 @@
             {
               "callsite": "0x0000000140DD9A72",
               "address": "0x00000001404D5F00",
-              "name": "sub_1404D5F00"
+              "name": "Client__Game__Item__StorageManager__ReceiveRetainerCustomizePreset"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9A72",
               "address": "0x00000001404D5F00",
-              "name": "sub_1404D5F00"
+              "name": "Client__Game__Item__StorageManager__ReceiveRetainerCustomizePreset"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02EA"
         },
         {
@@ -12142,17 +12142,17 @@
             {
               "callsite": "0x0000000140DDAADE",
               "address": "0x0000000140CC0B10",
-              "name": "sub_140CC0B10"
+              "name": "Client__Game__Network__Packet__OnHouseList"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAADE",
               "address": "0x0000000140CC0B10",
-              "name": "sub_140CC0B10"
+              "name": "Client__Game__Network__Packet__OnHouseList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02EC"
         },
         {
@@ -12164,17 +12164,17 @@
             {
               "callsite": "0x0000000140DDAAF3",
               "address": "0x0000000140CC0B50",
-              "name": "sub_140CC0B50"
+              "name": "Client__Game__Network__Packet__OnHouse"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAAF3",
               "address": "0x0000000140CC0B50",
-              "name": "sub_140CC0B50"
+              "name": "Client__Game__Network__Packet__OnHouse"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02ED"
         },
         {
@@ -12186,17 +12186,17 @@
             {
               "callsite": "0x0000000140DDAB06",
               "address": "0x0000000140CC0B90",
-              "name": "sub_140CC0B90"
+              "name": "Client__Game__Network__Packet__OnYardObjectList"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB06",
               "address": "0x0000000140CC0B90",
-              "name": "sub_140CC0B90"
+              "name": "Client__Game__Network__Packet__OnYardObjectList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02EE"
         },
         {
@@ -12208,17 +12208,17 @@
             {
               "callsite": "0x0000000140DDAB19",
               "address": "0x0000000140CC0BC0",
-              "name": "sub_140CC0BC0"
+              "name": "Client__Game__Network__Packet__OnYardObject"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB19",
               "address": "0x0000000140CC0BC0",
-              "name": "sub_140CC0BC0"
+              "name": "Client__Game__Network__Packet__OnYardObject"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F0"
         },
         {
@@ -12230,17 +12230,17 @@
             {
               "callsite": "0x0000000140DDAB2C",
               "address": "0x0000000140CC0BF0",
-              "name": "sub_140CC0BF0"
+              "name": "Client__Game__Network__Packet__OnInterior"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB2C",
               "address": "0x0000000140CC0BF0",
-              "name": "sub_140CC0BF0"
+              "name": "Client__Game__Network__Packet__OnInterior"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F1"
         },
         {
@@ -12252,17 +12252,17 @@
             {
               "callsite": "0x0000000140DDABEA",
               "address": "0x0000000140CC0DB0",
-              "name": "sub_140CC0DB0"
+              "name": "Client__Game__Network__Packet__OnHousingAuction"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDABEA",
               "address": "0x0000000140CC0DB0",
-              "name": "sub_140CC0DB0"
+              "name": "Client__Game__Network__Packet__OnHousingAuction"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F2"
         },
         {
@@ -12274,17 +12274,17 @@
             {
               "callsite": "0x0000000140DDABFD",
               "address": "0x0000000140CC0DE0",
-              "name": "sub_140CC0DE0"
+              "name": "Client__Game__Network__Packet__OnHousingProfile"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDABFD",
               "address": "0x0000000140CC0DE0",
-              "name": "sub_140CC0DE0"
+              "name": "Client__Game__Network__Packet__OnHousingProfile"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F3"
         },
         {
@@ -12296,17 +12296,17 @@
             {
               "callsite": "0x0000000140DDAC23",
               "address": "0x0000000140CC0E40",
-              "name": "sub_140CC0E40"
+              "name": "Client__Game__Network__Packet__OnHousingHouseName"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAC23",
               "address": "0x0000000140CC0E40",
-              "name": "sub_140CC0E40"
+              "name": "Client__Game__Network__Packet__OnHousingHouseName"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F4"
         },
         {
@@ -12318,17 +12318,17 @@
             {
               "callsite": "0x0000000140DDAC36",
               "address": "0x0000000140CC0E70",
-              "name": "sub_140CC0E70"
+              "name": "Client__Game__Network__Packet__OnHousingGreeting"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAC36",
               "address": "0x0000000140CC0E70",
-              "name": "sub_140CC0E70"
+              "name": "Client__Game__Network__Packet__OnHousingGreeting"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F5"
         },
         {
@@ -12340,17 +12340,17 @@
             {
               "callsite": "0x0000000140DDAC6F",
               "address": "0x0000000140CC0F00",
-              "name": "sub_140CC0F00"
+              "name": "Client__Game__Network__Packet__OnCharaHousingLandData"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAC6F",
               "address": "0x0000000140CC0F00",
-              "name": "sub_140CC0F00"
+              "name": "Client__Game__Network__Packet__OnCharaHousingLandData"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F6"
         },
         {
@@ -12362,17 +12362,17 @@
             {
               "callsite": "0x0000000140DDAC82",
               "address": "0x0000000140CC0F30",
-              "name": "sub_140CC0F30"
+              "name": "Client__Game__Network__Packet__OnCharaHousing"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAC82",
               "address": "0x0000000140CC0F30",
-              "name": "sub_140CC0F30"
+              "name": "Client__Game__Network__Packet__OnCharaHousing"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F7"
         },
         {
@@ -12384,17 +12384,17 @@
             {
               "callsite": "0x0000000140DDAC49",
               "address": "0x0000000140CC0EA0",
-              "name": "sub_140CC0EA0"
+              "name": "Client__Game__Network__Packet__OnHousingWelcome"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAC49",
               "address": "0x0000000140CC0EA0",
-              "name": "sub_140CC0EA0"
+              "name": "Client__Game__Network__Packet__OnHousingWelcome"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F8"
         },
         {
@@ -12406,17 +12406,17 @@
             {
               "callsite": "0x0000000140DDAB3F",
               "address": "0x0000000140CC0C20",
-              "name": "sub_140CC0C20"
+              "name": "Client__Game__Network__Packet__OnFurnitureListS"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB3F",
               "address": "0x0000000140CC0C20",
-              "name": "sub_140CC0C20"
+              "name": "Client__Game__Network__Packet__OnFurnitureListS"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02F9"
         },
         {
@@ -12428,17 +12428,17 @@
             {
               "callsite": "0x0000000140DDAB52",
               "address": "0x0000000140CC0C50",
-              "name": "sub_140CC0C50"
+              "name": "Client__Game__Network__Packet__OnFurnitureListM"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB52",
               "address": "0x0000000140CC0C50",
-              "name": "sub_140CC0C50"
+              "name": "Client__Game__Network__Packet__OnFurnitureListM"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FA"
         },
         {
@@ -12450,17 +12450,17 @@
             {
               "callsite": "0x0000000140DDAB65",
               "address": "0x0000000140CC0C80",
-              "name": "sub_140CC0C80"
+              "name": "Client__Game__Network__Packet__OnFurnitureListL"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB65",
               "address": "0x0000000140CC0C80",
-              "name": "sub_140CC0C80"
+              "name": "Client__Game__Network__Packet__OnFurnitureListL"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FB"
         },
         {
@@ -12472,17 +12472,17 @@
             {
               "callsite": "0x0000000140DDAB78",
               "address": "0x0000000140CC0CB0",
-              "name": "sub_140CC0CB0"
+              "name": "Client__Game__Network__Packet__OnFurniture"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB78",
               "address": "0x0000000140CC0CB0",
-              "name": "sub_140CC0CB0"
+              "name": "Client__Game__Network__Packet__OnFurniture"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FC"
         },
         {
@@ -12494,17 +12494,17 @@
             {
               "callsite": "0x0000000140DDABD7",
               "address": "0x0000000140CC1310",
-              "name": "sub_140CC1310"
+              "name": "Client__Game__Network__Packet__OnVoteKickConfirm"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDABD7",
               "address": "0x0000000140CC1310",
-              "name": "sub_140CC1310"
+              "name": "Client__Game__Network__Packet__OnVoteKickConfirm"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FD"
         },
         {
@@ -12516,17 +12516,17 @@
             {
               "callsite": "0x0000000140DDAC10",
               "address": "0x0000000140CC0E10",
-              "name": "sub_140CC0E10"
+              "name": "Client__Game__Network__Packet__OnHousingProfileList"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAC10",
               "address": "0x0000000140CC0E10",
-              "name": "sub_140CC0E10"
+              "name": "Client__Game__Network__Packet__OnHousingProfileList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FE"
         },
         {
@@ -12538,17 +12538,17 @@
             {
               "callsite": "0x0000000140DDAB8B",
               "address": "0x0000000140CC0CE0",
-              "name": "sub_140CC0CE0"
+              "name": "Client__Game__Network__Packet__OnHousingObjectTransform"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB8B",
               "address": "0x0000000140CC0CE0",
-              "name": "sub_140CC0CE0"
+              "name": "Client__Game__Network__Packet__OnHousingObjectTransform"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x02FF"
         },
         {
@@ -12560,17 +12560,17 @@
             {
               "callsite": "0x0000000140DDABC4",
               "address": "0x0000000140CC0D70",
-              "name": "sub_140CC0D70"
+              "name": "Client__Game__Network__Packet__OnHousingObjectColor"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDABC4",
               "address": "0x0000000140CC0D70",
-              "name": "sub_140CC0D70"
+              "name": "Client__Game__Network__Packet__OnHousingObjectColor"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0300"
         },
         {
@@ -12582,17 +12582,17 @@
             {
               "callsite": "0x0000000140DDAB9E",
               "address": "0x0000000140CC0D10",
-              "name": "sub_140CC0D10"
+              "name": "Client__Game__Network__Packet__OnHousingObjectTransformMulti"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAB9E",
               "address": "0x0000000140CC0D10",
-              "name": "sub_140CC0D10"
+              "name": "Client__Game__Network__Packet__OnHousingObjectTransformMulti"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0301"
         },
         {
@@ -12604,17 +12604,17 @@
             {
               "callsite": "0x0000000140DDAD8E",
               "address": "0x0000000140CC16A0",
-              "name": "sub_140CC16A0"
+              "name": "Client__Game__Network__Packet__OnConfusionApproach"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAD8E",
               "address": "0x0000000140CC16A0",
-              "name": "sub_140CC16A0"
+              "name": "Client__Game__Network__Packet__OnConfusionApproach"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0302"
         },
         {
@@ -12626,17 +12626,17 @@
             {
               "callsite": "0x0000000140DDADA1",
               "address": "0x0000000140CC16C0",
-              "name": "sub_140CC16C0"
+              "name": "Client__Game__Network__Packet__OnConfusionTurn"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDADA1",
               "address": "0x0000000140CC16C0",
-              "name": "sub_140CC16C0"
+              "name": "Client__Game__Network__Packet__OnConfusionTurn"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0303"
         },
         {
@@ -12648,17 +12648,17 @@
             {
               "callsite": "0x0000000140DDADC7",
               "address": "0x0000000140CC1730",
-              "name": "sub_140CC1730"
+              "name": "Client__Game__Network__Packet__OnConfusionTurnCancel"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDADC7",
               "address": "0x0000000140CC1730",
-              "name": "sub_140CC1730"
+              "name": "Client__Game__Network__Packet__OnConfusionTurnCancel"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0304"
         },
         {
@@ -12670,17 +12670,17 @@
             {
               "callsite": "0x0000000140DDADDA",
               "address": "0x0000000140CC1750",
-              "name": "sub_140CC1750"
+              "name": "Client__Game__Network__Packet__OnConfusionCancel"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDADDA",
               "address": "0x0000000140CC1750",
-              "name": "sub_140CC1750"
+              "name": "Client__Game__Network__Packet__OnConfusionCancel"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0305"
         },
         {
@@ -12692,17 +12692,17 @@
             {
               "callsite": "0x0000000140DDADED",
               "address": "0x0000000140CC1330",
-              "name": "?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_6"
+              "name": "Client__Game__Network__Packet__OnMIPMemberList"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDADED",
               "address": "0x0000000140CC1330",
-              "name": "?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_6"
+              "name": "Client__Game__Network__Packet__OnMIPMemberList"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0306"
         },
         {
@@ -12714,17 +12714,17 @@
             {
               "callsite": "0x0000000140DDACBB",
               "address": "0x0000000140CC0F70",
-              "name": "sub_140CC0F70"
+              "name": "Client__Game__Network__Packet__OnHousingGetPersonalRoomProfileListResult"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDACBB",
               "address": "0x0000000140CC0F70",
-              "name": "sub_140CC0F70"
+              "name": "Client__Game__Network__Packet__OnHousingGetPersonalRoomProfileListResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0307"
         },
         {
@@ -12736,17 +12736,17 @@
             {
               "callsite": "0x0000000140DDACCE",
               "address": "0x0000000140CC0FA0",
-              "name": "sub_140CC0FA0"
+              "name": "Client__Game__Network__Packet__OnHousingGetHouseBuddyStableListResult"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDACCE",
               "address": "0x0000000140CC0FA0",
-              "name": "sub_140CC0FA0"
+              "name": "Client__Game__Network__Packet__OnHousingGetHouseBuddyStableListResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0308"
         },
         {
@@ -12758,17 +12758,17 @@
             {
               "callsite": "0x0000000140DDAD55",
               "address": "0x0000000140CC1010",
-              "name": "sub_140CC1010"
+              "name": "Client__Game__Network__Packet__OnHouseTrainBuddyData"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAD55",
               "address": "0x0000000140CC1010",
-              "name": "sub_140CC1010"
+              "name": "Client__Game__Network__Packet__OnHouseTrainBuddyData"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0309"
         },
         {
@@ -12956,17 +12956,17 @@
             {
               "callsite": "0x0000000140DD9A8E",
               "address": "0x00000001404D5EA0",
-              "name": "sub_1404D5EA0"
+              "name": "Client__Game__Item__StorageManager__ReceiveFcChestLog"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9A8E",
               "address": "0x00000001404D5EA0",
-              "name": "sub_1404D5EA0"
+              "name": "Client__Game__Item__StorageManager__ReceiveFcChestLog"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0316"
         },
         {
@@ -13069,17 +13069,17 @@
             {
               "callsite": "0x0000000140DDABB1",
               "address": "0x0000000140CC0D40",
-              "name": "sub_140CC0D40"
+              "name": "Client__Game__Network__Packet__OnHousingObjectTransformMultiResult"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDABB1",
               "address": "0x0000000140CC0D40",
-              "name": "sub_140CC0D40"
+              "name": "Client__Game__Network__Packet__OnHousingObjectTransformMultiResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032A"
         },
         {
@@ -13091,17 +13091,17 @@
             {
               "callsite": "0x0000000140DDAC95",
               "address": "0x0000000140CD51E0",
-              "name": "sub_140CD51E0"
+              "name": "Client__Game__Network__Packet__OnHousingLogWithHouseName"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAC95",
               "address": "0x0000000140CD51E0",
-              "name": "sub_140CD51E0"
+              "name": "Client__Game__Network__Packet__OnHousingLogWithHouseName"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032B"
         },
         {
@@ -13113,17 +13113,17 @@
             {
               "callsite": "0x0000000140DD9B4C",
               "address": "0x0000000140CC03D0",
-              "name": "sub_140CC03D0"
+              "name": "Client__Game__Network__Packet__OnTreasureHuntReward"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9B4C",
               "address": "0x0000000140CC03D0",
-              "name": "sub_140CC03D0"
+              "name": "Client__Game__Network__Packet__OnTreasureHuntReward"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032C"
         },
         {
@@ -13135,17 +13135,17 @@
             {
               "callsite": "0x0000000140DDACA8",
               "address": "0x0000000140CC0F40",
-              "name": "sub_140CC0F40"
+              "name": "Client__Game__Network__Packet__OnHousingCombinedObjectStatus"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDACA8",
               "address": "0x0000000140CC0F40",
-              "name": "sub_140CC0F40"
+              "name": "Client__Game__Network__Packet__OnHousingCombinedObjectStatus"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032D"
         },
         {
@@ -13157,17 +13157,17 @@
             {
               "callsite": "0x0000000140DDACE3",
               "address": "0x0000000140CC0FD0",
-              "name": "sub_140CC0FD0"
+              "name": "Client__Game__Network__Packet__OnHouseBuddyModelData"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDACE3",
               "address": "0x0000000140CC0FD0",
-              "name": "sub_140CC0FD0"
+              "name": "Client__Game__Network__Packet__OnHouseBuddyModelData"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x032E"
         },
         {
@@ -13443,17 +13443,17 @@
             {
               "callsite": "0x0000000140DDAE2A",
               "address": "0x0000000140CC1780",
-              "name": "sub_140CC1780"
+              "name": "Client__Game__Network__Packet__OnUnMountLink"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DDAE2A",
               "address": "0x0000000140CC1780",
-              "name": "sub_140CC1780"
+              "name": "Client__Game__Network__Packet__OnUnMountLink"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x033E"
         },
         {
@@ -14181,8 +14181,8 @@
           "inline": 19
         },
         "statuses": {
-          "candidate": 174,
-          "confirmed": 93,
+          "candidate": 95,
+          "confirmed": 172,
           "unresolved": 89
         }
       }
