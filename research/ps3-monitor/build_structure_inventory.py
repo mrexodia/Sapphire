@@ -46,6 +46,11 @@ WINDOWS_FIELDS: dict[str, dict[str, tuple[int, str]]] = {
         "RestPoint": (0xC, "rested experience update"),
     },
     "PlayerStatus": {"Crest": (0x8, "crest update")},
+    "QuestCompleteFlag": {
+        "bitIndex": (0x0, "quest-completion bit index"),
+        "completed": (0x2, "set/clear boolean"),
+        "update": (0x3, "EventFramework update boolean"),
+    },
     "ChatFrom": {
         "fromCharacterID": (0x0, "sender ID use"),
         "type": (0x8, "chat-type branch"),
@@ -109,7 +114,15 @@ WINDOWS_EXTRA_FIELDS = {
     "Create": [
         {"name": "OwnerId", "offset": "0x14", "width": 4, "evidence": "local-owner comparison"},
         {"name": "ObjType", "offset": "0x33", "width": 1, "evidence": "ObjType == 2 test"},
-    ]
+    ],
+    "QuestCompleteFlag": [
+        {
+            "name": "unknown3xStateIndex",
+            "offset": "0x4",
+            "width": 1,
+            "evidence": "optional 3.x bitset/UI update index",
+        }
+    ],
 }
 
 

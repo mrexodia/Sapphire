@@ -223,6 +223,31 @@ def render_markdown(
             f"{member['offset']} | {validation['offset']} | {md_escape(validation.get('evidence'))} |"
         )
 
+    extra_fields = [
+        (row, field)
+        for row in confirmed
+        for field in row["structure"].get("windowsExtraFields", [])
+    ]
+    lines.extend(
+        [
+            "",
+            "## Observed Windows-only fields",
+            "",
+            "These fields are observed in Windows handlers but are absent from the corresponding PS3 DWARF layout.",
+            "Names marked as unknown are descriptive placeholders, not production definitions.",
+            "",
+            "| Channel | Opcode | Packet | Field | Windows offset | Width | Evidence |",
+            "| --- | --- | --- | --- | --- | ---: | --- |",
+        ]
+    )
+    if not extra_fields:
+        lines.append("| — | — | — | — | — | — | None recorded |")
+    for row, field in extra_fields:
+        lines.append(
+            f"| {row['channel']} | {row['opcode']} | {row['packet']} | {field['name']} | "
+            f"{field['offset']} | {field['width']} | {md_escape(field['evidence'])} |"
+        )
+
     lines.extend(
         [
             "",
@@ -305,6 +330,14 @@ def field_details(row: dict[str, Any]) -> str:
             f"<td><code>{html.escape(member['name'])}</code></td>"
             f"<td>{html.escape(win)}</td>"
             "</tr>"
+        )
+    for field in structure.get("windowsExtraFields", []):
+        fields.append(
+            "<tr>"
+            f"<td><code>PS3 — / Windows {html.escape(field['offset'])}</code></td>"
+            f"<td>{field['width']}</td><td><code>Windows-only</code></td>"
+            f"<td><code>{html.escape(field['name'])}</code></td>"
+            f"<td>{html.escape(field['evidence'])}</td></tr>"
         )
     evidence = "".join(f"<li>{html.escape(item)}</li>" for item in row.get("evidence", []))
     return (

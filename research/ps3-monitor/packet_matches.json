@@ -3099,6 +3099,23 @@
       ],
       "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADB064",
       "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01E3",
+      "packet": "QuestCompleteFlag",
+      "ps3Address": "0x00AE90F4",
+      "ps3Name": "Client::Game::Network::SyncTagPacket::ReceiveQuestCompleteFlag",
+      "windowsAddress": "0x140CC6A90",
+      "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both index a quest-completion bitset by bitIndex >> 3 and use the mask 0x80 >> (bitIndex & 7).",
+        "Both set or clear the bit from the completed boolean and notify EventFramework with bitIndex, completed, and update.",
+        "Windows reads the same fields at payload offsets +0, +2, and +3; its additional byte at +4 drives later 3.x-only state/UI work."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE90F4",
+      "channel": "zone-down"
     }
   ],
   "idbLinkFormat": "idb://ffxivgame.ppu.elf.i64:{PS3_ADDRESS_8_HEX_UPPER}",

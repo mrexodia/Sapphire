@@ -3320,9 +3320,8 @@
               "name": null
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01E3",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01E3"
         },
         {
           "opcode": "0x01E4",
@@ -6425,8 +6424,8 @@
           "shared": 9
         },
         "statuses": {
-          "confirmed": 239,
-          "probable": 4,
+          "confirmed": 240,
+          "probable": 3,
           "ps3-only": 18,
           "unresolved": 25
         }
@@ -10439,9 +10438,8 @@
               "name": "sub_140CC6A90"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01E3",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01E3"
         },
         {
           "opcode": "0x01E4",
@@ -14239,8 +14237,8 @@
           "inline": 19
         },
         "statuses": {
-          "confirmed": 239,
-          "probable": 4,
+          "confirmed": 240,
+          "probable": 3,
           "unresolved": 25,
           "windows-only": 88
         }

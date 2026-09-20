@@ -10,10 +10,10 @@ opcode is not by itself proof of equivalent semantics.
 
 | Item | Count |
 | --- | ---: |
-| Confirmed opcode cases | 246 |
-| One-to-one handler functions | 192 |
+| Confirmed opcode cases | 247 |
+| One-to-one handler functions | 193 |
 | Shared handler functions | 11 |
-| Probable reviewed cases | 4 |
+| Probable reviewed cases | 3 |
 | Unresolved reviewed cases | 24 |
 | PS3-only numeric cases | 19 |
 | Windows-only numeric cases | 88 |
@@ -164,6 +164,7 @@ rows, field-level layouts, evidence, and filters.
 | zone-down | 0x01E0 | Quests | [`FFXIVIpcQuests`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1421) | `ZoneProtoDownGAME_Quests` (0x130) | [`ReceiveQuests`](idb://ffxivgame.ppu.elf.i64:00AE8F9C) `0x00AE8F9C` | `Client__Game__Network__SyncTagPacket__ReceiveQuests` `0x140CC8D20` | one-to-one | layout-unreviewed |
 | zone-down | 0x01E1 | Quest | [`FFXIVIpcQuest`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1430) | `ZoneProtoDownGAME_Quest` (0x10) | [`ReceiveQuest`](idb://ffxivgame.ppu.elf.i64:00AE8DB0) `0x00AE8DB0` | `Client__Game__Network__SyncTagPacket__ReceiveQuest` `0x140CC7F20` | one-to-one | layout-unreviewed |
 | zone-down | 0x01E2 | QuestCompleteFlags | `missing: FFXIVIpcQuestCompleteFlags` | `ZoneProtoDownGAME_QuestCompleteFlags` (0xc8) | [`ReceiveQuestCompleteFlags`](idb://ffxivgame.ppu.elf.i64:00AE9078) `0x00AE9078` | `Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags` `0x140CC6990` | one-to-one | layout-unreviewed |
+| zone-down | 0x01E3 | QuestCompleteFlag | `missing: FFXIVIpcQuestCompleteFlag` | `ZoneProtoDownGAME_QuestCompleteFlag` (0x8) | [`ReceiveQuestCompleteFlag`](idb://ffxivgame.ppu.elf.i64:00AE90F4) `0x00AE90F4` | `Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag` `0x140CC6A90` | one-to-one | partially-windows-validated |
 | zone-down | 0x01E4 | Guildleves | `missing: FFXIVIpcGuildleves` | `ZoneProtoDownGAME_Guildleves` (0xa0) | [`ReceiveGuildleves`](idb://ffxivgame.ppu.elf.i64:00AE9700) `0x00AE9700` | `Client__Game__Network__SyncTagPacket__ReceiveGuildleves` `0x140CC80E0` | one-to-one | layout-unreviewed |
 | zone-down | 0x01E5 | Guildleve | `missing: FFXIVIpcGuildleve` | `ZoneProtoDownGAME_Guildleve` (0x10) | [`ReceiveGuildleve`](idb://ffxivgame.ppu.elf.i64:00AE9550) `0x00AE9550` | `Client__Game__Network__SyncTagPacket__ReceiveGuildleve` `0x140CC6BE0` | one-to-one | layout-unreviewed |
 | zone-down | 0x01E6 | LeveCompleteFlags | `missing: FFXIVIpcLeveCompleteFlags` | `ZoneProtoDownGAME_LeveCompleteFlags` (0xc8) | [`ReceiveLeveCompleteFlags`](idb://ffxivgame.ppu.elf.i64:00AE97C8) `0x00AE97C8` | `Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags` `0x140CC26C0` | one-to-one | layout-unreviewed |
@@ -279,13 +280,23 @@ rows, field-level layouts, evidence, and filters.
 | --- | --- | --- | --- | --- | --- | --- |
 | zone-down | 0x019F | PlayerStatusUpdate | LvSync | 0x4 | 0x6 | 3.x synchronized-level load |
 
+## Observed Windows-only fields
+
+These fields are observed in Windows handlers but are absent from the corresponding PS3 DWARF layout.
+Names marked as unknown are descriptive placeholders, not production definitions.
+
+| Channel | Opcode | Packet | Field | Windows offset | Width | Evidence |
+| --- | --- | --- | --- | --- | ---: | --- |
+| zone-down | 0x0190 | Create | OwnerId | 0x14 | 4 | local-owner comparison |
+| zone-down | 0x0190 | Create | ObjType | 0x33 | 1 | ObjType == 2 test |
+| zone-down | 0x01E3 | QuestCompleteFlag | unknown3xStateIndex | 0x4 | 1 | optional 3.x bitset/UI update index |
+
 ## Reviewed but not promoted
 
 These relationships do not authorize Windows IDB names or PS3 backlinks.
 
 | Status | Channel | Opcode | Sapphire name | PS3 target | Windows target | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| probable | zone-down | 0x01E3 | QuestCompleteFlag | Client::Game::Network::SyncTagPacket::ReceiveQuestCompleteFlag (0x00AE90F4) | sub_140CC6A90 (0x0000000140CC6A90) | Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link. |
 | probable | zone-down | 0x01E7 | LeveCompleteFlag | Client::Game::Network::SyncTagPacket::ReceiveLeveCompleteFlag (0x00AE9844) | sub_140CC2710 (0x0000000140CC2710) | Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link. |
 | probable | zone-down | 0x0321 | DailyQuest | Client::Game::Network::SyncTagPacket::ReceiveDailyQuest (0x00AE936C) | sub_140CC2580 (0x0000000140CC2580) | Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link. |
 | probable | zone-down | 0x0337 | Frontline01BaseInfo | Client::Game::Network::EventPacket::ReceiveFrontline01BaseInfoPacket (0x00ADCBE0) | j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_2 (0x0000000140CBEA50) | The Windows downstream method at 0x140C9AAF0 is still unidentified, so the Frontline01BaseInfo identity remains probable rather than confirmed. |

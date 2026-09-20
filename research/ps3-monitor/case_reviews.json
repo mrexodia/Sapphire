@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "policy": "These cases were explicitly reviewed but were not promoted. Probable is not permission to name a Windows function or add an authoritative PS3 IDB link.",
   "summary": {
-    "reviewed": 28,
-    "probable": 4,
+    "reviewed": 27,
+    "probable": 3,
     "unresolved": 24
   },
   "reviews": [
@@ -142,46 +142,6 @@
         "PS3 FinishContentMatch updates the contents-finder UI using territory, class/job, flags, player count, progress, and start time.",
         "Windows dispatch enters an EventFramework/instance-content-director wrapper and calls unidentified 0x140C94DD0; this does not yet support the PS3 ContentMediator identity."
       ]
-    },
-    {
-      "channel": "zone-down",
-      "ps3Opcode": "0x01E3",
-      "windowsOpcode": "0x01E3",
-      "threePointThreePacket": "QuestCompleteFlag",
-      "status": "probable",
-      "reviewed": true,
-      "scoreAtReview": 3,
-      "ps3PacketCalls": [
-        {
-          "callsite": "0x002FA050",
-          "address": "0x00AE90F4",
-          "name": "Client::Game::Network::SyncTagPacket::ReceiveQuestCompleteFlag"
-        },
-        {
-          "callsite": "0x002FA030",
-          "address": null,
-          "name": null
-        },
-        {
-          "callsite": "0x002FA038",
-          "address": null,
-          "name": null
-        }
-      ],
-      "windowsPacketCalls": [
-        {
-          "callsite": "0x0000000140DDA3B0",
-          "address": "0x0000000140CC6A90",
-          "name": "sub_140CC6A90"
-        }
-      ],
-      "sharedRelationship": false,
-      "evidence": [
-        "ThreePointThree names 0x01E3 as QuestCompleteFlag.",
-        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
-        "Both cases route packet data to an extracted handler target."
-      ],
-      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
     },
     {
       "channel": "zone-down",

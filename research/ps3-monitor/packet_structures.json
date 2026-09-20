@@ -8,7 +8,7 @@
   },
   "policy": "PS3 fields describe 2.3. A field is a 3.x fact only when windowsValidation is confirmed; unreviewed fields must not be promoted into production definitions.",
   "summary": {
-    "structures": 246,
+    "structures": 247,
     "missingCurrentDeclarations": [
       "chat-down:GetChannelListResult",
       "chat-down:GetChannelMemberListResult",
@@ -85,6 +85,7 @@
       "zone-down:OrderTarget",
       "zone-down:PopEventState",
       "zone-down:PushEventState",
+      "zone-down:QuestCompleteFlag",
       "zone-down:QuestCompleteFlags",
       "zone-down:RequestCast",
       "zone-down:RequestItmeResult",
@@ -13108,6 +13109,66 @@
       },
       "windowsExtraFields": [],
       "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "QuestCompleteFlag",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_QuestCompleteFlag",
+      "ps3Size": 8,
+      "members": [
+        {
+          "name": "bitIndex",
+          "offset": "0x0",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "quest-completion bit index"
+          }
+        },
+        {
+          "name": "completed",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x2",
+            "evidence": "set/clear boolean"
+          }
+        },
+        {
+          "name": "update",
+          "offset": "0x3",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x3",
+            "evidence": "EventFramework update boolean"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcQuestCompleteFlag",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [
+        {
+          "name": "unknown3xStateIndex",
+          "offset": "0x4",
+          "width": 1,
+          "evidence": "optional 3.x bitset/UI update index"
+        }
+      ],
+      "comparisonStatus": "partially-windows-validated",
       "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
     },
     {

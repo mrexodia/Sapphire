@@ -44,11 +44,11 @@ Raw function size and CFG similarity are not sufficient across PPC64 and x64.
 ## Current coverage
 
 The exhaustive pass records 285 PS3 and 355 Windows zone-down opcodes plus both
-chat-down dispatchers. It confirms 203 packet-handler function pairs covering
-246 opcode cases, reviews 28 additional same-opcode relationships, and leaves
+chat-down dispatchers. It confirms 204 packet-handler function pairs covering
+247 opcode cases, reviews 27 additional same-opcode relationships, and leaves
 no unreviewed candidate in the generated ranking. Eleven exact shared-handler
 mappings preserve 54 many-opcode/one-function relationships without inventing
-separate functions. The remaining 4 probable relationships are retained
+separate functions. The remaining 3 probable relationships are retained
 without authoritative names.
 
 Start with the combined [`PACKET_CATALOG.md`](PACKET_CATALOG.md), or open the
@@ -74,9 +74,9 @@ The detailed execution plan and pasteable persistent goal remain in
 
 ## Next iteration
 
-1. Identify the four probable downstream manager functions with type-applied
+1. Identify the three probable downstream manager functions with type-applied
    Windows pseudocode or runtime traces.
 2. Investigate changed-opcode counterparts for build-only numeric cases.
 3. Normalize and export outbound Zone/Chat DWARF packet types.
-4. Fully validate Windows layouts before promoting any of the 97 missing
+4. Fully validate Windows layouts before promoting any of the 98 missing
    Sapphire declarations.

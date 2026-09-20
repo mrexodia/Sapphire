@@ -29,6 +29,11 @@ PROMOTIONS: dict[str, list[str]] = {
         "Both resolve storage ID and container index, copy the same item fields, compute change flags, and signal inventory changes.",
         "Both contain the distinctive storage 25001 and range 25003..25006 UI-dirty special cases.",
     ],
+    "0x01E3": [
+        "Both index a quest-completion bitset by bitIndex >> 3 and use the mask 0x80 >> (bitIndex & 7).",
+        "Both set or clear the bit from the completed boolean and notify EventFramework with bitIndex, completed, and update.",
+        "Windows reads the same fields at payload offsets +0, +2, and +3; its additional byte at +4 drives later 3.x-only state/UI work.",
+    ],
     "0x01EE": [
         "Both process exactly five two-byte tracking records and update five persistent tracking slots.",
         "Both notify the journal/event path and set the same two post-sync dirty flags.",
