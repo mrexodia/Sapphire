@@ -51,10 +51,18 @@ mappings preserve 54 many-opcode/one-function relationships without inventing
 separate functions. The remaining 4 probable relationships are retained
 without authoritative names.
 
-See `packet_matches.json` for confirmed addresses and evidence,
-`dispatcher_cases.json` for complete case coverage, `packet_structures.json` for
-246 PS3 DWARF layouts and Windows/Sapphire comparisons, and
-[`OVERNIGHT_RESULTS.md`](OVERNIGHT_RESULTS.md) for the results, and
+Start with the combined [`PACKET_CATALOG.md`](PACKET_CATALOG.md), or open the
+searchable [`packet_catalog.html`](packet_catalog.html) for field layouts,
+evidence, and status filters. The underlying machine-readable ledgers are
+`packet_matches.json`, `dispatcher_cases.json`, `packet_structures.json`, and
+`case_reviews.json`. Regenerate and verify both catalog views with:
+
+```bash
+python research/ps3-monitor/build_packet_catalog.py
+python research/ps3-monitor/build_packet_catalog.py --check
+```
+
+See [`OVERNIGHT_RESULTS.md`](OVERNIGHT_RESULTS.md) for the full results and
 [`COMPLETION_AUDIT.md`](COMPLETION_AUDIT.md) for the requirement-to-evidence
 checklist. Approved names and repeatable comments have been applied to the
 local Windows IDB.
@@ -66,10 +74,9 @@ The detailed execution plan and pasteable persistent goal remain in
 
 ## Next iteration
 
-1. Export every direct case/callee from both zone-down dispatchers.
-2. Seed matches using opcodes that remain stable between 2.3 and 3.x.
-3. Verify each seed using packet layouts and callee semantics.
-4. Use verified handlers to propagate names into manager/UI functions.
-5. Record renamed, removed, and newly introduced packets rather than forcing a
-   one-to-one match.
-6. Add a re-runnable IDAPython importer after the mapping schema stabilizes.
+1. Identify the four probable downstream manager functions with type-applied
+   Windows pseudocode or runtime traces.
+2. Investigate changed-opcode counterparts for build-only numeric cases.
+3. Normalize and export outbound Zone/Chat DWARF packet types.
+4. Fully validate Windows layouts before promoting any of the 97 missing
+   Sapphire declarations.

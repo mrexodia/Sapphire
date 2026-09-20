@@ -90,6 +90,8 @@ The complete list is in `packet_structures.json` under
 
 ## Reproducibility artifacts
 
+- `PACKET_CATALOG.md` and `packet_catalog.html`: generated combined views of
+  Sapphire names, PS3 types/handlers, Windows handlers, fields, and review status.
 - `dispatcher_cases.json`: every explicit case, default, target, data offset,
   dispatch kind, and status.
 - `packet_matches.json`: confirmed one-to-one and shared function mappings and evidence.
@@ -100,6 +102,8 @@ The complete list is in `packet_structures.json` under
 - `ida_dispatcher_export.py`: read-only IDA ctree exporter.
 - `ida_type_export.py`: read-only PS3 DWARF type exporter.
 - `ida_apply_matches.py`: Windows IDB annotation applier/verifier.
+- `build_packet_catalog.py`: deterministic Markdown/HTML catalog generator and
+  stale-output checker.
 - `build_dispatcher_inventory.py`, `build_structure_inventory.py`,
   `promote_exact_opcode_matches.py`, `promote_shared_handler_matches.py`,
   `promote_validated_semantic_matches.py`, `review_remaining_candidates.py`,

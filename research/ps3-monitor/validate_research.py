@@ -9,6 +9,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from build_packet_catalog import build_outputs
+
 ROOT = Path(__file__).resolve().parent
 ALLOWED_STATUSES = {
     "confirmed",
@@ -237,6 +239,9 @@ def main() -> None:
     validate_structures(structures, confirmed)
     validate_reviews(reviews, dispatchers)
     validate_candidates(candidates, dispatchers)
+    markdown, html_catalog = build_outputs(ROOT)
+    assert (ROOT / "PACKET_CATALOG.md").read_text(encoding="utf-8") == markdown, "stale PACKET_CATALOG.md"
+    assert (ROOT / "packet_catalog.html").read_text(encoding="utf-8") == html_catalog, "stale packet_catalog.html"
     print(
         "validated: "
         f"{len(confirmed)} confirmed packet cases and structures, "
