@@ -122,6 +122,43 @@ def validate_dispatchers(
     return by_key
 
 
+def validate_structures(
+    structures: dict[str, Any], confirmed: dict[tuple[str, str], dict[str, Any]]
+) -> None:
+    indexed: dict[tuple[str, str], dict[str, Any]] = {}
+    missing: list[str] = []
+    deltas: list[dict[str, Any]] = []
+    for structure in structures["structures"]:
+        key = (structure["channel"], structure["packet"])
+        assert key not in indexed, key
+        indexed[key] = structure
+        assert structure["status"] == "exported", key
+        assert structure["ps3Size"] > 0, key
+        if structure["sapphire"]["currentStatus"] == "missing":
+            missing.append(f"{key[0]}:{key[1]}")
+        for member in structure["members"]:
+            validation = member["windowsValidation"]
+            assert validation["status"] in {
+                "unreviewed",
+                "confirmed-same-offset",
+                "confirmed-version-delta",
+            }, (key, member["name"], validation)
+            if validation["status"] == "confirmed-version-delta":
+                deltas.append(
+                    {
+                        "packet": structure["packet"],
+                        "field": member["name"],
+                        "ps3Offset": member["offset"],
+                        "windowsOffset": validation["offset"],
+                    }
+                )
+    expected = {(channel, match["packet"]) for (channel, _), match in confirmed.items()}
+    assert set(indexed) == expected, (expected - set(indexed), set(indexed) - expected)
+    assert structures["summary"]["structures"] == len(indexed)
+    assert structures["summary"]["missingCurrentDeclarations"] == sorted(missing)
+    assert structures["summary"]["confirmedVersionDeltas"] == deltas
+
+
 def validate_candidates(
     candidate_file: dict[str, Any], dispatchers: dict[tuple[str, str], dict[str, Any]]
 ) -> None:
@@ -153,12 +190,14 @@ def main() -> None:
     matches = load("packet_matches.json")
     inventory = load("dispatcher_cases.json")
     candidates = load("candidate_rankings.json")
+    structures = load("packet_structures.json")
     confirmed = validate_matches(matches)
     dispatchers = validate_dispatchers(inventory, confirmed)
+    validate_structures(structures, confirmed)
     validate_candidates(candidates, dispatchers)
     print(
         "validated: "
-        f"{len(confirmed)} confirmed packet matches, "
+        f"{len(confirmed)} confirmed packet matches and structures, "
         f"{sum(len(item['cases']) for item in inventory['dispatchers'])} dispatcher cases, "
         f"{len(candidates['candidates'])} ranked candidates"
     )
