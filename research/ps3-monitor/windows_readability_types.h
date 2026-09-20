@@ -408,10 +408,64 @@ struct Win335_UIModule;
 
 struct Win335_StorageManager;
 
+struct Win335_InfoProxyInterface;
+
+struct Win335_InfoProxyItemSearch;
+
+struct Win335_Treasure;
+
+struct Win335_TreasureManager;
+
+struct Win335_InfoModule
+{
+  void *vftable;
+  Win335_InfoProxyInterface *proxies[1]; // indexed array; one-element declaration does not assert the trailing class size
+};
+
+struct Win335_QuestWork_KnownFields
+{
+  unsigned __int8 _unknown_0000[0x8];
+  unsigned __int16 questId;
+  unsigned __int8 sequence;
+};
+
+struct Win335_LeveWork_KnownFields
+{
+  unsigned __int8 _unknown_0000[0x8];
+  unsigned __int16 leveId;
+};
+
+struct Win335_ItemAssemblyFragment
+{
+  unsigned __int8 _unknown_0000[0x8];
+  unsigned __int8 payload[0x50];
+  Win335_ItemAssemblyFragment *previous;
+  Win335_ItemAssemblyFragment *next;
+};
+
+struct Win335_ItemAssemblyContext
+{
+  unsigned __int8 _unknown_0000[0x10];
+  unsigned __int32 targetActorId;
+  unsigned __int8 _unknown_0014[0x4];
+  Win335_ItemAssemblyFragment *firstFragment;
+  Win335_ItemAssemblyFragment *lastFragment;
+  unsigned __int32 receivedFragmentCount;
+  signed __int32 expectedFragmentCount;
+  Win335_ItemAssemblyContext *previous;
+  Win335_ItemAssemblyContext *next;
+};
+
 struct Win335_ItemPacketAssembler
 {
-  unsigned __int8 _unknown_0000[0x38];
-  void *contextList;
+  unsigned __int8 _unknown_0000[0x10];
+  Win335_ItemAssemblyFragment *freeFragmentHead;
+  Win335_ItemAssemblyFragment *freeFragmentTail;
+  unsigned __int8 _unknown_0020[0x8];
+  Win335_ItemAssemblyContext *freeContextHead;
+  Win335_ItemAssemblyContext *freeContextTail;
+  Win335_ItemAssemblyContext *activeContextHead;
+  Win335_ItemAssemblyContext *activeContextTail;
 };
 
 struct Win335_InviteResult_KnownFields

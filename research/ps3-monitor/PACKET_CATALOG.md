@@ -14,7 +14,7 @@ opcode is not by itself proof of equivalent semantics.
 | One-to-one handler functions | 198 |
 | Shared handler functions | 11 |
 | Windows semantic functions without PS3 links | 10 |
-| Windows supporting implementation functions | 4 |
+| Windows supporting implementation functions | 7 |
 | Windows inline semantic cases | 3 |
 | Windows semantic opcode cases without PS3 links | 19 |
 | Probable reviewed cases | 0 |

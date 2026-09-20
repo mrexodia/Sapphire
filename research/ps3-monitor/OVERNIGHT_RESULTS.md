@@ -44,9 +44,10 @@ changed-opcode counterpart.
   - constructor
   - zone-down dispatcher
   - chat-down dispatcher
-- Two additional PS3-linked framework accessors: `Framework::GetUIModule` and
-  `EventFramework::GetInstance`.
-- 214 Windows functions in total have verified names and repeatable PS3 links.
+- Twenty-eight additional PS3-linked subsystem functions: two framework
+  accessors, `InfoModule::GetProxy`, nine InfoModule/InfoProxyItemSearch methods,
+  the TreasureManager lookup, and fifteen quest/leve synchronization boundaries.
+- 240 Windows functions in total have verified names and repeatable PS3 links.
 
 A manual follow-up confirmed `QuestCompleteFlag` (`0x01E3`): both builds use
 `bitIndex >> 3` with `0x80 >> (bitIndex & 7)`, set or clear the same completion
@@ -64,7 +65,7 @@ PS3 Monitor: idb://ffxivgame.ppu.elf.i64:XXXXXXXX
 ```
 
 The mapping ledger is `packet_matches.json`. `ida_apply_matches.py` can apply or
-verify the names and comments. A verification pass checked all 214 entries with
+verify the names and comments. A verification pass checked all 240 entries with
 zero failures after saving `E:/Sapphire/game/ffxiv_dx11.exe.i64`.
 
 Six obviously unrelated pre-existing names were replaced after the dispatcher
@@ -92,18 +93,22 @@ inspect packets, and `Frontline01Result`. Three more cases—`EnableLogout`,
 `LogMessage`, and `CancelLogoutCountdown`—are proven inline dispatcher paths.
 These 19 cases deliberately remain separate from PS3-linked matches and receive
 no `PS3 Monitor:` backlink. Four downstream retainer/market/item implementation
-functions also have separately verified Windows-supporting names. The saved
-Windows IDB contains and verifies all fourteen Windows-only names/comments.
+functions and three shared fragment-assembler helpers also have separately
+verified Windows-supporting names. The saved Windows IDB contains and verifies
+all seventeen Windows-only names/comments.
 
 ## Windows IDB readability
 
-The semantic-island pass adds 37 concrete local types, types 38 functions and
-four globals, and comments 309 distinct dispatcher case addresses. The typed
-zone/chat IPC views produce symbolic opcode switches and `packet->payload`
-expressions; 31 `Win335_*_KnownFields` structures expose only Windows-confirmed
-fields, and 25 complete-payload handlers use them. `subsystem_callgraph.json`
-exports one-hop quest/leve and retainer/inventory expansion queues. Full details
-and safety boundaries are in `READABILITY_RESULTS.md`.
+The semantic-island passes add 42 concrete local types, type 67 functions and
+four globals, name one additional global, and comment 309 distinct dispatcher
+case addresses. The typed zone/chat IPC views produce symbolic opcode switches
+and `packet->payload` expressions; 31 `Win335_*_KnownFields` packet structures
+expose only Windows-confirmed fields, and 25 complete-payload handlers use them.
+The second pass resolves the InfoModule proxy accessor, TreasureManager lookup,
+nine InfoModule/InfoProxyItemSearch methods, the quest/leve EventFramework
+notification family, and item assembly context/node layouts. `subsystem_callgraph.json` exports one-hop quest/leve and
+retainer/inventory expansion queues. Full details and safety boundaries are in
+`READABILITY_RESULTS.md`.
 
 ## Structure results
 
@@ -164,7 +169,7 @@ The following checks completed successfully:
 
 ```text
 python research/ps3-monitor/validate_research.py
-validated: 253 confirmed packet cases and structures, 659 dispatcher cases, 0 ranked candidates, 10 Windows-only semantic functions, 4 Windows supporting functions, 3 Windows inline cases, 31 readability types, 38 typed functions, 4 typed globals, 309 case comments
+validated: 253 confirmed packet cases and structures, 659 dispatcher cases, 0 ranked candidates, 10 Windows-only semantic functions, 7 Windows supporting functions, 3 Windows inline cases, 31 readability types, 67 typed functions, 4 typed globals, 309 case comments
 
 cmake --build build --target common world
 common and world targets completed successfully
@@ -185,8 +190,9 @@ The successful build validates the wire-size-preserving
    newly introduced semantics.
 4. Fully validate Windows sizes and every member of the 99 missing Sapphire
    declarations before adding production definitions.
-5. Apply confirmed packet types to the Windows IDB and propagate packet-derived
-   names into directly related managers only when call semantics support them.
+5. Recover the remaining virtual InfoProxyItemSearch list-result method,
+   EventFramework handler-container internals, and packet-family-specific item
+   fragment payloads only when call semantics support them.
 
 ## Residual blockers
 

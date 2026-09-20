@@ -246,17 +246,6 @@
           "priority": 335
         },
         {
-          "windowsAddress": "0x00000001406A8970",
-          "windowsName": "sub_1406A8970",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveQuest",
-            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
-          ],
-          "totalCallers": 2,
-          "autoNamed": true,
-          "priority": 235
-        },
-        {
           "windowsAddress": "0x0000000141158D80",
           "windowsName": "sub_141158D80",
           "rootReferences": [
@@ -277,6 +266,17 @@
           "totalCallers": 2788,
           "autoNamed": true,
           "priority": 225
+        },
+        {
+          "windowsAddress": "0x00000001406A8970",
+          "windowsName": "Client__Game__Event__EventFramework__OnSyncQuest",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuest",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
+          ],
+          "totalCallers": 2,
+          "autoNamed": false,
+          "priority": 210
         },
         {
           "windowsAddress": "0x0000000140ECCAB0",
@@ -320,112 +320,12 @@
           "priority": 135
         },
         {
-          "windowsAddress": "0x0000000140604610",
-          "windowsName": "nullsub_102",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x0000000140604620",
-          "windowsName": "nullsub_103",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlag"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
           "windowsAddress": "0x0000000140614300",
           "windowsName": "sub_140614300",
           "rootReferences": [
             "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags"
           ],
           "totalCallers": 2,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x0000000140657ED0",
-          "windowsName": "sub_140657ED0",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests"
-          ],
-          "totalCallers": 0,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x0000000140657FD0",
-          "windowsName": "sub_140657FD0",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuest"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014066B1C0",
-          "windowsName": "sub_14066B1C0",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014066B230",
-          "windowsName": "sub_14066B230",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014066B240",
-          "windowsName": "sub_14066B240",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014066B280",
-          "windowsName": "sub_14066B280",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014066B290",
-          "windowsName": "sub_14066B290",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014066B2A0",
-          "windowsName": "sub_14066B2A0",
-          "rootReferences": [
-            "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags"
-          ],
-          "totalCallers": 1,
           "autoNamed": true,
           "priority": 135
         },
@@ -530,6 +430,106 @@
           "priority": 125
         },
         {
+          "windowsAddress": "0x0000000140604610",
+          "windowsName": "Client__Game__Event__EventFramework__OnLeveCompleteFlagsInitialized",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140604620",
+          "windowsName": "Client__Game__Event__EventFramework__OnSyncLeveComplete",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlag"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140657ED0",
+          "windowsName": "Client__Game__Event__EventFramework__OnSyncDailyQuests",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests"
+          ],
+          "totalCallers": 0,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140657FD0",
+          "windowsName": "Client__Game__Event__EventFramework__OnSyncDailyQuest",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuest"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014066B1C0",
+          "windowsName": "Client__Game__Event__EventFramework__OnQuestsInitialized",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014066B230",
+          "windowsName": "Client__Game__Event__EventFramework__OnQuestCompleteFlagsInitialized",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014066B240",
+          "windowsName": "Client__Game__Event__EventFramework__OnSyncQuestComplete",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014066B280",
+          "windowsName": "Client__Game__Event__EventFramework__OnDailyQuestsInitialized",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014066B290",
+          "windowsName": "Client__Game__Event__EventFramework__OnQuestRepeatFlagsInitialized",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014066B2A0",
+          "windowsName": "Client__Game__Event__EventFramework__OnSyncQuestRepeatFlags",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
           "windowsAddress": "0x0000000140ECD010",
           "windowsName": "strcat_s",
           "rootReferences": [
@@ -553,7 +553,7 @@
       "summary": {
         "roots": 14,
         "directCallees": 34,
-        "autoNamedCallees": 28
+        "autoNamedCallees": 17
       }
     },
     {
@@ -949,7 +949,7 @@
         },
         {
           "windowsAddress": "0x0000000140032C30",
-          "windowsName": "sub_140032C30",
+          "windowsName": "Client__UI__Info__InfoModule__GetProxy",
           "rootReferences": [
             "Client__Info__InfoPacket__BuyMarketRetainerResult",
             "Client__Info__InfoPacket__GetItemHistoryResult",
@@ -961,8 +961,8 @@
             "Client__Info__InfoPacket__MarketStorageUpdate"
           ],
           "totalCallers": 266,
-          "autoNamed": true,
-          "priority": 825
+          "autoNamed": false,
+          "priority": 800
         },
         {
           "windowsAddress": "0x0000000140ECD450",
@@ -995,7 +995,7 @@
         },
         {
           "windowsAddress": "0x00000001405428B0",
-          "windowsName": "sub_1405428B0",
+          "windowsName": "Client__Game__Object__TreasureManager__GetTreasureFromEntityId",
           "rootReferences": [
             "Client__Game__Network__Packet__OnLootItems",
             "Client__Game__Network__Packet__OnOpenTreasure",
@@ -1003,8 +1003,8 @@
             "Client__Game__Network__Packet__TreasureFadeOut"
           ],
           "totalCallers": 6,
-          "autoNamed": true,
-          "priority": 425
+          "autoNamed": false,
+          "priority": 400
         },
         {
           "windowsAddress": "0x0000000140009860",
@@ -1039,18 +1039,6 @@
             "Client__Info__InfoPacket__MarketStorageUpdate"
           ],
           "totalCallers": 2726,
-          "autoNamed": true,
-          "priority": 325
-        },
-        {
-          "windowsAddress": "0x0000000140046470",
-          "windowsName": "sub_140046470",
-          "rootReferences": [
-            "Client__Info__InfoPacket__BuyMarketRetainerResult",
-            "Client__Info__InfoPacket__ItemSearchResult",
-            "Client__Info__InfoPacket__MarketRetainerUpdate"
-          ],
-          "totalCallers": 17,
           "autoNamed": true,
           "priority": 325
         },
@@ -1139,6 +1127,18 @@
           "priority": 325
         },
         {
+          "windowsAddress": "0x0000000140046470",
+          "windowsName": "Client__UI__Info__InfoModule__PrintError",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__ItemSearchResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate"
+          ],
+          "totalCallers": 17,
+          "autoNamed": false,
+          "priority": 300
+        },
+        {
           "windowsAddress": "0x00000001409ED5D0",
           "windowsName": "sub_1409ED5D0",
           "rootReferences": [
@@ -1181,86 +1181,6 @@
           "totalCallers": 919,
           "autoNamed": true,
           "priority": 225
-        },
-        {
-          "windowsAddress": "0x0000000140037A80",
-          "windowsName": "sub_140037A80",
-          "rootReferences": [
-            "Client__Info__InfoPacket__GetRetainerSalesHistoryResult"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x0000000140037B00",
-          "windowsName": "nullsub_14",
-          "rootReferences": [
-            "Client__Info__InfoPacket__MarketStorageUpdate"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x0000000140037CA0",
-          "windowsName": "sub_140037CA0",
-          "rootReferences": [
-            "Client__Info__InfoPacket__GetRetainerListResult"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x0000000140037DB0",
-          "windowsName": "sub_140037DB0",
-          "rootReferences": [
-            "Client__Info__InfoPacket__MarketRetainerUpdate"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x00000001400464C0",
-          "windowsName": "sub_1400464C0",
-          "rootReferences": [
-            "Client__Info__InfoPacket__BuyMarketRetainerResult"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014004C3F0",
-          "windowsName": "sub_14004C3F0",
-          "rootReferences": [
-            "Client__Info__InfoPacket__ItemSearchResult"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014004C6C0",
-          "windowsName": "sub_14004C6C0",
-          "rootReferences": [
-            "Client__Info__InfoPacket__GetItemHistoryResult"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014004C710",
-          "windowsName": "sub_14004C710",
-          "rootReferences": [
-            "Client__Info__InfoPacket__BuyMarketRetainerResult"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
         },
         {
           "windowsAddress": "0x00000001404D0800",
@@ -1663,6 +1583,86 @@
           "priority": 125
         },
         {
+          "windowsAddress": "0x0000000140037A80",
+          "windowsName": "Client__UI__Info__InfoProxyItemSearch__SetRetainerSalesHistory",
+          "rootReferences": [
+            "Client__Info__InfoPacket__GetRetainerSalesHistoryResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140037B00",
+          "windowsName": "Client__UI__Info__InfoProxyItemSearch__MarketCallback",
+          "rootReferences": [
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140037CA0",
+          "windowsName": "Client__UI__Info__InfoProxyItemSearch__SetRetainerDataList",
+          "rootReferences": [
+            "Client__Info__InfoPacket__GetRetainerListResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140037DB0",
+          "windowsName": "Client__UI__Info__InfoProxyItemSearch__SetRetainerData",
+          "rootReferences": [
+            "Client__Info__InfoPacket__MarketRetainerUpdate"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001400464C0",
+          "windowsName": "Client__UI__Info__InfoModule__PrintErrorWithParam",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014004C3F0",
+          "windowsName": "Client__UI__Info__InfoProxyItemSearch__RequestResult",
+          "rootReferences": [
+            "Client__Info__InfoPacket__ItemSearchResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014004C6C0",
+          "windowsName": "Client__UI__Info__InfoProxyItemSearch__SetItemHistory",
+          "rootReferences": [
+            "Client__Info__InfoPacket__GetItemHistoryResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x000000014004C710",
+          "windowsName": "Client__UI__Info__InfoProxyItemSearch__MarketBuyResult",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
           "windowsAddress": "0x0000000140CC7090",
           "windowsName": "Client__Game__Network__Packet__ReceiveRetainerPackets_Impl",
           "rootReferences": [
@@ -1706,7 +1706,7 @@
       "summary": {
         "roots": 28,
         "directCallees": 72,
-        "autoNamedCallees": 66
+        "autoNamedCallees": 55
       }
     }
   ]

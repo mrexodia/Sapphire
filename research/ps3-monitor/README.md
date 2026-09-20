@@ -65,7 +65,8 @@ python research/ps3-monitor/build_packet_catalog.py --check
 See [`OVERNIGHT_RESULTS.md`](OVERNIGHT_RESULTS.md) for the full results and
 [`COMPLETION_AUDIT.md`](COMPLETION_AUDIT.md) for the requirement-to-evidence
 checklist. Approved names and repeatable comments have been applied to the
-local Windows IDB.
+local Windows IDB. The downstream readability pass extends this to 240
+PS3-linked functions and 17 Windows-semantic/supporting functions.
 Confirmed Windows functions link back to PS3 counterparts with comments such as
 `PS3 Monitor: idb://ffxivgame.ppu.elf.i64:002F85C8`.
 
@@ -74,22 +75,25 @@ The detailed execution plan and pasteable persistent goal remain in
 
 ## Windows IDB readability
 
-The first semantic-island readability pass is documented in
+The semantic-island readability work is documented in
 [`READABILITY_RESULTS.md`](READABILITY_RESULTS.md). It adds generated opcode and
-IPC types, 31 conservative Windows-known-field packet views, types 38 functions
-and four globals, comments 309 dispatcher case addresses, and exports quest/leve
-and retainer/inventory call-graph queues. `build_readability_plan.py` generates
-the auditable plan/header, while `ida_apply_readability.py` applies or verifies
-the changes in the Windows IDB.
+IPC types, 31 conservative Windows-known-field packet views, 42 concrete local
+types, 67 typed functions, four typed globals, one additional named global, and
+comments on 309 dispatcher case addresses. It also resolves
+`InfoModule::GetProxy`, `TreasureManager::GetTreasureFromEntityId`, the
+quest/leve EventFramework notification family, and the shared item-fragment
+assembler layouts. `build_readability_plan.py` generates the auditable
+plan/header, while `ida_apply_readability.py` applies or verifies the changes in
+the Windows IDB.
 
 ## Next iteration
 
-1. Resolve the receiver class behind `0x140032C30`, the indexed proxy accessor
-   shared by eight retainer/market information handlers.
-2. Identify the exact GameObjectManager role of `0x1405428B0` and recover the
-   quest/EventFramework notification family around `0x140657ED0`–`0x14066B2A0`.
-3. Recover the item packet-assembler context-node type used by all four typed
-   retainer/market/item implementations.
+1. Resolve the remaining virtual InfoProxyItemSearch result-list method and
+   recover a conservative concrete proxy layout.
+2. Recover Treasure/static-object class members downstream of the confirmed
+   `TreasureManager::GetTreasureFromEntityId` lookup.
+3. Type the EventFramework event-handler container and packet-family-specific
+   item-assembly fragment payloads.
 4. Normalize and export outbound Zone/Chat DWARF packet types.
 5. Fully validate Windows layouts before promoting any of the 99 missing
    Sapphire declarations, and retain the `0x030C`/`0x0338` conflicts until

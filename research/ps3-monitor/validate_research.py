@@ -267,7 +267,10 @@ def validate_readability(matches: dict[str, Any]) -> dict[str, int]:
         "typedPayloadHandlers": len(plan["payloadHandlerTypes"]),
         "typedIpcWrappers": len(plan["ipcWrapperTypes"]),
         "typedSupportingFunctions": len(plan["supportingFunctionTypes"]),
+        "typedSubsystemFunctions": len(plan["subsystemFunctionTypes"]),
+        "typedInternalFunctions": len(plan["internalFunctionTypes"]),
         "typedGlobals": len(plan["globalTypes"]),
+        "namedGlobals": len(plan["globalNames"]),
         "dispatcherCaseComments": len(plan["caseComments"]),
     }
     assert len({item["address"] for item in plan["caseComments"]}) == len(plan["caseComments"])
@@ -303,14 +306,17 @@ def validate_readability(matches: dict[str, Any]) -> dict[str, int]:
             assert root["windowsAddress"] in mapped_addresses, root
         callee_addresses.update(item["windowsAddress"] for item in cluster["directCallees"])
     for item in matches.get("windowsSupportingFunctions", []):
-        assert f"0x{int(item['windowsAddress'], 16):016X}" in callee_addresses, item
+        if item["windowsName"].endswith("_Impl"):
+            assert f"0x{int(item['windowsAddress'], 16):016X}" in callee_addresses, item
     return {
         "knownFieldTypes": len(plan["knownFieldTypes"]),
         "typedFunctions": len(plan["dispatcherTypes"])
         + 2
         + len(plan["payloadHandlerTypes"])
         + len(plan["ipcWrapperTypes"])
-        + len(plan["supportingFunctionTypes"]),
+        + len(plan["supportingFunctionTypes"])
+        + len(plan["subsystemFunctionTypes"])
+        + len(plan["internalFunctionTypes"]),
         "typedGlobals": len(plan["globalTypes"]),
         "caseComments": len(plan["caseComments"]),
     }

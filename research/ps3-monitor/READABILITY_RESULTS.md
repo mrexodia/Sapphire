@@ -11,12 +11,13 @@ Applied and verified:
 
 | Improvement | Count |
 | --- | ---: |
-| Concrete local types | 37 |
-| Typed functions | 38 |
-| Typed/named globals | 4 |
+| Concrete local types | 42 |
+| Typed functions | 67 |
+| Typed globals | 4 |
+| Additional named globals | 1 |
 | Dispatcher case-address comments | 309 |
-| PS3-linked Windows names/comments | 214 |
-| Windows-semantic/supporting names/comments without PS3 links | 14 |
+| PS3-linked Windows names/comments | 240 |
+| Windows-semantic/supporting names/comments without PS3 links | 17 |
 
 The 309 comments cover all explicit Windows dispatcher cases that have distinct
 ctree case addresses; fall-through cases sharing an address are grouped in one
@@ -62,30 +63,74 @@ Handlers whose dispatchers extract individual fields, such as the quest and
 daily-quest SyncTag family, were intentionally not assigned a whole-packet
 pointer type.
 
-## Framework and inventory semantic islands
+## Framework, information-proxy, and treasure semantic islands
 
-Two supporting functions were linked directly to PS3 DWARF identities:
+Four high-leverage accessors/lookups are linked directly to PS3 DWARF identities:
 
 - Windows `0x140013960` ↔ PS3 `0x00017A78`:
   `Client::System::Framework::Framework::GetUIModule`
 - Windows `0x1406044E0` ↔ PS3 `0x00A516F4`:
   `Client::Game::Event::EventFramework::GetInstance`
+- Windows `0x140032C30` ↔ PS3 `0x0024059C`:
+  `Client::UI::Info::InfoModule::GetProxy`
+- Windows `0x1405428B0` ↔ PS3 `0x0098829C`:
+  `Client::Game::Object::TreasureManager::GetTreasureFromEntityId`
 
-The first is especially high leverage: it has roughly 1,500 callers and now
-returns `Win335_UIModule *` rather than an untyped integer. Its Framework global
-and the EventFramework singleton global are also named and typed.
+`InfoModule::GetProxy` is confirmed by the same indexed proxy-array access and
+by eight matched retainer/market handlers using the same proxy IDs. Its partial
+receiver type turns the body into `self->proxies[proxyId]`. Nine downstream
+InfoModule/InfoProxyItemSearch methods are also linked and typed: request
+result, retainer-list and singular-retainer updates, market-buy result, market
+callback, item and retainer sales history, and both error-printer overloads.
+Their matched callers now decompile as a coherent proxy-ID-9 path instead of
+untyped calls.
+
+The TreasureManager match is anchored by both object-table loops, entity-ID
+comparison, object-kind 4 check, and the same matched treasure callers. Its
+global receiver is named without asserting an unproven complete class layout.
+
+The Framework accessor remains especially high leverage: it has roughly 1,500
+callers and returns `Win335_UIModule *` rather than an untyped integer. Its
+Framework global and the EventFramework singleton global are also named and
+typed.
+
+## Quest and leve notifications
+
+Fifteen downstream SyncTag/EventFramework boundaries are now PS3-linked and
+typed, including:
+
+- quest-array initialization and `OnSyncQuest`;
+- quest-completion initialization and incremental synchronization;
+- bulk and singular daily-quest synchronization;
+- repeat-flag initialization, bulk synchronization, and singular updates;
+- guildleve initialization and `OnSyncGuildleve`;
+- leve-completion initialization and incremental synchronization.
+
+The three Windows leve initialization/completion notifications at
+`0x140604600`–`0x140604620` are dedicated no-ops in 3.x. They are still mapped
+because their unique matched callers preserve the source-level method
+boundaries. `Win335_QuestWork_KnownFields` and
+`Win335_LeveWork_KnownFields` expose only the Windows-confirmed IDs and quest
+sequence byte.
+
+## Inventory fragment assembler
 
 The retainer, market-price, item-operation, and item-storage wrappers and their
 four downstream implementations now use:
 
-- `Win335_ZoneIpcPacket *`;
-- symbolic packet opcodes;
+- `Win335_ZoneIpcPacket *` and symbolic packet opcodes;
 - `targetActorId` argument names;
-- a partial `Win335_ItemPacketAssembler` with its proven context-list member;
+- typed `Win335_ItemPacketAssembler`, `Win335_ItemAssemblyContext`, and
+  `Win335_ItemAssemblyFragment` links;
+- named acquire, append, and release helpers;
+- named fields for the free/active lists, fragment links, target actor ID,
+  received count, and expected count;
 - a typed/named StorageManager singleton.
 
-These implementation names remain explicitly Windows-supporting labels and do
-not claim PS3 function equivalence.
+The three assembler-helper names remain explicitly Windows-supporting labels
+and do not claim PS3 equivalence. Their structures are based on complete Windows
+access evidence through offsets `+0x40` (assembler), `+0x38` (context), and
+`+0x60` (fragment); unknown fields remain byte arrays.
 
 ## Subsystem expansion queue
 
@@ -94,23 +139,21 @@ semantic islands:
 
 | Cluster | Root functions | Direct callees | Still auto-named |
 | --- | ---: | ---: | ---: |
-| Quest/leve | 14 | 34 | 28 |
-| Retainer/inventory | 28 | 72 | 66 |
+| Quest/leve | 14 | 34 | 17 |
+| Retainer/inventory | 28 | 72 | 55 |
 
-The priority score is triage only. The strongest next review targets are:
+The priority score is triage only. The strongest next review targets are now:
 
-1. `0x140032C30`, used by eight retainer/market information handlers, likely an
-   indexed information-proxy accessor; its receiver class must be established
-   before naming it.
-2. `0x1405428B0`, shared by four treasure handlers and behaving as an actor/game
-   object lookup; the exact GameObjectManager role needs a stronger cross-build
-   anchor.
-3. Quest/EventFramework notification functions around `0x140657ED0`,
-   `0x140657FD0`, and `0x14066B1C0`–`0x14066B2A0`; their side effects are clear,
-   but exact source-level method identities remain unproven.
-4. The item packet-assembler context records reached through offset `+0x38`;
-   recovering that node type would improve all four inventory-family
-   implementations simultaneously.
+1. Resolve the remaining virtual InfoProxyItemSearch method at vtable slot
+   `+0x50` used by `GetItemSearchListResult`, and recover a conservative concrete
+   receiver layout for the proxy.
+2. Identify the static/stand object manager accessors and Treasure methods used
+   after `TreasureManager::GetTreasureFromEntityId`.
+3. Recover the shared EventFramework initialization implementation at
+   `0x1406604E0`, quest-update helper at `0x14065FF10`, and event-handler
+   container rooted at EventFramework `+0x58`.
+4. Type the packet-family-specific 0x50-byte fragment payload variants and the
+   StorageManager commit methods reached by the four assembler implementations.
 
 ## Reproduction
 

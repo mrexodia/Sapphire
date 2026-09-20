@@ -262,9 +262,49 @@ def build() -> tuple[str, dict[str, Any]]:
         "struct Win335_Framework;\n",
         "struct Win335_UIModule;\n",
         "struct Win335_StorageManager;\n",
+        "struct Win335_InfoProxyInterface;\n",
+        "struct Win335_InfoProxyItemSearch;\n",
+        "struct Win335_Treasure;\n",
+        "struct Win335_TreasureManager;\n",
+        "struct Win335_InfoModule\n{\n"
+        "  void *vftable;\n"
+        "  Win335_InfoProxyInterface *proxies[1]; // indexed array; one-element declaration does not assert the trailing class size\n"
+        "};\n",
+        "struct Win335_QuestWork_KnownFields\n{\n"
+        "  unsigned __int8 _unknown_0000[0x8];\n"
+        "  unsigned __int16 questId;\n"
+        "  unsigned __int8 sequence;\n"
+        "};\n",
+        "struct Win335_LeveWork_KnownFields\n{\n"
+        "  unsigned __int8 _unknown_0000[0x8];\n"
+        "  unsigned __int16 leveId;\n"
+        "};\n",
+        "struct Win335_ItemAssemblyFragment\n{\n"
+        "  unsigned __int8 _unknown_0000[0x8];\n"
+        "  unsigned __int8 payload[0x50];\n"
+        "  Win335_ItemAssemblyFragment *previous;\n"
+        "  Win335_ItemAssemblyFragment *next;\n"
+        "};\n",
+        "struct Win335_ItemAssemblyContext\n{\n"
+        "  unsigned __int8 _unknown_0000[0x10];\n"
+        "  unsigned __int32 targetActorId;\n"
+        "  unsigned __int8 _unknown_0014[0x4];\n"
+        "  Win335_ItemAssemblyFragment *firstFragment;\n"
+        "  Win335_ItemAssemblyFragment *lastFragment;\n"
+        "  unsigned __int32 receivedFragmentCount;\n"
+        "  signed __int32 expectedFragmentCount;\n"
+        "  Win335_ItemAssemblyContext *previous;\n"
+        "  Win335_ItemAssemblyContext *next;\n"
+        "};\n",
         "struct Win335_ItemPacketAssembler\n{\n"
-        "  unsigned __int8 _unknown_0000[0x38];\n"
-        "  void *contextList;\n"
+        "  unsigned __int8 _unknown_0000[0x10];\n"
+        "  Win335_ItemAssemblyFragment *freeFragmentHead;\n"
+        "  Win335_ItemAssemblyFragment *freeFragmentTail;\n"
+        "  unsigned __int8 _unknown_0020[0x8];\n"
+        "  Win335_ItemAssemblyContext *freeContextHead;\n"
+        "  Win335_ItemAssemblyContext *freeContextTail;\n"
+        "  Win335_ItemAssemblyContext *activeContextHead;\n"
+        "  Win335_ItemAssemblyContext *activeContextTail;\n"
         "};\n",
     ]
 
@@ -381,6 +421,127 @@ def build() -> tuple[str, dict[str, Any]]:
             }
         )
 
+    subsystem_function_types = [
+        {
+            "address": "0x140032C30",
+            "declaration": "Win335_InfoProxyInterface *__fastcall Client__UI__Info__InfoModule__GetProxy(Win335_InfoModule *self, unsigned __int32 proxyId)",
+        },
+        {
+            "address": "0x1405428B0",
+            "declaration": "Win335_Treasure *__fastcall Client__Game__Object__TreasureManager__GetTreasureFromEntityId(const Win335_TreasureManager *self, unsigned __int32 entityId)",
+        },
+        {
+            "address": "0x14066B1C0",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnQuestsInitialized(Win335_EventFramework *self)",
+        },
+        {
+            "address": "0x1406A8970",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnSyncQuest(Win335_EventFramework *self, const Win335_QuestWork_KnownFields *newWork, const Win335_QuestWork_KnownFields *oldWork, unsigned __int16 workIndex)",
+        },
+        {
+            "address": "0x14066B230",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnQuestCompleteFlagsInitialized(Win335_EventFramework *self)",
+        },
+        {
+            "address": "0x14066B240",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnSyncQuestComplete(Win335_EventFramework *self, unsigned __int16 questId, unsigned __int8 completed, unsigned __int8 update)",
+        },
+        {
+            "address": "0x14066B280",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnDailyQuestsInitialized(Win335_EventFramework *self)",
+        },
+        {
+            "address": "0x140657ED0",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnSyncDailyQuests(Win335_EventFramework *self, unsigned __int8 update)",
+        },
+        {
+            "address": "0x140657FD0",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnSyncDailyQuest(Win335_EventFramework *self, unsigned __int8 update)",
+        },
+        {
+            "address": "0x14066B290",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnQuestRepeatFlagsInitialized(Win335_EventFramework *self)",
+        },
+        {
+            "address": "0x14066B2A0",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnSyncQuestRepeatFlags(Win335_EventFramework *self, unsigned __int8 update)",
+        },
+        {
+            "address": "0x14065FD10",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnSyncQuestRepeatFlag(Win335_EventFramework *self, unsigned __int8 flagId, unsigned __int8 value, unsigned __int8 update)",
+        },
+        {
+            "address": "0x140CC2630",
+            "declaration": "void __fastcall Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlag(unsigned __int8 flagId, unsigned __int8 value, unsigned __int8 update)",
+        },
+        {
+            "address": "0x140604600",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnGuildlevesInitialized(Win335_EventFramework *self)",
+        },
+        {
+            "address": "0x1406B4400",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnSyncGuildleve(Win335_EventFramework *self, const Win335_LeveWork_KnownFields *newWork, const Win335_LeveWork_KnownFields *oldWork, unsigned __int16 workIndex)",
+        },
+        {
+            "address": "0x140604610",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnLeveCompleteFlagsInitialized(Win335_EventFramework *self)",
+        },
+        {
+            "address": "0x140604620",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__OnSyncLeveComplete(Win335_EventFramework *self, unsigned __int16 leveId)",
+        },
+        {
+            "address": "0x14004C3F0",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__RequestResult(Win335_InfoProxyItemSearch *self, unsigned __int32 catalogId, unsigned __int8 subQuality, unsigned __int8 materiaCount, unsigned __int8 count, unsigned __int32 result)",
+        },
+        {
+            "address": "0x140037CA0",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__SetRetainerDataList(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count)",
+        },
+        {
+            "address": "0x14004C710",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__MarketBuyResult(Win335_InfoProxyItemSearch *self, unsigned __int32 catalogId, unsigned __int32 result)",
+        },
+        {
+            "address": "0x140037B00",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__MarketCallback(Win335_InfoProxyItemSearch *self, unsigned __int8 type)",
+        },
+        {
+            "address": "0x14004C6C0",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__SetItemHistory(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count)",
+        },
+        {
+            "address": "0x140037A80",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__SetRetainerSalesHistory(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count)",
+        },
+        {
+            "address": "0x140037DB0",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__SetRetainerData(Win335_InfoProxyItemSearch *self, unsigned __int64 retainerId, unsigned __int8 registerMarket, unsigned __int8 isMarket)",
+        },
+        {
+            "address": "0x140046470",
+            "declaration": "void __fastcall Client__UI__Info__InfoModule__PrintError(Win335_InfoModule *self, unsigned __int32 infoCode)",
+        },
+        {
+            "address": "0x1400464C0",
+            "declaration": "void __fastcall Client__UI__Info__InfoModule__PrintErrorWithParam(Win335_InfoModule *self, unsigned __int32 infoCode, unsigned __int32 parameter)",
+        },
+    ]
+    internal_function_types = [
+        {
+            "address": "0x140CC67D0",
+            "declaration": "Win335_ItemAssemblyContext *__fastcall Win335_ItemPacketAssembler__AcquireContext(Win335_ItemPacketAssembler *self, unsigned __int32 targetActorId)",
+        },
+        {
+            "address": "0x140CC2070",
+            "declaration": "Win335_ItemAssemblyFragment *__fastcall Win335_ItemPacketAssembler__AppendFragment(Win335_ItemPacketAssembler *self, Win335_ItemAssemblyContext *context, const void *payload)",
+        },
+        {
+            "address": "0x140CC6860",
+            "declaration": "void __fastcall Win335_ItemPacketAssembler__ReleaseContext(Win335_ItemPacketAssembler *self, Win335_ItemAssemblyContext *context)",
+        },
+    ]
+
     plan = {
         "schemaVersion": 1,
         "policy": "Only Windows-confirmed fields are emitted. Unknown gaps remain byte arrays; no PS3-only trailing size is asserted.",
@@ -390,7 +551,10 @@ def build() -> tuple[str, dict[str, Any]]:
             "typedPayloadHandlers": len(payload_handlers),
             "typedIpcWrappers": len(ipc_wrapper_types),
             "typedSupportingFunctions": len(supporting_types),
+            "typedSubsystemFunctions": len(subsystem_function_types),
+            "typedInternalFunctions": len(internal_function_types),
             "typedGlobals": 4,
+            "namedGlobals": 1,
             "dispatcherCaseComments": len(case_comments),
         },
         "dispatcherTypes": [
@@ -419,6 +583,8 @@ def build() -> tuple[str, dict[str, Any]]:
         "payloadHandlerTypes": payload_handlers,
         "ipcWrapperTypes": ipc_wrapper_types,
         "supportingFunctionTypes": supporting_types,
+        "subsystemFunctionTypes": subsystem_function_types,
+        "internalFunctionTypes": internal_function_types,
         "globalTypes": [
             {
                 "address": "0x1415E9400",
@@ -443,6 +609,13 @@ def build() -> tuple[str, dict[str, Any]]:
                 "name": "Client__Game__Item__StorageManager__s_instance",
                 "declaration": "Win335_StorageManager *Client__Game__Item__StorageManager__s_instance",
                 "evidence": "Receiver passed to independently named StorageManager packet handlers and item commits.",
+            },
+        ],
+        "globalNames": [
+            {
+                "address": "0x1417A4AA8",
+                "name": "Client__Game__Object__gTreasureManager",
+                "evidence": "Receiver passed to the PS3-linked TreasureManager entity-ID lookup by treasure packet handlers.",
             },
         ],
         "knownFieldTypes": type_records,

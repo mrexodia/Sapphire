@@ -8,6 +8,19 @@ from pathlib import Path
 from typing import Any
 
 MARKER = "Sapphire packet cases (Windows 2016.07.05):"
+BASE_TYPE_NAMES = [
+    "Win335_ZoneDownOpcode",
+    "Win335_ChatDownOpcode",
+    "Win335_ZoneIpcPacket",
+    "Win335_ChatIpcPacket",
+    "Win335_PacketDispatcher",
+    "Win335_InfoModule",
+    "Win335_QuestWork_KnownFields",
+    "Win335_LeveWork_KnownFields",
+    "Win335_ItemAssemblyFragment",
+    "Win335_ItemAssemblyContext",
+    "Win335_ItemPacketAssembler",
+]
 
 
 def _load(root: str | Path) -> tuple[str, dict[str, Any]]:
@@ -54,7 +67,7 @@ def apply_readability(db: Any, root: str | Path) -> dict[str, Any]:
     if parse_errors:
         failures.append({"kind": "type declarations", "parseErrors": parse_errors})
     else:
-        applied["types"] = 6 + len(plan["knownFieldTypes"])
+        applied["types"] = len(BASE_TYPE_NAMES) + len(plan["knownFieldTypes"])
 
     definite = ida_domain.types.TypeApplyFlags.DEFINITE
     fixed_function_types = (
@@ -62,6 +75,8 @@ def apply_readability(db: Any, root: str | Path) -> dict[str, Any]:
         + [plan["eventFrameworkType"], plan["frameworkUiModuleType"]]
         + plan.get("ipcWrapperTypes", [])
         + plan.get("supportingFunctionTypes", [])
+        + plan.get("subsystemFunctionTypes", [])
+        + plan.get("internalFunctionTypes", [])
     )
     for entry in fixed_function_types:
         address = int(entry["address"], 16)
@@ -106,6 +121,13 @@ def apply_readability(db: Any, root: str | Path) -> dict[str, Any]:
                 }
             )
 
+    for entry in plan.get("globalNames", []):
+        address = int(entry["address"], 16)
+        if not db.names.set_name(address, entry["name"]):
+            failures.append(
+                {"kind": "global name", "address": entry["address"], "error": "rejected"}
+            )
+
     for entry in plan.get("globalTypes", []):
         address = int(entry["address"], 16)
         name_ok = db.names.set_name(address, entry["name"])
@@ -137,6 +159,27 @@ def apply_readability(db: Any, root: str | Path) -> dict[str, Any]:
                 {"kind": "case comment", "address": entry["address"], "error": "rejected"}
             )
 
+    # Type changes do not reliably invalidate already cached caller pseudocode.
+    # Flush the typed functions and their direct callers so new names, argument
+    # types, and recovered member accesses are visible on the next decompilation.
+    try:
+        import ida_hexrays
+
+        dirty: set[int] = set()
+        typed_entries = list(fixed_function_types) + list(plan["payloadHandlerTypes"])
+        for entry in typed_entries:
+            address = int(entry.get("address", entry.get("windowsAddress")), 16)
+            dirty.add(address)
+            function = db.functions.get_at(address)
+            if function is not None:
+                dirty.update(caller.start_ea for caller in db.functions.get_callers(function))
+        applied["cacheInvalidations"] = sum(
+            bool(ida_hexrays.mark_cfunc_dirty(address, False)) for address in dirty
+        )
+    except (ImportError, AttributeError):
+        # Host-side inspection can import this module without an IDA GUI.
+        applied["cacheInvalidations"] = 0
+
     return {"applied": applied, "failures": failures, "ok": not failures}
 
 
@@ -144,14 +187,7 @@ def verify_readability(db: Any, root: str | Path) -> dict[str, Any]:
     _, plan = _load(root)
     failures: list[dict[str, Any]] = []
 
-    type_names = [
-        "Win335_ZoneDownOpcode",
-        "Win335_ChatDownOpcode",
-        "Win335_ZoneIpcPacket",
-        "Win335_ChatIpcPacket",
-        "Win335_PacketDispatcher",
-        "Win335_ItemPacketAssembler",
-    ] + [entry["typeName"] for entry in plan["knownFieldTypes"]]
+    type_names = BASE_TYPE_NAMES + [entry["typeName"] for entry in plan["knownFieldTypes"]]
     for name in type_names:
         if db.types.get_by_name(name) is None:
             failures.append({"kind": "missing type", "name": name})
@@ -201,6 +237,20 @@ def verify_readability(db: Any, root: str | Path) -> dict[str, Any]:
                 }
             )
 
+    for entry in plan.get("subsystemFunctionTypes", []) + plan.get("internalFunctionTypes", []):
+        function = db.functions.get_at(int(entry["address"], 16))
+        signature = str(db.functions.get_signature(function) or "")
+        required = [name for name in type_names if name in entry["declaration"]]
+        if not signature or any(name not in signature for name in required):
+            failures.append(
+                {
+                    "kind": "subsystem/internal type mismatch",
+                    "address": entry["address"],
+                    "requiredTypes": required,
+                    "signature": signature,
+                }
+            )
+
     framework_ui = plan["frameworkUiModuleType"]
     framework_ui_function = db.functions.get_at(int(framework_ui["address"], 16))
     framework_ui_signature = str(db.functions.get_signature(framework_ui_function) or "")
@@ -238,6 +288,19 @@ def verify_readability(db: Any, root: str | Path) -> dict[str, Any]:
                 }
             )
 
+    for entry in plan.get("globalNames", []):
+        address = int(entry["address"], 16)
+        actual_name = db.names.get_at(address)
+        if actual_name != entry["name"]:
+            failures.append(
+                {
+                    "kind": "global name mismatch",
+                    "address": entry["address"],
+                    "expectedName": entry["name"],
+                    "actualName": actual_name,
+                }
+            )
+
     for entry in plan.get("globalTypes", []):
         address = int(entry["address"], 16)
         actual_name = db.names.get_at(address)
@@ -268,8 +331,11 @@ def verify_readability(db: Any, root: str | Path) -> dict[str, Any]:
             + 2
             + len(plan.get("ipcWrapperTypes", []))
             + len(plan.get("supportingFunctionTypes", []))
+            + len(plan.get("subsystemFunctionTypes", []))
+            + len(plan.get("internalFunctionTypes", []))
             + len(plan["payloadHandlerTypes"]),
             "globalTypes": len(plan.get("globalTypes", [])),
+            "globalNames": len(plan.get("globalNames", [])),
             "caseComments": len(plan["caseComments"]),
         },
         "failures": failures,
