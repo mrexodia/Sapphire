@@ -57,12 +57,13 @@ The mapping ledger is `packet_matches.json`. `ida_apply_matches.py` can apply or
 verify the names and comments. A verification pass checked all 206 entries with
 zero failures after saving `E:/Sapphire/game/ffxiv_dx11.exe.i64`.
 
-Five obviously unrelated pre-existing names were replaced after the dispatcher
+Six obviously unrelated pre-existing names were replaced after the dispatcher
 and semantic evidence proved the packet roles:
 
 - Windows `0x140CBE880`: `ReceiveMapMarker`
 - Windows `0x140CBE8B0`: `ReceiveFatePcWork`
 - Windows `0x140CBE8F0`: `ReceiveFateAccessCollectionEventObject`
+- Windows `0x140CBE920`: `ReceiveSyncFateLimitTime`
 - Windows `0x140CC1330`: `OnMIPMemberList`
 - Windows `0x140CC9600`: `Order`
 
