@@ -44,14 +44,16 @@ Raw function size and CFG similarity are not sufficient across PPC64 and x64.
 ## Current coverage
 
 The exhaustive pass records 285 PS3 and 355 Windows zone-down opcodes plus both
-chat-down dispatchers. It confirms 179 packet-handler pairs, reviews 95
-additional same-opcode relationships, and leaves no unreviewed candidate in the
-generated ranking. The 74 probable relationships are retained without
-authoritative names because they involve shared or merged handlers.
+chat-down dispatchers. It confirms 190 packet-handler function pairs covering
+233 opcode cases, reviews 41 additional same-opcode relationships, and leaves
+no unreviewed candidate in the generated ranking. Eleven exact shared-handler
+mappings preserve 54 many-opcode/one-function relationships without inventing
+separate functions. The remaining 20 probable relationships are retained
+without authoritative names.
 
 See `packet_matches.json` for confirmed addresses and evidence,
 `dispatcher_cases.json` for complete case coverage, `packet_structures.json` for
-179 PS3 DWARF layouts and Windows/Sapphire comparisons, and
+233 PS3 DWARF layouts and Windows/Sapphire comparisons, and
 [`OVERNIGHT_RESULTS.md`](OVERNIGHT_RESULTS.md) for the results, and
 [`COMPLETION_AUDIT.md`](COMPLETION_AUDIT.md) for the requirement-to-evidence
 checklist. Approved names and repeatable comments have been applied to the

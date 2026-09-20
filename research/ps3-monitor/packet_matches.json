@@ -2908,5 +2908,313 @@
         "Both install adjacent Zone and Chat callback-interface vtables."
       ]
     }
+  ],
+  "sharedMatches": [
+    {
+      "opcodes": [
+        "0x012D",
+        "0x012E",
+        "0x012F",
+        "0x0130"
+      ],
+      "packets": [
+        "SyncTag32",
+        "SyncTag64",
+        "SyncTag128",
+        "SyncTag256"
+      ],
+      "ps3Address": "0x00AE7E88",
+      "ps3Name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag",
+      "windowsAddress": "0x140CC2270",
+      "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveSyncTag",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE7E88",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x0143",
+        "0x0144"
+      ],
+      "packets": [
+        "OrderMySelf",
+        "OrderTarget"
+      ],
+      "ps3Address": "0x00AE9C48",
+      "ps3Name": "Client::Game::Network::Packet::Order",
+      "windowsAddress": "0x140CC9600",
+      "windowsName": "Client__Game__Network__Packet__Order",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE9C48",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x01C3",
+        "0x01C4",
+        "0x01C5",
+        "0x01C6",
+        "0x01C7",
+        "0x01C8",
+        "0x01C9",
+        "0x01CA"
+      ],
+      "packets": [
+        "EventPlay2",
+        "EventPlay4",
+        "EventPlay8",
+        "EventPlay16",
+        "EventPlay32",
+        "EventPlay64",
+        "EventPlay128",
+        "EventPlay255"
+      ],
+      "ps3Address": "0x00ADC454",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceivePlayEventScene",
+      "windowsAddress": "0x140CC3140",
+      "windowsName": "Client__Game__Network__EventPacket__ReceivePlayEventScene",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC454",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x01CF",
+        "0x01D0",
+        "0x01D1",
+        "0x01D2"
+      ],
+      "packets": [
+        "UpdateEventScene2",
+        "UpdateEventScene4",
+        "UpdateEventScene8",
+        "UpdateEventScene16"
+      ],
+      "ps3Address": "0x00ADC4E4",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene",
+      "windowsAddress": "0x140CBE380",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveUpdateEventScene",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC4E4",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x01D8",
+        "0x01D9",
+        "0x01DA",
+        "0x01DB",
+        "0x01DC",
+        "0x01DD",
+        "0x01DE",
+        "0x01DF"
+      ],
+      "packets": [
+        "ResumeEventScene2",
+        "ResumeEventScene4",
+        "ResumeEventScene8",
+        "ResumeEventScene16",
+        "ResumeEventScene32",
+        "ResumeEventScene64",
+        "ResumeEventScene128",
+        "ResumeEventScene255"
+      ],
+      "ps3Address": "0x00ADC53C",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene",
+      "windowsAddress": "0x140CBE3E0",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveResumeEventScene",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC53C",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x01E9",
+        "0x01EA",
+        "0x01EB",
+        "0x01EC",
+        "0x01ED"
+      ],
+      "packets": [
+        "Notice2",
+        "Notice4",
+        "Notice8",
+        "Notice16",
+        "Notice32"
+      ],
+      "ps3Address": "0x00ADC714",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveNotice",
+      "windowsAddress": "0x140CBE5D0",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveNotice",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC714",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x0259",
+        "0x025A",
+        "0x025B",
+        "0x025C",
+        "0x025D"
+      ],
+      "packets": [
+        "EventLogMessage2",
+        "EventLogMessage4",
+        "EventLogMessage8",
+        "EventLogMessage16",
+        "EventLogMessage32"
+      ],
+      "ps3Address": "0x00ADC8D0",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveLogMessage",
+      "windowsAddress": "0x140CBE7C0",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveLogMessage",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC8D0",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x0263",
+        "0x0264",
+        "0x0265"
+      ],
+      "packets": [
+        "BattleTalk2",
+        "BattleTalk4",
+        "BattleTalk8"
+      ],
+      "ps3Address": "0x00ADC76C",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveBattleTalk",
+      "windowsAddress": "0x140CBE630",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveBattleTalk",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC76C",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x026D",
+        "0x026E",
+        "0x026F",
+        "0x0270",
+        "0x0271",
+        "0x0272",
+        "0x0273"
+      ],
+      "packets": [
+        "MapMarker2",
+        "MapMarker4",
+        "MapMarker8",
+        "MapMarker16",
+        "MapMarker32",
+        "MapMarker64",
+        "MapMarker128"
+      ],
+      "ps3Address": "0x00ADC988",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveMapMarker",
+      "windowsAddress": "0x140CBE880",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveMapMarker",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC988",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x0277",
+        "0x0278",
+        "0x0279"
+      ],
+      "packets": [
+        "BalloonTalk2",
+        "BalloonTalk4",
+        "BalloonTalk8"
+      ],
+      "ps3Address": "0x00ADC7E4",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveBalloonTalk",
+      "windowsAddress": "0x140CBE6C0",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveBalloonTalk",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC7E4",
+      "channel": "zone-down"
+    },
+    {
+      "opcodes": [
+        "0x0290",
+        "0x0291",
+        "0x0292",
+        "0x0293",
+        "0x0294"
+      ],
+      "packets": [
+        "GMOrder2",
+        "GMOrder4",
+        "GMOrder8",
+        "GMOrder16",
+        "GMOrder32"
+      ],
+      "ps3Address": "0x00AE4E90",
+      "ps3Name": "Client::Game::Network::Packet::GMOrder",
+      "windowsAddress": "0x140CC6F40",
+      "windowsName": "Client__Game__Network__Packet__GMOrder",
+      "confidence": "high",
+      "evidence": [
+        "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
+        "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE4E90",
+      "channel": "zone-down"
+    }
   ]
 }

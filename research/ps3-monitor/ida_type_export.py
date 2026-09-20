@@ -9,6 +9,14 @@ TYPE_SUFFIX_OVERRIDES = {
     "RequestItmeResult": "RequestItemResult",
     "Create": "Create",
     "HousingGetHouseBuddyStableListResult": "Housing_GetHouseBuddyStableListResult",
+    "EventPlay2": "PlayEventScene2",
+    "EventPlay4": "PlayEventScene4",
+    "EventPlay8": "PlayEventScene8",
+    "EventPlay16": "PlayEventScene16",
+    "EventPlay32": "PlayEventScene32",
+    "EventPlay64": "PlayEventScene64",
+    "EventPlay128": "PlayEventScene128",
+    "EventPlay255": "PlayEventScene255",
 }
 
 
@@ -18,6 +26,20 @@ def _type_prefix(channel: str) -> str:
     if channel == "zone-down":
         return "Client::Network::Protocol::Zone::ZoneProtoDown"
     raise ValueError(f"unsupported channel: {channel}")
+
+
+def mapping_packet_entries(mapping: dict[str, Any]) -> list[dict[str, Any]]:
+    entries = list(mapping["matches"])
+    for shared in mapping.get("sharedMatches", []):
+        entries.extend(
+            {
+                "channel": shared.get("channel", "zone-down"),
+                "opcode": opcode,
+                "packet": packet,
+            }
+            for opcode, packet in zip(shared["opcodes"], shared["packets"])
+        )
+    return entries
 
 
 def export_confirmed_packet_types(

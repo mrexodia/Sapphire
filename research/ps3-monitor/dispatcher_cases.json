@@ -1387,9 +1387,8 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x012D",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x012D"
         },
         {
           "opcode": "0x012E",
@@ -1410,9 +1409,8 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x012E",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x012E"
         },
         {
           "opcode": "0x012F",
@@ -1433,9 +1431,8 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x012F",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x012F"
         },
         {
           "opcode": "0x0130",
@@ -1456,9 +1453,8 @@
               "name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0130",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0130"
         },
         {
           "opcode": "0x0140",
@@ -1546,9 +1542,8 @@
               "name": "Client::Game::Network::Packet::Order"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0143",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0143"
         },
         {
           "opcode": "0x0144",
@@ -1569,9 +1564,8 @@
               "name": "Client::Game::Network::Packet::Order"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0144",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0144"
         },
         {
           "opcode": "0x0145",
@@ -2729,9 +2723,8 @@
               "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C3",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C3"
         },
         {
           "opcode": "0x01C4",
@@ -2752,9 +2745,8 @@
               "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C4",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C4"
         },
         {
           "opcode": "0x01C5",
@@ -2775,9 +2767,8 @@
               "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C5",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C5"
         },
         {
           "opcode": "0x01C6",
@@ -2798,9 +2789,8 @@
               "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C6",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C6"
         },
         {
           "opcode": "0x01C7",
@@ -2821,9 +2811,8 @@
               "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C7",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C7"
         },
         {
           "opcode": "0x01C8",
@@ -2844,9 +2833,8 @@
               "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C8",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C8"
         },
         {
           "opcode": "0x01C9",
@@ -2867,9 +2855,8 @@
               "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C9",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C9"
         },
         {
           "opcode": "0x01CA",
@@ -2890,9 +2877,8 @@
               "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01CA",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01CA"
         },
         {
           "opcode": "0x01CB",
@@ -2989,9 +2975,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01CF",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01CF"
         },
         {
           "opcode": "0x01D0",
@@ -3012,9 +2997,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D0",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D0"
         },
         {
           "opcode": "0x01D1",
@@ -3035,9 +3019,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D1",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D1"
         },
         {
           "opcode": "0x01D2",
@@ -3058,9 +3041,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D2",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D2"
         },
         {
           "opcode": "0x01D8",
@@ -3081,9 +3063,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D8",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D8"
         },
         {
           "opcode": "0x01D9",
@@ -3104,9 +3085,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D9",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D9"
         },
         {
           "opcode": "0x01DA",
@@ -3127,9 +3107,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DA",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DA"
         },
         {
           "opcode": "0x01DB",
@@ -3150,9 +3129,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DB",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DB"
         },
         {
           "opcode": "0x01DC",
@@ -3173,9 +3151,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DC",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DC"
         },
         {
           "opcode": "0x01DD",
@@ -3196,9 +3173,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DD",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DD"
         },
         {
           "opcode": "0x01DE",
@@ -3219,9 +3195,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DE",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DE"
         },
         {
           "opcode": "0x01DF",
@@ -3242,9 +3217,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DF",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DF"
         },
         {
           "opcode": "0x01E0",
@@ -3473,9 +3447,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveNotice"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01E9",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01E9"
         },
         {
           "opcode": "0x01EA",
@@ -3496,9 +3469,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveNotice"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01EA",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01EA"
         },
         {
           "opcode": "0x01EB",
@@ -3519,9 +3491,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveNotice"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01EB",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01EB"
         },
         {
           "opcode": "0x01EC",
@@ -3542,9 +3513,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveNotice"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01EC",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01EC"
         },
         {
           "opcode": "0x01ED",
@@ -3565,9 +3535,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveNotice"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01ED",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01ED"
         },
         {
           "opcode": "0x01EE",
@@ -4018,9 +3987,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0259",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0259"
         },
         {
           "opcode": "0x025A",
@@ -4041,9 +4009,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x025A",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x025A"
         },
         {
           "opcode": "0x025B",
@@ -4064,9 +4031,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x025B",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x025B"
         },
         {
           "opcode": "0x025C",
@@ -4087,9 +4053,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x025C",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x025C"
         },
         {
           "opcode": "0x025D",
@@ -4110,9 +4075,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x025D",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x025D"
         },
         {
           "opcode": "0x0263",
@@ -4133,9 +4097,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveBattleTalk"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0263",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0263"
         },
         {
           "opcode": "0x0264",
@@ -4156,9 +4119,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveBattleTalk"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0264",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0264"
         },
         {
           "opcode": "0x0265",
@@ -4179,9 +4141,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveBattleTalk"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0265",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0265"
         },
         {
           "opcode": "0x026C",
@@ -4224,9 +4185,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x026D",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x026D"
         },
         {
           "opcode": "0x026E",
@@ -4247,9 +4207,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x026E",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x026E"
         },
         {
           "opcode": "0x026F",
@@ -4270,9 +4229,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x026F",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x026F"
         },
         {
           "opcode": "0x0270",
@@ -4293,9 +4251,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0270",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0270"
         },
         {
           "opcode": "0x0271",
@@ -4316,9 +4273,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0271",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0271"
         },
         {
           "opcode": "0x0272",
@@ -4339,9 +4295,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0272",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0272"
         },
         {
           "opcode": "0x0273",
@@ -4362,9 +4317,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0273",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0273"
         },
         {
           "opcode": "0x0277",
@@ -4410,9 +4364,8 @@
               "name": null
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0277",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0277"
         },
         {
           "opcode": "0x0278",
@@ -4458,9 +4411,8 @@
               "name": null
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0278",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0278"
         },
         {
           "opcode": "0x0279",
@@ -4506,9 +4458,8 @@
               "name": null
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0279",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0279"
         },
         {
           "opcode": "0x0289",
@@ -4639,9 +4590,8 @@
               "name": "Client::Game::Network::Packet::GMOrder"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0290",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0290"
         },
         {
           "opcode": "0x0291",
@@ -4662,9 +4612,8 @@
               "name": "Client::Game::Network::Packet::GMOrder"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0291",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0291"
         },
         {
           "opcode": "0x0292",
@@ -4685,9 +4634,8 @@
               "name": "Client::Game::Network::Packet::GMOrder"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0292",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0292"
         },
         {
           "opcode": "0x0293",
@@ -4708,9 +4656,8 @@
               "name": "Client::Game::Network::Packet::GMOrder"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0293",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0293"
         },
         {
           "opcode": "0x0294",
@@ -4731,9 +4678,8 @@
               "name": "Client::Game::Network::Packet::GMOrder"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0294",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0294"
         },
         {
           "opcode": "0x029E",
@@ -6492,8 +6438,8 @@
           "shared": 9
         },
         "statuses": {
-          "confirmed": 172,
-          "probable": 74,
+          "confirmed": 226,
+          "probable": 20,
           "ps3-only": 18,
           "unresolved": 22
         }
@@ -8007,9 +7953,8 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x012D",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x012D"
         },
         {
           "opcode": "0x012E",
@@ -8030,9 +7975,8 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x012E",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x012E"
         },
         {
           "opcode": "0x012F",
@@ -8053,9 +7997,8 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x012F",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x012F"
         },
         {
           "opcode": "0x0130",
@@ -8076,9 +8019,8 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0130",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0130"
         },
         {
           "opcode": "0x0132",
@@ -8286,9 +8228,8 @@
               "name": "packetparser"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0143",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0143"
         },
         {
           "opcode": "0x0144",
@@ -8309,9 +8250,8 @@
               "name": "packetparser"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0144",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0144"
         },
         {
           "opcode": "0x0145",
@@ -9859,9 +9799,8 @@
               "name": "sub_140CC3140"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C3",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C3"
         },
         {
           "opcode": "0x01C4",
@@ -9882,9 +9821,8 @@
               "name": "sub_140CC3140"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C4",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C4"
         },
         {
           "opcode": "0x01C5",
@@ -9905,9 +9843,8 @@
               "name": "sub_140CC3140"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C5",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C5"
         },
         {
           "opcode": "0x01C6",
@@ -9928,9 +9865,8 @@
               "name": "sub_140CC3140"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C6",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C6"
         },
         {
           "opcode": "0x01C7",
@@ -9951,9 +9887,8 @@
               "name": "sub_140CC3140"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C7",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C7"
         },
         {
           "opcode": "0x01C8",
@@ -9974,9 +9909,8 @@
               "name": "sub_140CC3140"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C8",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C8"
         },
         {
           "opcode": "0x01C9",
@@ -9997,9 +9931,8 @@
               "name": "sub_140CC3140"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01C9",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01C9"
         },
         {
           "opcode": "0x01CA",
@@ -10020,9 +9953,8 @@
               "name": "sub_140CC3140"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01CA",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01CA"
         },
         {
           "opcode": "0x01CC",
@@ -10087,9 +10019,8 @@
               "name": "sub_140CBE380"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01CF",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01CF"
         },
         {
           "opcode": "0x01D0",
@@ -10110,9 +10041,8 @@
               "name": "sub_140CBE380"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D0",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D0"
         },
         {
           "opcode": "0x01D1",
@@ -10133,9 +10063,8 @@
               "name": "sub_140CBE380"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D1",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D1"
         },
         {
           "opcode": "0x01D2",
@@ -10156,9 +10085,8 @@
               "name": "sub_140CBE380"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D2",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D2"
         },
         {
           "opcode": "0x01D3",
@@ -10267,9 +10195,8 @@
               "name": "sub_140CBE3E0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D8",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D8"
         },
         {
           "opcode": "0x01D9",
@@ -10290,9 +10217,8 @@
               "name": "sub_140CBE3E0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01D9",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01D9"
         },
         {
           "opcode": "0x01DA",
@@ -10313,9 +10239,8 @@
               "name": "sub_140CBE3E0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DA",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DA"
         },
         {
           "opcode": "0x01DB",
@@ -10336,9 +10261,8 @@
               "name": "sub_140CBE3E0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DB",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DB"
         },
         {
           "opcode": "0x01DC",
@@ -10359,9 +10283,8 @@
               "name": "sub_140CBE3E0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DC",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DC"
         },
         {
           "opcode": "0x01DD",
@@ -10382,9 +10305,8 @@
               "name": "sub_140CBE3E0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DD",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DD"
         },
         {
           "opcode": "0x01DE",
@@ -10405,9 +10327,8 @@
               "name": "sub_140CBE3E0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DE",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DE"
         },
         {
           "opcode": "0x01DF",
@@ -10428,9 +10349,8 @@
               "name": "sub_140CBE3E0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01DF",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01DF"
         },
         {
           "opcode": "0x01E0",
@@ -10654,9 +10574,8 @@
               "name": "sub_140CBE5D0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01E9",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01E9"
         },
         {
           "opcode": "0x01EA",
@@ -10677,9 +10596,8 @@
               "name": "sub_140CBE5D0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01EA",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01EA"
         },
         {
           "opcode": "0x01EB",
@@ -10700,9 +10618,8 @@
               "name": "sub_140CBE5D0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01EB",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01EB"
         },
         {
           "opcode": "0x01EC",
@@ -10723,9 +10640,8 @@
               "name": "sub_140CBE5D0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01EC",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01EC"
         },
         {
           "opcode": "0x01ED",
@@ -10746,9 +10662,8 @@
               "name": "sub_140CBE5D0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01ED",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01ED"
         },
         {
           "opcode": "0x01EE",
@@ -10970,9 +10885,8 @@
               "name": "sub_140CBE7C0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0259",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0259"
         },
         {
           "opcode": "0x025A",
@@ -10993,9 +10907,8 @@
               "name": "sub_140CBE7C0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x025A",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x025A"
         },
         {
           "opcode": "0x025B",
@@ -11016,9 +10929,8 @@
               "name": "sub_140CBE7C0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x025B",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x025B"
         },
         {
           "opcode": "0x025C",
@@ -11039,9 +10951,8 @@
               "name": "sub_140CBE7C0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x025C",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x025C"
         },
         {
           "opcode": "0x025D",
@@ -11062,9 +10973,8 @@
               "name": "sub_140CBE7C0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x025D",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x025D"
         },
         {
           "opcode": "0x0263",
@@ -11085,9 +10995,8 @@
               "name": "sub_140CBE630"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0263",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0263"
         },
         {
           "opcode": "0x0264",
@@ -11108,9 +11017,8 @@
               "name": "sub_140CBE630"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0264",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0264"
         },
         {
           "opcode": "0x0265",
@@ -11131,9 +11039,8 @@
               "name": "sub_140CBE630"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0265",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0265"
         },
         {
           "opcode": "0x026C",
@@ -11176,9 +11083,8 @@
               "name": "Curl_base64_encode"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x026D",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x026D"
         },
         {
           "opcode": "0x026E",
@@ -11199,9 +11105,8 @@
               "name": "Curl_base64_encode"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x026E",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x026E"
         },
         {
           "opcode": "0x026F",
@@ -11222,9 +11127,8 @@
               "name": "Curl_base64_encode"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x026F",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x026F"
         },
         {
           "opcode": "0x0270",
@@ -11245,9 +11149,8 @@
               "name": "Curl_base64_encode"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0270",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0270"
         },
         {
           "opcode": "0x0271",
@@ -11268,9 +11171,8 @@
               "name": "Curl_base64_encode"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0271",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0271"
         },
         {
           "opcode": "0x0272",
@@ -11291,9 +11193,8 @@
               "name": "Curl_base64_encode"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0272",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0272"
         },
         {
           "opcode": "0x0273",
@@ -11314,9 +11215,8 @@
               "name": "Curl_base64_encode"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0273",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0273"
         },
         {
           "opcode": "0x0277",
@@ -11337,9 +11237,8 @@
               "name": "sub_140CBE6C0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0277",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0277"
         },
         {
           "opcode": "0x0278",
@@ -11360,9 +11259,8 @@
               "name": "sub_140CBE6C0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0278",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0278"
         },
         {
           "opcode": "0x0279",
@@ -11383,9 +11281,8 @@
               "name": "sub_140CBE6C0"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0279",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0279"
         },
         {
           "opcode": "0x028A",
@@ -11504,9 +11401,8 @@
               "name": "sub_140CC6F40"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0290",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0290"
         },
         {
           "opcode": "0x0291",
@@ -11527,9 +11423,8 @@
               "name": "sub_140CC6F40"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0291",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0291"
         },
         {
           "opcode": "0x0292",
@@ -11550,9 +11445,8 @@
               "name": "sub_140CC6F40"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0292",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0292"
         },
         {
           "opcode": "0x0293",
@@ -11573,9 +11467,8 @@
               "name": "sub_140CC6F40"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0293",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0293"
         },
         {
           "opcode": "0x0294",
@@ -11596,9 +11489,8 @@
               "name": "sub_140CC6F40"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0294",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0294"
         },
         {
           "opcode": "0x029E",
@@ -14373,8 +14265,8 @@
           "inline": 19
         },
         "statuses": {
-          "confirmed": 172,
-          "probable": 74,
+          "confirmed": 226,
+          "probable": 20,
           "unresolved": 22,
           "windows-only": 88
         }

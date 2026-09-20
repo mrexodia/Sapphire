@@ -18,6 +18,7 @@ def _entries(mapping: dict[str, Any]) -> list[dict[str, Any]]:
         mapping.get("dispatchers", [])
         + mapping.get("supportingFunctions", [])
         + mapping.get("matches", [])
+        + mapping.get("sharedMatches", [])
     )
 
 

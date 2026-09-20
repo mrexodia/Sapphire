@@ -72,6 +72,8 @@ def apply_reviews(
         windows_index = index_cases(windows[channel_key]["cases"])
         ps3_case = ps3_index[review["ps3Opcode"]]
         windows_case = windows_index[review["windowsOpcode"]]
+        if ps3_case["status"] == "confirmed" or windows_case["status"] == "confirmed":
+            continue
         ps3_case["status"] = review["status"]
         windows_case["status"] = review["status"]
         ps3_case["reviewReference"] = "case_reviews.json"
@@ -170,6 +172,12 @@ def main() -> None:
             match["opcode"]
             for match in matches["matches"]
             if match.get("channel", "zone-down") == channel
+        }
+        | {
+            opcode
+            for match in matches.get("sharedMatches", [])
+            if match.get("channel", "zone-down") == channel
+            for opcode in match["opcodes"]
         }
         for channel in ("zone-down", "chat-down")
     }

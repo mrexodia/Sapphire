@@ -31,8 +31,11 @@ def expected_url(address: str) -> str:
 
 
 def validate_matches(matches: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
-    entries = matches["dispatchers"] + matches["matches"] + matches.get(
-        "supportingFunctions", []
+    entries = (
+        matches["dispatchers"]
+        + matches["matches"]
+        + matches.get("sharedMatches", [])
+        + matches.get("supportingFunctions", [])
     )
     seen_windows: set[str] = set()
     for entry in entries:
@@ -41,10 +44,17 @@ def validate_matches(matches: dict[str, Any]) -> dict[tuple[str, str], dict[str,
         assert entry["windowsAddress"] not in seen_windows, entry["windowsAddress"]
         seen_windows.add(entry["windowsAddress"])
         assert entry["evidence"], entry
-    return {
+    confirmed = {
         (entry.get("channel", "zone-down"), entry["opcode"]): entry
         for entry in matches["matches"]
     }
+    for entry in matches.get("sharedMatches", []):
+        assert len(entry["opcodes"]) == len(entry["packets"]), entry
+        for opcode, packet in zip(entry["opcodes"], entry["packets"]):
+            key = (entry.get("channel", "zone-down"), opcode)
+            assert key not in confirmed, key
+            confirmed[key] = entry | {"opcode": opcode, "packet": packet}
+    return confirmed
 
 
 def dispatcher_key(dispatcher: dict[str, Any]) -> tuple[str, str]:
@@ -229,7 +239,7 @@ def main() -> None:
     validate_candidates(candidates, dispatchers)
     print(
         "validated: "
-        f"{len(confirmed)} confirmed packet matches and structures, "
+        f"{len(confirmed)} confirmed packet cases and structures, "
         f"{sum(len(item['cases']) for item in inventory['dispatchers'])} dispatcher cases, "
         f"{len(candidates['candidates'])} ranked candidates"
     )
