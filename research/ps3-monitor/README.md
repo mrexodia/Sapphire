@@ -6,17 +6,22 @@ Addresses are tied to the exact binaries and hashes in `packet_matches.json`.
 
 ## Initial result
 
-The zone-down packet dispatcher was matched with high confidence:
+The zone-down and chat-down packet dispatchers were matched with high confidence:
 
-| Build | Address | Function |
-| --- | ---: | --- |
-| PS3 Monitor | `0x002F8710` | `Client::Network::PacketDispatcher::OnReceivePacket(uint32_t, ZoneProtoDown const&)` |
-| Windows 3.x | `0x140DD9430` | `Client__Network__PacketDispatcher__OnReceivePacket_Zone` |
+| Build | Zone address | Chat address |
+| --- | ---: | ---: |
+| PS3 Monitor | `0x002F8710` | `0x002FA984` |
+| Windows 3.x | `0x140DD9430` | `0x140DD9300` |
 
-The Windows function reads the zone opcode from the IPC packet, invokes the
+The Windows zone function reads the opcode from the IPC packet, invokes the
 receive-preparation hook, and directly dispatches to packet-specific handlers.
 Its cases agree with the PS3 DWARF-labelled dispatcher and Sapphire's
-`ThreePointThree` opcode definitions.
+`ThreePointThree` opcode definitions. The chat functions independently agree on
+opcodes 100 through 106 and their ordered handler roles.
+
+The class identity is additionally anchored by its constructors: PS3
+`0x002F85C8` and Windows `0x140DD93E0` both store the `NetworkModuleProxy`
+pointer and install adjacent Zone and Chat callback-interface vtables.
 
 `0x1411B95B0`, previously labelled `flawed_unshuffle_opcodes` in the local IDB,
 is a different generated virtual dispatcher. It maps zone opcodes to callback

@@ -34,6 +34,19 @@
         "Both invoke a receive-preparation hook before packet-specific dispatch.",
         "PS3 function has 636 basic blocks; Windows function has 587 basic blocks after compiler/platform lowering."
       ]
+    },
+    {
+      "direction": "chat-down",
+      "ps3Address": "0x002FA984",
+      "ps3Name": "Client::Network::PacketDispatcher::OnReceivePacket(uint32_t, ChatProtoDown const&)",
+      "windowsAddress": "0x140DD9300",
+      "windowsName": "Client__Network__PacketDispatcher__OnReceivePacket_Chat",
+      "confidence": "high",
+      "evidence": [
+        "Both dispatch chat opcodes 100 through 106.",
+        "The ordered cases forward to ChatFrom, Chat, TellNotFound, RecvBusyStatus, GetChannelMemberListResult, GetChannelListResult, and RecvFinderStatus equivalents.",
+        "The Windows constructor at 0x140DD93E0 and PS3 constructor at 0x002F85C8 install adjacent zone/chat callback vtables and store the NetworkModuleProxy pointer."
+      ]
     }
   ],
   "matches": [
