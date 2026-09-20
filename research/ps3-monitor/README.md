@@ -72,13 +72,25 @@ Confirmed Windows functions link back to PS3 counterparts with comments such as
 The detailed execution plan and pasteable persistent goal remain in
 [`OVERNIGHT_GOAL.md`](OVERNIGHT_GOAL.md).
 
+## Windows IDB readability
+
+The first semantic-island readability pass is documented in
+[`READABILITY_RESULTS.md`](READABILITY_RESULTS.md). It adds generated opcode and
+IPC types, 31 conservative Windows-known-field packet views, types 38 functions
+and four globals, comments 309 dispatcher case addresses, and exports quest/leve
+and retainer/inventory call-graph queues. `build_readability_plan.py` generates
+the auditable plan/header, while `ida_apply_readability.py` applies or verifies
+the changes in the Windows IDB.
+
 ## Next iteration
 
-1. Recover defensible PS3↔Windows links for the 19 cases whose Windows behavior
-   is known but whose PS3 leaf function is absent, inline, or structurally divergent.
-2. Resolve the remaining `0x030C` and `0x0338` semantic conflicts with runtime
-   traces, packet captures, or stronger downstream type recovery.
-3. Investigate changed-opcode counterparts for build-only numeric cases.
+1. Resolve the receiver class behind `0x140032C30`, the indexed proxy accessor
+   shared by eight retainer/market information handlers.
+2. Identify the exact GameObjectManager role of `0x1405428B0` and recover the
+   quest/EventFramework notification family around `0x140657ED0`–`0x14066B2A0`.
+3. Recover the item packet-assembler context-node type used by all four typed
+   retainer/market/item implementations.
 4. Normalize and export outbound Zone/Chat DWARF packet types.
 5. Fully validate Windows layouts before promoting any of the 99 missing
-   Sapphire declarations.
+   Sapphire declarations, and retain the `0x030C`/`0x0338` conflicts until
+   runtime or packet-capture evidence distinguishes them.

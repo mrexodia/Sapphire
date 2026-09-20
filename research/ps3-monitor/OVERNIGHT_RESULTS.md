@@ -40,11 +40,13 @@ changed-opcode counterpart.
 - 253 confirmed packet cases:
   - 246 zone-down cases
   - 7 chat-down cases
-- Three supporting `PacketDispatcher` functions:
+- Three `PacketDispatcher` functions:
   - constructor
   - zone-down dispatcher
   - chat-down dispatcher
-- 212 Windows functions in total have verified names and repeatable PS3 links.
+- Two additional PS3-linked framework accessors: `Framework::GetUIModule` and
+  `EventFramework::GetInstance`.
+- 214 Windows functions in total have verified names and repeatable PS3 links.
 
 A manual follow-up confirmed `QuestCompleteFlag` (`0x01E3`): both builds use
 `bitIndex >> 3` with `0x80 >> (bitIndex & 7)`, set or clear the same completion
@@ -62,7 +64,7 @@ PS3 Monitor: idb://ffxivgame.ppu.elf.i64:XXXXXXXX
 ```
 
 The mapping ledger is `packet_matches.json`. `ida_apply_matches.py` can apply or
-verify the names and comments. A verification pass checked all 212 entries with
+verify the names and comments. A verification pass checked all 214 entries with
 zero failures after saving `E:/Sapphire/game/ffxiv_dx11.exe.i64`.
 
 Six obviously unrelated pre-existing names were replaced after the dispatcher
@@ -89,8 +91,19 @@ retainer/market/item families (`0x01AA`–`0x01B7`), `TreasureFadeOut`, four
 inspect packets, and `Frontline01Result`. Three more cases—`EnableLogout`,
 `LogMessage`, and `CancelLogoutCountdown`—are proven inline dispatcher paths.
 These 19 cases deliberately remain separate from PS3-linked matches and receive
-no `PS3 Monitor:` backlink. The saved Windows IDB contains and verifies the ten
-function names/comments.
+no `PS3 Monitor:` backlink. Four downstream retainer/market/item implementation
+functions also have separately verified Windows-supporting names. The saved
+Windows IDB contains and verifies all fourteen Windows-only names/comments.
+
+## Windows IDB readability
+
+The semantic-island pass adds 37 concrete local types, types 38 functions and
+four globals, and comments 309 distinct dispatcher case addresses. The typed
+zone/chat IPC views produce symbolic opcode switches and `packet->payload`
+expressions; 31 `Win335_*_KnownFields` structures expose only Windows-confirmed
+fields, and 25 complete-payload handlers use them. `subsystem_callgraph.json`
+exports one-hop quest/leve and retainer/inventory expansion queues. Full details
+and safety boundaries are in `READABILITY_RESULTS.md`.
 
 ## Structure results
 
@@ -131,6 +144,11 @@ The complete list is in `packet_structures.json` under
 - `ida_dispatcher_export.py`: read-only IDA ctree exporter.
 - `ida_type_export.py`: read-only PS3 DWARF type exporter.
 - `ida_apply_matches.py`: Windows IDB annotation applier/verifier.
+- `windows_readability_types.h` and `readability_plan.json`: generated,
+  conservative Windows type/comment plan.
+- `ida_apply_readability.py`: Windows type/global/case-comment applier/verifier.
+- `ida_subsystem_export.py` and `subsystem_callgraph.json`: packet-rooted
+  subsystem call-graph exporter and result.
 - `build_packet_catalog.py`: deterministic Markdown/HTML catalog generator and
   stale-output checker.
 - `build_dispatcher_inventory.py`, `build_structure_inventory.py`,
@@ -146,7 +164,7 @@ The following checks completed successfully:
 
 ```text
 python research/ps3-monitor/validate_research.py
-validated: 253 confirmed packet cases and structures, 659 dispatcher cases, 0 ranked candidates, 10 Windows-only semantic functions, 3 Windows inline cases
+validated: 253 confirmed packet cases and structures, 659 dispatcher cases, 0 ranked candidates, 10 Windows-only semantic functions, 4 Windows supporting functions, 3 Windows inline cases, 31 readability types, 38 typed functions, 4 typed globals, 309 case comments
 
 cmake --build build --target common world
 common and world targets completed successfully

@@ -217,6 +217,7 @@ def render_markdown(
         f"| One-to-one handler functions | {len(mapping['matches'])} |",
         f"| Shared handler functions | {len(mapping.get('sharedMatches', []))} |",
         f"| Windows semantic functions without PS3 links | {len(mapping.get('windowsMappings', []))} |",
+        f"| Windows supporting implementation functions | {len(mapping.get('windowsSupportingFunctions', []))} |",
         f"| Windows inline semantic cases | {len(mapping.get('windowsInlineMappings', []))} |",
         f"| Windows semantic opcode cases without PS3 links | {len(windows_rows)} |",
         f"| Probable reviewed cases | {status_counts['probable']} |",
@@ -509,7 +510,7 @@ details{{max-width:700px}} summary{{cursor:pointer;color:var(--accent)}} .fields
 <p class="muted">Generated from the source-controlled dispatcher, match, structure, and review ledgers. Numeric opcode equality alone is not semantic proof.</p>
 <div class="summary">
 <div class="card"><b>{len(confirmed)}</b>confirmed cases</div><div class="card"><b>{len(mapping['matches'])}</b>one-to-one functions</div><div class="card"><b>{len(mapping.get('sharedMatches', []))}</b>shared functions</div>
-<div class="card"><b>{len(mapping.get('windowsMappings', []))}</b>Windows semantic functions</div><div class="card"><b>{len(mapping.get('windowsInlineMappings', []))}</b>Windows inline cases</div><div class="card"><b>{len(windows_rows)}</b>Windows semantic cases</div>
+<div class="card"><b>{len(mapping.get('windowsMappings', []))}</b>Windows semantic functions</div><div class="card"><b>{len(mapping.get('windowsSupportingFunctions', []))}</b>Windows supporting functions</div><div class="card"><b>{len(mapping.get('windowsInlineMappings', []))}</b>Windows inline cases</div><div class="card"><b>{len(windows_rows)}</b>Windows semantic cases</div>
 <div class="card"><b>{status_counts['probable']}</b>probable</div><div class="card"><b>{status_counts['unresolved']}</b>unresolved</div>
 <div class="card"><b>{sum(row['status']=='ps3-only' for row in one_sided)}</b>PS3-only numbers</div><div class="card"><b>{sum(row['status']=='windows-only' for row in one_sided)}</b>Windows-only numbers</div>
 </div>

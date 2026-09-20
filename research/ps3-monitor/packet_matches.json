@@ -3201,6 +3201,32 @@
   "idbLinkFormat": "idb://ffxivgame.ppu.elf.i64:{PS3_ADDRESS_8_HEX_UPPER}",
   "supportingFunctions": [
     {
+      "role": "Framework UI-module accessor",
+      "ps3Address": "0x00017A78",
+      "ps3Name": "Client::System::Framework::Framework::GetUIModule",
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00017A78",
+      "windowsAddress": "0x140013960",
+      "windowsName": "Client__System__Framework__Framework__GetUIModule",
+      "confidence": "high",
+      "evidence": [
+        "The PS3 DWARF function and Windows function are one-load accessors returning the UI-module pointer from the Framework object; the member offset changes from PS3 +0x1F20 to Windows +0x2C00.",
+        "Both packet dispatchers call this accessor before the same UI command-interface paths, including ChatToChannel and logout-countdown cases."
+      ]
+    },
+    {
+      "role": "EventFramework singleton accessor",
+      "ps3Address": "0x00A516F4",
+      "ps3Name": "Client::Game::Event::EventFramework::GetInstance",
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00A516F4",
+      "windowsAddress": "0x1406044E0",
+      "windowsName": "Client__Game__Event__EventFramework__GetInstance",
+      "confidence": "high",
+      "evidence": [
+        "The PS3 DWARF function and Windows function both return the process-wide EventFramework singleton.",
+        "Confirmed quest, leve, daily-quest, repeat-flag, and instance-content packet handlers obtain their EventFramework receiver through this function."
+      ]
+    },
+    {
       "role": "PacketDispatcher constructor",
       "ps3Address": "0x002F85C8",
       "ps3Name": "Client::Network::PacketDispatcher::PacketDispatcher",
@@ -3745,6 +3771,66 @@
       "channel": "zone-down",
       "confidence": "high",
       "mappingKind": "windows-inline"
+    }
+  ],
+  "windowsSupportingFunctions": [
+    {
+      "windowsAddress": "0x140CC7090",
+      "windowsName": "Client__Game__Network__Packet__ReceiveRetainerPackets_Impl",
+      "roles": [
+        "RetainerList",
+        "RetainerData"
+      ],
+      "confidence": "high",
+      "mappingKind": "windows-supporting",
+      "evidence": [
+        "The confirmed RetainerList/RetainerData wrapper calls only this implementation.",
+        "This function switches on 0x01AA/0x01AB, finds or creates the owner-context accumulator, copies retainer records, and commits the completed group."
+      ]
+    },
+    {
+      "windowsAddress": "0x140CC7200",
+      "windowsName": "Client__Game__Network__Packet__ReceiveMarketPricePackets_Impl",
+      "roles": [
+        "MarketPriceHeader",
+        "MarketPrice"
+      ],
+      "confidence": "high",
+      "mappingKind": "windows-supporting",
+      "evidence": [
+        "The confirmed MarketPriceHeader/MarketPrice wrapper calls only this implementation.",
+        "This function switches on 0x01AC/0x01AD, assembles market-price records by owner context, and commits the completed group."
+      ]
+    },
+    {
+      "windowsAddress": "0x140CC7330",
+      "windowsName": "Client__Game__Network__Packet__ReceiveItemOperationPackets_Impl",
+      "roles": [
+        "ItemOperationBatch",
+        "ItemOperation"
+      ],
+      "confidence": "high",
+      "mappingKind": "windows-supporting",
+      "evidence": [
+        "The confirmed ItemOperationBatch/ItemOperation wrapper calls only this implementation.",
+        "This function switches on 0x01B1/0x01B2, copies operation records into an owner-context accumulator, and commits the completed batch."
+      ]
+    },
+    {
+      "windowsAddress": "0x140CC8870",
+      "windowsName": "Client__Game__Network__Packet__ReceiveItemStoragePackets_Impl",
+      "roles": [
+        "NormalItem",
+        "ItemSize",
+        "GilItem",
+        "AliasItem"
+      ],
+      "confidence": "high",
+      "mappingKind": "windows-supporting",
+      "evidence": [
+        "The confirmed item-storage wrapper calls only this implementation.",
+        "This function switches on 0x01AF/0x01B0/0x01B3/0x01B7, processes item or size records, and commits complete storage state."
+      ]
     }
   ]
 }

@@ -1,0 +1,2394 @@
+{
+  "schemaVersion": 1,
+  "policy": "Only Windows-confirmed fields are emitted. Unknown gaps remain byte arrays; no PS3-only trailing size is asserted.",
+  "summary": {
+    "opcodeTypes": 2,
+    "knownFieldTypes": 31,
+    "typedPayloadHandlers": 25,
+    "typedIpcWrappers": 4,
+    "typedSupportingFunctions": 4,
+    "typedGlobals": 4,
+    "dispatcherCaseComments": 309
+  },
+  "dispatcherTypes": [
+    {
+      "address": "0x140DD9430",
+      "declaration": "void __fastcall Client__Network__PacketDispatcher__OnReceivePacket_Zone(Win335_PacketDispatcher *self, unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    },
+    {
+      "address": "0x140DD9300",
+      "declaration": "__int64 __fastcall Client__Network__PacketDispatcher__OnReceivePacket_Chat(Win335_PacketDispatcher *self, unsigned __int32 targetActorId, const Win335_ChatIpcPacket *packet)"
+    },
+    {
+      "address": "0x140DD93E0",
+      "declaration": "Win335_PacketDispatcher *__fastcall Client__Network__PacketDispatcher__ctor(Win335_PacketDispatcher *self, void *networkModuleProxy)",
+      "role": "constructor"
+    }
+  ],
+  "eventFrameworkType": {
+    "address": "0x1406044E0",
+    "declaration": "Win335_EventFramework *__fastcall Client__Game__Event__EventFramework__GetInstance(void)"
+  },
+  "frameworkUiModuleType": {
+    "address": "0x140013960",
+    "declaration": "Win335_UIModule *__fastcall Client__System__Framework__Framework__GetUIModule(Win335_Framework *self)"
+  },
+  "payloadHandlerTypes": [
+    {
+      "channel": "zone-down",
+      "packet": "PlayerStatusUpdate",
+      "opcode": "0x019F",
+      "windowsAddress": "0x140CBFAE0",
+      "windowsName": "Client__Game__Network__Packet__PlayerStatusUpdate",
+      "typeName": "Win335_PlayerStatusUpdate_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "PlayerStatus",
+      "opcode": "0x01A0",
+      "windowsAddress": "0x140CC6080",
+      "windowsName": "Client__Game__Network__Packet__PlayerStatus",
+      "typeName": "Win335_PlayerStatus_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "Create",
+      "opcode": "0x0190",
+      "windowsAddress": "0x140CC8F00",
+      "windowsName": "Client__Game__Network__Packet__Create",
+      "typeName": "Win335_Create_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "InviteCancelResult",
+      "opcode": "0x00DE",
+      "windowsAddress": "0x140D14B50",
+      "windowsName": "Client__Info__InfoPacket__InviteCancelResult",
+      "typeName": "Win335_InviteCancelResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "GetCommonlistResult",
+      "opcode": "0x00CC",
+      "windowsAddress": "0x140D14BA0",
+      "windowsName": "Client__Info__InfoPacket__GetCommonlistResult",
+      "typeName": "Win335_GetCommonlistResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "SetProfileResult",
+      "opcode": "0x00CE",
+      "windowsAddress": "0x140D14DB0",
+      "windowsName": "Client__Info__InfoPacket__SetProfileResult",
+      "typeName": "Win335_SetProfileResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "GetProfileResult",
+      "opcode": "0x00CF",
+      "windowsAddress": "0x140D14F60",
+      "windowsName": "Client__Info__InfoPacket__GetProfileResult",
+      "typeName": "Win335_GetProfileResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "GetSearchCommentResult",
+      "opcode": "0x00D0",
+      "windowsAddress": "0x140D15000",
+      "windowsName": "Client__Info__InfoPacket__GetSearchCommentResult",
+      "typeName": "Win335_GetSearchCommentResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "ChatChannelResult",
+      "opcode": "0x00D2",
+      "windowsAddress": "0x140D15060",
+      "windowsName": "Client__Info__InfoPacket__ChatChannelResult",
+      "typeName": "Win335_ChatChannelResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "SendSystemMessage",
+      "opcode": "0x00D3",
+      "windowsAddress": "0x140D152C0",
+      "windowsName": "Client__Info__InfoPacket__SendSystemMessage",
+      "typeName": "Win335_SendSystemMessage_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "SendLoginMessage",
+      "opcode": "0x00D4",
+      "windowsAddress": "0x140D15410",
+      "windowsName": "Client__Info__InfoPacket__SendLoginMessage",
+      "typeName": "Win335_SendLoginMessage_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "UpdateOnlineStatus",
+      "opcode": "0x00D5",
+      "windowsAddress": "0x140D15560",
+      "windowsName": "Client__Info__InfoPacket__UpdateOnlineStatus",
+      "typeName": "Win335_UpdateOnlineStatus_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "PcPartyResult",
+      "opcode": "0x00DC",
+      "windowsAddress": "0x140D15BF0",
+      "windowsName": "Client__Info__InfoPacket__PcPartyResult",
+      "typeName": "Win335_PcPartyResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "PcPartyUpdate",
+      "opcode": "0x00DD",
+      "windowsAddress": "0x140D15C90",
+      "windowsName": "Client__Info__InfoPacket__PcPartyUpdate",
+      "typeName": "Win335_PcPartyUpdate_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "AllianceReadyCheckResult",
+      "opcode": "0x00DA",
+      "windowsAddress": "0x140D16430",
+      "windowsName": "Client__Info__InfoPacket__AllianceReadyCheckResult",
+      "typeName": "Win335_AllianceReadyCheckResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "PartyRecruitResult",
+      "opcode": "0x00D6",
+      "windowsAddress": "0x140D16490",
+      "windowsName": "Client__Info__InfoPacket__PartyRecruitResult",
+      "typeName": "Win335_PartyRecruitResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "InviteResult",
+      "opcode": "0x00C9",
+      "windowsAddress": "0x140D18730",
+      "windowsName": "Client__Info__InfoPacket__InviteResult",
+      "typeName": "Win335_InviteResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "InviteReplyResult",
+      "opcode": "0x00CA",
+      "windowsAddress": "0x140D187D0",
+      "windowsName": "Client__Info__InfoPacket__InviteReplyResult",
+      "typeName": "Win335_InviteReplyResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "InviteUpdate",
+      "opcode": "0x00CB",
+      "windowsAddress": "0x140D18830",
+      "windowsName": "Client__Info__InfoPacket__InviteUpdate",
+      "typeName": "Win335_InviteUpdate_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "zone-down",
+      "packet": "RequestItmeResult",
+      "opcode": "0x00D9",
+      "windowsAddress": "0x140D1B400",
+      "windowsName": "Client__Info__InfoPacket__RequestItmeResult",
+      "typeName": "Win335_RequestItmeResult_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "chat-down",
+      "packet": "ChatFrom",
+      "opcode": "0x0064",
+      "windowsAddress": "0x140E76E80",
+      "windowsName": "Client__Info__ChatPacket__ChatFrom",
+      "typeName": "Win335_ChatFrom_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "chat-down",
+      "packet": "TellNotFound",
+      "opcode": "0x0066",
+      "windowsAddress": "0x140E770E0",
+      "windowsName": "Client__Info__ChatPacket__TellNotFound",
+      "typeName": "Win335_TellNotFound_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "chat-down",
+      "packet": "RecvBusyStatus",
+      "opcode": "0x0067",
+      "windowsAddress": "0x140E771D0",
+      "windowsName": "Client__Info__ChatPacket__RecvBusyStatus",
+      "typeName": "Win335_RecvBusyStatus_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "chat-down",
+      "packet": "RecvFinderStatus",
+      "opcode": "0x006A",
+      "windowsAddress": "0x140E77270",
+      "windowsName": "Client__Info__ChatPacket__RecvFinderStatus",
+      "typeName": "Win335_RecvFinderStatus_KnownFields",
+      "argumentIndex": 1
+    },
+    {
+      "channel": "chat-down",
+      "packet": "Chat",
+      "opcode": "0x0065",
+      "windowsAddress": "0x140E77310",
+      "windowsName": "Client__Info__ChatPacket__Chat",
+      "typeName": "Win335_Chat_KnownFields",
+      "argumentIndex": 1
+    }
+  ],
+  "ipcWrapperTypes": [
+    {
+      "address": "0x140CC8730",
+      "declaration": "void __fastcall Client__Game__Network__Packet__ReceiveRetainerPackets(unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    },
+    {
+      "address": "0x140CC8710",
+      "declaration": "void __fastcall Client__Game__Network__Packet__ReceiveMarketPricePackets(unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    },
+    {
+      "address": "0x140CC86F0",
+      "declaration": "void __fastcall Client__Game__Network__Packet__ReceiveItemOperationPackets(unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    },
+    {
+      "address": "0x140CC8FE0",
+      "declaration": "void __fastcall Client__Game__Network__Packet__ReceiveItemStoragePackets(unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    }
+  ],
+  "supportingFunctionTypes": [
+    {
+      "address": "0x140CC7090",
+      "declaration": "void __fastcall Client__Game__Network__Packet__ReceiveRetainerPackets_Impl(Win335_ItemPacketAssembler *assembler, unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    },
+    {
+      "address": "0x140CC7200",
+      "declaration": "void __fastcall Client__Game__Network__Packet__ReceiveMarketPricePackets_Impl(Win335_ItemPacketAssembler *assembler, unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    },
+    {
+      "address": "0x140CC7330",
+      "declaration": "void __fastcall Client__Game__Network__Packet__ReceiveItemOperationPackets_Impl(Win335_ItemPacketAssembler *assembler, unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    },
+    {
+      "address": "0x140CC8870",
+      "declaration": "void __fastcall Client__Game__Network__Packet__ReceiveItemStoragePackets_Impl(Win335_ItemPacketAssembler *assembler, unsigned __int32 targetActorId, const Win335_ZoneIpcPacket *packet)"
+    }
+  ],
+  "globalTypes": [
+    {
+      "address": "0x1415E9400",
+      "name": "Client__System__Framework__Framework__s_instance",
+      "declaration": "Win335_Framework *Client__System__Framework__Framework__s_instance",
+      "evidence": "The Framework::GetUIModule receiver used throughout packet and UI paths."
+    },
+    {
+      "address": "0x1417C39D0",
+      "name": "Client__Game__Event__EventFramework__s_instance",
+      "declaration": "Win335_EventFramework *Client__Game__Event__EventFramework__s_instance",
+      "evidence": "Returned directly by the PS3-linked EventFramework::GetInstance function."
+    },
+    {
+      "address": "0x1415BEFF0",
+      "name": "g_Win335_ItemPacketAssembler",
+      "declaration": "Win335_ItemPacketAssembler g_Win335_ItemPacketAssembler",
+      "evidence": "Static assembler object passed by all four typed retainer/market/item wrappers."
+    },
+    {
+      "address": "0x14179EEF0",
+      "name": "Client__Game__Item__StorageManager__s_instance",
+      "declaration": "Win335_StorageManager *Client__Game__Item__StorageManager__s_instance",
+      "evidence": "Receiver passed to independently named StorageManager packet handlers and item commits."
+    }
+  ],
+  "knownFieldTypes": [
+    {
+      "packet": "InviteResult",
+      "channel": "zone-down",
+      "typeName": "Win335_InviteResult_KnownFields",
+      "knownSize": 5,
+      "fields": [
+        {
+          "name": "Result",
+          "offset": 0,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "32-bit result load"
+        },
+        {
+          "name": "AuthType",
+          "offset": 4,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "AuthType switch"
+        }
+      ]
+    },
+    {
+      "packet": "InviteReplyResult",
+      "channel": "zone-down",
+      "typeName": "Win335_InviteReplyResult_KnownFields",
+      "knownSize": 5,
+      "fields": [
+        {
+          "name": "AuthType",
+          "offset": 4,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "AuthType switch 1/2/4/5/6"
+        }
+      ]
+    },
+    {
+      "packet": "InviteUpdate",
+      "channel": "zone-down",
+      "typeName": "Win335_InviteUpdate_KnownFields",
+      "knownSize": 13,
+      "fields": [
+        {
+          "name": "AuthType",
+          "offset": 12,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "AuthType switch"
+        }
+      ]
+    },
+    {
+      "packet": "GetCommonlistResult",
+      "channel": "zone-down",
+      "typeName": "Win335_GetCommonlistResult_KnownFields",
+      "knownSize": 13,
+      "fields": [
+        {
+          "name": "ListType",
+          "offset": 12,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "proxy-selection switch"
+        }
+      ]
+    },
+    {
+      "packet": "SetProfileResult",
+      "channel": "zone-down",
+      "typeName": "Win335_SetProfileResult_KnownFields",
+      "knownSize": 215,
+      "fields": [
+        {
+          "name": "Result",
+          "offset": 16,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "result branch"
+        },
+        {
+          "name": "CurrentSelectClassID",
+          "offset": 20,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "detail-proxy update"
+        },
+        {
+          "name": "Region",
+          "offset": 21,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "language/region update"
+        },
+        {
+          "name": "SearchComment",
+          "offset": 22,
+          "size": 193,
+          "sourceType": "char[193]",
+          "evidence": "comment pointer"
+        }
+      ]
+    },
+    {
+      "packet": "Create",
+      "channel": "zone-down",
+      "typeName": "Win335_Create_KnownFields",
+      "knownSize": 52,
+      "fields": [
+        {
+          "name": "OwnerId",
+          "offset": 20,
+          "size": 4,
+          "sourceType": "Windows-only",
+          "evidence": "local-owner comparison"
+        },
+        {
+          "name": "ObjType",
+          "offset": 51,
+          "size": 1,
+          "sourceType": "Windows-only",
+          "evidence": "ObjType == 2 test"
+        }
+      ]
+    },
+    {
+      "packet": "PlayerStatusUpdate",
+      "channel": "zone-down",
+      "typeName": "Win335_PlayerStatusUpdate_KnownFields",
+      "knownSize": 16,
+      "fields": [
+        {
+          "name": "ClassJob",
+          "offset": 0,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "class/job update"
+        },
+        {
+          "name": "Lv",
+          "offset": 2,
+          "size": 2,
+          "sourceType": "uint16_t",
+          "evidence": "level update"
+        },
+        {
+          "name": "LvSync",
+          "offset": 6,
+          "size": 2,
+          "sourceType": "uint16_t",
+          "evidence": "3.x synchronized-level load"
+        },
+        {
+          "name": "Exp",
+          "offset": 8,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "experience update"
+        },
+        {
+          "name": "RestPoint",
+          "offset": 12,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "rested experience update"
+        }
+      ]
+    },
+    {
+      "packet": "PlayerStatus",
+      "channel": "zone-down",
+      "typeName": "Win335_PlayerStatus_KnownFields",
+      "knownSize": 16,
+      "fields": [
+        {
+          "name": "Crest",
+          "offset": 8,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "crest update"
+        }
+      ]
+    },
+    {
+      "packet": "ChatFrom",
+      "channel": "chat-down",
+      "typeName": "Win335_ChatFrom_KnownFields",
+      "knownSize": 1065,
+      "fields": [
+        {
+          "name": "fromCharacterID",
+          "offset": 0,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "sender ID use"
+        },
+        {
+          "name": "type",
+          "offset": 8,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "chat-type branch"
+        },
+        {
+          "name": "fromName",
+          "offset": 9,
+          "size": 32,
+          "sourceType": "uint8_t[32]",
+          "evidence": "UTF-8 sender name"
+        },
+        {
+          "name": "message",
+          "offset": 41,
+          "size": 1024,
+          "sourceType": "uint8_t[1024]",
+          "evidence": "UTF-8 message"
+        }
+      ]
+    },
+    {
+      "packet": "Chat",
+      "channel": "chat-down",
+      "typeName": "Win335_Chat_KnownFields",
+      "knownSize": 1077,
+      "fields": [
+        {
+          "name": "channelID",
+          "offset": 0,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "channel proxy lookup"
+        },
+        {
+          "name": "speakerCharacterID",
+          "offset": 8,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "speaker log ID"
+        },
+        {
+          "name": "speakerEntityID",
+          "offset": 16,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "character lookup"
+        },
+        {
+          "name": "type",
+          "offset": 20,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "chat-type branch"
+        },
+        {
+          "name": "speakerName",
+          "offset": 21,
+          "size": 32,
+          "sourceType": "uint8_t[32]",
+          "evidence": "UTF-8 speaker name"
+        },
+        {
+          "name": "message",
+          "offset": 53,
+          "size": 1024,
+          "sourceType": "uint8_t[1024]",
+          "evidence": "UTF-8 message"
+        }
+      ]
+    },
+    {
+      "packet": "TellNotFound",
+      "channel": "chat-down",
+      "typeName": "Win335_TellNotFound_KnownFields",
+      "knownSize": 32,
+      "fields": [
+        {
+          "name": "toName",
+          "offset": 0,
+          "size": 32,
+          "sourceType": "uint8_t[32]",
+          "evidence": "payload converted to UTF-8 string"
+        }
+      ]
+    },
+    {
+      "packet": "RecvBusyStatus",
+      "channel": "chat-down",
+      "typeName": "Win335_RecvBusyStatus_KnownFields",
+      "knownSize": 32,
+      "fields": [
+        {
+          "name": "toName",
+          "offset": 0,
+          "size": 32,
+          "sourceType": "uint8_t[32]",
+          "evidence": "payload converted to UTF-8 string"
+        }
+      ]
+    },
+    {
+      "packet": "RecvFinderStatus",
+      "channel": "chat-down",
+      "typeName": "Win335_RecvFinderStatus_KnownFields",
+      "knownSize": 32,
+      "fields": [
+        {
+          "name": "toName",
+          "offset": 0,
+          "size": 32,
+          "sourceType": "uint8_t[32]",
+          "evidence": "payload converted to UTF-8 string"
+        }
+      ]
+    },
+    {
+      "packet": "GetProfileResult",
+      "channel": "zone-down",
+      "typeName": "Win335_GetProfileResult_KnownFields",
+      "knownSize": 211,
+      "fields": [
+        {
+          "name": "OnlineStatus",
+          "offset": 0,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "status update"
+        },
+        {
+          "name": "SelectClassID",
+          "offset": 8,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "selected-class update"
+        },
+        {
+          "name": "CurrentSelectClassID",
+          "offset": 16,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "current-class update"
+        },
+        {
+          "name": "Region",
+          "offset": 17,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "language/region update"
+        },
+        {
+          "name": "SearchComment",
+          "offset": 18,
+          "size": 193,
+          "sourceType": "char[193]",
+          "evidence": "comment pointer"
+        }
+      ]
+    },
+    {
+      "packet": "GetSearchCommentResult",
+      "channel": "zone-down",
+      "typeName": "Win335_GetSearchCommentResult_KnownFields",
+      "knownSize": 197,
+      "fields": [
+        {
+          "name": "TargetEntityID",
+          "offset": 0,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "entity ID argument"
+        },
+        {
+          "name": "SearchComment",
+          "offset": 4,
+          "size": 193,
+          "sourceType": "char[193]",
+          "evidence": "comment pointer"
+        }
+      ]
+    },
+    {
+      "packet": "ChatChannelResult",
+      "channel": "zone-down",
+      "typeName": "Win335_ChatChannelResult_KnownFields",
+      "knownSize": 32,
+      "fields": [
+        {
+          "name": "ChannelID",
+          "offset": 0,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "channel-state update"
+        },
+        {
+          "name": "CommunityID",
+          "offset": 8,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "community comparison"
+        },
+        {
+          "name": "TargetCharacterID",
+          "offset": 16,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "target comparison"
+        },
+        {
+          "name": "UpPacketNo",
+          "offset": 24,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "209/210 branch"
+        },
+        {
+          "name": "Result",
+          "offset": 28,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "result branch"
+        }
+      ]
+    },
+    {
+      "packet": "SendSystemMessage",
+      "channel": "zone-down",
+      "typeName": "Win335_SendSystemMessage_KnownFields",
+      "knownSize": 770,
+      "fields": [
+        {
+          "name": "MessageParam",
+          "offset": 0,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "bit 1/4 tests"
+        },
+        {
+          "name": "Message",
+          "offset": 1,
+          "size": 769,
+          "sourceType": "char[769]",
+          "evidence": "UTF-8 message"
+        }
+      ]
+    },
+    {
+      "packet": "SendLoginMessage",
+      "channel": "zone-down",
+      "typeName": "Win335_SendLoginMessage_KnownFields",
+      "knownSize": 770,
+      "fields": [
+        {
+          "name": "MessageParam",
+          "offset": 0,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "bit 1/4 tests"
+        },
+        {
+          "name": "Message",
+          "offset": 1,
+          "size": 769,
+          "sourceType": "char[769]",
+          "evidence": "UTF-8 message"
+        }
+      ]
+    },
+    {
+      "packet": "UpdateOnlineStatus",
+      "channel": "zone-down",
+      "typeName": "Win335_UpdateOnlineStatus_KnownFields",
+      "knownSize": 8,
+      "fields": [
+        {
+          "name": "OnlineStatus",
+          "offset": 0,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "64-bit status forwarding"
+        }
+      ]
+    },
+    {
+      "packet": "PartyRecruitResult",
+      "channel": "zone-down",
+      "typeName": "Win335_PartyRecruitResult_KnownFields",
+      "knownSize": 24,
+      "fields": [
+        {
+          "name": "Type",
+          "offset": 16,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "recruitment-mode switch"
+        },
+        {
+          "name": "Result",
+          "offset": 20,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "result/error branch"
+        }
+      ]
+    },
+    {
+      "packet": "RequestItmeResult",
+      "channel": "zone-down",
+      "typeName": "Win335_RequestItmeResult_KnownFields",
+      "knownSize": 24,
+      "fields": [
+        {
+          "name": "Param",
+          "offset": 8,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "wishlist parameter"
+        },
+        {
+          "name": "Type",
+          "offset": 16,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "wishlist-mode switch"
+        },
+        {
+          "name": "Result",
+          "offset": 20,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "result/error branch"
+        }
+      ]
+    },
+    {
+      "packet": "AllianceReadyCheckResult",
+      "channel": "zone-down",
+      "typeName": "Win335_AllianceReadyCheckResult_KnownFields",
+      "knownSize": 41,
+      "fields": [
+        {
+          "name": "EntityID",
+          "offset": 0,
+          "size": 32,
+          "sourceType": "uint32_t[8]",
+          "evidence": "entity-ID array"
+        },
+        {
+          "name": "Ready",
+          "offset": 32,
+          "size": 8,
+          "sourceType": "uint8_t[8]",
+          "evidence": "ready-state array"
+        },
+        {
+          "name": "Count",
+          "offset": 40,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "entry count"
+        }
+      ]
+    },
+    {
+      "packet": "PcPartyResult",
+      "channel": "zone-down",
+      "typeName": "Win335_PcPartyResult_KnownFields",
+      "knownSize": 8,
+      "fields": [
+        {
+          "name": "UpPacketNo",
+          "offset": 0,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "party operation"
+        },
+        {
+          "name": "Result",
+          "offset": 4,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "error/result branch"
+        }
+      ]
+    },
+    {
+      "packet": "PcPartyUpdate",
+      "channel": "zone-down",
+      "typeName": "Win335_PcPartyUpdate_KnownFields",
+      "knownSize": 84,
+      "fields": [
+        {
+          "name": "ExecuteCharacterID",
+          "offset": 0,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "executor ID"
+        },
+        {
+          "name": "TargetCharacterID",
+          "offset": 8,
+          "size": 8,
+          "sourceType": "uint64_t",
+          "evidence": "target ID"
+        },
+        {
+          "name": "ExecuteIdentity",
+          "offset": 16,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "executor identity"
+        },
+        {
+          "name": "TargetIdentity",
+          "offset": 17,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "target identity"
+        },
+        {
+          "name": "UpdateStatus",
+          "offset": 18,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "party-update switch"
+        },
+        {
+          "name": "Count",
+          "offset": 19,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "party count"
+        },
+        {
+          "name": "ExecuteCharacterName",
+          "offset": 20,
+          "size": 32,
+          "sourceType": "char[32]",
+          "evidence": "executor name"
+        },
+        {
+          "name": "TargetCharacterName",
+          "offset": 52,
+          "size": 32,
+          "sourceType": "char[32]",
+          "evidence": "target name"
+        }
+      ]
+    },
+    {
+      "packet": "InviteCancelResult",
+      "channel": "zone-down",
+      "typeName": "Win335_InviteCancelResult_KnownFields",
+      "knownSize": 5,
+      "fields": [
+        {
+          "name": "Result",
+          "offset": 0,
+          "size": 4,
+          "sourceType": "uint32_t",
+          "evidence": "result field layout"
+        },
+        {
+          "name": "AuthType",
+          "offset": 4,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "party AuthType test"
+        }
+      ]
+    },
+    {
+      "packet": "QuestCompleteFlags",
+      "channel": "zone-down",
+      "typeName": "Win335_QuestCompleteFlags_KnownFields",
+      "knownSize": 342,
+      "fields": [
+        {
+          "name": "completeFlagArray",
+          "offset": 0,
+          "size": 200,
+          "sourceType": "uint8_t[200]",
+          "evidence": "Windows copies 0x136 bytes; PS3 copies 0xC8 bytes"
+        },
+        {
+          "name": "unknownCompleteMask",
+          "offset": 310,
+          "size": 32,
+          "sourceType": "Windows-only",
+          "evidence": "Windows dispatcher forwards a second 32-byte region at payload +0x136"
+        }
+      ]
+    },
+    {
+      "packet": "QuestCompleteFlag",
+      "channel": "zone-down",
+      "typeName": "Win335_QuestCompleteFlag_KnownFields",
+      "knownSize": 5,
+      "fields": [
+        {
+          "name": "bitIndex",
+          "offset": 0,
+          "size": 2,
+          "sourceType": "uint16_t",
+          "evidence": "quest-completion bit index"
+        },
+        {
+          "name": "completed",
+          "offset": 2,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "set/clear boolean"
+        },
+        {
+          "name": "update",
+          "offset": 3,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "EventFramework update boolean"
+        },
+        {
+          "name": "unknown4",
+          "offset": 4,
+          "size": 1,
+          "sourceType": "Windows-only",
+          "evidence": "optional 3.x bitset/UI update index"
+        }
+      ]
+    },
+    {
+      "packet": "LeveCompleteFlag",
+      "channel": "zone-down",
+      "typeName": "Win335_LeveCompleteFlag_KnownFields",
+      "knownSize": 3,
+      "fields": [
+        {
+          "name": "bitIndex",
+          "offset": 0,
+          "size": 2,
+          "sourceType": "uint16_t",
+          "evidence": "leve-completion bit index"
+        },
+        {
+          "name": "completed",
+          "offset": 2,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "set/clear boolean"
+        }
+      ]
+    },
+    {
+      "packet": "DailyQuests",
+      "channel": "zone-down",
+      "typeName": "Win335_DailyQuests_KnownFields",
+      "knownSize": 52,
+      "fields": [
+        {
+          "name": "update",
+          "offset": 0,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "daily-quest synchronization update boolean"
+        },
+        {
+          "name": "dailyQuestArray",
+          "offset": 4,
+          "size": 24,
+          "sourceType": "Client::Network::Protocol::Zone::ZoneProtoDownDailyQuest[6]",
+          "evidence": "12 DailyQuest records in Windows versus 6 in PS3"
+        },
+        {
+          "name": "dailyQuestArray_6_11",
+          "offset": 28,
+          "size": 24,
+          "sourceType": "Windows-only",
+          "evidence": "Windows processes 12 four-byte records; PS3 processes 6"
+        }
+      ]
+    },
+    {
+      "packet": "DailyQuest",
+      "channel": "zone-down",
+      "typeName": "Win335_DailyQuest_KnownFields",
+      "knownSize": 8,
+      "fields": [
+        {
+          "name": "index",
+          "offset": 0,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "daily-quest slot index"
+        },
+        {
+          "name": "update",
+          "offset": 1,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "daily-quest synchronization update boolean"
+        },
+        {
+          "name": "dailyQuest",
+          "offset": 4,
+          "size": 4,
+          "sourceType": "Client::Network::Protocol::Zone::ZoneProtoDownDailyQuest",
+          "evidence": "quest ID and flags record"
+        }
+      ]
+    },
+    {
+      "packet": "QuestRepeatFlags",
+      "channel": "zone-down",
+      "typeName": "Win335_QuestRepeatFlags_KnownFields",
+      "knownSize": 2,
+      "fields": [
+        {
+          "name": "update",
+          "offset": 0,
+          "size": 1,
+          "sourceType": "uint8_t",
+          "evidence": "repeat-flag synchronization update boolean"
+        },
+        {
+          "name": "repeatFlagArray",
+          "offset": 1,
+          "size": 1,
+          "sourceType": "uint8_t[1]",
+          "evidence": "one-byte repeat-quest mask"
+        }
+      ]
+    }
+  ],
+  "caseComments": [
+    {
+      "address": "0x0000000140DD9338",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0064 ChatFrom [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9348",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0066 TellNotFound [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9358",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0067 RecvBusyStatus [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9368",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x006A RecvFinderStatus [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9378",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0065 Chat [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9388",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0068 GetChannelMemberListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9394",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0069 GetChannelListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD947E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E7 CancelLogoutCountdown [Windows-inline]"
+    },
+    {
+      "address": "0x0000000140DD94B4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x007B unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD94EA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D6 EnableLogout [Windows-inline]"
+    },
+    {
+      "address": "0x0000000140DD9520",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x007C unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD9556",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0067 ChatToChannel [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9593",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D7 LogMessage [Windows-inline]"
+    },
+    {
+      "address": "0x0000000140DD95D2",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0149 FreeCompany [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD95E7",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0190 Create [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD95FC",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0191 Delete [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9611",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0148 Status [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9626",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0194 Warp [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD963B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0192 ActorMove [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9650",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0193 Transfer [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9665",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0335 GroundMarker [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD967A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0336 Frontline01Result [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DD968F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0196 RequestCast [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD96A4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0197 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD96B9",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0195 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD96CE",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0168 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD96E3",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0169 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD96F8",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x016A unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD970D",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0147 ActionResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9722",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0146 ActionResult1 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9727",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0142 Order [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9767",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0144 OrderTarget [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9781",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0143 OrderMySelf [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD979C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0290 GMOrder2 [PS3-linked]\n0x0291 GMOrder4 [PS3-linked]\n0x0292 GMOrder8 [PS3-linked]\n0x0293 GMOrder16 [PS3-linked]\n0x0294 GMOrder32 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD97B1",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0199 UpdateParty [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD97C6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x014B UpdateAlliance [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD97DB",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x019A InitZone [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD97F0",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x019B HateList [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9805",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x019C HaterList [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD981A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x019D CreateObject [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD982F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01BF CreateTreasure [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9844",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x019E DeleteObject [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9859",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01F3 LogText [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD986E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0145 Resting [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9883",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0140 HudParam [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9898",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x019F PlayerStatusUpdate [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD98AD",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0141 ActionIntegrity [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD98C2",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A1 BaseParam [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD98D7",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A0 PlayerStatus [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD98EC",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A2 FirstAttack [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9901",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A3 Condition [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9916",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A4 ChangeClass [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD992B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A5 Equip [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9940",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x014A RecastGroup [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD995C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A6 Inspect [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD997A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A7 Name [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9996",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01EF IsMarket [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD99AB",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01B4 TradeCommand [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD99C0",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01B5 ItemMessage [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD99D5",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01B6 UpdateItem [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD99E9",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01AF NormalItem [Windows-semantic]\n0x01B0 ItemSize [Windows-semantic]\n0x01B3 GilItem [Windows-semantic]\n0x01B7 AliasItem [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DD99FD",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01B1 ItemOperationBatch [Windows-semantic]\n0x01B2 ItemOperation [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DD9A11",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01AC MarketPriceHeader [Windows-semantic]\n0x01AD MarketPrice [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DD9A25",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01AA RetainerList [Windows-semantic]\n0x01AB RetainerData [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DD9A3A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01C1 MonsterNoteCategory [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9A56",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01A9 AttachMateriaRequest [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9A72",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02EA RetainerCustomizePreset [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9A8E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0316 FcChestLog [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9AAA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0317 SalvageResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9ABF",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01B8 OpenTreasure [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9AD4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01B9 LootRight [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9AE9",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01BA LootActionResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9AFE",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01BC TreasureOpenRight [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9B13",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01BB GameLog [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9B28",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01BE LootItems [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9B39",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01C0 TreasureFadeOut [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DD9B4C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x032C TreasureHuntReward [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9B61",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00C9 InviteResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9B76",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00CA InviteReplyResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9B8B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00CB InviteUpdate [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9BA0",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00CC GetCommonlistResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9BB5",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00CD GetCommonlistDetailResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9BCA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00CE SetProfileResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9BDF",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00CF GetProfileResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9BF4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D0 GetSearchCommentResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9C09",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D2 ChatChannelResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9C1E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D3 SendSystemMessage [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9C33",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D4 SendLoginMessage [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9C48",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D5 UpdateOnlineStatus [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9C5D",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00DC PcPartyResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9C72",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00DD PcPartyUpdate [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9C87",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00E1 BlacklistAddResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9C9C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00E2 BlacklistRemoveResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9CB1",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00E3 GetBlacklistResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9CC6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00E6 FriendlistRemoveResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9CDB",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00E7 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD9CF0",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00F0 LinkshellResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9D05",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00F1 GetLinkshellListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9D1A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00EB PcSearchResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9D2D",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00E4 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD9D40",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00E5 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DD9D55",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00FA LetterResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9D6A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00FB GetLetterMessageResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9D7F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00FC GetLetterMessageDetailResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9D94",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00FD GetLetterStatusResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9DA9",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0104 ItemSearchResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9DBE",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0105 GetItemSearchListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9DD3",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0106 GetRetainerListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9DE8",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0107 BuyMarketRetainerResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9DFD",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0108 MarketStorageUpdate [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9E12",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0109 GetItemHistoryResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9E27",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x010A GetRetainerSalesHistoryResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9E3C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x010B MarketRetainerUpdate [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9E51",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x010C CatalogSearchResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9E66",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D9 RequestItmeResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9E7B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x010E FreeCompanyResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9E90",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x010F GetFcStatusResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9EA5",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0110 GetFcInviteListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9EBA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0111 GetFcProfileResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9ECF",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0112 GetFcHeaderResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9EE4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0113 GetCompanyBoardResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9EF9",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0114 GetFcHierarchyResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9F0E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0115 GetFcActivityListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9F23",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0116 GetFcHierarchyLiteResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9F38",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0117 GetCompanyMottoResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9F4D",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0118 GetFcParamsResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9F62",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0119 GetFcActionResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9F77",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x011A GetFcMemoResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9F8C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0122 InfoGMCommandResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9FA1",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D6 PartyRecruitResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9FB6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D7 GetRecruitSearchListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9FCB",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00D8 GetRecruitDetailResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9FE0",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00DA AllianceReadyCheckResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DD9FF5",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00DB GetFcJoinRequestCommentResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA00A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x00DE InviteCancelResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA01F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x011B unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA034",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x011C unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA049",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x011D unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA066",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x012D SyncTag32 [PS3-linked]\n0x012E SyncTag64 [PS3-linked]\n0x012F SyncTag128 [PS3-linked]\n0x0130 SyncTag256 [PS3-linked]\n0x0132 unknown [Windows-only numeric case; semantics unproven]\n0x0133 unknown [Windows-only numeric case; semantics unproven]\n0x0134 unknown [Windows-only numeric case; semantics unproven]\n0x0135 unknown [Windows-only numeric case; semantics unproven]\n0x0136 unknown [Windows-only numeric case; semantics unproven]\n0x0137 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA084",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x014F unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA097",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0150 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA0AA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0151 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA0BD",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0152 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA0D0",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0153 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA0E3",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0154 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA0F6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0155 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA109",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0156 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA11C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0157 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA12F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0158 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA142",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0159 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA155",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x015A unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA168",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x015B unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA181",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01C3 EventPlay2 [PS3-linked]\n0x01C4 EventPlay4 [PS3-linked]\n0x01C5 EventPlay8 [PS3-linked]\n0x01C6 EventPlay16 [PS3-linked]\n0x01C7 EventPlay32 [PS3-linked]\n0x01C8 EventPlay64 [PS3-linked]\n0x01C9 EventPlay128 [PS3-linked]\n0x01CA EventPlay255 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA1B8",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01CF UpdateEventScene2 [PS3-linked]\n0x01D0 UpdateEventScene4 [PS3-linked]\n0x01D1 UpdateEventScene8 [PS3-linked]\n0x01D2 UpdateEventScene16 [PS3-linked]\n0x01D3 unknown [Windows-only numeric case; semantics unproven]\n0x01D4 unknown [Windows-only numeric case; semantics unproven]\n0x01D5 unknown [Windows-only numeric case; semantics unproven]\n0x01D6 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA1D5",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01D8 ResumeEventScene2 [PS3-linked]\n0x01D9 ResumeEventScene4 [PS3-linked]\n0x01DA ResumeEventScene8 [PS3-linked]\n0x01DB ResumeEventScene16 [PS3-linked]\n0x01DC ResumeEventScene32 [PS3-linked]\n0x01DD ResumeEventScene64 [PS3-linked]\n0x01DE ResumeEventScene128 [PS3-linked]\n0x01DF ResumeEventScene255 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA1FF",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01F2 ResumeEventSceneStr32 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA225",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01FF ResumeEventScene2Str [PS3-linked]\n0x0201 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA24F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E9 Notice2 [PS3-linked]\n0x01EA Notice4 [PS3-linked]\n0x01EB Notice8 [PS3-linked]\n0x01EC Notice16 [PS3-linked]\n0x01ED Notice32 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA283",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0263 BattleTalk2 [PS3-linked]\n0x0264 BattleTalk4 [PS3-linked]\n0x0265 BattleTalk8 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA2D2",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0277 BalloonTalk2 [PS3-linked]\n0x0278 BalloonTalk4 [PS3-linked]\n0x0279 BalloonTalk8 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA2FA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01CC PushEventState [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA324",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01CD PopEventState [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA33C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E0 Quests [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA345",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E1 Quest [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA36E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E2 QuestCompleteFlags [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA39B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E3 QuestCompleteFlag [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA3C8",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01F0 LegacyQuestCompleteFlags [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA3DA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0320 DailyQuests [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA3F9",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0321 DailyQuest [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA419",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0322 QuestRepeatFlags [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA43F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E4 Guildleves [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA45D",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E5 Guildleve [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA475",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E6 LeveCompleteFlags [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA482",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01E7 LeveCompleteFlag [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA4ED",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E2 ContentClearFlags [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA556",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E3 ContentAttainFlags [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA57F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0226 Director [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA5A2",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x01EE Tracking [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA5C0",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0259 EventLogMessage2 [PS3-linked]\n0x025A EventLogMessage4 [PS3-linked]\n0x025B EventLogMessage8 [PS3-linked]\n0x025C EventLogMessage16 [PS3-linked]\n0x025D EventLogMessage32 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA5DD",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x026C EventReject [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA600",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x028A WeatherId [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA615",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x028C DiscoveryReply [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA62A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x028B TitleList [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA63F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x014C PartyPos [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA654",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x014D AlliancePos [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA669",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x014E unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA679",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x028D unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA6A6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x026D MapMarker2 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA6C6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x026E MapMarker4 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA6E6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x026F MapMarker8 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA709",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0270 MapMarker16 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA72F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0271 MapMarker32 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA755",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0272 MapMarker64 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA77B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0273 MapMarker128 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA78E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x028E ChocoboTaxiStart [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA7A3",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02C6 Config [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA7B6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D0 NpcYell [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA7C9",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D1 SwapSystem [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA7DF",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D2 FatePcWork [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA7F2",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D3 LootResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA807",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D4 FateAccessCollectionEventObject [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA821",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D5 FateSyncLimitTime [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA838",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02D9 FateContextWork [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA84B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02DA FateActiveRange [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA85E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02DB UpdateFindContent [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA871",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0339 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA884",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E4 UpdateContent [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA897",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E6 SuccessFindContentAsMember5 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA8AA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02DE NotifyFindContentStatus [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA8BD",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E1 ResponsePenalties [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA8D0",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0311 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA8E3",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0078 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA8F6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0079 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA909",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x007A unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA91C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02DC Cabinet [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA92F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02DD Achievement [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA942",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02DF ColosseumResult44 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA955",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E0 ColosseumResult88 [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA968",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x033A unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA97B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0337 Frontline01BaseInfo [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDA98E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0338 unknown [unresolved]"
+    },
+    {
+      "address": "0x0000000140DDA9A1",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0349 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA9B4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x034B unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA9C7",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x034C unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA9DA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x034D unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDA9ED",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0353 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAA00",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0354 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAA13",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0355 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAA26",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E5 Text [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAA46",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x029E InspectQuests [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DDAA66",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x029F InspectGuildleves [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DDAA86",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02A0 InspectReward [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DDAA9B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E8 SetEventBehavior [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAAAE",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02E9 BallistaStart [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAAB3",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02EB FateReward [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAADE",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02EC HouseList [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAAF3",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02ED House [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB06",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02EE YardObjectList [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB19",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F0 YardObject [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB2C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F1 Interior [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB3F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F9 FurnitureListS [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB52",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02FA FurnitureListM [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB65",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02FB FurnitureListL [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB78",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02FC Furniture [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB8B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02FF HousingObjectTransform [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAB9E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0301 HousingObjectTransformMulti [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDABB1",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x032A HousingObjectTransformMultiResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDABC4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0300 HousingObjectColor [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDABD7",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02FD VoteKickConfirm [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDABEA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F2 HousingAuction [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDABFD",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F3 HousingProfile [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAC10",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02FE HousingProfileList [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAC23",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F4 HousingHouseName [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAC36",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F5 HousingGreeting [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAC49",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F8 HousingWelcome [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAC5C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x030B unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAC6F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F6 CharaHousingLandData [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAC82",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02F7 CharaHousing [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAC95",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x032B HousingLogWithHouseName [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDACA8",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x032D HousingCombinedObjectStatus [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDACBB",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0307 HousingGetPersonalRoomProfileListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDACCE",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0308 HousingGetHouseBuddyStableListResult [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDACE3",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x032E HouseBuddyModelData [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDACF6",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x032F unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAD09",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0330 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAD1C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0331 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAD2F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0332 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAD42",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0333 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAD55",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0309 HouseTrainBuddyData [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAD68",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x030A unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAD7B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0334 Marker [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAD8E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0302 ConfusionApproach [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDADA1",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0303 ConfusionTurn [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDADB4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x033F unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDADC7",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0304 ConfusionTurnCancel [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDADDA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0305 ConfusionCancel [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDADED",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0306 MIPMemberList [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAE0A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x02A1 InspectBeastReputation [Windows-semantic]"
+    },
+    {
+      "address": "0x0000000140DDAE2A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x033E UnMountLink [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAE3F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0200 Mount [PS3-linked]"
+    },
+    {
+      "address": "0x0000000140DDAE52",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0348 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAE65",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0356 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAE78",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0385 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAE8B",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0386 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAE9E",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0384 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAEB1",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0387 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAEC4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0388 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAED7",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0389 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAEEA",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x038A unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAEFD",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0352 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAF10",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x030C unknown [unresolved]"
+    },
+    {
+      "address": "0x0000000140DDAF23",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x034A unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAF36",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x03B7 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAF49",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x034E unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAF5C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x034F unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAF6F",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0350 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAF82",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0351 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAF95",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0357 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAFA8",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0358 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAFBB",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x030D unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAFCE",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0359 unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAFE1",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x035A unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDAFF4",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x035B unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDB007",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x035C unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDB01A",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x035D unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDB036",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x035E unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDB049",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x030E unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDB05C",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x030F unknown [Windows-only numeric case; semantics unproven]"
+    },
+    {
+      "address": "0x0000000140DDB065",
+      "comment": "Sapphire packet cases (Windows 2016.07.05):\n0x0310 unknown [Windows-only numeric case; semantics unproven]"
+    }
+  ]
+}

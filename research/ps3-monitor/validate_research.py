@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from build_packet_catalog import build_outputs
+from build_readability_plan import build as build_readability
 
 ROOT = Path(__file__).resolve().parent
 ALLOWED_STATUSES = {
@@ -56,6 +57,13 @@ def validate_matches(matches: dict[str, Any]) -> dict[tuple[str, str], dict[str,
         seen_windows.add(entry["windowsAddress"])
         for opcode in entry["opcodes"]:
             assert OPCODE_RE.fullmatch(opcode), (entry, opcode)
+    for entry in matches.get("windowsSupportingFunctions", []):
+        assert entry["confidence"] == "high", entry
+        assert entry["mappingKind"] == "windows-supporting", entry
+        assert entry["roles"] and entry["evidence"], entry
+        assert "ps3IdbUrl" not in entry and "ps3Address" not in entry, entry
+        assert entry["windowsAddress"] not in seen_windows, entry["windowsAddress"]
+        seen_windows.add(entry["windowsAddress"])
     seen_inline: set[tuple[str, str]] = set()
     for entry in matches.get("windowsInlineMappings", []):
         key = (entry["channel"], entry["opcode"])
@@ -249,6 +257,65 @@ def validate_candidates(
     ), "dispatcher inventory still contains candidate status"
 
 
+def validate_readability(matches: dict[str, Any]) -> dict[str, int]:
+    header, plan = build_readability()
+    assert (ROOT / "windows_readability_types.h").read_text(encoding="utf-8") == header, "stale windows_readability_types.h"
+    assert load("readability_plan.json") == plan, "stale readability_plan.json"
+    assert plan["summary"] == {
+        "opcodeTypes": 2,
+        "knownFieldTypes": len(plan["knownFieldTypes"]),
+        "typedPayloadHandlers": len(plan["payloadHandlerTypes"]),
+        "typedIpcWrappers": len(plan["ipcWrapperTypes"]),
+        "typedSupportingFunctions": len(plan["supportingFunctionTypes"]),
+        "typedGlobals": len(plan["globalTypes"]),
+        "dispatcherCaseComments": len(plan["caseComments"]),
+    }
+    assert len({item["address"] for item in plan["caseComments"]}) == len(plan["caseComments"])
+    assert len({item["windowsAddress"] for item in plan["payloadHandlerTypes"]}) == len(plan["payloadHandlerTypes"])
+    for record in plan["knownFieldTypes"]:
+        assert record["fields"] and record["knownSize"] > 0, record
+        end = 0
+        for field in record["fields"]:
+            assert field["offset"] >= end, (record["packet"], field)
+            end = field["offset"] + field["size"]
+        assert end == record["knownSize"], record["packet"]
+
+    graph = load("subsystem_callgraph.json")
+    assert graph["schemaVersion"] == 1
+    assert {cluster["name"] for cluster in graph["clusters"]} == {
+        "quest-leve",
+        "retainer-inventory",
+    }
+    mapped_addresses = {
+        f"0x{int(item['windowsAddress'], 16):016X}"
+        for item in matches["matches"]
+        + matches.get("sharedMatches", [])
+        + matches.get("windowsMappings", [])
+    }
+    callee_addresses: set[str] = set()
+    for cluster in graph["clusters"]:
+        assert cluster["summary"] == {
+            "roots": len(cluster["rootFunctions"]),
+            "directCallees": len(cluster["directCallees"]),
+            "autoNamedCallees": sum(item["autoNamed"] for item in cluster["directCallees"]),
+        }
+        for root in cluster["rootFunctions"]:
+            assert root["windowsAddress"] in mapped_addresses, root
+        callee_addresses.update(item["windowsAddress"] for item in cluster["directCallees"])
+    for item in matches.get("windowsSupportingFunctions", []):
+        assert f"0x{int(item['windowsAddress'], 16):016X}" in callee_addresses, item
+    return {
+        "knownFieldTypes": len(plan["knownFieldTypes"]),
+        "typedFunctions": len(plan["dispatcherTypes"])
+        + 2
+        + len(plan["payloadHandlerTypes"])
+        + len(plan["ipcWrapperTypes"])
+        + len(plan["supportingFunctionTypes"]),
+        "typedGlobals": len(plan["globalTypes"]),
+        "caseComments": len(plan["caseComments"]),
+    }
+
+
 def main() -> None:
     matches = load("packet_matches.json")
     inventory = load("dispatcher_cases.json")
@@ -260,6 +327,7 @@ def main() -> None:
     validate_structures(structures, confirmed)
     validate_reviews(reviews, dispatchers)
     validate_candidates(candidates, dispatchers)
+    readability = validate_readability(matches)
     markdown, html_catalog = build_outputs(ROOT)
     assert (ROOT / "PACKET_CATALOG.md").read_text(encoding="utf-8") == markdown, "stale PACKET_CATALOG.md"
     assert (ROOT / "packet_catalog.html").read_text(encoding="utf-8") == html_catalog, "stale packet_catalog.html"
@@ -269,7 +337,12 @@ def main() -> None:
         f"{sum(len(item['cases']) for item in inventory['dispatchers'])} dispatcher cases, "
         f"{len(candidates['candidates'])} ranked candidates, "
         f"{len(matches.get('windowsMappings', []))} Windows-only semantic functions, "
-        f"{len(matches.get('windowsInlineMappings', []))} Windows inline cases"
+        f"{len(matches.get('windowsSupportingFunctions', []))} Windows supporting functions, "
+        f"{len(matches.get('windowsInlineMappings', []))} Windows inline cases, "
+        f"{readability['knownFieldTypes']} readability types, "
+        f"{readability['typedFunctions']} typed functions, "
+        f"{readability['typedGlobals']} typed globals, "
+        f"{readability['caseComments']} case comments"
     )
 
 

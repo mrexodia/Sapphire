@@ -24,7 +24,7 @@ def _entries(mapping: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _windows_entries(mapping: dict[str, Any]) -> list[dict[str, Any]]:
-    return mapping.get("windowsMappings", [])
+    return mapping.get("windowsMappings", []) + mapping.get("windowsSupportingFunctions", [])
 
 
 def _load(mapping_path: str | Path) -> dict[str, Any]:
@@ -38,11 +38,16 @@ def _comment(entry: dict[str, Any]) -> str:
 
 
 def _windows_comment(entry: dict[str, Any]) -> str:
-    cases = ", ".join(
-        f"{opcode} {packet}" for opcode, packet in zip(entry["opcodes"], entry["packets"])
-    )
+    if entry.get("mappingKind") == "windows-supporting":
+        roles = ", ".join(entry["roles"])
+        first_line = f"Sapphire packet support: {roles}"
+    else:
+        cases = ", ".join(
+            f"{opcode} {packet}"
+            for opcode, packet in zip(entry["opcodes"], entry["packets"])
+        )
+        first_line = f"Sapphire packet mapping: {entry['channel']} {cases}"
     evidence = " ".join(entry.get("evidence", []))
-    first_line = f"Sapphire packet mapping: {entry['channel']} {cases}"
     return first_line if not evidence else f"{first_line}\nEvidence: {evidence}"
 
 

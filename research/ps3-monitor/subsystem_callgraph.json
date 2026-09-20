@@ -1,0 +1,1713 @@
+{
+  "schemaVersion": 1,
+  "binary": "ffxiv_dx11.exe 2016.07.05.0000.0001",
+  "method": "One-hop direct callees from confirmed packet-handler semantic islands. Priority is triage only and is not semantic proof.",
+  "clusters": [
+    {
+      "name": "quest-leve",
+      "rootFunctions": [
+        {
+          "windowsAddress": "0x0000000140CC2500",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests",
+          "packets": [
+            "DailyQuests"
+          ],
+          "opcodes": [
+            "0x0320"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE9294"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC2580",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveDailyQuest",
+          "packets": [
+            "DailyQuest"
+          ],
+          "opcodes": [
+            "0x0321"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE936C"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC25D0",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags",
+          "packets": [
+            "QuestRepeatFlags"
+          ],
+          "opcodes": [
+            "0x0322"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE93F4"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC26C0",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags",
+          "packets": [
+            "LeveCompleteFlags"
+          ],
+          "opcodes": [
+            "0x01E6"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE97C8"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC2710",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlag",
+          "packets": [
+            "LeveCompleteFlag"
+          ],
+          "opcodes": [
+            "0x01E7"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE9844"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC2790",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveContentClearFlags",
+          "packets": [
+            "ContentClearFlags"
+          ],
+          "opcodes": [
+            "0x02E2"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE98F8"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC2880",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveContentAttainFlags",
+          "packets": [
+            "ContentAttainFlags"
+          ],
+          "opcodes": [
+            "0x02E3"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE99E4"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC31D0",
+          "windowsName": "Client__Game__Network__Packet__InspectQuests",
+          "packets": [
+            "InspectQuests"
+          ],
+          "opcodes": [
+            "0x029E"
+          ],
+          "ps3Links": []
+        },
+        {
+          "windowsAddress": "0x0000000140CC6990",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags",
+          "packets": [
+            "QuestCompleteFlags"
+          ],
+          "opcodes": [
+            "0x01E2"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE9078"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC6A90",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag",
+          "packets": [
+            "QuestCompleteFlag"
+          ],
+          "opcodes": [
+            "0x01E3"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE90F4"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC6D50",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveTrackings",
+          "packets": [
+            "Tracking"
+          ],
+          "opcodes": [
+            "0x01EE"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE9AD0"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC7F20",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveQuest",
+          "packets": [
+            "Quest"
+          ],
+          "opcodes": [
+            "0x01E1"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE8DB0"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC8D20",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveQuests",
+          "packets": [
+            "Quests"
+          ],
+          "opcodes": [
+            "0x01E0"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE8F9C"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CD5A00",
+          "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags",
+          "packets": [
+            "LegacyQuestCompleteFlags"
+          ],
+          "opcodes": [
+            "0x01F0"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE91B4"
+          ]
+        }
+      ],
+      "directCallees": [
+        {
+          "windowsAddress": "0x00000001406044E0",
+          "windowsName": "Client__Game__Event__EventFramework__GetInstance",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuest",
+            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests",
+            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlag",
+            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuest",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests",
+            "Client__Game__Network__SyncTagPacket__ReceiveTrackings"
+          ],
+          "totalCallers": 424,
+          "autoNamed": false,
+          "priority": 1000
+        },
+        {
+          "windowsAddress": "0x0000000140013960",
+          "windowsName": "Client__System__Framework__Framework__GetUIModule",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests",
+            "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags"
+          ],
+          "totalCallers": 1504,
+          "autoNamed": false,
+          "priority": 400
+        },
+        {
+          "windowsAddress": "0x0000000140ECD450",
+          "windowsName": "__security_check_cookie",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuest",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests",
+            "Client__Game__Network__SyncTagPacket__ReceiveTrackings"
+          ],
+          "totalCallers": 5407,
+          "autoNamed": false,
+          "priority": 400
+        },
+        {
+          "windowsAddress": "0x00000001405383A0",
+          "windowsName": "sub_1405383A0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuest",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
+          ],
+          "totalCallers": 4,
+          "autoNamed": true,
+          "priority": 335
+        },
+        {
+          "windowsAddress": "0x00000001406A8970",
+          "windowsName": "sub_1406A8970",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuest",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
+          ],
+          "totalCallers": 2,
+          "autoNamed": true,
+          "priority": 235
+        },
+        {
+          "windowsAddress": "0x0000000141158D80",
+          "windowsName": "sub_141158D80",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuest",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
+          ],
+          "totalCallers": 4,
+          "autoNamed": true,
+          "priority": 235
+        },
+        {
+          "windowsAddress": "0x000000014001F580",
+          "windowsName": "sub_14001F580",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests",
+            "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags"
+          ],
+          "totalCallers": 2788,
+          "autoNamed": true,
+          "priority": 225
+        },
+        {
+          "windowsAddress": "0x0000000140ECCAB0",
+          "windowsName": "memmove",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags",
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags"
+          ],
+          "totalCallers": 1861,
+          "autoNamed": false,
+          "priority": 200
+        },
+        {
+          "windowsAddress": "0x0000000140536B50",
+          "windowsName": "sub_140536B50",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
+          ],
+          "totalCallers": 5,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001405871E0",
+          "windowsName": "sub_1405871E0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveTrackings"
+          ],
+          "totalCallers": 3,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001405874B0",
+          "windowsName": "sub_1405874B0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveTrackings"
+          ],
+          "totalCallers": 3,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140604610",
+          "windowsName": "nullsub_102",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140604620",
+          "windowsName": "nullsub_103",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlag"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140614300",
+          "windowsName": "sub_140614300",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags"
+          ],
+          "totalCallers": 2,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140657ED0",
+          "windowsName": "sub_140657ED0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests"
+          ],
+          "totalCallers": 0,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140657FD0",
+          "windowsName": "sub_140657FD0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuest"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014066B1C0",
+          "windowsName": "sub_14066B1C0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuests"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014066B230",
+          "windowsName": "sub_14066B230",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014066B240",
+          "windowsName": "sub_14066B240",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlag"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014066B280",
+          "windowsName": "sub_14066B280",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014066B290",
+          "windowsName": "sub_14066B290",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014066B2A0",
+          "windowsName": "sub_14066B2A0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001406B46D0",
+          "windowsName": "sub_1406B46D0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveTrackings"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014098CE10",
+          "windowsName": "sub_14098CE10",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveQuestCompleteFlags"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140CBEAE0",
+          "windowsName": "sub_140CBEAE0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests"
+          ],
+          "totalCallers": 5,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014115A6E0",
+          "windowsName": "sub_14115A6E0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveTrackings"
+          ],
+          "totalCallers": 2,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014115A710",
+          "windowsName": "sub_14115A710",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveTrackings"
+          ],
+          "totalCallers": 2,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140009860",
+          "windowsName": "sub_140009860",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags"
+          ],
+          "totalCallers": 4429,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x000000014001F9F0",
+          "windowsName": "sub_14001F9F0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests"
+          ],
+          "totalCallers": 710,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001405B81E0",
+          "windowsName": "sub_1405B81E0",
+          "rootReferences": [
+            "Client__Game__Network__SyncTagPacket__ReceiveLegacyQuestCompleteFlags"
+          ],
+          "totalCallers": 13,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x000000014099F940",
+          "windowsName": "sub_14099F940",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests"
+          ],
+          "totalCallers": 35,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x0000000140CBDA20",
+          "windowsName": "sub_140CBDA20",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests"
+          ],
+          "totalCallers": 132,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x0000000140ECD010",
+          "windowsName": "strcat_s",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests"
+          ],
+          "totalCallers": 22,
+          "autoNamed": false,
+          "priority": 100
+        },
+        {
+          "windowsAddress": "0x0000000140ECE880",
+          "windowsName": "sprintf_s",
+          "rootReferences": [
+            "Client__Game__Network__Packet__InspectQuests"
+          ],
+          "totalCallers": 373,
+          "autoNamed": false,
+          "priority": 100
+        }
+      ],
+      "summary": {
+        "roots": 14,
+        "directCallees": 34,
+        "autoNamedCallees": 28
+      }
+    },
+    {
+      "name": "retainer-inventory",
+      "rootFunctions": [
+        {
+          "windowsAddress": "0x00000001404D5AC0",
+          "windowsName": "Client__Game__Item__StorageManager__ReceiveIsMarket",
+          "packets": [
+            "IsMarket"
+          ],
+          "opcodes": [
+            "0x01EF"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AD5B14"
+          ]
+        },
+        {
+          "windowsAddress": "0x00000001404D5F00",
+          "windowsName": "Client__Game__Item__StorageManager__ReceiveRetainerCustomizePreset",
+          "packets": [
+            "RetainerCustomizePreset"
+          ],
+          "opcodes": [
+            "0x02EA"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AD60B8"
+          ]
+        },
+        {
+          "windowsAddress": "0x00000001404D7520",
+          "windowsName": "Client__Game__Item__SalvageManager__ReceiveSalvageResults",
+          "packets": [
+            "SalvageResult"
+          ],
+          "opcodes": [
+            "0x0317"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00ADB064"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CBF0E0",
+          "windowsName": "Client__Game__Network__Packet__SetItem",
+          "packets": [
+            "UpdateItem"
+          ],
+          "opcodes": [
+            "0x01B6"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE2594"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CBF6E0",
+          "windowsName": "Client__Game__Network__Packet__CreateTreasure",
+          "packets": [
+            "CreateTreasure"
+          ],
+          "opcodes": [
+            "0x01BF"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE38C8"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC00D0",
+          "windowsName": "Client__Game__Network__Packet__ReceiveTradeCommand",
+          "packets": [
+            "TradeCommand"
+          ],
+          "opcodes": [
+            "0x01B4"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE2BC8"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC00F0",
+          "windowsName": "Client__Game__Network__Packet__ReceiveItemMessage",
+          "packets": [
+            "ItemMessage"
+          ],
+          "opcodes": [
+            "0x01B5"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE2C04"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC0130",
+          "windowsName": "Client__Game__Network__Packet__OnOpenTreasure",
+          "packets": [
+            "OpenTreasure"
+          ],
+          "opcodes": [
+            "0x01B8"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE3C74"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC0170",
+          "windowsName": "Client__Game__Network__Packet__OnLootRight",
+          "packets": [
+            "LootRight"
+          ],
+          "opcodes": [
+            "0x01B9"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE3CDC"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC0190",
+          "windowsName": "Client__Game__Network__Packet__OnLootActionResult",
+          "packets": [
+            "LootActionResult"
+          ],
+          "opcodes": [
+            "0x01BA"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE3D18"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC01B0",
+          "windowsName": "Client__Game__Network__Packet__OnTreasureOpenRight",
+          "packets": [
+            "TreasureOpenRight"
+          ],
+          "opcodes": [
+            "0x01BC"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE3ED8"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC0360",
+          "windowsName": "Client__Game__Network__Packet__OnLootItems",
+          "packets": [
+            "LootItems"
+          ],
+          "opcodes": [
+            "0x01BE"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE412C"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC03A0",
+          "windowsName": "Client__Game__Network__Packet__TreasureFadeOut",
+          "packets": [
+            "TreasureFadeOut"
+          ],
+          "opcodes": [
+            "0x01C0"
+          ],
+          "ps3Links": []
+        },
+        {
+          "windowsAddress": "0x0000000140CC03D0",
+          "windowsName": "Client__Game__Network__Packet__OnTreasureHuntReward",
+          "packets": [
+            "TreasureHuntReward"
+          ],
+          "opcodes": [
+            "0x032C"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE41A8"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC0950",
+          "windowsName": "Client__Game__Network__Packet__OnLootResult",
+          "packets": [
+            "LootResult"
+          ],
+          "opcodes": [
+            "0x02D3"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE6084"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC0970",
+          "windowsName": "Client__Game__Network__Packet__OnCabinet",
+          "packets": [
+            "Cabinet"
+          ],
+          "opcodes": [
+            "0x02DC"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:00AE6180"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140CC86F0",
+          "windowsName": "Client__Game__Network__Packet__ReceiveItemOperationPackets",
+          "packets": [
+            "ItemOperation",
+            "ItemOperationBatch"
+          ],
+          "opcodes": [
+            "0x01B1",
+            "0x01B2"
+          ],
+          "ps3Links": []
+        },
+        {
+          "windowsAddress": "0x0000000140CC8710",
+          "windowsName": "Client__Game__Network__Packet__ReceiveMarketPricePackets",
+          "packets": [
+            "MarketPrice",
+            "MarketPriceHeader"
+          ],
+          "opcodes": [
+            "0x01AC",
+            "0x01AD"
+          ],
+          "ps3Links": []
+        },
+        {
+          "windowsAddress": "0x0000000140CC8730",
+          "windowsName": "Client__Game__Network__Packet__ReceiveRetainerPackets",
+          "packets": [
+            "RetainerData",
+            "RetainerList"
+          ],
+          "opcodes": [
+            "0x01AA",
+            "0x01AB"
+          ],
+          "ps3Links": []
+        },
+        {
+          "windowsAddress": "0x0000000140CC8FE0",
+          "windowsName": "Client__Game__Network__Packet__ReceiveItemStoragePackets",
+          "packets": [
+            "AliasItem",
+            "GilItem",
+            "ItemSize",
+            "NormalItem"
+          ],
+          "opcodes": [
+            "0x01AF",
+            "0x01B0",
+            "0x01B3",
+            "0x01B7"
+          ],
+          "ps3Links": []
+        },
+        {
+          "windowsAddress": "0x0000000140D17280",
+          "windowsName": "Client__Info__InfoPacket__ItemSearchResult",
+          "packets": [
+            "ItemSearchResult"
+          ],
+          "opcodes": [
+            "0x0104"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:004CCC8C"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140D17320",
+          "windowsName": "Client__Info__InfoPacket__GetItemSearchListResult",
+          "packets": [
+            "GetItemSearchListResult"
+          ],
+          "opcodes": [
+            "0x0105"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:004CCDE8"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140D17380",
+          "windowsName": "Client__Info__InfoPacket__GetRetainerListResult",
+          "packets": [
+            "GetRetainerListResult"
+          ],
+          "opcodes": [
+            "0x0106"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:004CD090"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140D173E0",
+          "windowsName": "Client__Info__InfoPacket__GetItemHistoryResult",
+          "packets": [
+            "GetItemHistoryResult"
+          ],
+          "opcodes": [
+            "0x0109"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:004CDD68"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140D17440",
+          "windowsName": "Client__Info__InfoPacket__GetRetainerSalesHistoryResult",
+          "packets": [
+            "GetRetainerSalesHistoryResult"
+          ],
+          "opcodes": [
+            "0x010A"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:004CDEA8"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140D1A3D0",
+          "windowsName": "Client__Info__InfoPacket__BuyMarketRetainerResult",
+          "packets": [
+            "BuyMarketRetainerResult"
+          ],
+          "opcodes": [
+            "0x0107"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:004CD284"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140D1A790",
+          "windowsName": "Client__Info__InfoPacket__MarketStorageUpdate",
+          "packets": [
+            "MarketStorageUpdate"
+          ],
+          "opcodes": [
+            "0x0108"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:004CD748"
+          ]
+        },
+        {
+          "windowsAddress": "0x0000000140D1AE30",
+          "windowsName": "Client__Info__InfoPacket__MarketRetainerUpdate",
+          "packets": [
+            "MarketRetainerUpdate"
+          ],
+          "opcodes": [
+            "0x010B"
+          ],
+          "ps3Links": [
+            "idb://ffxivgame.ppu.elf.i64:004CDFE8"
+          ]
+        }
+      ],
+      "directCallees": [
+        {
+          "windowsAddress": "0x0000000140013960",
+          "windowsName": "Client__System__Framework__Framework__GetUIModule",
+          "rootReferences": [
+            "Client__Game__Item__SalvageManager__ReceiveSalvageResults",
+            "Client__Game__Item__StorageManager__ReceiveIsMarket",
+            "Client__Game__Item__StorageManager__ReceiveRetainerCustomizePreset",
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__GetItemHistoryResult",
+            "Client__Info__InfoPacket__GetItemSearchListResult",
+            "Client__Info__InfoPacket__GetRetainerListResult",
+            "Client__Info__InfoPacket__GetRetainerSalesHistoryResult",
+            "Client__Info__InfoPacket__ItemSearchResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 1504,
+          "autoNamed": false,
+          "priority": 1100
+        },
+        {
+          "windowsAddress": "0x0000000140032C30",
+          "windowsName": "sub_140032C30",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__GetItemHistoryResult",
+            "Client__Info__InfoPacket__GetItemSearchListResult",
+            "Client__Info__InfoPacket__GetRetainerListResult",
+            "Client__Info__InfoPacket__GetRetainerSalesHistoryResult",
+            "Client__Info__InfoPacket__ItemSearchResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 266,
+          "autoNamed": true,
+          "priority": 825
+        },
+        {
+          "windowsAddress": "0x0000000140ECD450",
+          "windowsName": "__security_check_cookie",
+          "rootReferences": [
+            "Client__Game__Item__SalvageManager__ReceiveSalvageResults",
+            "Client__Game__Item__StorageManager__ReceiveRetainerCustomizePreset",
+            "Client__Game__Network__Packet__OnTreasureOpenRight",
+            "Client__Game__Network__Packet__SetItem",
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 5407,
+          "autoNamed": false,
+          "priority": 700
+        },
+        {
+          "windowsAddress": "0x000000014001F580",
+          "windowsName": "sub_14001F580",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnTreasureOpenRight",
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 2788,
+          "autoNamed": true,
+          "priority": 425
+        },
+        {
+          "windowsAddress": "0x00000001405428B0",
+          "windowsName": "sub_1405428B0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnLootItems",
+            "Client__Game__Network__Packet__OnOpenTreasure",
+            "Client__Game__Network__Packet__OnTreasureOpenRight",
+            "Client__Game__Network__Packet__TreasureFadeOut"
+          ],
+          "totalCallers": 6,
+          "autoNamed": true,
+          "priority": 425
+        },
+        {
+          "windowsAddress": "0x0000000140009860",
+          "windowsName": "sub_140009860",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 4429,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x000000014001B370",
+          "windowsName": "sub_14001B370",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 2371,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x000000014001B460",
+          "windowsName": "sub_14001B460",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 2726,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x0000000140046470",
+          "windowsName": "sub_140046470",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__ItemSearchResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate"
+          ],
+          "totalCallers": 17,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x00000001400C5EC0",
+          "windowsName": "sub_1400C5EC0",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 311,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x00000001400C9280",
+          "windowsName": "sub_1400C9280",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 312,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x00000001400C9300",
+          "windowsName": "sub_1400C9300",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 314,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x00000001400C9380",
+          "windowsName": "sub_1400C9380",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 318,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x00000001400D55B0",
+          "windowsName": "sub_1400D55B0",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 493,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x00000001409BDBA0",
+          "windowsName": "sub_1409BDBA0",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 55,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x00000001409BE560",
+          "windowsName": "sub_1409BE560",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult",
+            "Client__Info__InfoPacket__MarketRetainerUpdate",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 74,
+          "autoNamed": true,
+          "priority": 325
+        },
+        {
+          "windowsAddress": "0x00000001409ED5D0",
+          "windowsName": "sub_1409ED5D0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure",
+            "Client__Game__Network__Packet__OnTreasureOpenRight"
+          ],
+          "totalCallers": 2,
+          "autoNamed": true,
+          "priority": 235
+        },
+        {
+          "windowsAddress": "0x000000014001F9F0",
+          "windowsName": "sub_14001F9F0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnTreasureOpenRight",
+            "Client__Info__InfoPacket__MarketRetainerUpdate"
+          ],
+          "totalCallers": 710,
+          "autoNamed": true,
+          "priority": 225
+        },
+        {
+          "windowsAddress": "0x00000001405C4110",
+          "windowsName": "sub_1405C4110",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem",
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 400,
+          "autoNamed": true,
+          "priority": 225
+        },
+        {
+          "windowsAddress": "0x0000000140761E80",
+          "windowsName": "sub_140761E80",
+          "rootReferences": [
+            "Client__Game__Item__SalvageManager__ReceiveSalvageResults",
+            "Client__Game__Item__StorageManager__ReceiveRetainerCustomizePreset"
+          ],
+          "totalCallers": 919,
+          "autoNamed": true,
+          "priority": 225
+        },
+        {
+          "windowsAddress": "0x0000000140037A80",
+          "windowsName": "sub_140037A80",
+          "rootReferences": [
+            "Client__Info__InfoPacket__GetRetainerSalesHistoryResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140037B00",
+          "windowsName": "nullsub_14",
+          "rootReferences": [
+            "Client__Info__InfoPacket__MarketStorageUpdate"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140037CA0",
+          "windowsName": "sub_140037CA0",
+          "rootReferences": [
+            "Client__Info__InfoPacket__GetRetainerListResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140037DB0",
+          "windowsName": "sub_140037DB0",
+          "rootReferences": [
+            "Client__Info__InfoPacket__MarketRetainerUpdate"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001400464C0",
+          "windowsName": "sub_1400464C0",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014004C3F0",
+          "windowsName": "sub_14004C3F0",
+          "rootReferences": [
+            "Client__Info__InfoPacket__ItemSearchResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014004C6C0",
+          "windowsName": "sub_14004C6C0",
+          "rootReferences": [
+            "Client__Info__InfoPacket__GetItemHistoryResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014004C710",
+          "windowsName": "sub_14004C710",
+          "rootReferences": [
+            "Client__Info__InfoPacket__BuyMarketRetainerResult"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001404D0800",
+          "windowsName": "sub_1404D0800",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 3,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001404D1980",
+          "windowsName": "sub_1404D1980",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001404F3830",
+          "windowsName": "sub_1404F3830",
+          "rootReferences": [
+            "Client__Game__Network__Packet__ReceiveTradeCommand"
+          ],
+          "totalCallers": 0,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001404FCE90",
+          "windowsName": "sub_1404FCE90",
+          "rootReferences": [
+            "Client__Game__Network__Packet__ReceiveItemMessage"
+          ],
+          "totalCallers": 0,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014054FE20",
+          "windowsName": "sub_14054FE20",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnTreasureHuntReward"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140556DC0",
+          "windowsName": "sub_140556DC0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnLootResult"
+          ],
+          "totalCallers": 0,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x0000000140579D00",
+          "windowsName": "sub_140579D00",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnLootRight"
+          ],
+          "totalCallers": 0,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x000000014057D480",
+          "windowsName": "sub_14057D480",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnLootActionResult"
+          ],
+          "totalCallers": 0,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001405C4440",
+          "windowsName": "sub_1405C4440",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 5,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001405D0F20",
+          "windowsName": "sub_1405D0F20",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnTreasureOpenRight"
+          ],
+          "totalCallers": 5,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001407BD7A0",
+          "windowsName": "sub_1407BD7A0",
+          "rootReferences": [
+            "Client__Game__Item__StorageManager__ReceiveRetainerCustomizePreset"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001407F9190",
+          "windowsName": "sub_1407F9190",
+          "rootReferences": [
+            "Client__Game__Item__SalvageManager__ReceiveSalvageResults"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001409DFF20",
+          "windowsName": "sub_1409DFF20",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 4,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001409EBEF0",
+          "windowsName": "sub_1409EBEF0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001409EC030",
+          "windowsName": "sub_1409EC030",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001409EC080",
+          "windowsName": "sub_1409EC080",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnOpenTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001409EC240",
+          "windowsName": "sub_1409EC240",
+          "rootReferences": [
+            "Client__Game__Network__Packet__TreasureFadeOut"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001409EC260",
+          "windowsName": "sub_1409EC260",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001409EC2B0",
+          "windowsName": "sub_1409EC2B0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnLootItems"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001409EE530",
+          "windowsName": "sub_1409EE530",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": true,
+          "priority": 135
+        },
+        {
+          "windowsAddress": "0x00000001400B9170",
+          "windowsName": "sub_1400B9170",
+          "rootReferences": [
+            "Client__Info__InfoPacket__MarketRetainerUpdate"
+          ],
+          "totalCallers": 51,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404CFEC0",
+          "windowsName": "sub_1404CFEC0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 38,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404CFFD0",
+          "windowsName": "sub_1404CFFD0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 56,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404D0010",
+          "windowsName": "sub_1404D0010",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 18,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404D0730",
+          "windowsName": "sub_1404D0730",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 7,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404D1050",
+          "windowsName": "sub_1404D1050",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 214,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404D3DF0",
+          "windowsName": "sub_1404D3DF0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 273,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404D5AA0",
+          "windowsName": "sub_1404D5AA0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 17,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404D6C30",
+          "windowsName": "sub_1404D6C30",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 13,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404DB2F0",
+          "windowsName": "sub_1404DB2F0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 16,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404E3B40",
+          "windowsName": "sub_1404E3B40",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 34,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001404E8AC0",
+          "windowsName": "sub_1404E8AC0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__SetItem"
+          ],
+          "totalCallers": 17,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x000000014057A080",
+          "windowsName": "sub_14057A080",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnTreasureOpenRight"
+          ],
+          "totalCallers": 37,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001409DE350",
+          "windowsName": "sub_1409DE350",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 15,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001409DE380",
+          "windowsName": "sub_1409DE380",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 14,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001409DE4B0",
+          "windowsName": "sub_1409DE4B0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 6,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001409DE4F0",
+          "windowsName": "sub_1409DE4F0",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 7,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001409DF370",
+          "windowsName": "sub_1409DF370",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 401,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x00000001409EBA30",
+          "windowsName": "sub_1409EBA30",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 26,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x0000000140CEA470",
+          "windowsName": "sub_140CEA470",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 6,
+          "autoNamed": true,
+          "priority": 125
+        },
+        {
+          "windowsAddress": "0x0000000140CC7090",
+          "windowsName": "Client__Game__Network__Packet__ReceiveRetainerPackets_Impl",
+          "rootReferences": [
+            "Client__Game__Network__Packet__ReceiveRetainerPackets"
+          ],
+          "totalCallers": 0,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140CC7200",
+          "windowsName": "Client__Game__Network__Packet__ReceiveMarketPricePackets_Impl",
+          "rootReferences": [
+            "Client__Game__Network__Packet__ReceiveMarketPricePackets"
+          ],
+          "totalCallers": 0,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140CC7330",
+          "windowsName": "Client__Game__Network__Packet__ReceiveItemOperationPackets_Impl",
+          "rootReferences": [
+            "Client__Game__Network__Packet__ReceiveItemOperationPackets"
+          ],
+          "totalCallers": 0,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x0000000140CC8870",
+          "windowsName": "Client__Game__Network__Packet__ReceiveItemStoragePackets_Impl",
+          "rootReferences": [
+            "Client__Game__Network__Packet__ReceiveItemStoragePackets"
+          ],
+          "totalCallers": 0,
+          "autoNamed": false,
+          "priority": 110
+        }
+      ],
+      "summary": {
+        "roots": 28,
+        "directCallees": 72,
+        "autoNamedCallees": 66
+      }
+    }
+  ]
+}
