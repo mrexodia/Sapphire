@@ -54,8 +54,8 @@ def assign_statuses(
                 case["status"] = "confirmed"
             elif opcode in other_index:
                 case["status"] = "candidate"
-            elif channel == "chat-down" and build == "ps3" and opcode == "0x0002":
-                case["status"] = "ps3-only"
+            elif opcode not in other_index:
+                case["status"] = "ps3-only" if build == "ps3" else "windows-only"
             else:
                 case["status"] = "unresolved"
             assert case["status"] in ALLOWED_STATUSES
@@ -199,6 +199,7 @@ def main() -> None:
             "16-bit opcode; Windows and chat dispatchers use their explicit top-level switches."
         ),
         "limitations": [
+            "ps3-only/windows-only describe same-opcode dispatcher-case presence, not proof that the semantic feature has no changed-opcode counterpart.",
             "Candidate status is triage only and is not evidence of a semantic match.",
             "Runtime branches are conservatively unioned when exporting direct calls.",
             "Indirect calls have a null target address and require manual review.",

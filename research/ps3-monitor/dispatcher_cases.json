@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "method": "IDA decompiler ctree export. PS3 optimized comparisons are evaluated for every 16-bit opcode; Windows and chat dispatchers use their explicit top-level switches.",
   "limitations": [
+    "ps3-only/windows-only describe same-opcode dispatcher-case presence, not proof that the semantic feature has no changed-opcode counterpart.",
     "Candidate status is triage only and is not evidence of a semantic match.",
     "Runtime branches are conservatively unioned when exporting direct calls.",
     "Indirect calls have a null target address and require manual review."
@@ -20,7 +21,7 @@
           "packetDataOffset": null,
           "packetCalls": [],
           "directCalls": [],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -30,7 +31,7 @@
           "packetDataOffset": null,
           "packetCalls": [],
           "directCalls": [],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -73,7 +74,7 @@
           "packetDataOffset": null,
           "packetCalls": [],
           "directCalls": [],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -83,7 +84,7 @@
           "packetDataOffset": null,
           "packetCalls": [],
           "directCalls": [],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -154,7 +155,7 @@
               "name": "std::deque<Client::System::Data::Variant<int,Client::System::Data::VariantPtr<Client::System::String::Utf8String>,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null>,Client::System::Memory::BlockMemoryAllocator<Client::System::Data::Variant<int,Client::System::Data::VariantPtr<Client::System::String::Utf8String>,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null,Client::System::Data::Type::Null>,708>>::~deque"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -2623,7 +2624,7 @@
               "name": "Client::Game::Network::Packet::OnOpenTreasureKeyUi"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -2906,7 +2907,7 @@
               "name": "Client::System::Debug::Game::DebugCharParam::UpdateCharaData"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -2966,7 +2967,7 @@
               "name": "Client::System::Debug::Trace::Print"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -3699,7 +3700,7 @@
               "name": "Client::Game::Network::Packet::DebugLog"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -3721,7 +3722,7 @@
               "name": "Client::Game::Network::Packet::DebugOrder"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -3743,7 +3744,7 @@
               "name": "Client::Game::Network::Packet::DebugOrder"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -3765,7 +3766,7 @@
               "name": "Client::Game::Network::Packet::DebugOrder"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -3787,7 +3788,7 @@
               "name": "Client::Game::Network::Packet::DebugOrder"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -3809,7 +3810,7 @@
               "name": "Client::Game::Network::Packet::DebugOrder"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -3831,7 +3832,7 @@
               "name": "Client::Game::Network::Packet::DebugActionRange"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -3995,7 +3996,7 @@
               "name": null
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -4528,7 +4529,7 @@
               "name": "Client::Game::Network::Packet::OnServerGameLoggerMessage"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -4990,7 +4991,7 @@
               "name": "Client::System::Debug::Game::DebugGameFate::OnReceivePacket"
             }
           ],
-          "status": "unresolved",
+          "status": "ps3-only",
           "counterpartOpcode": null
         },
         {
@@ -6493,7 +6494,8 @@
         "statuses": {
           "confirmed": 172,
           "probable": 74,
-          "unresolved": 40
+          "ps3-only": 18,
+          "unresolved": 22
         }
       }
     },
@@ -6555,7 +6557,7 @@
               "name": "sub_140E1B130"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -6577,7 +6579,7 @@
               "name": "sub_140E1B160"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -6599,7 +6601,7 @@
               "name": "sub_140E1B190"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -6620,7 +6622,7 @@
               "name": null
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -6641,7 +6643,7 @@
               "name": null
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -7191,7 +7193,7 @@
               "name": "sub_140CC1080"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -7213,7 +7215,7 @@
               "name": "sub_140CC10B0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -7257,7 +7259,7 @@
               "name": "sub_140D16FF0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -7917,7 +7919,7 @@
               "name": "sub_140D18560"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -7939,7 +7941,7 @@
               "name": "sub_140D1E170"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -7961,7 +7963,7 @@
               "name": "sub_140D185B0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8097,7 +8099,7 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8119,7 +8121,7 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8141,7 +8143,7 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8163,7 +8165,7 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8185,7 +8187,7 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8207,7 +8209,7 @@
               "name": "nullsub_127"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8528,7 +8530,7 @@
               "name": "sub_140CC0750"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8550,7 +8552,7 @@
               "name": "sub_140CC2280"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8572,7 +8574,7 @@
               "name": "sub_140CC2310"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8594,7 +8596,7 @@
               "name": "sub_140CC2330"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8616,7 +8618,7 @@
               "name": "sub_140CC2350"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8638,7 +8640,7 @@
               "name": "_sub_140203370"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8660,7 +8662,7 @@
               "name": "sub_140CC23B0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8682,7 +8684,7 @@
               "name": "sub_140CC2410"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8704,7 +8706,7 @@
               "name": "sub_140CC2430"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8726,7 +8728,7 @@
               "name": "sub_140CC2450"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8748,7 +8750,7 @@
               "name": "sub_140CC2470"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8770,7 +8772,7 @@
               "name": "sub_140CC2490"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8792,7 +8794,7 @@
               "name": "sub_140CC24B0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8814,7 +8816,7 @@
               "name": "sub_140CC0AF0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8836,7 +8838,7 @@
               "name": "sub_140CBEE50"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8858,7 +8860,7 @@
               "name": "sub_140CBEE90"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -8880,7 +8882,7 @@
               "name": "sub_140CC52A0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -9013,7 +9015,7 @@
               "name": "sub_140CBEE30"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -9057,7 +9059,7 @@
               "name": "sub_140CBEED0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -10177,7 +10179,7 @@
               "name": "sub_140CBE380"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -10199,7 +10201,7 @@
               "name": "sub_140CBE380"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -10221,7 +10223,7 @@
               "name": "sub_140CBE380"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -10243,7 +10245,7 @@
               "name": "sub_140CBE380"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -10924,7 +10926,7 @@
               "name": "sub_140CBE4A0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -11458,7 +11460,7 @@
           "packetDataOffset": null,
           "packetCalls": [],
           "directCalls": [],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -12972,7 +12974,7 @@
               "name": "sub_140CC1050"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -12994,7 +12996,7 @@
               "name": "sub_140CC0ED0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13039,7 +13041,7 @@
               "name": "sub_140CC1470"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13061,7 +13063,7 @@
               "name": "sub_140CC15E0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13083,7 +13085,7 @@
               "name": "sub_140CC1620"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13105,7 +13107,7 @@
               "name": "sub_140CC1660"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13127,7 +13129,7 @@
               "name": "sub_140D1FAC0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13376,7 +13378,7 @@
               "name": "sub_140CC10E0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13398,7 +13400,7 @@
               "name": "sub_140CC1110"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13420,7 +13422,7 @@
               "name": "sub_140CC1150"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13442,7 +13444,7 @@
               "name": "sub_140CC1250"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13464,7 +13466,7 @@
               "name": "sub_140CC1280"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13599,7 +13601,7 @@
               "name": "sub_140D1F5B0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13621,7 +13623,7 @@
               "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_5"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13665,7 +13667,7 @@
               "name": "sub_140CC16E0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13687,7 +13689,7 @@
               "name": "sub_140CC1370"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13709,7 +13711,7 @@
               "name": "private: void CTaskVehicleChase::RemoveFromVehicleChaseDirector"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13731,7 +13733,7 @@
               "name": "PostPendingMouseMove"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13753,7 +13755,7 @@
               "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_3"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13775,7 +13777,7 @@
               "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_1"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13797,7 +13799,7 @@
               "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_4"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13819,7 +13821,7 @@
               "name": "PostPendingMouseMove_1"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13841,7 +13843,7 @@
               "name": "sub_140CC1160"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13863,7 +13865,7 @@
               "name": "sub_140CC11B0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13885,7 +13887,7 @@
               "name": "sub_140CC1200"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13907,7 +13909,7 @@
               "name": "sub_140CD5600"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13929,7 +13931,7 @@
               "name": "sub_140CBEAD0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13951,7 +13953,7 @@
               "name": "sub_140CBEAA0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13973,7 +13975,7 @@
               "name": "sub_140CBEAB0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -13995,7 +13997,7 @@
               "name": "sub_140CC13B0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14017,7 +14019,7 @@
               "name": "sub_140CC13D0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14039,7 +14041,7 @@
               "name": "sub_140CC1430"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14061,7 +14063,7 @@
               "name": "sub_140CC14B0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14083,7 +14085,7 @@
               "name": "sub_140CC14F0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14105,7 +14107,7 @@
               "name": "sub_140CC1520"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14127,7 +14129,7 @@
               "name": "sub_140CC1560"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14149,7 +14151,7 @@
               "name": "sub_140CC15A0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14171,7 +14173,7 @@
               "name": "sub_140549D70"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14193,7 +14195,7 @@
               "name": "sub_140CC18E0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14215,7 +14217,7 @@
               "name": "sub_140CC1860"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14237,7 +14239,7 @@
               "name": "sub_140CC18A0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14259,7 +14261,7 @@
               "name": "sub_140CC1920"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14281,7 +14283,7 @@
               "name": "sub_140CC1960"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14303,7 +14305,7 @@
               "name": "sub_140CBEC00"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14325,7 +14327,7 @@
               "name": "sub_140CBEC10"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14347,7 +14349,7 @@
               "name": "PostPendingMouseMove_0"
             }
           ],
-          "status": "unresolved",
+          "status": "windows-only",
           "counterpartOpcode": null
         },
         {
@@ -14373,7 +14375,8 @@
         "statuses": {
           "confirmed": 172,
           "probable": 74,
-          "unresolved": 110
+          "unresolved": 22,
+          "windows-only": 88
         }
       }
     },

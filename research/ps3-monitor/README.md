@@ -43,25 +43,21 @@ Raw function size and CFG similarity are not sufficient across PPC64 and x64.
 
 ## Current coverage
 
-The first pass identifies ten packet-specific handlers:
+The exhaustive pass records 285 PS3 and 355 Windows zone-down opcodes plus both
+chat-down dispatchers. It confirms 179 packet-handler pairs, reviews 95
+additional same-opcode relationships, and leaves no unreviewed candidate in the
+generated ranking. The 74 probable relationships are retained without
+authoritative names because they involve shared or merged handlers.
 
-- `InviteResult` (`0x00C9`)
-- `InviteReplyResult` (`0x00CA`)
-- `InviteUpdate` (`0x00CB`)
-- `GetCommonlistResult` (`0x00CC`)
-- `GetCommonlistDetailResult` (`0x00CD`)
-- `SetProfileResult` (`0x00CE`)
-- `Create` (`0x0190`)
-- `InitZone` (`0x019A`)
-- `PlayerStatusUpdate` (`0x019F`)
-- `PlayerStatus` (`0x01A0`)
+See `packet_matches.json` for confirmed addresses and evidence,
+`dispatcher_cases.json` for complete case coverage, `packet_structures.json` for
+179 PS3 DWARF layouts and Windows/Sapphire comparisons, and
+[`OVERNIGHT_RESULTS.md`](OVERNIGHT_RESULTS.md) for the audited results. Approved
+names and repeatable comments have been applied to the local Windows IDB.
+Confirmed Windows functions link back to PS3 counterparts with comments such as
+`PS3 Monitor: idb://ffxivgame.ppu.elf.i64:002F85C8`.
 
-See `packet_matches.json` for addresses and evidence. The approved names and
-repeatable comments have also been applied to the local Windows IDB. Confirmed
-Windows functions link back to their PS3 counterparts using repeatable comments
-such as `PS3 Monitor: idb://ffxivgame.ppu.elf.i64:002F85C8`.
-
-The detailed execution plan and pasteable persistent goal are in
+The detailed execution plan and pasteable persistent goal remain in
 [`OVERNIGHT_GOAL.md`](OVERNIGHT_GOAL.md).
 
 ## Next iteration

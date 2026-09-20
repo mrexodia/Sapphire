@@ -208,6 +208,12 @@ def validate_candidates(
         ]
         assert ps3_case["status"] == "candidate", key
         assert windows_case["status"] == "candidate", key
+    assert not candidate_file["candidates"], "unreviewed ranked candidates remain"
+    assert not any(
+        case["status"] == "candidate"
+        for dispatcher in dispatchers.values()
+        for case in dispatcher["cases"]
+    ), "dispatcher inventory still contains candidate status"
 
 
 def main() -> None:
