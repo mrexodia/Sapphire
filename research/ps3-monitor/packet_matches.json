@@ -2891,6 +2891,214 @@
       ],
       "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE7150",
       "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0067",
+      "packet": "ChatToChannel",
+      "ps3Address": "0x00AE46CC",
+      "ps3Name": "Client::Game::Network::Packet::Chat",
+      "windowsAddress": "0x140CC0080",
+      "windowsName": "Client__Game__Network__Packet__Chat",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both resolve the packet entity ID through CharacterManager before acting.",
+        "Both call strlen on the packet message and pass its length plus the packet type to the character lip-sync path."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE46CC",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0192",
+      "packet": "ActorMove",
+      "ps3Address": "0x00AE1A68",
+      "ps3Name": "Client::Game::Network::Packet::Move",
+      "windowsAddress": "0x140CC90B0",
+      "windowsName": "Client__Game__Network__Packet__Move",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both wrappers forward actor ID and the packed movement payload into the global movement packet queue.",
+        "The downstream paths preserve transmission timing and enqueue/retry movement records rather than handling an unrelated packet."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE1A68",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01A6",
+      "packet": "Inspect",
+      "ps3Address": "0x00A9800C",
+      "ps3Name": "Client::Game::UI::Inspect::Receive",
+      "windowsAddress": "0x14053B6B0",
+      "windowsName": "Client__Game__UI__Inspect__Receive",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both copy the inspect name, PSN ID, object/job/level/title data, and base parameters into inspect state.",
+        "Both iterate 14 equipment records and five materia slots and update the inspect storage/UI representation."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00A9800C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01A7",
+      "packet": "Name",
+      "ps3Address": "0x00969BB4",
+      "ps3Name": "Client::Game::NameManager::SetCash",
+      "windowsAddress": "0x1405BD1A0",
+      "windowsName": "Client__Game__NameManager__SetCash",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both search a 200-entry name cache whose records have 72-byte stride.",
+        "Both insert ID/name into a circular cache on miss and clear the inquiry flag."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00969BB4",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01B6",
+      "packet": "UpdateItem",
+      "ps3Address": "0x00AE2594",
+      "ps3Name": "Client::Game::Network::Packet::SetItem",
+      "windowsAddress": "0x140CBF0E0",
+      "windowsName": "Client__Game__Network__Packet__SetItem",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both resolve storage ID and container index, copy the same item fields, compute change flags, and signal inventory changes.",
+        "Both contain the distinctive storage 25001 and range 25003..25006 UI-dirty special cases."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE2594",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01EE",
+      "packet": "Tracking",
+      "ps3Address": "0x00AE9AD0",
+      "ps3Name": "Client::Game::Network::SyncTagPacket::ReceiveTrackings",
+      "windowsAddress": "0x140CC6D50",
+      "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveTrackings",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both process exactly five two-byte tracking records and update five persistent tracking slots.",
+        "Both notify the journal/event path and set the same two post-sync dirty flags."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE9AD0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01F2",
+      "packet": "ResumeEventSceneStr32",
+      "ps3Address": "0x00ADC59C",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene",
+      "windowsAddress": "0x140CBE440",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveResumeEventScene_Str32",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both obtain the EventFramework singleton and forward handler ID, scene ID, resume ID, and one string argument.",
+        "The adjacent resume-scene overload family has already been matched as a shared dispatcher target."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC59C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01FF",
+      "packet": "ResumeEventScene2Str",
+      "ps3Address": "0x00ADC5F4",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene",
+      "windowsAddress": "0x140CBE4A0",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveResumeEventScene_2Str",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both obtain the EventFramework singleton and forward handler ID, scene ID, resume ID, string, argument array, and argument count.",
+        "The distinct seven-argument downstream overload agrees across builds and with the packet variant name."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADC5F4",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02D5",
+      "packet": "FateSyncLimitTime",
+      "ps3Address": "0x00ADCA5C",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveSyncFateLimitTime",
+      "windowsAddress": "0x140CBE920",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveSyncFateLimitTime",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both obtain the EventFramework singleton and forward director ID, start time, and limit time.",
+        "The three-value forwarding shape and adjacent event-packet family distinguish this from unrelated replay behavior."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADCA5C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02DF",
+      "packet": "ColosseumResult44",
+      "ps3Address": "0x00ADCB34",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveColosseumResult",
+      "windowsAddress": "0x140CBE9E0",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveColosseumResult_44",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both obtain the EventFramework singleton and forward the ColosseumResult44 packet to one dedicated overload.",
+        "The adjacent Result88 case uses a separate target in both builds, preserving the overload split."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADCB34",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02E0",
+      "packet": "ColosseumResult88",
+      "ps3Address": "0x00ADCB74",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveColosseumResult",
+      "windowsAddress": "0x140CBEA10",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveColosseumResult_88",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both obtain the EventFramework singleton and forward the ColosseumResult88 packet to one dedicated overload.",
+        "The adjacent Result44 case uses a separate target in both builds, preserving the overload split."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADCB74",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02EB",
+      "packet": "FateReward",
+      "ps3Address": "0x00B4C90C",
+      "ps3Name": "Client::Game::Fate::FateManager::OpenReward",
+      "windowsAddress": "0x140D0D340",
+      "windowsName": "Client__Game__Fate__FateManager__OpenReward",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both iterate four reward item/count pairs and use packet flag bits 0x08 and 0x10 for error/tutorial behavior.",
+        "Both open HowTo entry 66 and emit the gil/reward log path after processing the same packet fields."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00B4C90C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0317",
+      "packet": "SalvageResult",
+      "ps3Address": "0x00ADB064",
+      "ps3Name": "Client::Game::Item::SalvageManager::ReceiveSalvageResults",
+      "windowsAddress": "0x1404D7520",
+      "windowsName": "Client__Game__Item__SalvageManager__ReceiveSalvageResults",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both resolve the salvage UI agent and copy three catalog/count result pairs.",
+        "Both pass the original catalog ID, result count three, and copied result array to the salvage-result UI path."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADB064",
+      "channel": "zone-down"
     }
   ],
   "idbLinkFormat": "idb://ffxivgame.ppu.elf.i64:{PS3_ADDRESS_8_HEX_UPPER}",

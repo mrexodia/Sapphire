@@ -31,17 +31,17 @@ current artifacts and direct verification evidence.
 | --- | --- | --- |
 | Use multiple anchors rather than opcode alone | Confirmed mappings require ThreePointThree semantic name, PS3 DWARF handler identity, confirmed dispatcher/payload routing, and a unique Windows direct target; manually established mappings include field/callee/constant evidence | Satisfied |
 | Preserve splits, merges, and shared handlers | `packet_matches.json` explicitly records 11 shared functions covering 54 opcode cases; no false separate functions were invented | Satisfied |
-| Review every obvious same-opcode/named-handler candidate | `case_reviews.json`: 41 retained reviews; 20 probable and 21 unresolved | Satisfied |
+| Review every obvious same-opcode/named-handler candidate | `case_reviews.json`: 28 retained reviews; 7 probable and 21 unresolved | Satisfied |
 | Leave no unreviewed high-likelihood candidate | `candidate_rankings.json` has zero entries; validator enforces this | Satisfied |
 | Record one-sided case presence without overclaiming semantics | 18 PS3-only and 88 Windows-only zone cases plus one PS3-only chat case; inventory limitation defines status scope | Satisfied |
-| Confirm as many defensible direct matches as possible | `packet_matches.json`: 190 packet-handler function pairs covering 233 cases (226 zone, 7 chat) | Satisfied |
+| Confirm as many defensible direct matches as possible | `packet_matches.json`: 203 packet-handler function pairs covering 246 cases (239 zone, 7 chat) | Satisfied |
 
 ## Windows IDB annotations
 
 | Requirement | Evidence | Result |
 | --- | --- | --- |
-| Give confirmed Windows functions stable names | 190 handler names plus constructor and two dispatchers in the saved Windows IDB | Satisfied |
-| First repeatable-comment line uses the required PS3 URI | `ida_apply_matches.py` and `packet_matches.json`; IDA verification checked all 193 entries with zero failures | Satisfied |
+| Give confirmed Windows functions stable names | 203 handler names plus constructor and two dispatchers in the saved Windows IDB | Satisfied |
+| First repeatable-comment line uses the required PS3 URI | `ida_apply_matches.py` and `packet_matches.json`; IDA verification checked all 206 entries with zero failures | Satisfied |
 | Use eight uppercase PS3 address digits and the exact database name | `validate_research.py` validates every `ps3IdbUrl` | Satisfied |
 | Do not authoritatively name probable/unresolved matches | Probable and unresolved relationships exist only in `case_reviews.json` and dispatcher status records | Satisfied |
 | Save the Windows database | `ida_save_database` succeeded for `E:/Sapphire/game/ffxiv_dx11.exe.i64` after the final annotation batch | Satisfied |
@@ -51,11 +51,11 @@ current artifacts and direct verification evidence.
 
 | Requirement | Evidence | Result |
 | --- | --- | --- |
-| Inventory PS3 DWARF structures used by confirmed handlers | `packet_structures.json`: 233 structures; exported by `ida_type_export.py` | Satisfied |
+| Inventory PS3 DWARF structures used by confirmed handlers | `packet_structures.json`: 246 structures; exported by `ida_type_export.py` | Satisfied |
 | Record PS3 size, members, offsets, widths/types | Every exported structure contains `ps3Size` and member metadata | Satisfied |
 | Compare with current and ThreePointThree Sapphire declarations | Each structure records current and immutable historical path/line presence | Satisfied |
 | Record independent Windows field evidence | `windowsValidation` records confirmed same-offset fields and version deltas; unreviewed fields are explicitly labelled | Satisfied |
-| Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 88 missing declarations pending complete Windows validation | Satisfied |
+| Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 97 missing declarations pending complete Windows validation | Satisfied |
 | Record confirmed version differences | `PlayerStatusUpdate.LvSync`: PS3 `+0x04`, Windows 3.x `+0x06` | Satisfied |
 | Make only conclusively supported production corrections | No production header was changed because no missing declaration had complete Windows size/member proof | Satisfied |
 
@@ -63,7 +63,7 @@ current artifacts and direct verification evidence.
 
 | Requirement | Evidence | Result |
 | --- | --- | --- |
-| Validate JSON and cross-artifact consistency | `python research/ps3-monitor/validate_research.py` reports 233 confirmed cases/structures, 659 cases, zero candidates | Satisfied |
+| Validate JSON and cross-artifact consistency | `python research/ps3-monitor/validate_research.py` reports 246 confirmed cases/structures, 659 cases, zero candidates | Satisfied |
 | Check whitespace/diff integrity | `git diff --check` succeeds | Satisfied |
 | Build `common` and `world` if production headers change | No production header changed; the clean baseline build nevertheless completed through `[124/124]` | Satisfied |
 | Commit coherent local milestones | Multiple coherent research commits are present after `origin/build-cleanup` | Satisfied |
@@ -73,7 +73,7 @@ current artifacts and direct verification evidence.
 ## Completion judgment
 
 All finite core criteria are covered by direct artifacts and validators. The
-remaining 20 probable and 21 unresolved same-opcode relationships are not
+remaining 7 probable and 21 unresolved same-opcode relationships are not
 unreviewed work: each has an explicit evidence-backed review and reason it was
-not promoted. The 88 missing Sapphire declarations are documented gaps, not
+not promoted. The 97 missing Sapphire declarations are documented gaps, not
 safe production edits, because complete Windows layouts remain unproven.

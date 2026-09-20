@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 
+NO_UNDERSCORE_SUFFIXES = {"Tracking"}
+
 TYPE_SUFFIX_OVERRIDES = {
     "RequestItmeResult": "RequestItemResult",
     "Create": "Create",
@@ -17,6 +19,8 @@ TYPE_SUFFIX_OVERRIDES = {
     "EventPlay64": "PlayEventScene64",
     "EventPlay128": "PlayEventScene128",
     "EventPlay255": "PlayEventScene255",
+    "ChatToChannel": "Chat",
+    "ActorMove": "Move",
 }
 
 
@@ -52,11 +56,12 @@ def export_confirmed_packet_types(
         packet = match["packet"]
         suffix = TYPE_SUFFIX_OVERRIDES.get(packet, packet)
         prefix = _type_prefix(channel)
+        ending = suffix if packet in NO_UNDERSCORE_SUFFIXES else f"_{suffix}"
         candidates = [
             type_info
             for type_info in all_types
             if (type_info.get_type_name() or "").startswith(prefix)
-            and (type_info.get_type_name() or "").endswith(f"_{suffix}")
+            and (type_info.get_type_name() or "").endswith(ending)
         ]
         if len(candidates) != 1:
             output.append(

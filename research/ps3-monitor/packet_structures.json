@@ -8,7 +8,7 @@
   },
   "policy": "PS3 fields describe 2.3. A field is a 3.x fact only when windowsValidation is confirmed; unreviewed fields must not be promoted into production definitions.",
   "summary": {
-    "structures": 233,
+    "structures": 246,
     "missingCurrentDeclarations": [
       "chat-down:GetChannelListResult",
       "chat-down:GetChannelMemberListResult",
@@ -21,7 +21,10 @@
       "zone-down:BalloonTalk8",
       "zone-down:BuyMarketRetainerResult",
       "zone-down:Cabinet",
+      "zone-down:ChatToChannel",
       "zone-down:ChocoboTaxiStart",
+      "zone-down:ColosseumResult44",
+      "zone-down:ColosseumResult88",
       "zone-down:ConfusionApproach",
       "zone-down:ConfusionCancel",
       "zone-down:ConfusionTurn",
@@ -43,6 +46,8 @@
       "zone-down:FateActiveRange",
       "zone-down:FateContextWork",
       "zone-down:FatePcWork",
+      "zone-down:FateReward",
+      "zone-down:FateSyncLimitTime",
       "zone-down:FcChestLog",
       "zone-down:GMOrder16",
       "zone-down:GMOrder2",
@@ -83,7 +88,10 @@
       "zone-down:QuestCompleteFlags",
       "zone-down:RequestCast",
       "zone-down:RequestItmeResult",
+      "zone-down:ResumeEventScene2Str",
+      "zone-down:ResumeEventSceneStr32",
       "zone-down:RetainerCustomizePreset",
+      "zone-down:SalvageResult",
       "zone-down:SetEventBehavior",
       "zone-down:SuccessFindContentAsMember5",
       "zone-down:SwapSystem",
@@ -92,6 +100,7 @@
       "zone-down:SyncTag32",
       "zone-down:SyncTag64",
       "zone-down:Text",
+      "zone-down:Tracking",
       "zone-down:TradeCommand",
       "zone-down:TreasureHuntReward",
       "zone-down:TreasureOpenRight",
@@ -12138,6 +12147,959 @@
       "status": "exported",
       "sapphire": {
         "type": "FFXIVIpcUnMountLink",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "ChatToChannel",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownSYSTEM_Chat",
+      "ps3Size": 1080,
+      "members": [
+        {
+          "name": "type",
+          "offset": "0x0",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding1",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding2",
+          "offset": "0x3",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "characterId",
+          "offset": "0x8",
+          "size": 8,
+          "type": "uint64_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "entityId",
+          "offset": "0x10",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "speakerName",
+          "offset": "0x14",
+          "size": 32,
+          "type": "uint8_t[32]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "message",
+          "offset": "0x34",
+          "size": 1024,
+          "type": "uint8_t[1024]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcChatToChannel",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "ActorMove",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_Move",
+      "ps3Size": 16,
+      "members": [
+        {
+          "name": "gap0",
+          "offset": "0x0",
+          "size": 16,
+          "type": "_BYTE[16]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcActorMove",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": 728,
+        "currentStatus": "present",
+        "threePointThreeLine": 714,
+        "threePointThreeStatus": "present"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "Inspect",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_Inspect",
+      "ps3Size": 984,
+      "members": [
+        {
+          "name": "ObjType",
+          "offset": "0x0",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Sex",
+          "offset": "0x1",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "ClassJob",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Lv",
+          "offset": "0x3",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "LvSync",
+          "offset": "0x4",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding1",
+          "offset": "0x5",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Title",
+          "offset": "0x6",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "GrandCompany",
+          "offset": "0x8",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "GrandCompanyRank",
+          "offset": "0x9",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Flag",
+          "offset": "0xA",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding2",
+          "offset": "0xB",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Crest",
+          "offset": "0x10",
+          "size": 8,
+          "type": "uint64_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "CrestEnable",
+          "offset": "0x18",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding3",
+          "offset": "0x19",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding4",
+          "offset": "0x1A",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding5",
+          "offset": "0x1B",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "MainWeaponModelId",
+          "offset": "0x20",
+          "size": 8,
+          "type": "uint64_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "SubWeaponModelId",
+          "offset": "0x28",
+          "size": 8,
+          "type": "uint64_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "PatternInvalid",
+          "offset": "0x30",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Rank",
+          "offset": "0x32",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding6",
+          "offset": "0x33",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Exp",
+          "offset": "0x34",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "ItemLv",
+          "offset": "0x38",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding7",
+          "offset": "0x39",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding8",
+          "offset": "0x3A",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding9",
+          "offset": "0x3B",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Equipment",
+          "offset": "0x40",
+          "size": 560,
+          "type": "Client::Network::Protocol::Zone::ZoneProtoDownEquipWork[14]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Name",
+          "offset": "0x270",
+          "size": 32,
+          "type": "uint8_t[32]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "PSNId",
+          "offset": "0x290",
+          "size": 17,
+          "type": "uint8_t[17]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Customize",
+          "offset": "0x2A1",
+          "size": 26,
+          "type": "uint8_t[26]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding10",
+          "offset": "0x2BB",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding11",
+          "offset": "0x2BC",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding12",
+          "offset": "0x2BD",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "ModelId",
+          "offset": "0x2C0",
+          "size": 40,
+          "type": "uint32_t[10]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "MasterName",
+          "offset": "0x2E8",
+          "size": 32,
+          "type": "uint8_t[32]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "SkillLv",
+          "offset": "0x308",
+          "size": 3,
+          "type": "uint8_t[3]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding13",
+          "offset": "0x30B",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "BaseParam",
+          "offset": "0x30C",
+          "size": 200,
+          "type": "uint32_t[50]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcInspect",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": 1065,
+        "currentStatus": "present",
+        "threePointThreeLine": 1050,
+        "threePointThreeStatus": "present"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "Name",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_Name",
+      "ps3Size": 40,
+      "members": [
+        {
+          "name": "CharaId",
+          "offset": "0x0",
+          "size": 8,
+          "type": "uint64_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Name",
+          "offset": "0x8",
+          "size": 32,
+          "type": "uint8_t[32]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcName",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": 1107,
+        "currentStatus": "present",
+        "threePointThreeLine": 1092,
+        "threePointThreeStatus": "present"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "UpdateItem",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_UpdateItem",
+      "ps3Size": 64,
+      "members": [
+        {
+          "name": "contextId",
+          "offset": "0x0",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "item",
+          "offset": "0x8",
+          "size": 56,
+          "type": "Client::Network::Protocol::Zone::ZoneProtoDownNormalItem",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcUpdateItem",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": 1163,
+        "currentStatus": "present",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "Tracking",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownTracking",
+      "ps3Size": 2,
+      "members": [
+        {
+          "name": "type",
+          "offset": "0x0",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "index",
+          "offset": "0x1",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcTracking",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "ResumeEventSceneStr32",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_ResumeEventSceneStr32",
+      "ps3Size": 40,
+      "members": [
+        {
+          "name": "handlerId",
+          "offset": "0x0",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "sceneId",
+          "offset": "0x4",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "resumeId",
+          "offset": "0x6",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "str",
+          "offset": "0x7",
+          "size": 32,
+          "type": "char[32]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcResumeEventSceneStr32",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "ResumeEventScene2Str",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_ResumeEventScene2Str",
+      "ps3Size": 48,
+      "members": [
+        {
+          "name": "handlerId",
+          "offset": "0x0",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "sceneId",
+          "offset": "0x4",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "resumeId",
+          "offset": "0x6",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "numOfArgs",
+          "offset": "0x7",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "str",
+          "offset": "0x8",
+          "size": 32,
+          "type": "char[32]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "args",
+          "offset": "0x28",
+          "size": 8,
+          "type": "uint32_t[2]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcResumeEventScene2Str",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "FateSyncLimitTime",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_FateSyncLimitTime",
+      "ps3Size": 24,
+      "members": [
+        {
+          "name": "directorId",
+          "offset": "0x0",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "startTime",
+          "offset": "0x8",
+          "size": 8,
+          "type": "uint64_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "limitTime",
+          "offset": "0x10",
+          "size": 8,
+          "type": "uint64_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcFateSyncLimitTime",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "ColosseumResult44",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_ColosseumResult44",
+      "ps3Size": 544,
+      "members": [
+        {
+          "name": "gap0",
+          "offset": "0x0",
+          "size": 544,
+          "type": "_BYTE[544]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcColosseumResult44",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "ColosseumResult88",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_ColosseumResult88",
+      "ps3Size": 1056,
+      "members": [
+        {
+          "name": "gap0",
+          "offset": "0x0",
+          "size": 1056,
+          "type": "_BYTE[1056]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcColosseumResult88",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "FateReward",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_FateReward",
+      "ps3Size": 56,
+      "members": [
+        {
+          "name": "FateId",
+          "offset": "0x0",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Flag",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Rank",
+          "offset": "0x3",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Exp",
+          "offset": "0x4",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "BonusExp",
+          "offset": "0x8",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Gil",
+          "offset": "0xC",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Seal",
+          "offset": "0x10",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Items",
+          "offset": "0x14",
+          "size": 32,
+          "type": "Client::Network::Protocol::Zone::ZoneProtoDownFateRewardItem[4]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcFateReward",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "SalvageResult",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_SalvageResult",
+      "ps3Size": 32,
+      "members": [
+        {
+          "name": "OriginalCatalogId",
+          "offset": "0x0",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "results",
+          "offset": "0x4",
+          "size": 24,
+          "type": "Client::Network::Protocol::Zone::ZoneProtoDownSalvageResultElement[3]",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcSalvageResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
         "currentLine": null,
         "currentStatus": "missing",
