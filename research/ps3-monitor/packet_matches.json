@@ -33,7 +33,8 @@
         "Cases 0x00C9-0x00CE and 0x0190-0x01A1 lead to independently matched handlers.",
         "Both invoke a receive-preparation hook before packet-specific dispatch.",
         "PS3 function has 636 basic blocks; Windows function has 587 basic blocks after compiler/platform lowering."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:002F8710"
     },
     {
       "direction": "chat-down",
@@ -46,7 +47,8 @@
         "Both dispatch chat opcodes 100 through 106.",
         "The ordered cases forward to ChatFrom, Chat, TellNotFound, RecvBusyStatus, GetChannelMemberListResult, GetChannelListResult, and RecvFinderStatus equivalents.",
         "The Windows constructor at 0x140DD93E0 and PS3 constructor at 0x002F85C8 install adjacent zone/chat callback vtables and store the NetworkModuleProxy pointer."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:002FA984"
     }
   ],
   "matches": [
@@ -62,7 +64,8 @@
         "Same dispatcher case.",
         "Both switch on AuthType values 1, 2, 4, and 5; the later Windows build also handles 8.",
         "Windows AuthType access at payload offset +4 agrees with FFXIVIpcInviteResult."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C47D4"
     },
     {
       "opcode": "0x00CA",
@@ -75,7 +78,8 @@
       "evidence": [
         "Same dispatcher case.",
         "Both switch on AuthType 1, 2, 4, 5, and 6 and forward to party/friend/free-company handlers."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C5748"
     },
     {
       "opcode": "0x00CB",
@@ -89,7 +93,8 @@
         "Same dispatcher case.",
         "Both dispatch AuthType to party/friend/free-company handlers.",
         "Windows AuthType access at payload offset +0x0C agrees with FFXIVIpcInviteUpdate."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C65A4"
     },
     {
       "opcode": "0x00CC",
@@ -103,7 +108,8 @@
         "Same dispatcher case.",
         "ListType drives matching InfoProxy selection behavior.",
         "Observed ListType values agree with the ThreePointThree common-list definitions."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C67D0"
     },
     {
       "opcode": "0x00CD",
@@ -116,7 +122,8 @@
       "evidence": [
         "Same dispatcher case adjacent to GetCommonlistResult and SetProfileResult.",
         "Both forward the detail payload to InfoProxyDetail/proxy 8."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C6DA0"
     },
     {
       "opcode": "0x00CE",
@@ -130,7 +137,8 @@
         "Same dispatcher case.",
         "Windows accesses Result, CurrentSelectClassID, Region, and SearchComment at +0x10, +0x14, +0x15, and +0x16, matching FFXIVIpcSetProfileResult.",
         "Both update detail, party, linkshell, and free-company profile proxies."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C6FCC"
     },
     {
       "opcode": "0x0190",
@@ -145,7 +153,8 @@
         "Both test event-solo state, ObjType == 2, and OwnerId against the local entity.",
         "Windows offsets ObjType +0x33 and OwnerId +0x14 agree with FFXIVIpcPlayerSpawn.",
         "Both queue the create packet and process it immediately when the target is the local entity."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADFEB4"
     },
     {
       "opcode": "0x019A",
@@ -158,7 +167,8 @@
       "evidence": [
         "Same dispatcher case.",
         "Both are thin forwarders to the global WarpManager InitZone implementation."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE32B4"
     },
     {
       "opcode": "0x019F",
@@ -172,7 +182,8 @@
         "Same dispatcher case.",
         "Exact field sequence: ClassJob +0, Lv +2, LvSync +6, Exp +8, RestPoint +0x0C.",
         "Both compare old level state, update class/level/sync/experience/rest state, refresh UI commands, and notify EventFramework."
-      ]
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0638"
     },
     {
       "opcode": "0x01A0",
@@ -186,6 +197,23 @@
         "Same dispatcher case.",
         "Both update PlayerStatus, Buddy, PvPStatus, ContentsNote, RelicNote, and MobHunt state, then notify AgentLobby that the character logged in.",
         "Crest is read from payload offset +8 in both layouts."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0C5C"
+    }
+  ],
+  "idbLinkFormat": "idb://ffxivgame.ppu.elf.i64:{PS3_ADDRESS_8_HEX_UPPER}",
+  "supportingFunctions": [
+    {
+      "role": "PacketDispatcher constructor",
+      "ps3Address": "0x002F85C8",
+      "ps3Name": "Client::Network::PacketDispatcher::PacketDispatcher",
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:002F85C8",
+      "windowsAddress": "0x140DD93E0",
+      "windowsName": "Client__Network__PacketDispatcher__ctor",
+      "confidence": "high",
+      "evidence": [
+        "Both store the NetworkModuleProxy pointer.",
+        "Both install adjacent Zone and Chat callback-interface vtables."
       ]
     }
   ]

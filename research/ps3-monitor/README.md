@@ -57,7 +57,12 @@ The first pass identifies ten packet-specific handlers:
 - `PlayerStatus` (`0x01A0`)
 
 See `packet_matches.json` for addresses and evidence. The approved names and
-repeatable comments have also been applied to the local Windows IDB.
+repeatable comments have also been applied to the local Windows IDB. Confirmed
+Windows functions link back to their PS3 counterparts using repeatable comments
+such as `PS3 Monitor: idb://ffxivgame.ppu.elf.i64:002F85C8`.
+
+The detailed execution plan and pasteable persistent goal are in
+[`OVERNIGHT_GOAL.md`](OVERNIGHT_GOAL.md).
 
 ## Next iteration
 
