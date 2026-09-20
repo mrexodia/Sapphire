@@ -30,7 +30,7 @@ def expected_url(address: str) -> str:
     return f"idb://ffxivgame.ppu.elf.i64:{int(address, 16):08X}"
 
 
-def validate_matches(matches: dict[str, Any]) -> dict[str, dict[str, Any]]:
+def validate_matches(matches: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
     entries = matches["dispatchers"] + matches["matches"] + matches.get(
         "supportingFunctions", []
     )
@@ -41,7 +41,10 @@ def validate_matches(matches: dict[str, Any]) -> dict[str, dict[str, Any]]:
         assert entry["windowsAddress"] not in seen_windows, entry["windowsAddress"]
         seen_windows.add(entry["windowsAddress"])
         assert entry["evidence"], entry
-    return {entry["opcode"]: entry for entry in matches["matches"]}
+    return {
+        (entry.get("channel", "zone-down"), entry["opcode"]): entry
+        for entry in matches["matches"]
+    }
 
 
 def dispatcher_key(dispatcher: dict[str, Any]) -> tuple[str, str]:
@@ -49,7 +52,7 @@ def dispatcher_key(dispatcher: dict[str, Any]) -> tuple[str, str]:
 
 
 def validate_dispatchers(
-    inventory: dict[str, Any], confirmed: dict[str, dict[str, Any]]
+    inventory: dict[str, Any], confirmed: dict[tuple[str, str], dict[str, Any]]
 ) -> dict[tuple[str, str], dict[str, Any]]:
     by_key: dict[tuple[str, str], dict[str, Any]] = {}
     for dispatcher in inventory["dispatchers"]:
@@ -93,29 +96,29 @@ def validate_dispatchers(
     }
     assert set(by_key) == expected_keys, set(by_key)
 
-    ps3_zone = {
-        case["opcode"]: case
-        for case in by_key[("ps3-monitor-2.3", "zone-down")]["cases"]
-        if case["opcode"] is not None
+    indexes = {
+        key: {
+            case["opcode"]: case
+            for case in dispatcher["cases"]
+            if case["opcode"] is not None
+        }
+        for key, dispatcher in by_key.items()
     }
-    windows_zone = {
-        case["opcode"]: case
-        for case in by_key[("windows-3.x", "zone-down")]["cases"]
-        if case["opcode"] is not None
-    }
-    for opcode, match in confirmed.items():
-        assert ps3_zone[opcode]["status"] == "confirmed", opcode
-        assert windows_zone[opcode]["status"] == "confirmed", opcode
+    for (channel, opcode), match in confirmed.items():
+        ps3_case = indexes[("ps3-monitor-2.3", channel)][opcode]
+        windows_case = indexes[("windows-3.x", channel)][opcode]
+        assert ps3_case["status"] == "confirmed", (channel, opcode)
+        assert windows_case["status"] == "confirmed", (channel, opcode)
         assert any(
             call["address"] is not None
             and int(call["address"], 16) == int(match["ps3Address"], 16)
-            for call in ps3_zone[opcode]["packetCalls"]
-        ), opcode
+            for call in ps3_case["packetCalls"]
+        ), (channel, opcode)
         assert any(
             call["address"] is not None
             and int(call["address"], 16) == int(match["windowsAddress"], 16)
-            for call in windows_zone[opcode]["directCalls"]
-        ), opcode
+            for call in windows_case["directCalls"]
+        ), (channel, opcode)
     return by_key
 
 

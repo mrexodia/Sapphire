@@ -65,7 +65,8 @@
         "Both switch on AuthType values 1, 2, 4, and 5; the later Windows build also handles 8.",
         "Windows AuthType access at payload offset +4 agrees with FFXIVIpcInviteResult."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C47D4"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C47D4",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x00CA",
@@ -79,7 +80,8 @@
         "Same dispatcher case.",
         "Both switch on AuthType 1, 2, 4, 5, and 6 and forward to party/friend/free-company handlers."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C5748"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C5748",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x00CB",
@@ -94,7 +96,8 @@
         "Both dispatch AuthType to party/friend/free-company handlers.",
         "Windows AuthType access at payload offset +0x0C agrees with FFXIVIpcInviteUpdate."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C65A4"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C65A4",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x00CC",
@@ -109,7 +112,8 @@
         "ListType drives matching InfoProxy selection behavior.",
         "Observed ListType values agree with the ThreePointThree common-list definitions."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C67D0"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C67D0",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x00CD",
@@ -123,7 +127,8 @@
         "Same dispatcher case adjacent to GetCommonlistResult and SetProfileResult.",
         "Both forward the detail payload to InfoProxyDetail/proxy 8."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C6DA0"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C6DA0",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x00CE",
@@ -138,7 +143,8 @@
         "Windows accesses Result, CurrentSelectClassID, Region, and SearchComment at +0x10, +0x14, +0x15, and +0x16, matching FFXIVIpcSetProfileResult.",
         "Both update detail, party, linkshell, and free-company profile proxies."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C6FCC"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C6FCC",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x0190",
@@ -154,7 +160,8 @@
         "Windows offsets ObjType +0x33 and OwnerId +0x14 agree with FFXIVIpcPlayerSpawn.",
         "Both queue the create packet and process it immediately when the target is the local entity."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADFEB4"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADFEB4",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x019A",
@@ -168,7 +175,8 @@
         "Same dispatcher case.",
         "Both are thin forwarders to the global WarpManager InitZone implementation."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE32B4"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE32B4",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x019F",
@@ -183,7 +191,8 @@
         "Exact field sequence: ClassJob +0, Lv +2, LvSync +6, Exp +8, RestPoint +0x0C.",
         "Both compare old level state, update class/level/sync/experience/rest state, refresh UI commands, and notify EventFramework."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0638"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0638",
+      "channel": "zone-down"
     },
     {
       "opcode": "0x01A0",
@@ -198,7 +207,113 @@
         "Both update PlayerStatus, Buddy, PvPStatus, ContentsNote, RelicNote, and MobHunt state, then notify AgentLobby that the character logged in.",
         "Crest is read from payload offset +8 in both layouts."
       ],
-      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0C5C"
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0C5C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0064",
+      "packet": "ChatFrom",
+      "ps3Address": "0x004C36C0",
+      "ps3Name": "Client::Info::ChatPacket::ChatFrom",
+      "windowsAddress": "0x140E76E80",
+      "windowsName": "Client__Info__ChatPacket__ChatFrom",
+      "confidence": "high",
+      "evidence": [
+        "Same chat dispatcher case and payload offset.",
+        "Both branch on chat type, consume sender ID/name/message fields, filter online or blacklist state, and publish decoded chat to the log/UI."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C36C0",
+      "channel": "chat-down"
+    },
+    {
+      "opcode": "0x0065",
+      "packet": "Chat",
+      "ps3Address": "0x004C3CF4",
+      "ps3Name": "Client::Info::ChatPacket::Chat",
+      "windowsAddress": "0x140E77310",
+      "windowsName": "Client__Info__ChatPacket__Chat",
+      "confidence": "high",
+      "evidence": [
+        "Same chat dispatcher case and payload offset.",
+        "Both consume speaker entity/character IDs, speaker name, message, type, and channel ID and route decoded text through chat/log proxies."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C3CF4",
+      "channel": "chat-down"
+    },
+    {
+      "opcode": "0x0066",
+      "packet": "TellNotFound",
+      "ps3Address": "0x004C3A08",
+      "ps3Name": "Client::Info::ChatPacket::TellNotFound",
+      "windowsAddress": "0x140E770E0",
+      "windowsName": "Client__Info__ChatPacket__TellNotFound",
+      "confidence": "high",
+      "evidence": [
+        "Same chat dispatcher case and payload offset.",
+        "Both treat the payload as a name/string and use message IDs 0x2B2 (690) and 0x32 (50) for transfer and non-transfer paths."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C3A08",
+      "channel": "chat-down"
+    },
+    {
+      "opcode": "0x0067",
+      "packet": "RecvBusyStatus",
+      "ps3Address": "0x004C3B8C",
+      "ps3Name": "Client::Info::ChatPacket::RecvBusyStatus",
+      "windowsAddress": "0x140E771D0",
+      "windowsName": "Client__Info__ChatPacket__RecvBusyStatus",
+      "confidence": "high",
+      "evidence": [
+        "Same chat dispatcher case and payload offset.",
+        "Both treat the payload as a name/string and publish message ID 0x31 (49)."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C3B8C",
+      "channel": "chat-down"
+    },
+    {
+      "opcode": "0x0068",
+      "packet": "GetChannelMemberListResult",
+      "ps3Address": "0x004C4404",
+      "ps3Name": "Client::Info::ChatPacket::GetChannelMemberListResult",
+      "windowsAddress": "0x140E76DF0",
+      "windowsName": "Client__Info__ChatPacket__GetChannelMemberListResult",
+      "confidence": "high",
+      "evidence": [
+        "Same chat dispatcher case and exact neighboring opcode ordering.",
+        "The PS3 handler only emits debug member/channel data; the Windows 3.x handler is a null stub, confirming the role while documenting removed behavior."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C4404",
+      "channel": "chat-down"
+    },
+    {
+      "opcode": "0x0069",
+      "packet": "GetChannelListResult",
+      "ps3Address": "0x004C44D0",
+      "ps3Name": "Client::Info::ChatPacket::GetChannelListResult",
+      "windowsAddress": "0x140E77820",
+      "windowsName": "Client__Info__ChatPacket__GetChannelListResult",
+      "confidence": "high",
+      "evidence": [
+        "Same chat dispatcher case and payload offset.",
+        "Both obtain the UI info module, select chat proxy 15, and forward the channel-list payload."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C44D0",
+      "channel": "chat-down"
+    },
+    {
+      "opcode": "0x006A",
+      "packet": "RecvFinderStatus",
+      "ps3Address": "0x004C3C40",
+      "ps3Name": "Client::Info::ChatPacket::RecvFinderStatus",
+      "windowsAddress": "0x140E77270",
+      "windowsName": "Client__Info__ChatPacket__RecvFinderStatus",
+      "confidence": "high",
+      "evidence": [
+        "Same chat dispatcher case and payload offset.",
+        "Both treat the payload as a name/string and publish message ID 0x2B3 (691)."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C3C40",
+      "channel": "chat-down"
     }
   ],
   "idbLinkFormat": "idb://ffxivgame.ppu.elf.i64:{PS3_ADDRESS_8_HEX_UPPER}",

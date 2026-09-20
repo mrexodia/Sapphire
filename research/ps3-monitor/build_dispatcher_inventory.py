@@ -50,7 +50,7 @@ def assign_statuses(
             case["counterpartOpcode"] = opcode if opcode in other_index else None
             if opcode is None:
                 case["status"] = "unresolved"
-            elif channel == "zone-down" and opcode in confirmed_opcodes:
+            elif opcode in confirmed_opcodes:
                 case["status"] = "confirmed"
             elif opcode in other_index:
                 case["status"] = "candidate"
@@ -142,12 +142,27 @@ def main() -> None:
     ps3 = load_json(args.ps3)
     windows = load_json(args.windows)
     matches = load_json(args.matches)
-    confirmed_opcodes = {match["opcode"] for match in matches["matches"]}
+    confirmed_by_channel = {
+        channel: {
+            match["opcode"]
+            for match in matches["matches"]
+            if match.get("channel", "zone-down") == channel
+        }
+        for channel in ("zone-down", "chat-down")
+    }
 
     assign_statuses(
-        "zone-down", ps3["zone"]["cases"], windows["zone"]["cases"], confirmed_opcodes
+        "zone-down",
+        ps3["zone"]["cases"],
+        windows["zone"]["cases"],
+        confirmed_by_channel["zone-down"],
     )
-    assign_statuses("chat-down", ps3["chat"]["cases"], windows["chat"]["cases"], set())
+    assign_statuses(
+        "chat-down",
+        ps3["chat"]["cases"],
+        windows["chat"]["cases"],
+        confirmed_by_channel["chat-down"],
+    )
 
     dispatchers = [ps3["zone"], windows["zone"], ps3["chat"], windows["chat"]]
     for dispatcher in dispatchers:

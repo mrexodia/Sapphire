@@ -14222,7 +14222,7 @@
               "name": "Client::Info::ChatPacket::ChatFrom"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0064"
         },
         {
@@ -14244,7 +14244,7 @@
               "name": "Client::Info::ChatPacket::Chat"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0065"
         },
         {
@@ -14266,7 +14266,7 @@
               "name": "Client::Info::ChatPacket::TellNotFound"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0066"
         },
         {
@@ -14288,7 +14288,7 @@
               "name": "Client::Info::ChatPacket::RecvBusyStatus"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0067"
         },
         {
@@ -14310,7 +14310,7 @@
               "name": "Client::Info::ChatPacket::GetChannelMemberListResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0068"
         },
         {
@@ -14332,7 +14332,7 @@
               "name": "Client::Info::ChatPacket::GetChannelListResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0069"
         },
         {
@@ -14354,7 +14354,7 @@
               "name": "Client::Info::ChatPacket::RecvFinderStatus"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x006A"
         },
         {
@@ -14383,7 +14383,7 @@
           "inline": 1
         },
         "statuses": {
-          "candidate": 7,
+          "confirmed": 7,
           "ps3-only": 1,
           "unresolved": 1
         }
@@ -14404,17 +14404,17 @@
             {
               "callsite": "0x0000000140DD9338",
               "address": "0x0000000140E76E80",
-              "name": "sub_140E76E80"
+              "name": "Client__Info__ChatPacket__ChatFrom"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9338",
               "address": "0x0000000140E76E80",
-              "name": "sub_140E76E80"
+              "name": "Client__Info__ChatPacket__ChatFrom"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0064"
         },
         {
@@ -14426,17 +14426,17 @@
             {
               "callsite": "0x0000000140DD9378",
               "address": "0x0000000140E77310",
-              "name": "sub_140E77310"
+              "name": "Client__Info__ChatPacket__Chat"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9378",
               "address": "0x0000000140E77310",
-              "name": "sub_140E77310"
+              "name": "Client__Info__ChatPacket__Chat"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0065"
         },
         {
@@ -14448,17 +14448,17 @@
             {
               "callsite": "0x0000000140DD9348",
               "address": "0x0000000140E770E0",
-              "name": "sub_140E770E0"
+              "name": "Client__Info__ChatPacket__TellNotFound"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9348",
               "address": "0x0000000140E770E0",
-              "name": "sub_140E770E0"
+              "name": "Client__Info__ChatPacket__TellNotFound"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0066"
         },
         {
@@ -14470,17 +14470,17 @@
             {
               "callsite": "0x0000000140DD9358",
               "address": "0x0000000140E771D0",
-              "name": "sub_140E771D0"
+              "name": "Client__Info__ChatPacket__RecvBusyStatus"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9358",
               "address": "0x0000000140E771D0",
-              "name": "sub_140E771D0"
+              "name": "Client__Info__ChatPacket__RecvBusyStatus"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0067"
         },
         {
@@ -14492,17 +14492,17 @@
             {
               "callsite": "0x0000000140DD9388",
               "address": "0x0000000140E76DF0",
-              "name": "nullsub_173"
+              "name": "Client__Info__ChatPacket__GetChannelMemberListResult"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9388",
               "address": "0x0000000140E76DF0",
-              "name": "nullsub_173"
+              "name": "Client__Info__ChatPacket__GetChannelMemberListResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0068"
         },
         {
@@ -14514,17 +14514,17 @@
             {
               "callsite": "0x0000000140DD9394",
               "address": "0x0000000140E77820",
-              "name": "sub_140E77820"
+              "name": "Client__Info__ChatPacket__GetChannelListResult"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9394",
               "address": "0x0000000140E77820",
-              "name": "sub_140E77820"
+              "name": "Client__Info__ChatPacket__GetChannelListResult"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x0069"
         },
         {
@@ -14536,17 +14536,17 @@
             {
               "callsite": "0x0000000140DD9368",
               "address": "0x0000000140E77270",
-              "name": "sub_140E77270"
+              "name": "Client__Info__ChatPacket__RecvFinderStatus"
             }
           ],
           "directCalls": [
             {
               "callsite": "0x0000000140DD9368",
               "address": "0x0000000140E77270",
-              "name": "sub_140E77270"
+              "name": "Client__Info__ChatPacket__RecvFinderStatus"
             }
           ],
-          "status": "candidate",
+          "status": "confirmed",
           "counterpartOpcode": "0x006A"
         },
         {
@@ -14568,7 +14568,7 @@
           "direct": 7
         },
         "statuses": {
-          "candidate": 7,
+          "confirmed": 7,
           "unresolved": 1
         }
       }
