@@ -314,6 +314,231 @@
       ],
       "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C3C40",
       "channel": "chat-down"
+    },
+    {
+      "opcode": "0x00CF",
+      "packet": "GetProfileResult",
+      "ps3Address": "0x004C729C",
+      "ps3Name": "Client::Info::InfoPacket::GetProfileResult",
+      "windowsAddress": "0x140D14F60",
+      "windowsName": "Client__Info__InfoPacket__GetProfileResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select InfoProxyDetail 8 and apply current/selected class, online status, region/language, and search-comment fields."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C729C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D0",
+      "packet": "GetSearchCommentResult",
+      "ps3Address": "0x004C7418",
+      "ps3Name": "Client::Info::InfoPacket::GetSearchCommentResult",
+      "windowsAddress": "0x140D15000",
+      "windowsName": "Client__Info__InfoPacket__GetSearchCommentResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select InfoProxyDetail 8 and forward TargetEntityID plus the following search-comment string."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C7418",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D2",
+      "packet": "ChatChannelResult",
+      "ps3Address": "0x004C7518",
+      "ps3Name": "Client::Info::InfoPacket::ChatChannelResult",
+      "windowsAddress": "0x140D15060",
+      "windowsName": "Client__Info__InfoPacket__ChatChannelResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both handle upstream packet IDs 209/210, channel type, result, community and target IDs, and linkshell/free-company proxies."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C7518",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D3",
+      "packet": "SendSystemMessage",
+      "ps3Address": "0x004C7844",
+      "ps3Name": "Client::Info::InfoPacket::SendSystemMessage",
+      "windowsAddress": "0x140D152C0",
+      "windowsName": "Client__Info__InfoPacket__SendSystemMessage",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both interpret MessageParam bits 1/4, consume the following string, emit log kind 3, and optionally invoke the UI message path with mode 5."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C7844",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D4",
+      "packet": "SendLoginMessage",
+      "ps3Address": "0x004C79E0",
+      "ps3Name": "Client::Info::InfoPacket::SendLoginMessage",
+      "windowsAddress": "0x140D15410",
+      "windowsName": "Client__Info__InfoPacket__SendLoginMessage",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both interpret MessageParam bits 1/4, consume the following string, emit log kind 3, and optionally invoke the UI message path with mode 5; adjacent distinct message identity matches."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C79E0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D5",
+      "packet": "UpdateOnlineStatus",
+      "ps3Address": "0x004C7B7C",
+      "ps3Name": "Client::Info::InfoPacket::UpdateOnlineStatus",
+      "windowsAddress": "0x140D15560",
+      "windowsName": "Client__Info__InfoPacket__UpdateOnlineStatus",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both read the leading 64-bit online-status value and forward it to the UI info module."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C7B7C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D6",
+      "packet": "PartyRecruitResult",
+      "ps3Address": "0x004C8C80",
+      "ps3Name": "Client::Info::InfoPacket::PartyRecruitResult",
+      "windowsAddress": "0x140D16490",
+      "windowsName": "Client__Info__InfoPacket__PartyRecruitResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select party-recruit proxy 16, switch on recruitment Type values, process Result/error fields, and update party-invite/recruit state."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C8C80",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D7",
+      "packet": "GetRecruitSearchListResult",
+      "ps3Address": "0x004C9310",
+      "ps3Name": "Client::Info::InfoPacket::GetRecruitSearchListResult",
+      "windowsAddress": "0x140D16750",
+      "windowsName": "Client__Info__InfoPacket__GetRecruitSearchListResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select party-recruit proxy 16 and forward the recruitment search-list payload through its list-result virtual handler."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C9310",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D8",
+      "packet": "GetRecruitDetailResult",
+      "ps3Address": "0x004C96B4",
+      "ps3Name": "Client::Info::InfoPacket::GetRecruitDetailResult",
+      "windowsAddress": "0x140D167B0",
+      "windowsName": "Client__Info__InfoPacket__GetRecruitDetailResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select party-recruit proxy 16 and forward the recruitment-detail payload."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C96B4",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00D9",
+      "packet": "RequestItmeResult",
+      "ps3Address": "0x004CE820",
+      "ps3Name": "Client::Info::InfoPacket::RequestItmeResult",
+      "windowsAddress": "0x140D1B400",
+      "windowsName": "Client__Info__InfoPacket__RequestItmeResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select item-search proxy 9, use Type/Result/Param fields, and dispatch wishlist add/cancel/count result modes."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CE820",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00DA",
+      "packet": "AllianceReadyCheckResult",
+      "ps3Address": "0x004C8B64",
+      "ps3Name": "Client::Info::InfoPacket::AllianceReadyCheckResult",
+      "windowsAddress": "0x140D16430",
+      "windowsName": "Client__Info__InfoPacket__AllianceReadyCheckResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select party-member proxy 0 and forward entity-ID and ready arrays plus the count byte."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C8B64",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00DB",
+      "packet": "GetFcJoinRequestCommentResult",
+      "ps3Address": "0x004D3410",
+      "ps3Name": "Client::Info::InfoPacket::GetFcJoinRequestCommentResult",
+      "windowsAddress": "0x140D18510",
+      "windowsName": "Client__Info__InfoPacket__GetFcJoinRequestCommentResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select free-company proxy 11 and forward the FC join-request comment payload."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D3410",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00DC",
+      "packet": "PcPartyResult",
+      "ps3Address": "0x004C7C20",
+      "ps3Name": "Client::Info::InfoPacket::PcPartyResult",
+      "windowsAddress": "0x140D15BF0",
+      "windowsName": "Client__Info__InfoPacket__PcPartyResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both consume result at +4, gate error display on world-transfer state, and route party-operation errors; numeric error IDs changed between versions."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C7C20",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00DD",
+      "packet": "PcPartyUpdate",
+      "ps3Address": "0x004C7E6C",
+      "ps3Name": "Client::Info::InfoPacket::PcPartyUpdate",
+      "windowsAddress": "0x140D15C90",
+      "windowsName": "Client__Info__InfoPacket__PcPartyUpdate",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both select party-member proxy 0 and party-recruit proxy 16, then switch on party update status and process executor/target identity fields."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C7E6C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00DE",
+      "packet": "InviteCancelResult",
+      "ps3Address": "0x004C66F4",
+      "ps3Name": "Client::Info::InfoPacket::InviteCancelResult",
+      "windowsAddress": "0x140D14B50",
+      "windowsName": "Client__Info__InfoPacket__InviteCancelResult",
+      "confidence": "high",
+      "evidence": [
+        "Same zone dispatcher case and payload-relative dispatch.",
+        "Both test AuthType at +4 for party invites and emit message ID 0x5F (95)."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C66F4",
+      "channel": "zone-down"
     }
   ],
   "idbLinkFormat": "idb://ffxivgame.ppu.elf.i64:{PS3_ADDRESS_8_HEX_UPPER}",
