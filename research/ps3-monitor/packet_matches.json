@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "inputs": {
+    "ps3Monitor": {
+      "path": "E:/FFXIV-Monitor-PS3/game/ffxivgame.ppu.elf",
+      "version": "2014.06.13.0000.0000",
+      "sha256": "99ed4e57ea8d7a05c691c843e996ab85a9df51c239b2adc9d10ffe1acaa01537",
+      "architecture": "PowerPC64/PS3 PPU, big-endian"
+    },
+    "windows": {
+      "path": "E:/Sapphire/game/ffxiv_dx11.exe",
+      "version": "2016.07.05.0000.0001",
+      "sha256": "d818584c782bbe3cacbc2b306391e6f3246bc3065c517a3324784e49d572ba12",
+      "architecture": "x86-64/Windows"
+    },
+    "packetDefinitions": {
+      "gitRef": "upstream/ThreePointThree",
+      "commit": "fe26d3ba840deb1eaca6db6d8a486c8e068482f9",
+      "serverOpcodes": "src/common/Network/PacketDef/ServerIpcs.h",
+      "serverStructures": "src/common/Network/PacketDef/Zone/ServerZoneDef.h"
+    }
+  },
+  "dispatchers": [
+    {
+      "direction": "zone-down",
+      "ps3Address": "0x002F8710",
+      "ps3Name": "Client::Network::PacketDispatcher::OnReceivePacket(uint32_t, ZoneProtoDown const&)",
+      "windowsAddress": "0x140DD9430",
+      "windowsName": "Client__Network__PacketDispatcher__OnReceivePacket_Zone",
+      "confidence": "high",
+      "evidence": [
+        "Both read a 16-bit zone-down opcode and dispatch over the same opcode families.",
+        "Cases 0x00C9-0x00CE and 0x0190-0x01A1 lead to independently matched handlers.",
+        "Both invoke a receive-preparation hook before packet-specific dispatch.",
+        "PS3 function has 636 basic blocks; Windows function has 587 basic blocks after compiler/platform lowering."
+      ]
+    }
+  ],
+  "matches": [
+    {
+      "opcode": "0x00C9",
+      "packet": "InviteResult",
+      "ps3Address": "0x004C47D4",
+      "ps3Name": "Client::Info::InfoPacket::InviteResult",
+      "windowsAddress": "0x140D18730",
+      "windowsName": "Client__Info__InfoPacket__InviteResult",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "Both switch on AuthType values 1, 2, 4, and 5; the later Windows build also handles 8.",
+        "Windows AuthType access at payload offset +4 agrees with FFXIVIpcInviteResult."
+      ]
+    },
+    {
+      "opcode": "0x00CA",
+      "packet": "InviteReplyResult",
+      "ps3Address": "0x004C5748",
+      "ps3Name": "Client::Info::InfoPacket::InviteReplyResult",
+      "windowsAddress": "0x140D187D0",
+      "windowsName": "Client__Info__InfoPacket__InviteReplyResult",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "Both switch on AuthType 1, 2, 4, 5, and 6 and forward to party/friend/free-company handlers."
+      ]
+    },
+    {
+      "opcode": "0x00CB",
+      "packet": "InviteUpdate",
+      "ps3Address": "0x004C65A4",
+      "ps3Name": "Client::Info::InfoPacket::InviteUpdate",
+      "windowsAddress": "0x140D18830",
+      "windowsName": "Client__Info__InfoPacket__InviteUpdate",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "Both dispatch AuthType to party/friend/free-company handlers.",
+        "Windows AuthType access at payload offset +0x0C agrees with FFXIVIpcInviteUpdate."
+      ]
+    },
+    {
+      "opcode": "0x00CC",
+      "packet": "GetCommonlistResult",
+      "ps3Address": "0x004C67D0",
+      "ps3Name": "Client::Info::InfoPacket::GetCommonlistResult",
+      "windowsAddress": "0x140D14BA0",
+      "windowsName": "Client__Info__InfoPacket__GetCommonlistResult",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "ListType drives matching InfoProxy selection behavior.",
+        "Observed ListType values agree with the ThreePointThree common-list definitions."
+      ]
+    },
+    {
+      "opcode": "0x00CD",
+      "packet": "GetCommonlistDetailResult",
+      "ps3Address": "0x004C6DA0",
+      "ps3Name": "Client::Info::InfoPacket::GetCommonlistDetailResult",
+      "windowsAddress": "0x140D14D50",
+      "windowsName": "Client__Info__InfoPacket__GetCommonlistDetailResult",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case adjacent to GetCommonlistResult and SetProfileResult.",
+        "Both forward the detail payload to InfoProxyDetail/proxy 8."
+      ]
+    },
+    {
+      "opcode": "0x00CE",
+      "packet": "SetProfileResult",
+      "ps3Address": "0x004C6FCC",
+      "ps3Name": "Client::Info::InfoPacket::SetProfileResult",
+      "windowsAddress": "0x140D14DB0",
+      "windowsName": "Client__Info__InfoPacket__SetProfileResult",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "Windows accesses Result, CurrentSelectClassID, Region, and SearchComment at +0x10, +0x14, +0x15, and +0x16, matching FFXIVIpcSetProfileResult.",
+        "Both update detail, party, linkshell, and free-company profile proxies."
+      ]
+    },
+    {
+      "opcode": "0x0190",
+      "packet": "Create",
+      "ps3Address": "0x00ADFEB4",
+      "ps3Name": "Client::Game::Network::Packet::Create",
+      "windowsAddress": "0x140CC8F00",
+      "windowsName": "Client__Game__Network__Packet__Create",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "Both test event-solo state, ObjType == 2, and OwnerId against the local entity.",
+        "Windows offsets ObjType +0x33 and OwnerId +0x14 agree with FFXIVIpcPlayerSpawn.",
+        "Both queue the create packet and process it immediately when the target is the local entity."
+      ]
+    },
+    {
+      "opcode": "0x019A",
+      "packet": "InitZone",
+      "ps3Address": "0x00AE32B4",
+      "ps3Name": "Client::Game::Network::Packet::InitZone",
+      "windowsAddress": "0x140CBF560",
+      "windowsName": "Client__Game__Network__Packet__InitZone",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "Both are thin forwarders to the global WarpManager InitZone implementation."
+      ]
+    },
+    {
+      "opcode": "0x019F",
+      "packet": "PlayerStatusUpdate",
+      "ps3Address": "0x00AE0638",
+      "ps3Name": "Client::Game::Network::Packet::PlayerStatusUpdate",
+      "windowsAddress": "0x140CBFAE0",
+      "windowsName": "Client__Game__Network__Packet__PlayerStatusUpdate",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "Exact field sequence: ClassJob +0, Lv +2, LvSync +6, Exp +8, RestPoint +0x0C.",
+        "Both compare old level state, update class/level/sync/experience/rest state, refresh UI commands, and notify EventFramework."
+      ]
+    },
+    {
+      "opcode": "0x01A0",
+      "packet": "PlayerStatus",
+      "ps3Address": "0x00AE0C5C",
+      "ps3Name": "Client::Game::Network::Packet::PlayerStatus",
+      "windowsAddress": "0x140CC6080",
+      "windowsName": "Client__Game__Network__Packet__PlayerStatus",
+      "confidence": "high",
+      "evidence": [
+        "Same dispatcher case.",
+        "Both update PlayerStatus, Buddy, PvPStatus, ContentsNote, RelicNote, and MobHunt state, then notify AgentLobby that the character logged in.",
+        "Crest is read from payload offset +8 in both layouts."
+      ]
+    }
+  ]
+}
