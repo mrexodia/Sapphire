@@ -539,6 +539,1094 @@
       ],
       "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C66F4",
       "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00E1",
+      "packet": "BlacklistAddResult",
+      "ps3Address": "0x004C9928",
+      "ps3Name": "Client::Info::InfoPacket::BlacklistAddResult",
+      "windowsAddress": "0x140D16800",
+      "windowsName": "Client__Info__InfoPacket__BlacklistAddResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00E1 as BlacklistAddResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::BlacklistAddResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C9928",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00E2",
+      "packet": "BlacklistRemoveResult",
+      "ps3Address": "0x004C9AFC",
+      "ps3Name": "Client::Info::InfoPacket::BlacklistRemoveResult",
+      "windowsAddress": "0x140D168E0",
+      "windowsName": "Client__Info__InfoPacket__BlacklistRemoveResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00E2 as BlacklistRemoveResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::BlacklistRemoveResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C9AFC",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00E3",
+      "packet": "GetBlacklistResult",
+      "ps3Address": "0x004C9CD0",
+      "ps3Name": "Client::Info::InfoPacket::GetBlacklistResult",
+      "windowsAddress": "0x140D169C0",
+      "windowsName": "Client__Info__InfoPacket__GetBlacklistResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00E3 as GetBlacklistResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetBlacklistResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C9CD0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00E6",
+      "packet": "FriendlistRemoveResult",
+      "ps3Address": "0x004C9E00",
+      "ps3Name": "Client::Info::InfoPacket::FriendlistRemoveResult",
+      "windowsAddress": "0x140D16ED0",
+      "windowsName": "Client__Info__InfoPacket__FriendlistRemoveResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00E6 as FriendlistRemoveResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::FriendlistRemoveResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004C9E00",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00EB",
+      "packet": "PcSearchResult",
+      "ps3Address": "0x004CB8C8",
+      "ps3Name": "Client::Info::InfoPacket::PcSearchResult",
+      "windowsAddress": "0x140D170C0",
+      "windowsName": "Client__Info__InfoPacket__PcSearchResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00EB as PcSearchResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::PcSearchResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CB8C8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00F0",
+      "packet": "LinkshellResult",
+      "ps3Address": "0x004CA034",
+      "ps3Name": "Client::Info::InfoPacket::LinkshellResult",
+      "windowsAddress": "0x140D188F0",
+      "windowsName": "Client__Info__InfoPacket__LinkshellResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00F0 as LinkshellResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::LinkshellResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CA034",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00F1",
+      "packet": "GetLinkshellListResult",
+      "ps3Address": "0x004CB6DC",
+      "ps3Name": "Client::Info::InfoPacket::GetLinkshellListResult",
+      "windowsAddress": "0x140D17050",
+      "windowsName": "Client__Info__InfoPacket__GetLinkshellListResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00F1 as GetLinkshellListResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetLinkshellListResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CB6DC",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00FA",
+      "packet": "LetterResult",
+      "ps3Address": "0x004CB9D0",
+      "ps3Name": "Client::Info::InfoPacket::LetterResult",
+      "windowsAddress": "0x140D19870",
+      "windowsName": "Client__Info__InfoPacket__LetterResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00FA as LetterResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::LetterResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CB9D0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00FB",
+      "packet": "GetLetterMessageResult",
+      "ps3Address": "0x004CC7B0",
+      "ps3Name": "Client::Info::InfoPacket::GetLetterMessageResult",
+      "windowsAddress": "0x140D17140",
+      "windowsName": "Client__Info__InfoPacket__GetLetterMessageResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00FB as GetLetterMessageResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetLetterMessageResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CC7B0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00FC",
+      "packet": "GetLetterMessageDetailResult",
+      "ps3Address": "0x004CCA1C",
+      "ps3Name": "Client::Info::InfoPacket::GetLetterMessageDetailResult",
+      "windowsAddress": "0x140D171A0",
+      "windowsName": "Client__Info__InfoPacket__GetLetterMessageDetailResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00FC as GetLetterMessageDetailResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetLetterMessageDetailResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CCA1C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x00FD",
+      "packet": "GetLetterStatusResult",
+      "ps3Address": "0x004CCB10",
+      "ps3Name": "Client::Info::InfoPacket::GetLetterStatusResult",
+      "windowsAddress": "0x140D171F0",
+      "windowsName": "Client__Info__InfoPacket__GetLetterStatusResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x00FD as GetLetterStatusResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetLetterStatusResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CCB10",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0104",
+      "packet": "ItemSearchResult",
+      "ps3Address": "0x004CCC8C",
+      "ps3Name": "Client::Info::InfoPacket::ItemSearchResult",
+      "windowsAddress": "0x140D17280",
+      "windowsName": "Client__Info__InfoPacket__ItemSearchResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0104 as ItemSearchResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::ItemSearchResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CCC8C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0105",
+      "packet": "GetItemSearchListResult",
+      "ps3Address": "0x004CCDE8",
+      "ps3Name": "Client::Info::InfoPacket::GetItemSearchListResult",
+      "windowsAddress": "0x140D17320",
+      "windowsName": "Client__Info__InfoPacket__GetItemSearchListResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0105 as GetItemSearchListResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetItemSearchListResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CCDE8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0106",
+      "packet": "GetRetainerListResult",
+      "ps3Address": "0x004CD090",
+      "ps3Name": "Client::Info::InfoPacket::GetRetainerListResult",
+      "windowsAddress": "0x140D17380",
+      "windowsName": "Client__Info__InfoPacket__GetRetainerListResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0106 as GetRetainerListResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetRetainerListResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CD090",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0107",
+      "packet": "BuyMarketRetainerResult",
+      "ps3Address": "0x004CD284",
+      "ps3Name": "Client::Info::InfoPacket::BuyMarketRetainerResult",
+      "windowsAddress": "0x140D1A3D0",
+      "windowsName": "Client__Info__InfoPacket__BuyMarketRetainerResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0107 as BuyMarketRetainerResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::BuyMarketRetainerResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CD284",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0108",
+      "packet": "MarketStorageUpdate",
+      "ps3Address": "0x004CD748",
+      "ps3Name": "Client::Info::InfoPacket::MarketStorageUpdate",
+      "windowsAddress": "0x140D1A790",
+      "windowsName": "Client__Info__InfoPacket__MarketStorageUpdate",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0108 as MarketStorageUpdate.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::MarketStorageUpdate.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CD748",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0109",
+      "packet": "GetItemHistoryResult",
+      "ps3Address": "0x004CDD68",
+      "ps3Name": "Client::Info::InfoPacket::GetItemHistoryResult",
+      "windowsAddress": "0x140D173E0",
+      "windowsName": "Client__Info__InfoPacket__GetItemHistoryResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0109 as GetItemHistoryResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetItemHistoryResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CDD68",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x010A",
+      "packet": "GetRetainerSalesHistoryResult",
+      "ps3Address": "0x004CDEA8",
+      "ps3Name": "Client::Info::InfoPacket::GetRetainerSalesHistoryResult",
+      "windowsAddress": "0x140D17440",
+      "windowsName": "Client__Info__InfoPacket__GetRetainerSalesHistoryResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x010A as GetRetainerSalesHistoryResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetRetainerSalesHistoryResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CDEA8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x010B",
+      "packet": "MarketRetainerUpdate",
+      "ps3Address": "0x004CDFE8",
+      "ps3Name": "Client::Info::InfoPacket::MarketRetainerUpdate",
+      "windowsAddress": "0x140D1AE30",
+      "windowsName": "Client__Info__InfoPacket__MarketRetainerUpdate",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x010B as MarketRetainerUpdate.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::MarketRetainerUpdate.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CDFE8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x010C",
+      "packet": "CatalogSearchResult",
+      "ps3Address": "0x004CE6C0",
+      "ps3Name": "Client::Info::InfoPacket::CatalogSearchResult",
+      "windowsAddress": "0x140D188D0",
+      "windowsName": "Client__Info__InfoPacket__CatalogSearchResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x010C as CatalogSearchResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::CatalogSearchResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CE6C0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x010E",
+      "packet": "FreeCompanyResult",
+      "ps3Address": "0x004CEAC0",
+      "ps3Name": "Client::Info::InfoPacket::FreeCompanyResult",
+      "windowsAddress": "0x140D1B7C0",
+      "windowsName": "Client__Info__InfoPacket__FreeCompanyResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x010E as FreeCompanyResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::FreeCompanyResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004CEAC0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x010F",
+      "packet": "GetFcStatusResult",
+      "ps3Address": "0x004D21B8",
+      "ps3Name": "Client::Info::InfoPacket::GetFcStatusResult",
+      "windowsAddress": "0x140D18010",
+      "windowsName": "Client__Info__InfoPacket__GetFcStatusResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x010F as GetFcStatusResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcStatusResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D21B8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0110",
+      "packet": "GetFcInviteListResult",
+      "ps3Address": "0x004D239C",
+      "ps3Name": "Client::Info::InfoPacket::GetFcInviteListResult",
+      "windowsAddress": "0x140D18060",
+      "windowsName": "Client__Info__InfoPacket__GetFcInviteListResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0110 as GetFcInviteListResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcInviteListResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D239C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0111",
+      "packet": "GetFcProfileResult",
+      "ps3Address": "0x004D2664",
+      "ps3Name": "Client::Info::InfoPacket::GetFcProfileResult",
+      "windowsAddress": "0x140D18100",
+      "windowsName": "Client__Info__InfoPacket__GetFcProfileResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0111 as GetFcProfileResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcProfileResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D2664",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0112",
+      "packet": "GetFcHeaderResult",
+      "ps3Address": "0x004D28C8",
+      "ps3Name": "Client::Info::InfoPacket::GetFcHeaderResult",
+      "windowsAddress": "0x140D18150",
+      "windowsName": "Client__Info__InfoPacket__GetFcHeaderResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0112 as GetFcHeaderResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcHeaderResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D28C8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0113",
+      "packet": "GetCompanyBoardResult",
+      "ps3Address": "0x004D2A8C",
+      "ps3Name": "Client::Info::InfoPacket::GetCompanyBoardResult",
+      "windowsAddress": "0x140D181A0",
+      "windowsName": "Client__Info__InfoPacket__GetCompanyBoardResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0113 as GetCompanyBoardResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetCompanyBoardResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D2A8C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0114",
+      "packet": "GetFcHierarchyResult",
+      "ps3Address": "0x004D2BD8",
+      "ps3Name": "Client::Info::InfoPacket::GetFcHierarchyResult",
+      "windowsAddress": "0x140D182B0",
+      "windowsName": "Client__Info__InfoPacket__GetFcHierarchyResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0114 as GetFcHierarchyResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcHierarchyResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D2BD8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0115",
+      "packet": "GetFcActivityListResult",
+      "ps3Address": "0x004D2DFC",
+      "ps3Name": "Client::Info::InfoPacket::GetFcActivityListResult",
+      "windowsAddress": "0x140D18350",
+      "windowsName": "Client__Info__InfoPacket__GetFcActivityListResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0115 as GetFcActivityListResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcActivityListResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D2DFC",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0116",
+      "packet": "GetFcHierarchyLiteResult",
+      "ps3Address": "0x004D2D00",
+      "ps3Name": "Client::Info::InfoPacket::GetFcHierarchyLiteResult",
+      "windowsAddress": "0x140D18300",
+      "windowsName": "Client__Info__InfoPacket__GetFcHierarchyLiteResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0116 as GetFcHierarchyLiteResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcHierarchyLiteResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D2D00",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0117",
+      "packet": "GetCompanyMottoResult",
+      "ps3Address": "0x004D2F48",
+      "ps3Name": "Client::Info::InfoPacket::GetCompanyMottoResult",
+      "windowsAddress": "0x140D183A0",
+      "windowsName": "Client__Info__InfoPacket__GetCompanyMottoResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0117 as GetCompanyMottoResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetCompanyMottoResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D2F48",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0118",
+      "packet": "GetFcParamsResult",
+      "ps3Address": "0x004D302C",
+      "ps3Name": "Client::Info::InfoPacket::GetFcParamsResult",
+      "windowsAddress": "0x140D18420",
+      "windowsName": "Client__Info__InfoPacket__GetFcParamsResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0118 as GetFcParamsResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcParamsResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D302C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0119",
+      "packet": "GetFcActionResult",
+      "ps3Address": "0x004D31D0",
+      "ps3Name": "Client::Info::InfoPacket::GetFcActionResult",
+      "windowsAddress": "0x140D18470",
+      "windowsName": "Client__Info__InfoPacket__GetFcActionResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0119 as GetFcActionResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcActionResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D31D0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x011A",
+      "packet": "GetFcMemoResult",
+      "ps3Address": "0x004D3330",
+      "ps3Name": "Client::Info::InfoPacket::GetFcMemoResult",
+      "windowsAddress": "0x140D184C0",
+      "windowsName": "Client__Info__InfoPacket__GetFcMemoResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x011A as GetFcMemoResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::GetFcMemoResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D3330",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0122",
+      "packet": "InfoGMCommandResult",
+      "ps3Address": "0x004D34F0",
+      "ps3Name": "Client::Info::InfoPacket::InfoGMCommandResult",
+      "windowsAddress": "0x140D155A0",
+      "windowsName": "Client__Info__InfoPacket__InfoGMCommandResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0122 as InfoGMCommandResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Info::InfoPacket::InfoGMCommandResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:004D34F0",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0140",
+      "packet": "HudParam",
+      "ps3Address": "0x00AE02B8",
+      "ps3Name": "Client::Game::Network::Packet::HudParam",
+      "windowsAddress": "0x140CC83A0",
+      "windowsName": "Client__Game__Network__Packet__HudParam",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0140 as HudParam.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::HudParam.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE02B8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0141",
+      "packet": "ActionIntegrity",
+      "ps3Address": "0x00AE0754",
+      "ps3Name": "Client::Game::Network::Packet::ActionIntegrity",
+      "windowsAddress": "0x140CBFBD0",
+      "windowsName": "Client__Game__Network__Packet__ActionIntegrity",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0141 as ActionIntegrity.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::ActionIntegrity.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0754",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0145",
+      "packet": "Resting",
+      "ps3Address": "0x00AE014C",
+      "ps3Name": "Client::Game::Network::Packet::Resting",
+      "windowsAddress": "0x140CC8290",
+      "windowsName": "Client__Game__Network__Packet__Resting",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0145 as Resting.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::Resting.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE014C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0146",
+      "packet": "ActionResult1",
+      "ps3Address": "0x00AE246C",
+      "ps3Name": "Client::Game::Network::Packet::ActionResult1",
+      "windowsAddress": "0x140CBEFA0",
+      "windowsName": "Client__Game__Network__Packet__ActionResult1",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0146 as ActionResult1.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::ActionResult1.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE246C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0147",
+      "packet": "ActionResult",
+      "ps3Address": "0x00AE2404",
+      "ps3Name": "Client::Game::Network::Packet::ActionResult",
+      "windowsAddress": "0x140CBEF60",
+      "windowsName": "Client__Game__Network__Packet__ActionResult",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0147 as ActionResult.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::ActionResult.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE2404",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0148",
+      "packet": "Status",
+      "ps3Address": "0x00ADFFC8",
+      "ps3Name": "Client::Game::Network::Packet::Status",
+      "windowsAddress": "0x140CBED70",
+      "windowsName": "Client__Game__Network__Packet__Status",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0148 as Status.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::Status.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADFFC8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0149",
+      "packet": "FreeCompany",
+      "ps3Address": "0x00AE0AC8",
+      "ps3Name": "Client::Game::Network::Packet::FreeCompany",
+      "windowsAddress": "0x140CBECD0",
+      "windowsName": "Client__Game__Network__Packet__FreeCompany",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0149 as FreeCompany.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::FreeCompany.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0AC8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x014A",
+      "packet": "RecastGroup",
+      "ps3Address": "0x00AE1094",
+      "ps3Name": "Client::Game::Network::Packet::RecastGroup",
+      "windowsAddress": "0x140CC0030",
+      "windowsName": "Client__Game__Network__Packet__RecastGroup",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x014A as RecastGroup.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::RecastGroup.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE1094",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x014B",
+      "packet": "UpdateAlliance",
+      "ps3Address": "0x00AE312C",
+      "ps3Name": "Client::Game::Network::Packet::UpdateAlliance",
+      "windowsAddress": "0x140CC56B0",
+      "windowsName": "Client__Game__Network__Packet__UpdateAlliance",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x014B as UpdateAlliance.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::UpdateAlliance.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE312C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x014C",
+      "packet": "PartyPos",
+      "ps3Address": "0x00AE4358",
+      "ps3Name": "Client::Game::Network::Packet::PartyPos",
+      "windowsAddress": "0x140CC04D0",
+      "windowsName": "Client__Game__Network__Packet__PartyPos",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x014C as PartyPos.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::PartyPos.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE4358",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x014D",
+      "packet": "AlliancePos",
+      "ps3Address": "0x00AE4518",
+      "ps3Name": "Client::Game::Network::Packet::AlliancePos",
+      "windowsAddress": "0x140CC0610",
+      "windowsName": "Client__Game__Network__Packet__AlliancePos",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x014D as AlliancePos.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::AlliancePos.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE4518",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0191",
+      "packet": "Delete",
+      "ps3Address": "0x00ADFF50",
+      "ps3Name": "Client::Game::Network::Packet::Delete",
+      "windowsAddress": "0x140CC8250",
+      "windowsName": "Client__Game__Network__Packet__Delete",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0191 as Delete.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::Delete.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADFF50",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0193",
+      "packet": "Transfer",
+      "ps3Address": "0x00AE1DAC",
+      "ps3Name": "Client::Game::Network::Packet::Transfer",
+      "windowsAddress": "0x140CC8F80",
+      "windowsName": "Client__Game__Network__Packet__Transfer",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0193 as Transfer.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::Transfer.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE1DAC",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0194",
+      "packet": "Warp",
+      "ps3Address": "0x00AE1108",
+      "ps3Name": "Client::Game::Network::Packet::Warp",
+      "windowsAddress": "0x140CBEDD0",
+      "windowsName": "Client__Game__Network__Packet__Warp",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0194 as Warp.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::Warp.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE1108",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0196",
+      "packet": "RequestCast",
+      "ps3Address": "0x00AE1F88",
+      "ps3Name": "Client::Game::Network::Packet::RequestCast",
+      "windowsAddress": "0x140CC5390",
+      "windowsName": "Client__Game__Network__Packet__RequestCast",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0196 as RequestCast.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::RequestCast.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE1F88",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0199",
+      "packet": "UpdateParty",
+      "ps3Address": "0x00AE2C48",
+      "ps3Name": "Client::Game::Network::Packet::UpdateParty",
+      "windowsAddress": "0x140CC57F0",
+      "windowsName": "Client__Game__Network__Packet__UpdateParty",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0199 as UpdateParty.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::UpdateParty.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE2C48",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x019B",
+      "packet": "HateList",
+      "ps3Address": "0x00AE32E8",
+      "ps3Name": "Client::Game::Network::Packet::HateList",
+      "windowsAddress": "0x140CBF580",
+      "windowsName": "Client__Game__Network__Packet__HateList",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x019B as HateList.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::HateList.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE32E8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x019C",
+      "packet": "HaterList",
+      "ps3Address": "0x00AE3388",
+      "ps3Name": "Client::Game::Network::Packet::HaterList",
+      "windowsAddress": "0x140CBF630",
+      "windowsName": "Client__Game__Network__Packet__HaterList",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x019C as HaterList.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::HaterList.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE3388",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x019D",
+      "packet": "CreateObject",
+      "ps3Address": "0x00AE3438",
+      "ps3Name": "Client::Game::Network::Packet::CreateObject",
+      "windowsAddress": "0x140CC5D20",
+      "windowsName": "Client__Game__Network__Packet__CreateObject",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x019D as CreateObject.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::CreateObject.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE3438",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x019E",
+      "packet": "DeleteObject",
+      "ps3Address": "0x00AE3C18",
+      "ps3Name": "Client::Game::Network::Packet::DeleteObject",
+      "windowsAddress": "0x140CBFA00",
+      "windowsName": "Client__Game__Network__Packet__DeleteObject",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x019E as DeleteObject.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::DeleteObject.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE3C18",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01A1",
+      "packet": "BaseParam",
+      "ps3Address": "0x00AE0BA4",
+      "ps3Name": "Client::Game::Network::Packet::BaseParam",
+      "windowsAddress": "0x140CBFA40",
+      "windowsName": "Client__Game__Network__Packet__BaseParam",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x01A1 as BaseParam.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::BaseParam.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0BA4",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01A2",
+      "packet": "FirstAttack",
+      "ps3Address": "0x00AE0D44",
+      "ps3Name": "Client::Game::Network::Packet::FirstAttack",
+      "windowsAddress": "0x140CBFF10",
+      "windowsName": "Client__Game__Network__Packet__FirstAttack",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x01A2 as FirstAttack.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::FirstAttack.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0D44",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01A3",
+      "packet": "Condition",
+      "ps3Address": "0x00AE0D9C",
+      "ps3Name": "Client::Game::Network::Packet::Condition",
+      "windowsAddress": "0x140CBFF50",
+      "windowsName": "Client__Game__Network__Packet__Condition",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x01A3 as Condition.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::Condition.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0D9C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01A4",
+      "packet": "ChangeClass",
+      "ps3Address": "0x00AE0E68",
+      "ps3Name": "Client::Game::Network::Packet::ChangeClass",
+      "windowsAddress": "0x140CC6130",
+      "windowsName": "Client__Game__Network__Packet__ChangeClass",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x01A4 as ChangeClass.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::ChangeClass.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE0E68",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01A5",
+      "packet": "Equip",
+      "ps3Address": "0x00AE1040",
+      "ps3Name": "Client::Game::Network::Packet::Equip",
+      "windowsAddress": "0x140CBFFF0",
+      "windowsName": "Client__Game__Network__Packet__Equip",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x01A5 as Equip.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::Equip.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE1040",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01BF",
+      "packet": "CreateTreasure",
+      "ps3Address": "0x00AE38C8",
+      "ps3Name": "Client::Game::Network::Packet::CreateTreasure",
+      "windowsAddress": "0x140CBF6E0",
+      "windowsName": "Client__Game__Network__Packet__CreateTreasure",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x01BF as CreateTreasure.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::CreateTreasure.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE38C8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01F3",
+      "packet": "LogText",
+      "ps3Address": "0x00AE4738",
+      "ps3Name": "Client::Game::Network::Packet::LogText",
+      "windowsAddress": "0x140CC62C0",
+      "windowsName": "Client__Game__Network__Packet__LogText",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x01F3 as LogText.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::LogText.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE4738",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02DB",
+      "packet": "UpdateFindContent",
+      "ps3Address": "0x00DA4148",
+      "ps3Name": "Client::Network::ContentMediator::UpdateFindContent",
+      "windowsAddress": "0x140D1F190",
+      "windowsName": "Client__Network__ContentMediator__UpdateFindContent",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x02DB as UpdateFindContent.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Network::ContentMediator::UpdateFindContent.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00DA4148",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02DE",
+      "packet": "NotifyFindContentStatus",
+      "ps3Address": "0x00DA4A34",
+      "ps3Name": "Client::Network::ContentMediator::NotifyFindContentStatus",
+      "windowsAddress": "0x140D1ECB0",
+      "windowsName": "Client__Network__ContentMediator__NotifyFindContentStatus",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x02DE as NotifyFindContentStatus.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Network::ContentMediator::NotifyFindContentStatus.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00DA4A34",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02E1",
+      "packet": "ResponsePenalties",
+      "ps3Address": "0x00DA4E0C",
+      "ps3Name": "Client::Network::ContentMediator::ResponsePenalties",
+      "windowsAddress": "0x140D1ED70",
+      "windowsName": "Client__Network__ContentMediator__ResponsePenalties",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x02E1 as ResponsePenalties.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Network::ContentMediator::ResponsePenalties.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00DA4E0C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02E4",
+      "packet": "UpdateContent",
+      "ps3Address": "0x00DA4BE8",
+      "ps3Name": "Client::Network::ContentMediator::UpdateContent",
+      "windowsAddress": "0x140D1F880",
+      "windowsName": "Client__Network__ContentMediator__UpdateContent",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x02E4 as UpdateContent.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Network::ContentMediator::UpdateContent.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00DA4BE8",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x02E6",
+      "packet": "SuccessFindContentAsMember5",
+      "ps3Address": "0x00DA4844",
+      "ps3Name": "Client::Network::ContentMediator::SuccessFindContentAsMember5",
+      "windowsAddress": "0x140D1F6F0",
+      "windowsName": "Client__Network__ContentMediator__SuccessFindContentAsMember5",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x02E6 as SuccessFindContentAsMember5.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Network::ContentMediator::SuccessFindContentAsMember5.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00DA4844",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0334",
+      "packet": "Marker",
+      "ps3Address": "0x00AE1DE4",
+      "ps3Name": "Client::Game::Network::Packet::Marker",
+      "windowsAddress": "0x140CC12D0",
+      "windowsName": "Client__Game__Network__Packet__Marker",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0334 as Marker.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::Marker.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE1DE4",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0335",
+      "packet": "GroundMarker",
+      "ps3Address": "0x00AE1E20",
+      "ps3Name": "Client::Game::Network::Packet::GroundMarker",
+      "windowsAddress": "0x140CBEDF0",
+      "windowsName": "Client__Game__Network__Packet__GroundMarker",
+      "confidence": "high",
+      "evidence": [
+        "ThreePointThree ServerZoneIpcType independently identifies 0x0335 as GroundMarker.",
+        "The PS3 DWARF dispatcher routes the same opcode and +0x10 payload to Client::Game::Network::Packet::GroundMarker.",
+        "The Windows dispatcher routes the +0x10 payload to one unique direct target that is not shared by another candidate."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE1E20",
+      "channel": "zone-down"
     }
   ],
   "idbLinkFormat": "idb://ffxivgame.ppu.elf.i64:{PS3_ADDRESS_8_HEX_UPPER}",
