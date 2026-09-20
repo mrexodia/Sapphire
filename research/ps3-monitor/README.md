@@ -78,5 +78,5 @@ The detailed execution plan and pasteable persistent goal remain in
    Windows pseudocode or runtime traces.
 2. Investigate changed-opcode counterparts for build-only numeric cases.
 3. Normalize and export outbound Zone/Chat DWARF packet types.
-4. Fully validate Windows layouts before promoting any of the 98 missing
+4. Fully validate Windows layouts before promoting any of the 95 missing
    Sapphire declarations.

@@ -8,9 +8,9 @@ passes produced 193 one-to-one and 11 shared packet-handler function matches,
 covering 247 opcode cases and corresponding PS3 DWARF structure records. No
 unreviewed candidate remains in the generated ranking.
 
-No production packet header was changed. The structure ledger identifies gaps,
-but incomplete Windows size/layout evidence makes adding those declarations
-premature.
+One production packet header was corrected without changing its wire size:
+`FFXIVIpcQuestFinish` now exposes the Windows-read byte at `+0x04` separately
+from three trailing padding bytes. Other incomplete layouts remain research-only.
 
 ## Dispatcher coverage
 
@@ -24,7 +24,7 @@ premature.
 The unresolved counts include each dispatcher's default case. Twenty-four
 same-opcode zone relationships remain unresolved after review. Eleven exact
 shared-handler mappings confirm 54 additional opcode cases while preserving
-their many-opcode/one-function relationship. Thirteen additional unique
+their many-opcode/one-function relationship. Fourteen additional unique
 matches were confirmed by packet-field, loop-bound, constant, and
 downstream-call behavior. The remaining 3 probable relationships lack enough evidence for an
 authoritative function link.
@@ -50,7 +50,8 @@ changed-opcode counterpart.
 A manual follow-up confirmed `QuestCompleteFlag` (`0x01E3`): both builds use
 `bitIndex >> 3` with `0x80 >> (bitIndex & 7)`, set or clear the same completion
 bit, and notify EventFramework with the same three semantic arguments. Windows
-adds a fourth payload byte at `+0x04` for later 3.x-only state/UI work.
+uses the first byte of the existing four-byte tail at `+0x04` for later 3.x-only
+state/UI work.
 
 Every confirmed Windows function comment starts with:
 
@@ -85,9 +86,13 @@ The strongest confirmed layout delta is:
 | `PlayerStatusUpdate` | `LvSync` | `+0x04` | `+0x06` |
 
 The current Sapphire declaration already reflects the 3.x layout by placing
-`Lv1` at `+0x04` and `LvSync` at `+0x06`, so no correction was needed.
+`Lv1` at `+0x04` and `LvSync` at `+0x06`, so no correction was needed. For
+`QuestCompleteFlag`, both Sapphire and PS3 establish an eight-byte payload;
+Windows proves that byte `+0x04`, previously grouped into a `uint32_t padding`
+field, is consumed. Sapphire now represents it as `unknown4` plus three padding
+bytes while preserving `sizeof(FFXIVIpcQuestFinish) == 8`.
 
-Ninety-eight confirmed packet roles currently lack a correspondingly named
+Ninety-five confirmed packet roles currently lack a correspondingly named
 Sapphire declaration. They are recorded as research gaps rather than production
 changes because many complete 3.x sizes and unaccessed fields remain unproven.
 The complete list is in `packet_structures.json` under
@@ -124,24 +129,24 @@ python research/ps3-monitor/validate_research.py
 validated: 247 confirmed packet cases and structures, 659 dispatcher cases, 0 ranked candidates
 
 cmake --build build --target common world
-[124/124] Linking CXX static library src\world\world.lib
+common and world targets completed successfully
 
 git diff --check
 ```
 
-No production source file was modified. The `common` and `world` build therefore
-also serves as a clean baseline rather than validation of a packet-header edit.
+The successful build validates the wire-size-preserving
+`FFXIVIpcQuestFinish` packet-header correction.
 
 ## Remaining work
 
 1. Deepen the 3 probable direct relationships whose semantic names differ or
    whose PS3 path includes indirect/inlined calls; do not promote opcode-only
    agreement.
-2. Review the 21 unresolved same-opcode cases whose handlers are inline,
+2. Review the 24 unresolved same-opcode cases whose handlers are inline,
    indirect, ignored, or absent in one ctree representation.
 3. Triage the 18 PS3-only and 88 Windows-only zone cases for changed-opcode or
    newly introduced semantics.
-4. Fully validate Windows sizes and every member of the 98 missing Sapphire
+4. Fully validate Windows sizes and every member of the 95 missing Sapphire
    declarations before adding production definitions.
 5. Apply confirmed packet types to the Windows IDB and propagate packet-derived
    names into directly related managers only when call semantics support them.

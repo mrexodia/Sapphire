@@ -142,7 +142,7 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
     char LinkshellName[32];
     char TargetName[32];
   };
-  
+
   struct FFXIVIpcInviteResult : FFXIVIpcBasePacket< InviteResult >
   {
     uint32_t Result;
@@ -1458,10 +1458,12 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
   struct FFXIVIpcQuestFinish : FFXIVIpcBasePacket< QuestCompleteFlag >
   {
     uint16_t questId;
-    uint8_t flag1;
-    uint8_t flag2;
-    uint32_t padding;
+    uint8_t flag1; // bool completed
+    uint8_t flag2; // bool update
+    uint8_t unknown4;
+    uint8_t padding[3];
   };
+  static_assert( sizeof( FFXIVIpcQuestFinish ) == 8 );
 
   template< int Size >
   struct FFXIVIpcNoticeN

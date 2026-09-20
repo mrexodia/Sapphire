@@ -68,7 +68,6 @@
       "zone-down:IsMarket",
       "zone-down:ItemMessage",
       "zone-down:ItemSearchResult",
-      "zone-down:LegacyQuestCompleteFlags",
       "zone-down:LeveCompleteFlags",
       "zone-down:LogText",
       "zone-down:LootActionResult",
@@ -85,8 +84,6 @@
       "zone-down:OrderTarget",
       "zone-down:PopEventState",
       "zone-down:PushEventState",
-      "zone-down:QuestCompleteFlag",
-      "zone-down:QuestCompleteFlags",
       "zone-down:RequestCast",
       "zone-down:RequestItmeResult",
       "zone-down:ResumeEventScene2Str",
@@ -2578,7 +2575,7 @@
       "sapphire": {
         "type": "FFXIVIpcPartyRecruitResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2150,
+        "currentLine": 2152,
         "currentStatus": "present",
         "threePointThreeLine": 2109,
         "threePointThreeStatus": "present"
@@ -2903,7 +2900,7 @@
       "sapphire": {
         "type": "FFXIVIpcPcPartyResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2132,
+        "currentLine": 2134,
         "currentStatus": "present",
         "threePointThreeLine": 2091,
         "threePointThreeStatus": "present"
@@ -3011,7 +3008,7 @@
       "sapphire": {
         "type": "FFXIVIpcPcPartyUpdate",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2138,
+        "currentLine": 2140,
         "currentStatus": "present",
         "threePointThreeLine": 2097,
         "threePointThreeStatus": "present"
@@ -4521,7 +4518,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcInviteListResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1979,
+        "currentLine": 1981,
         "currentStatus": "present",
         "threePointThreeLine": 1938,
         "threePointThreeStatus": "present"
@@ -4739,7 +4736,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcProfileResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1992,
+        "currentLine": 1994,
         "currentStatus": "present",
         "threePointThreeLine": 1951,
         "threePointThreeStatus": "present"
@@ -4876,7 +4873,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcHeaderResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2018,
+        "currentLine": 2020,
         "currentStatus": "present",
         "threePointThreeLine": 1977,
         "threePointThreeStatus": "present"
@@ -4914,7 +4911,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetCompanyBoardResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2035,
+        "currentLine": 2037,
         "currentStatus": "present",
         "threePointThreeLine": 1994,
         "threePointThreeStatus": "present"
@@ -4952,7 +4949,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcHierarchyResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2049,
+        "currentLine": 2051,
         "currentStatus": "present",
         "threePointThreeLine": 2008,
         "threePointThreeStatus": "present"
@@ -5008,7 +5005,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcActivityListResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2066,
+        "currentLine": 2068,
         "currentStatus": "present",
         "threePointThreeLine": 2025,
         "threePointThreeStatus": "present"
@@ -5037,7 +5034,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcHierarchyLiteResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2081,
+        "currentLine": 2083,
         "currentStatus": "present",
         "threePointThreeLine": 2040,
         "threePointThreeStatus": "present"
@@ -5120,7 +5117,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetCompanyMottoResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2086,
+        "currentLine": 2088,
         "currentStatus": "present",
         "threePointThreeLine": 2045,
         "threePointThreeStatus": "present"
@@ -5221,7 +5218,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcParamsResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2097,
+        "currentLine": 2099,
         "currentStatus": "present",
         "threePointThreeLine": 2056,
         "threePointThreeStatus": "present"
@@ -5277,7 +5274,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcActionResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2110,
+        "currentLine": 2112,
         "currentStatus": "present",
         "threePointThreeLine": 2069,
         "threePointThreeStatus": "present"
@@ -5333,7 +5330,7 @@
       "sapphire": {
         "type": "FFXIVIpcGetFcMemoResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2118,
+        "currentLine": 2120,
         "currentStatus": "present",
         "threePointThreeLine": 2077,
         "threePointThreeStatus": "present"
@@ -6069,7 +6066,7 @@
       "sapphire": {
         "type": "FFXIVIpcFreeCompany",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2126,
+        "currentLine": 2128,
         "currentStatus": "present",
         "threePointThreeLine": 2085,
         "threePointThreeStatus": "present"
@@ -6174,7 +6171,7 @@
       "sapphire": {
         "type": "FFXIVIpcPartyPos",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2211,
+        "currentLine": 2213,
         "currentStatus": "present",
         "threePointThreeLine": 2170,
         "threePointThreeStatus": "present"
@@ -6609,7 +6606,7 @@
       "sapphire": {
         "type": "FFXIVIpcUpdateParty",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 2192,
+        "currentLine": 2194,
         "currentStatus": "present",
         "threePointThreeLine": 2151,
         "threePointThreeStatus": "present"
@@ -6930,7 +6927,7 @@
       "sapphire": {
         "type": "FFXIVIpcCreateObject",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1939,
+        "currentLine": 1941,
         "currentStatus": "present",
         "threePointThreeLine": 1898,
         "threePointThreeStatus": "present"
@@ -6959,7 +6956,7 @@
       "sapphire": {
         "type": "FFXIVIpcDeleteObject",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1962,
+        "currentLine": 1964,
         "currentStatus": "present",
         "threePointThreeLine": 1921,
         "threePointThreeStatus": "present"
@@ -7578,7 +7575,7 @@
       "sapphire": {
         "type": "FFXIVIpcUpdateFindContent",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1588,
+        "currentLine": 1590,
         "currentStatus": "present",
         "threePointThreeLine": 1561,
         "threePointThreeStatus": "present"
@@ -7652,7 +7649,7 @@
       "sapphire": {
         "type": "FFXIVIpcNotifyFindContentStatus",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1603,
+        "currentLine": 1605,
         "currentStatus": "present",
         "threePointThreeLine": 1576,
         "threePointThreeStatus": "present"
@@ -7681,7 +7678,7 @@
       "sapphire": {
         "type": "FFXIVIpcResponsePenalties",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1662,
+        "currentLine": 1664,
         "currentStatus": "present",
         "threePointThreeLine": 1621,
         "threePointThreeStatus": "present"
@@ -7737,7 +7734,7 @@
       "sapphire": {
         "type": "FFXIVIpcUpdateContent",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1579,
+        "currentLine": 1581,
         "currentStatus": "present",
         "threePointThreeLine": 1552,
         "threePointThreeStatus": "present"
@@ -9049,16 +9046,16 @@
       ],
       "status": "exported",
       "sapphire": {
-        "type": "FFXIVIpcQuestCompleteFlags",
+        "type": "FFXIVIpcQuestCompleteList",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": null,
-        "currentStatus": "missing",
-        "threePointThreeLine": null,
-        "threePointThreeStatus": "missing"
+        "currentLine": 1443,
+        "currentStatus": "present",
+        "threePointThreeLine": 1421,
+        "threePointThreeStatus": "present"
       },
       "windowsExtraFields": [],
       "comparisonStatus": "layout-unreviewed",
-      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
     },
     {
       "channel": "zone-down",
@@ -9239,16 +9236,16 @@
       ],
       "status": "exported",
       "sapphire": {
-        "type": "FFXIVIpcLegacyQuestCompleteFlags",
+        "type": "FFXIVIpcLegacyQuestCompleteList",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": null,
-        "currentStatus": "missing",
+        "currentLine": 1449,
+        "currentStatus": "present",
         "threePointThreeLine": null,
         "threePointThreeStatus": "missing"
       },
       "windowsExtraFields": [],
       "comparisonStatus": "layout-unreviewed",
-      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
     },
     {
       "channel": "zone-down",
@@ -9324,7 +9321,7 @@
       "sapphire": {
         "type": "FFXIVIpcMount",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1685,
+        "currentLine": 1687,
         "currentStatus": "present",
         "threePointThreeLine": 1644,
         "threePointThreeStatus": "present"
@@ -9510,7 +9507,7 @@
       "sapphire": {
         "type": "FFXIVIpcWeatherId",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1503,
+        "currentLine": 1505,
         "currentStatus": "present",
         "threePointThreeLine": 1476,
         "threePointThreeStatus": "present"
@@ -9595,7 +9592,7 @@
       "sapphire": {
         "type": "FFXIVIpcDiscoveryReply",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1516,
+        "currentLine": 1518,
         "currentStatus": "present",
         "threePointThreeLine": 1489,
         "threePointThreeStatus": "present"
@@ -9662,7 +9659,7 @@
       "sapphire": {
         "type": "FFXIVIpcConfig",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1671,
+        "currentLine": 1673,
         "currentStatus": "present",
         "threePointThreeLine": 1630,
         "threePointThreeStatus": "present"
@@ -10152,7 +10149,7 @@
       "sapphire": {
         "type": "FFXIVIpcContentAttainFlags",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1639,
+        "currentLine": 1641,
         "currentStatus": "present",
         "threePointThreeLine": 1598,
         "threePointThreeStatus": "present"
@@ -10387,7 +10384,7 @@
       "sapphire": {
         "type": "FFXIVIpcHouseList",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1704,
+        "currentLine": 1706,
         "currentStatus": "present",
         "threePointThreeLine": 1663,
         "threePointThreeStatus": "present"
@@ -10452,7 +10449,7 @@
       "sapphire": {
         "type": "FFXIVIpcHouse",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1712,
+        "currentLine": 1714,
         "currentStatus": "present",
         "threePointThreeLine": 1671,
         "threePointThreeStatus": "present"
@@ -10517,7 +10514,7 @@
       "sapphire": {
         "type": "FFXIVIpcYardObjectList",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1721,
+        "currentLine": 1723,
         "currentStatus": "present",
         "threePointThreeLine": 1680,
         "threePointThreeStatus": "present"
@@ -10582,7 +10579,7 @@
       "sapphire": {
         "type": "FFXIVIpcYardObject",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1730,
+        "currentLine": 1732,
         "currentStatus": "present",
         "threePointThreeLine": 1689,
         "threePointThreeStatus": "present"
@@ -10647,7 +10644,7 @@
       "sapphire": {
         "type": "FFXIVIpcInterior",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1739,
+        "currentLine": 1741,
         "currentStatus": "present",
         "threePointThreeLine": 1698,
         "threePointThreeStatus": "present"
@@ -10685,7 +10682,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingAuction",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1748,
+        "currentLine": 1750,
         "currentStatus": "present",
         "threePointThreeLine": 1707,
         "threePointThreeStatus": "present"
@@ -10714,7 +10711,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingProfile",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1754,
+        "currentLine": 1756,
         "currentStatus": "present",
         "threePointThreeLine": 1713,
         "threePointThreeStatus": "present"
@@ -10743,7 +10740,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingHouseName",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1768,
+        "currentLine": 1770,
         "currentStatus": "present",
         "threePointThreeLine": 1727,
         "threePointThreeStatus": "present"
@@ -10772,7 +10769,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingGreeting",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1774,
+        "currentLine": 1776,
         "currentStatus": "present",
         "threePointThreeLine": 1733,
         "threePointThreeStatus": "present"
@@ -10846,7 +10843,7 @@
       "sapphire": {
         "type": "FFXIVIpcCharaHousingLandData",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1780,
+        "currentLine": 1782,
         "currentStatus": "present",
         "threePointThreeLine": 1739,
         "threePointThreeStatus": "present"
@@ -10911,7 +10908,7 @@
       "sapphire": {
         "type": "FFXIVIpcCharaHousing",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1787,
+        "currentLine": 1789,
         "currentStatus": "present",
         "threePointThreeLine": 1746,
         "threePointThreeStatus": "present"
@@ -10976,7 +10973,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingWelcome",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1798,
+        "currentLine": 1800,
         "currentStatus": "present",
         "threePointThreeLine": 1757,
         "threePointThreeStatus": "present"
@@ -11014,7 +11011,7 @@
       "sapphire": {
         "type": "FFXIVIpcFurnitureListS",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1807,
+        "currentLine": 1809,
         "currentStatus": "present",
         "threePointThreeLine": 1766,
         "threePointThreeStatus": "present"
@@ -11052,7 +11049,7 @@
       "sapphire": {
         "type": "FFXIVIpcFurnitureListM",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1817,
+        "currentLine": 1819,
         "currentStatus": "present",
         "threePointThreeLine": 1776,
         "threePointThreeStatus": "present"
@@ -11090,7 +11087,7 @@
       "sapphire": {
         "type": "FFXIVIpcFurnitureListL",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1827,
+        "currentLine": 1829,
         "currentStatus": "present",
         "threePointThreeLine": 1786,
         "threePointThreeStatus": "present"
@@ -11146,7 +11143,7 @@
       "sapphire": {
         "type": "FFXIVIpcFurniture",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1837,
+        "currentLine": 1839,
         "currentStatus": "present",
         "threePointThreeLine": 1796,
         "threePointThreeStatus": "present"
@@ -11222,7 +11219,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingProfileList",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1845,
+        "currentLine": 1847,
         "currentStatus": "present",
         "threePointThreeLine": 1804,
         "threePointThreeStatus": "present"
@@ -11287,7 +11284,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingObjectTransform",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1851,
+        "currentLine": 1853,
         "currentStatus": "present",
         "threePointThreeLine": 1810,
         "threePointThreeStatus": "present"
@@ -11352,7 +11349,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingObjectColor",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1861,
+        "currentLine": 1863,
         "currentStatus": "present",
         "threePointThreeLine": 1820,
         "threePointThreeStatus": "present"
@@ -11390,7 +11387,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingObjectTransformMulti",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1870,
+        "currentLine": 1872,
         "currentStatus": "present",
         "threePointThreeLine": 1829,
         "threePointThreeStatus": "present"
@@ -11609,7 +11606,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingGetPersonalRoomProfileListResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1876,
+        "currentLine": 1878,
         "currentStatus": "present",
         "threePointThreeLine": 1835,
         "threePointThreeStatus": "present"
@@ -11638,7 +11635,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingGetHouseBuddyStableListResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1886,
+        "currentLine": 1888,
         "currentStatus": "present",
         "threePointThreeLine": 1845,
         "threePointThreeStatus": "present"
@@ -11694,7 +11691,7 @@
       "sapphire": {
         "type": "FFXIVIpcHouseTrainBuddyData",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1897,
+        "currentLine": 1899,
         "currentStatus": "present",
         "threePointThreeLine": 1856,
         "threePointThreeStatus": "present"
@@ -11815,7 +11812,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingObjectTransformMultiResult",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1905,
+        "currentLine": 1907,
         "currentStatus": "present",
         "threePointThreeLine": 1864,
         "threePointThreeStatus": "present"
@@ -11853,7 +11850,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingLogWithHouseName",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1913,
+        "currentLine": 1915,
         "currentStatus": "present",
         "threePointThreeLine": 1872,
         "threePointThreeStatus": "present"
@@ -12001,7 +11998,7 @@
       "sapphire": {
         "type": "FFXIVIpcHousingCombinedObjectStatus",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1919,
+        "currentLine": 1921,
         "currentStatus": "present",
         "threePointThreeLine": 1878,
         "threePointThreeStatus": "present"
@@ -12093,7 +12090,7 @@
       "sapphire": {
         "type": "FFXIVIpcHouseBuddyModelData",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1927,
+        "currentLine": 1929,
         "currentStatus": "present",
         "threePointThreeLine": 1886,
         "threePointThreeStatus": "present"
@@ -13153,23 +13150,23 @@
       ],
       "status": "exported",
       "sapphire": {
-        "type": "FFXIVIpcQuestCompleteFlag",
+        "type": "FFXIVIpcQuestFinish",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": null,
-        "currentStatus": "missing",
-        "threePointThreeLine": null,
-        "threePointThreeStatus": "missing"
+        "currentLine": 1458,
+        "currentStatus": "present",
+        "threePointThreeLine": 1431,
+        "threePointThreeStatus": "present"
       },
       "windowsExtraFields": [
         {
-          "name": "unknown3xStateIndex",
+          "name": "unknown4",
           "offset": "0x4",
           "width": 1,
           "evidence": "optional 3.x bitset/UI update index"
         }
       ],
       "comparisonStatus": "partially-windows-validated",
-      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
     },
     {
       "channel": "zone-down",
@@ -15421,7 +15418,7 @@
       "sapphire": {
         "type": "FFXIVIpcNotice2",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1486,
+        "currentLine": 1488,
         "currentStatus": "present",
         "threePointThreeLine": 1459,
         "threePointThreeStatus": "present"
@@ -15495,7 +15492,7 @@
       "sapphire": {
         "type": "FFXIVIpcNotice4",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1487,
+        "currentLine": 1489,
         "currentStatus": "present",
         "threePointThreeLine": 1460,
         "threePointThreeStatus": "present"
@@ -15569,7 +15566,7 @@
       "sapphire": {
         "type": "FFXIVIpcNotice8",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1488,
+        "currentLine": 1490,
         "currentStatus": "present",
         "threePointThreeLine": 1461,
         "threePointThreeStatus": "present"
@@ -15643,7 +15640,7 @@
       "sapphire": {
         "type": "FFXIVIpcNotice16",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1489,
+        "currentLine": 1491,
         "currentStatus": "present",
         "threePointThreeLine": 1462,
         "threePointThreeStatus": "present"
@@ -15717,7 +15714,7 @@
       "sapphire": {
         "type": "FFXIVIpcNotice32",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
-        "currentLine": 1490,
+        "currentLine": 1492,
         "currentStatus": "present",
         "threePointThreeLine": 1463,
         "threePointThreeStatus": "present"

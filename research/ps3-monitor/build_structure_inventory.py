@@ -23,6 +23,9 @@ SAPPHIRE_TYPES = {
     "TellNotFound": "FFXIVIpcTellNotFound",
     "RecvBusyStatus": "FFXIVRecvBusyStatus",
     "RecvFinderStatus": "FFXIVRecvFinderStatus",
+    "QuestCompleteFlags": "FFXIVIpcQuestCompleteList",
+    "QuestCompleteFlag": "FFXIVIpcQuestFinish",
+    "LegacyQuestCompleteFlags": "FFXIVIpcLegacyQuestCompleteList",
 }
 
 # Fields independently observed in the Windows handler. An offset differing
@@ -117,7 +120,7 @@ WINDOWS_EXTRA_FIELDS = {
     ],
     "QuestCompleteFlag": [
         {
-            "name": "unknown3xStateIndex",
+            "name": "unknown4",
             "offset": "0x4",
             "width": 1,
             "evidence": "optional 3.x bitset/UI update index",

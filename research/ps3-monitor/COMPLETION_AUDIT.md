@@ -10,7 +10,7 @@ current artifacts and direct verification evidence.
 | Remain on `research/ps3-33-packet-matching` | `git branch --show-current` | Satisfied |
 | Do not push or rewrite history | Local milestone commits begin at `9efcdaec8`; remote `origin/build-cleanup` remains at `a4724c627` | Satisfied |
 | Do not modify the PS3 reference IDB | All PS3 scripts are read-only exporters; no PS3 save or mutation operation was performed | Satisfied |
-| Avoid unrelated production changes | `git diff --name-only origin/build-cleanup...HEAD` contains only `research/ps3-monitor/*` | Satisfied |
+| Avoid unrelated production changes | Branch changes are research artifacts plus the independently Windows-validated `FFXIVIpcQuestFinish` byte/padding split | Satisfied |
 | Do not commit binaries, IDBs, captures, decrypted assets, or bulk decompiler output | Branch diff contains Markdown, Python, and derived JSON only | Satisfied |
 
 ## Dispatcher inventory
@@ -55,9 +55,9 @@ current artifacts and direct verification evidence.
 | Record PS3 size, members, offsets, widths/types | Every exported structure contains `ps3Size` and member metadata | Satisfied |
 | Compare with current and ThreePointThree Sapphire declarations | Each structure records current and immutable historical path/line presence | Satisfied |
 | Record independent Windows field evidence | `windowsValidation` records confirmed same-offset fields and version deltas; unreviewed fields are explicitly labelled | Satisfied |
-| Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 98 missing declarations pending complete Windows validation | Satisfied |
+| Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 95 missing declarations pending complete Windows validation | Satisfied |
 | Record confirmed version differences | `PlayerStatusUpdate.LvSync`: PS3 `+0x04`, Windows 3.x `+0x06` | Satisfied |
-| Make only conclusively supported production corrections | No production header was changed because no missing declaration had complete Windows size/member proof | Satisfied |
+| Make only conclusively supported production corrections | `FFXIVIpcQuestFinish` retains its proven 8-byte size while splitting the Windows-read byte at `+0x04` from three trailing padding bytes | Satisfied |
 
 ## Validation, build, and reporting
 
@@ -65,7 +65,7 @@ current artifacts and direct verification evidence.
 | --- | --- | --- |
 | Validate JSON and cross-artifact consistency | `python research/ps3-monitor/validate_research.py` reports 247 confirmed cases/structures, 659 cases, zero candidates | Satisfied |
 | Check whitespace/diff integrity | `git diff --check` succeeds | Satisfied |
-| Build `common` and `world` if production headers change | No production header changed; the clean baseline build nevertheless completed through `[124/124]` | Satisfied |
+| Build `common` and `world` if production headers change | After the `FFXIVIpcQuestFinish` correction, `cmake --build build --target common world` completed successfully | Satisfied |
 | Commit coherent local milestones | Multiple coherent research commits are present after `origin/build-cleanup` | Satisfied |
 | Finish with an auditable report | `OVERNIGHT_RESULTS.md` records coverage, annotations, structure gaps, verification, and remaining work | Satisfied |
 | Leave a clean working tree | Verified after the final audit commit | Pending final commit at the time this file was written; rechecked immediately afterward |
@@ -75,5 +75,5 @@ current artifacts and direct verification evidence.
 All finite core criteria are covered by direct artifacts and validators. The
 remaining 3 probable and 24 unresolved same-opcode relationships are not
 unreviewed work: each has an explicit evidence-backed review and reason it was
-not promoted. The 98 missing Sapphire declarations are documented gaps, not
+not promoted. The 95 missing Sapphire declarations are documented gaps, not
 safe production edits, because complete Windows layouts remain unproven.
