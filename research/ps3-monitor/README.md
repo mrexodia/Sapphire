@@ -52,8 +52,10 @@ authoritative names because they involve shared or merged handlers.
 See `packet_matches.json` for confirmed addresses and evidence,
 `dispatcher_cases.json` for complete case coverage, `packet_structures.json` for
 179 PS3 DWARF layouts and Windows/Sapphire comparisons, and
-[`OVERNIGHT_RESULTS.md`](OVERNIGHT_RESULTS.md) for the audited results. Approved
-names and repeatable comments have been applied to the local Windows IDB.
+[`OVERNIGHT_RESULTS.md`](OVERNIGHT_RESULTS.md) for the results, and
+[`COMPLETION_AUDIT.md`](COMPLETION_AUDIT.md) for the requirement-to-evidence
+checklist. Approved names and repeatable comments have been applied to the
+local Windows IDB.
 Confirmed Windows functions link back to PS3 counterparts with comments such as
 `PS3 Monitor: idb://ffxivgame.ppu.elf.i64:002F85C8`.
 
