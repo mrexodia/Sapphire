@@ -9040,7 +9040,9 @@
           "size": 200,
           "type": "uint8_t[200]",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "Windows copies 0x136 bytes; PS3 copies 0xC8 bytes"
           }
         }
       ],
@@ -9053,8 +9055,15 @@
         "threePointThreeLine": 1421,
         "threePointThreeStatus": "present"
       },
-      "windowsExtraFields": [],
-      "comparisonStatus": "layout-unreviewed",
+      "windowsExtraFields": [
+        {
+          "name": "unknownCompleteMask",
+          "offset": "0x136",
+          "width": 32,
+          "evidence": "Windows dispatcher forwards a second 32-byte region at payload +0x136"
+        }
+      ],
+      "comparisonStatus": "partially-windows-validated",
       "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
     },
     {

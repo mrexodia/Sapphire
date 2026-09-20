@@ -49,6 +49,9 @@ WINDOWS_FIELDS: dict[str, dict[str, tuple[int, str]]] = {
         "RestPoint": (0xC, "rested experience update"),
     },
     "PlayerStatus": {"Crest": (0x8, "crest update")},
+    "QuestCompleteFlags": {
+        "completeFlagArray": (0x0, "Windows copies 0x136 bytes; PS3 copies 0xC8 bytes"),
+    },
     "QuestCompleteFlag": {
         "bitIndex": (0x0, "quest-completion bit index"),
         "completed": (0x2, "set/clear boolean"),
@@ -117,6 +120,14 @@ WINDOWS_EXTRA_FIELDS = {
     "Create": [
         {"name": "OwnerId", "offset": "0x14", "width": 4, "evidence": "local-owner comparison"},
         {"name": "ObjType", "offset": "0x33", "width": 1, "evidence": "ObjType == 2 test"},
+    ],
+    "QuestCompleteFlags": [
+        {
+            "name": "unknownCompleteMask",
+            "offset": "0x136",
+            "width": 32,
+            "evidence": "Windows dispatcher forwards a second 32-byte region at payload +0x136",
+        }
     ],
     "QuestCompleteFlag": [
         {

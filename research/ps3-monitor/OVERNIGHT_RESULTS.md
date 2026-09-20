@@ -51,7 +51,10 @@ A manual follow-up confirmed `QuestCompleteFlag` (`0x01E3`): both builds use
 `bitIndex >> 3` with `0x80 >> (bitIndex & 7)`, set or clear the same completion
 bit, and notify EventFramework with the same three semantic arguments. Windows
 uses the first byte of the existing four-byte tail at `+0x04` for later 3.x-only
-state/UI work.
+state/UI work. This singular eight-byte packet is distinct from plural
+`QuestCompleteFlags` (`0x01E2`): Windows forwards a 310-byte completion mask and
+then a second 32-byte region, exactly matching Sapphire's 342-byte
+`FFXIVIpcQuestCompleteList`. PS3 2.3 only forwards a 200-byte completion mask.
 
 Every confirmed Windows function comment starts with:
 
