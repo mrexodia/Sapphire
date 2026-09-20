@@ -400,7 +400,38 @@ struct Win335_PacketDispatcher
   void *networkModuleProxy;
 };
 
-struct Win335_EventFramework;
+struct Win335_EventHandler
+{
+  void *vftable;
+  unsigned __int8 _unknown_0008[0x2A];
+  unsigned __int16 handlerType;
+};
+
+struct Win335_EventHandlerTreeNode
+{
+  Win335_EventHandlerTreeNode *left;
+  Win335_EventHandlerTreeNode *parent;
+  Win335_EventHandlerTreeNode *right;
+  unsigned __int32 handlerId;
+  unsigned __int8 _unknown_001C[0x4];
+  Win335_EventHandler *handler;
+  unsigned __int8 color;
+  unsigned __int8 isNil;
+};
+
+struct Win335_EventFramework
+{
+  unsigned __int8 _unknown_0000[0x58];
+  Win335_EventHandlerTreeNode *eventHandlers;
+  unsigned __int8 _unknown_0060[0x30];
+  Win335_EventHandler *specialHandler_A0001;
+  Win335_EventHandler *specialHandler_E0000;
+  Win335_EventHandler *specialHandler_150001;
+  Win335_EventHandler *specialHandler_140001;
+  Win335_EventHandler *specialHandler_230001;
+  Win335_EventHandler *specialHandler_B0129;
+  Win335_EventHandler *specialHandler_B0130;
+};
 
 struct Win335_Framework;
 
@@ -408,11 +439,145 @@ struct Win335_UIModule;
 
 struct Win335_StorageManager;
 
-struct Win335_InfoProxyInterface;
-
 struct Win335_InfoProxyItemSearch;
 
-struct Win335_Treasure;
+struct Win335_InfoProxyInterface
+{
+  void *vftable;
+  Win335_UIModule *ui;
+  unsigned __int32 count;
+};
+
+struct Win335_InfoProxyItemSearchResult_KnownFields
+{
+  unsigned __int64 itemId;
+  unsigned __int64 sellRetainerId;
+  unsigned __int64 signatureId;
+  unsigned __int32 sellPrice;
+  unsigned __int32 buyTax;
+  unsigned __int32 stack;
+  unsigned __int32 catalogId;
+  unsigned __int16 containerIndex;
+  unsigned __int16 durability;
+  unsigned __int16 refine;
+  unsigned __int16 materia[5];
+  unsigned __int8 subQuality;
+  unsigned __int8 materiaCount;
+  unsigned __int8 registerMarket;
+  unsigned __int8 unknown3B;
+  unsigned __int8 _unknown_003C[0x4];
+};
+
+struct Win335_InfoProxyItemSearchRetainer_KnownFields
+{
+  unsigned __int64 retainerId;
+  unsigned __int8 registerMarket;
+  unsigned __int8 isMarket;
+  unsigned __int8 sellTaxRate;
+  unsigned __int8 _unknown_000B;
+  unsigned __int32 expirationSellTaxRateDate;
+  unsigned __int8 retainerNameStorage[0x68];
+};
+
+struct Win335_InfoProxyItemSearchVTable
+{
+  void *deletingDestructor;
+  void (__fastcall *Add)(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count);
+  void (__fastcall *Sub)(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count);
+  void (__fastcall *Clear)(Win335_InfoProxyItemSearch *self);
+  void *unknown20;
+  unsigned __int8 (__fastcall *Request)(Win335_InfoProxyItemSearch *self);
+  void (__fastcall *Finish)(Win335_InfoProxyItemSearch *self);
+  unsigned __int32 (__fastcall *Count)(const Win335_InfoProxyItemSearch *self);
+  void *unknown40;
+  void *unknown48;
+  void (__fastcall *AddPage)(Win335_InfoProxyItemSearch *self, const void *packet);
+};
+
+struct Win335_InfoProxyItemSearch
+{
+  Win335_InfoProxyItemSearchVTable *vftable;
+  Win335_UIModule *ui;
+  unsigned __int32 count;
+  unsigned __int8 _unknown_0014[0x5];
+  unsigned __int8 requestKey;
+  unsigned __int8 _unknown_001A[0x6];
+  unsigned __int32 requestCatalogId;
+  unsigned __int8 requestSubQuality;
+  unsigned __int8 requestMateriaCount;
+  unsigned __int8 _unknown_0026[0x2];
+  Win335_InfoProxyItemSearchResult_KnownFields results[100];
+  unsigned __int32 total;
+  unsigned __int8 _unknown_192C[0x534];
+  Win335_InfoProxyItemSearchRetainer_KnownFields retainers[8];
+  unsigned __int32 retainerCount;
+  unsigned __int8 _unknown_2224[0x3A];
+  unsigned __int8 setData;
+};
+
+struct Win335_GameObject_KnownFields
+{
+  void *vftable;
+  unsigned __int8 _unknown_0008[0x68];
+  unsigned __int8 permissionInvisibility;
+  unsigned __int8 _unknown_0071[0x3];
+  unsigned __int32 entityId;
+  unsigned __int32 layoutId;
+  unsigned __int8 _unknown_007C[0x78];
+  unsigned __int32 contentId;
+};
+
+struct Win335_TreasureItemSlot
+{
+  unsigned __int32 itemCatalogueId;
+};
+
+struct Win335_Treasure
+{
+  void *vftable;
+  unsigned __int8 _unknown_0008[0x68];
+  unsigned __int8 permissionInvisibility;
+  unsigned __int8 _unknown_0071[0x3];
+  unsigned __int32 entityId;
+  unsigned __int32 layoutId;
+  unsigned __int8 _unknown_007C[0x4];
+  unsigned __int32 baseId;
+  unsigned __int8 _unknown_0084[0x6];
+  unsigned __int8 objectKind;
+  unsigned __int8 _unknown_008B[0x9];
+  unsigned __int8 stateFlags;
+  unsigned __int8 _unknown_0095[0x5F];
+  unsigned __int32 contentId;
+  unsigned __int8 _unknown_00F8[0x10];
+  void *sharedGroup;
+  unsigned __int8 _unknown_0110[0x80];
+  unsigned __int32 graphicalState;
+  float timer;
+  float maxTimer;
+  float maxLootTimer;
+  Win335_TreasureItemSlot items[16];
+  unsigned __int32 itemCount;
+  unsigned __int8 _unknown_01E4[0x4];
+  unsigned __int8 isOpened;
+  unsigned __int8 _unknown_01E9[0x7];
+  unsigned __int8 isFadeOut;
+  unsigned __int8 isLoot;
+  unsigned __int8 lootMode;
+  unsigned __int8 _unknown_01F3;
+  unsigned __int32 dropperNameId;
+  unsigned __int16 layerId;
+  unsigned __int8 _unknown_01FA[0x2];
+  unsigned __int32 treasureType;
+  unsigned __int16 sharedGroupId;
+};
+
+struct Win335_StaticObjectManager
+{
+  unsigned __int8 _unknown_0000[0x10];
+  Win335_GameObject_KnownFields *objects[40];
+};
+
+struct Win335_StandObjectManager;
 
 struct Win335_TreasureManager;
 
@@ -498,7 +663,7 @@ struct Win335_SetProfileResult_KnownFields
   unsigned __int32 Result; // +0x10: result branch
   unsigned __int8 CurrentSelectClassID; // +0x14: detail-proxy update
   unsigned __int8 Region; // +0x15: language/region update
-  unsigned __int8 SearchComment[0xC1]; // +0x16: comment pointer
+  char SearchComment[193]; // +0x16: comment pointer
 };
 
 struct Win335_Create_KnownFields
@@ -530,8 +695,8 @@ struct Win335_ChatFrom_KnownFields
 {
   unsigned __int64 fromCharacterID; // +0x0: sender ID use
   unsigned __int8 type; // +0x8: chat-type branch
-  unsigned __int8 fromName[0x20]; // +0x9: UTF-8 sender name
-  unsigned __int8 message[0x400]; // +0x29: UTF-8 message
+  unsigned __int8 fromName[32]; // +0x9: UTF-8 sender name
+  unsigned __int8 message[1024]; // +0x29: UTF-8 message
 };
 
 struct Win335_Chat_KnownFields
@@ -540,23 +705,23 @@ struct Win335_Chat_KnownFields
   unsigned __int64 speakerCharacterID; // +0x8: speaker log ID
   unsigned __int32 speakerEntityID; // +0x10: character lookup
   unsigned __int8 type; // +0x14: chat-type branch
-  unsigned __int8 speakerName[0x20]; // +0x15: UTF-8 speaker name
-  unsigned __int8 message[0x400]; // +0x35: UTF-8 message
+  unsigned __int8 speakerName[32]; // +0x15: UTF-8 speaker name
+  unsigned __int8 message[1024]; // +0x35: UTF-8 message
 };
 
 struct Win335_TellNotFound_KnownFields
 {
-  unsigned __int8 toName[0x20]; // +0x0: payload converted to UTF-8 string
+  unsigned __int8 toName[32]; // +0x0: payload converted to UTF-8 string
 };
 
 struct Win335_RecvBusyStatus_KnownFields
 {
-  unsigned __int8 toName[0x20]; // +0x0: payload converted to UTF-8 string
+  unsigned __int8 toName[32]; // +0x0: payload converted to UTF-8 string
 };
 
 struct Win335_RecvFinderStatus_KnownFields
 {
-  unsigned __int8 toName[0x20]; // +0x0: payload converted to UTF-8 string
+  unsigned __int8 toName[32]; // +0x0: payload converted to UTF-8 string
 };
 
 struct Win335_GetProfileResult_KnownFields
@@ -565,13 +730,13 @@ struct Win335_GetProfileResult_KnownFields
   unsigned __int64 SelectClassID; // +0x8: selected-class update
   unsigned __int8 CurrentSelectClassID; // +0x10: current-class update
   unsigned __int8 Region; // +0x11: language/region update
-  unsigned __int8 SearchComment[0xC1]; // +0x12: comment pointer
+  char SearchComment[193]; // +0x12: comment pointer
 };
 
 struct Win335_GetSearchCommentResult_KnownFields
 {
   unsigned __int32 TargetEntityID; // +0x0: entity ID argument
-  unsigned __int8 SearchComment[0xC1]; // +0x4: comment pointer
+  char SearchComment[193]; // +0x4: comment pointer
 };
 
 struct Win335_ChatChannelResult_KnownFields
@@ -586,13 +751,13 @@ struct Win335_ChatChannelResult_KnownFields
 struct Win335_SendSystemMessage_KnownFields
 {
   unsigned __int8 MessageParam; // +0x0: bit 1/4 tests
-  unsigned __int8 Message[0x301]; // +0x1: UTF-8 message
+  char Message[769]; // +0x1: UTF-8 message
 };
 
 struct Win335_SendLoginMessage_KnownFields
 {
   unsigned __int8 MessageParam; // +0x0: bit 1/4 tests
-  unsigned __int8 Message[0x301]; // +0x1: UTF-8 message
+  char Message[769]; // +0x1: UTF-8 message
 };
 
 struct Win335_UpdateOnlineStatus_KnownFields
@@ -617,8 +782,8 @@ struct Win335_RequestItmeResult_KnownFields
 
 struct Win335_AllianceReadyCheckResult_KnownFields
 {
-  unsigned __int8 EntityID[0x20]; // +0x0: entity-ID array
-  unsigned __int8 Ready[0x8]; // +0x20: ready-state array
+  unsigned __int32 EntityID[8]; // +0x0: entity-ID array
+  unsigned __int8 Ready[8]; // +0x20: ready-state array
   unsigned __int8 Count; // +0x28: entry count
 };
 
@@ -636,8 +801,8 @@ struct Win335_PcPartyUpdate_KnownFields
   unsigned __int8 TargetIdentity; // +0x11: target identity
   unsigned __int8 UpdateStatus; // +0x12: party-update switch
   unsigned __int8 Count; // +0x13: party count
-  unsigned __int8 ExecuteCharacterName[0x20]; // +0x14: executor name
-  unsigned __int8 TargetCharacterName[0x20]; // +0x34: target name
+  char ExecuteCharacterName[32]; // +0x14: executor name
+  char TargetCharacterName[32]; // +0x34: target name
 };
 
 struct Win335_InviteCancelResult_KnownFields
@@ -646,11 +811,77 @@ struct Win335_InviteCancelResult_KnownFields
   unsigned __int8 AuthType; // +0x4: party AuthType test
 };
 
+struct Win335_CreateTreasure_KnownFields
+{
+  unsigned __int32 BaseId; // +0x0: static-object creation and final base-ID store
+  unsigned __int32 EntityId; // +0x4: static-object creation and GameObject::SetEntityId
+  unsigned __int32 LayoutId; // +0x8: GameObject::SetLayoutId argument
+  unsigned __int8 _unknown_000C[0x2];
+  unsigned __int8 Index; // +0xE: static-object slot creation and lookup index
+  unsigned __int8 IsOpened; // +0xF: conditional Treasure::Open branch
+  unsigned __int8 DropperNameId; // +0x10: Treasure dropper-name field store
+  unsigned __int8 itemNumber; // +0x11: catalogue-ID loop bound and Treasure item count
+  unsigned __int8 PermissionInvisibility; // +0x12: GameObject::SetPermissionInvisibility argument
+  unsigned __int8 Loot; // +0x13: Treasure loot-mode field store
+  unsigned __int8 TreasureType; // +0x14: Treasure type store and OnCreated state test
+  unsigned __int8 unknown15; // +0x15: 3.x-only byte forwarded to the object state/visibility helper at 0x1409DFF20
+  unsigned __int8 _unknown_0016[0x2];
+  float Timer; // +0x18: Treasure current-timer store
+  float MaxTimer; // +0x1C: Treasure::SetMaxTimer argument
+  float MaxLootTimer; // +0x20: Treasure maximum-loot-timer store
+  unsigned __int32 ContentId; // +0x24: GameObject::SetContentId argument
+  unsigned __int16 SharedGroup; // +0x28: Treasure shared-group identifier store
+  unsigned __int8 _unknown_002A[0xA];
+  unsigned __int32 catalogueIds[16]; // +0x34: catalogue-ID copy into indexed Treasure item slots
+};
+
+struct Win335_OpenTreasure_KnownFields
+{
+  float timer; // +0x0: timer passed to Treasure::OpenWithTimers
+  float maxTimer; // +0x4: maximum timer passed to Treasure::OpenWithTimers
+  float maxLootTimer; // +0x8: maximum loot timer passed to Treasure::OpenWithTimers
+  unsigned __int8 _unknown_000C[0x4];
+  unsigned __int32 entityId; // +0x10: TreasureManager entity-ID lookup
+};
+
+struct Win335_TreasureOpenRight_KnownFields
+{
+  unsigned __int32 treasureEntityId; // +0x0: TreasureManager entity-ID lookup
+  unsigned __int8 openRight; // +0x4: open-right result switch
+  unsigned __int8 _unknown_0005[0x3];
+  unsigned __int32 argument; // +0x8: result-specific log/message argument
+  float timer; // +0xC: Treasure current-timer store
+  float maxTimer; // +0x10: Treasure::SetMaxTimer argument
+  float maxLootTimer; // +0x14: Treasure maximum-loot-timer store
+};
+
+struct Win335_LootItems_KnownFields
+{
+  unsigned __int32 entityId; // +0x0: TreasureManager entity-ID lookup
+  unsigned __int8 itemNumber; // +0x4: item-copy loop bound and Treasure item count
+  unsigned __int8 _unknown_0005[0x3];
+  float timer; // +0x8: Treasure current-timer store
+  float maxTimer; // +0xC: Treasure maximum-timer store
+  float maxLootTimer; // +0x10: Treasure maximum-loot-timer store
+  unsigned __int32 catalogueIds[16]; // +0x14: catalogue-ID copy into indexed Treasure item slots
+};
+
 struct Win335_QuestCompleteFlags_KnownFields
 {
-  unsigned __int8 completeFlagArray[0xC8]; // +0x0: Windows copies 0x136 bytes; PS3 copies 0xC8 bytes
+  unsigned __int8 completeFlagArray[200]; // +0x0: Windows copies 0x136 bytes; PS3 copies 0xC8 bytes
   unsigned __int8 _unknown_00C8[0x6E];
   unsigned __int8 unknownCompleteMask[0x20]; // +0x136: Windows dispatcher forwards a second 32-byte region at payload +0x136
+};
+
+struct Win335_TreasureHuntReward_KnownFields
+{
+  unsigned __int32 eventHandlerId; // +0x0: 3.x EventFramework handler lookup before displaying the reward
+  unsigned __int8 Rank; // +0x4: rank argument passed to TreasureManager reward handling
+  unsigned __int8 _unknown_0005[0x3];
+  signed __int32 Exp; // +0x8: experience reward argument
+  signed __int32 Money; // +0xC: currency reward argument
+  unsigned __int32 ItemCatalogId; // +0x10: item catalogue reward argument
+  unsigned __int32 ItemStack; // +0x14: item stack reward argument
 };
 
 struct Win335_QuestCompleteFlag_KnownFields
@@ -686,7 +917,7 @@ struct Win335_DailyQuest_KnownFields
 struct Win335_QuestRepeatFlags_KnownFields
 {
   unsigned __int8 update; // +0x0: repeat-flag synchronization update boolean
-  unsigned __int8 repeatFlagArray[0x1]; // +0x1: one-byte repeat-quest mask
+  unsigned __int8 repeatFlagArray[1]; // +0x1: one-byte repeat-quest mask
 };
 
 #pragma pack(pop)

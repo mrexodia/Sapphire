@@ -65,8 +65,8 @@ python research/ps3-monitor/build_packet_catalog.py --check
 See [`OVERNIGHT_RESULTS.md`](OVERNIGHT_RESULTS.md) for the full results and
 [`COMPLETION_AUDIT.md`](COMPLETION_AUDIT.md) for the requirement-to-evidence
 checklist. Approved names and repeatable comments have been applied to the
-local Windows IDB. The downstream readability pass extends this to 240
-PS3-linked functions and 17 Windows-semantic/supporting functions.
+local Windows IDB. The downstream readability pass extends this to 267
+PS3-linked functions and 19 Windows-semantic/supporting functions.
 Confirmed Windows functions link back to PS3 counterparts with comments such as
 `PS3 Monitor: idb://ffxivgame.ppu.elf.i64:002F85C8`.
 
@@ -77,22 +77,23 @@ The detailed execution plan and pasteable persistent goal remain in
 
 The semantic-island readability work is documented in
 [`READABILITY_RESULTS.md`](READABILITY_RESULTS.md). It adds generated opcode and
-IPC types, 31 conservative Windows-known-field packet views, 42 concrete local
-types, 67 typed functions, four typed globals, one additional named global, and
-comments on 309 dispatcher case addresses. It also resolves
-`InfoModule::GetProxy`, `TreasureManager::GetTreasureFromEntityId`, the
-quest/leve EventFramework notification family, and the shared item-fragment
-assembler layouts. `build_readability_plan.py` generates the auditable
+IPC types, 36 conservative Windows-known-field packet views, 59 concrete local
+types, 101 typed functions, four typed globals, four additional named globals,
+and comments on 309 dispatcher case addresses. It also resolves
+`InfoModule::GetProxy`, `TreasureManager::GetTreasureFromEntityId`, the typed
+InfoProxyItemSearch page lifecycle and records, the Treasure/GameObject creation
+and packet family, the quest/leve EventFramework handler tree and notification
+family, and the shared item-fragment assembler layouts. `build_readability_plan.py` generates the auditable
 plan/header, while `ida_apply_readability.py` applies or verifies the changes in
 the Windows IDB.
 
 ## Next iteration
 
-1. Resolve the remaining virtual InfoProxyItemSearch result-list method and
-   recover a conservative concrete proxy layout.
-2. Recover Treasure/static-object class members downstream of the confirmed
-   `TreasureManager::GetTreasureFromEntityId` lookup.
-3. Type the EventFramework event-handler container and packet-family-specific
+1. Recover remaining InfoProxyItemSearch formatter/agent methods downstream of
+   the typed page and history paths.
+2. Resolve the new 3.x `CreateTreasure` byte at payload `+0x15` and prove exact
+   wire sizes before promoting treasure packet declarations.
+3. Extend EventFramework update/range boundaries and type packet-family-specific
    item-assembly fragment payloads.
 4. Normalize and export outbound Zone/Chat DWARF packet types.
 5. Fully validate Windows layouts before promoting any of the 99 missing

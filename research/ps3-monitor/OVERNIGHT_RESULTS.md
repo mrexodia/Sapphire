@@ -44,10 +44,11 @@ changed-opcode counterpart.
   - constructor
   - zone-down dispatcher
   - chat-down dispatcher
-- Twenty-eight additional PS3-linked subsystem functions: two framework
-  accessors, `InfoModule::GetProxy`, nine InfoModule/InfoProxyItemSearch methods,
-  the TreasureManager lookup, and fifteen quest/leve synchronization boundaries.
-- 240 Windows functions in total have verified names and repeatable PS3 links.
+- Fifty-five additional PS3-linked subsystem functions: two framework
+  accessors, `InfoModule::GetProxy`, seventeen InfoModule/InfoProxyItemSearch
+  methods, sixteen Treasure/GameObject/object-manager methods including the
+  TreasureManager lookup, and nineteen quest/leve/EventHandler boundaries.
+- 267 Windows functions in total have verified names and repeatable PS3 links.
 
 A manual follow-up confirmed `QuestCompleteFlag` (`0x01E3`): both builds use
 `bitIndex >> 3` with `0x80 >> (bitIndex & 7)`, set or clear the same completion
@@ -65,7 +66,7 @@ PS3 Monitor: idb://ffxivgame.ppu.elf.i64:XXXXXXXX
 ```
 
 The mapping ledger is `packet_matches.json`. `ida_apply_matches.py` can apply or
-verify the names and comments. A verification pass checked all 240 entries with
+verify the names and comments. A verification pass checked all 267 entries with
 zero failures after saving `E:/Sapphire/game/ffxiv_dx11.exe.i64`.
 
 Six obviously unrelated pre-existing names were replaced after the dispatcher
@@ -93,20 +94,22 @@ inspect packets, and `Frontline01Result`. Three more cases—`EnableLogout`,
 `LogMessage`, and `CancelLogoutCountdown`—are proven inline dispatcher paths.
 These 19 cases deliberately remain separate from PS3-linked matches and receive
 no `PS3 Monitor:` backlink. Four downstream retainer/market/item implementation
-functions and three shared fragment-assembler helpers also have separately
-verified Windows-supporting names. The saved Windows IDB contains and verifies
-all seventeen Windows-only names/comments.
+functions, three shared fragment-assembler helpers, the folded quest-handler
+initializer, and the 3.x Treasure loot applicator also have separately verified
+Windows-supporting names. The saved Windows IDB contains and verifies all
+nineteen Windows-only names/comments.
 
 ## Windows IDB readability
 
-The semantic-island passes add 42 concrete local types, type 67 functions and
-four globals, name one additional global, and comment 309 distinct dispatcher
+The semantic-island passes add 59 concrete local types, type 101 functions and
+four globals, name four additional globals, and comment 309 distinct dispatcher
 case addresses. The typed zone/chat IPC views produce symbolic opcode switches
-and `packet->payload` expressions; 31 `Win335_*_KnownFields` packet structures
-expose only Windows-confirmed fields, and 25 complete-payload handlers use them.
-The second pass resolves the InfoModule proxy accessor, TreasureManager lookup,
-nine InfoModule/InfoProxyItemSearch methods, the quest/leve EventFramework
-notification family, and item assembly context/node layouts. `subsystem_callgraph.json` exports one-hop quest/leve and
+and `packet->payload` expressions; 36 `Win335_*_KnownFields` packet structures
+expose only Windows-confirmed fields, and 29 complete-payload handlers use them.
+The downstream passes resolve the InfoModule proxy accessor and typed page
+lifecycle, the Treasure/GameObject creation and packet family, the typed
+EventFramework handler tree and quest-update core, and item assembly
+context/node layouts. `subsystem_callgraph.json` exports one-hop quest/leve and
 retainer/inventory expansion queues. Full details and safety boundaries are in
 `READABILITY_RESULTS.md`.
 
@@ -116,15 +119,18 @@ retainer/inventory expansion queues. Full details and safety boundaries are in
 offsets and sizes, current and immutable ThreePointThree Sapphire declaration
 locations, and per-field Windows validation where available.
 
-The strongest confirmed layout delta is:
+The strongest confirmed layout deltas are:
 
 | Packet | Field | PS3 2.3 | Windows 3.x |
 | --- | --- | ---: | ---: |
 | `PlayerStatusUpdate` | `LvSync` | `+0x04` | `+0x06` |
+| `CreateTreasure` | `Timer` / catalogue start | `+0x14` / `+0x30` | `+0x18` / `+0x34` |
+| `TreasureHuntReward` | `Rank` / `Exp` | `+0x00` / `+0x04` | `+0x04` / `+0x08` |
 
-The current Sapphire declaration already reflects the 3.x layout by placing
-`Lv1` at `+0x04` and `LvSync` at `+0x06`, so no correction was needed. For
-`QuestCompleteFlag`, both Sapphire and PS3 establish an eight-byte payload;
+The current Sapphire declaration already reflects the 3.x player-status layout
+by placing `Lv1` at `+0x04` and `LvSync` at `+0x06`, so no correction was
+needed. The Treasure layouts remain research-only until exact trailing wire
+sizes are independently proven. For `QuestCompleteFlag`, both Sapphire and PS3 establish an eight-byte payload;
 Windows proves that byte `+0x04`, previously grouped into a `uint32_t padding`
 field, is consumed. Sapphire now represents it as `unknown4` plus three padding
 bytes while preserving `sizeof(FFXIVIpcQuestFinish) == 8`.
@@ -169,7 +175,7 @@ The following checks completed successfully:
 
 ```text
 python research/ps3-monitor/validate_research.py
-validated: 253 confirmed packet cases and structures, 659 dispatcher cases, 0 ranked candidates, 10 Windows-only semantic functions, 7 Windows supporting functions, 3 Windows inline cases, 31 readability types, 67 typed functions, 4 typed globals, 309 case comments
+validated: 253 confirmed packet cases and structures, 659 dispatcher cases, 0 ranked candidates, 10 Windows-only semantic functions, 9 Windows supporting functions, 3 Windows inline cases, 36 readability types, 101 typed functions, 4 typed globals, 309 case comments
 
 cmake --build build --target common world
 common and world targets completed successfully
@@ -190,7 +196,7 @@ The successful build validates the wire-size-preserving
    newly introduced semantics.
 4. Fully validate Windows sizes and every member of the 99 missing Sapphire
    declarations before adding production definitions.
-5. Recover the remaining virtual InfoProxyItemSearch list-result method,
+5. Recover remaining InfoProxyItemSearch formatter/agent methods,
    EventFramework handler-container internals, and packet-family-specific item
    fragment payloads only when call semantics support them.
 

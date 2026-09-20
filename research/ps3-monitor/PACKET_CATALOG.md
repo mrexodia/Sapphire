@@ -14,7 +14,7 @@ opcode is not by itself proof of equivalent semantics.
 | One-to-one handler functions | 198 |
 | Shared handler functions | 11 |
 | Windows semantic functions without PS3 links | 10 |
-| Windows supporting implementation functions | 7 |
+| Windows supporting implementation functions | 9 |
 | Windows inline semantic cases | 3 |
 | Windows semantic opcode cases without PS3 links | 19 |
 | Probable reviewed cases | 0 |
@@ -136,13 +136,13 @@ rows, field-level layouts, evidence, and filters.
 | zone-down | 0x01B4 | TradeCommand | `missing: FFXIVIpcTradeCommand` | `ZoneProtoDownGAME_TradeCommand` (0x30) | [`ReceiveTradeCommand`](idb://ffxivgame.ppu.elf.i64:00AE2BC8) `0x00AE2BC8` | `Client__Game__Network__Packet__ReceiveTradeCommand` `0x140CC00D0` | one-to-one | layout-unreviewed |
 | zone-down | 0x01B5 | ItemMessage | `missing: FFXIVIpcItemMessage` | `ZoneProtoDownGAME_ItemMessage` (0x10) | [`ReceiveItemMessage`](idb://ffxivgame.ppu.elf.i64:00AE2C04) `0x00AE2C04` | `Client__Game__Network__Packet__ReceiveItemMessage` `0x140CC00F0` | one-to-one | layout-unreviewed |
 | zone-down | 0x01B6 | UpdateItem | [`FFXIVIpcUpdateItem`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1163) | `ZoneProtoDownGAME_UpdateItem` (0x40) | [`SetItem`](idb://ffxivgame.ppu.elf.i64:00AE2594) `0x00AE2594` | `Client__Game__Network__Packet__SetItem` `0x140CBF0E0` | one-to-one | layout-unreviewed |
-| zone-down | 0x01B8 | OpenTreasure | `missing: FFXIVIpcOpenTreasure` | `ZoneProtoDownGAME_OpenTreasure` (0x18) | [`OnOpenTreasure`](idb://ffxivgame.ppu.elf.i64:00AE3C74) `0x00AE3C74` | `Client__Game__Network__Packet__OnOpenTreasure` `0x140CC0130` | one-to-one | layout-unreviewed |
+| zone-down | 0x01B8 | OpenTreasure | `missing: FFXIVIpcOpenTreasure` | `ZoneProtoDownGAME_OpenTreasure` (0x18) | [`OnOpenTreasure`](idb://ffxivgame.ppu.elf.i64:00AE3C74) `0x00AE3C74` | `Client__Game__Network__Packet__OnOpenTreasure` `0x140CC0130` | one-to-one | partially-windows-validated |
 | zone-down | 0x01B9 | LootRight | `missing: FFXIVIpcLootRight` | `ZoneProtoDownGAME_LootRight` (0x28) | [`OnLootRight`](idb://ffxivgame.ppu.elf.i64:00AE3CDC) `0x00AE3CDC` | `Client__Game__Network__Packet__OnLootRight` `0x140CC0170` | one-to-one | layout-unreviewed |
 | zone-down | 0x01BA | LootActionResult | `missing: FFXIVIpcLootActionResult` | `ZoneProtoDownGAME_LootActionResult` (0x10) | [`OnLootActionResult`](idb://ffxivgame.ppu.elf.i64:00AE3D18) `0x00AE3D18` | `Client__Game__Network__Packet__OnLootActionResult` `0x140CC0190` | one-to-one | layout-unreviewed |
 | zone-down | 0x01BB | GameLog | `missing: FFXIVIpcGameLog` | `ZoneProtoDownGAME_GameLog` (0x20) | [`OnGameLog`](idb://ffxivgame.ppu.elf.i64:00AE40C0) `0x00AE40C0` | `Client__Game__Network__Packet__OnGameLog` `0x140CC0350` | one-to-one | layout-unreviewed |
-| zone-down | 0x01BC | TreasureOpenRight | `missing: FFXIVIpcTreasureOpenRight` | `ZoneProtoDownGAME_TreasureOpenRight` (0x20) | [`OnTreasureOpenRight`](idb://ffxivgame.ppu.elf.i64:00AE3ED8) `0x00AE3ED8` | `Client__Game__Network__Packet__OnTreasureOpenRight` `0x140CC01B0` | one-to-one | layout-unreviewed |
-| zone-down | 0x01BE | LootItems | `missing: FFXIVIpcLootItems` | `ZoneProtoDownGAME_LootItems` (0x58) | [`OnLootItems`](idb://ffxivgame.ppu.elf.i64:00AE412C) `0x00AE412C` | `Client__Game__Network__Packet__OnLootItems` `0x140CC0360` | one-to-one | layout-unreviewed |
-| zone-down | 0x01BF | CreateTreasure | `missing: FFXIVIpcCreateTreasure` | `ZoneProtoDownGAME_CreateTreasure` (0x70) | [`CreateTreasure`](idb://ffxivgame.ppu.elf.i64:00AE38C8) `0x00AE38C8` | `Client__Game__Network__Packet__CreateTreasure` `0x140CBF6E0` | one-to-one | layout-unreviewed |
+| zone-down | 0x01BC | TreasureOpenRight | `missing: FFXIVIpcTreasureOpenRight` | `ZoneProtoDownGAME_TreasureOpenRight` (0x20) | [`OnTreasureOpenRight`](idb://ffxivgame.ppu.elf.i64:00AE3ED8) `0x00AE3ED8` | `Client__Game__Network__Packet__OnTreasureOpenRight` `0x140CC01B0` | one-to-one | partially-windows-validated |
+| zone-down | 0x01BE | LootItems | `missing: FFXIVIpcLootItems` | `ZoneProtoDownGAME_LootItems` (0x58) | [`OnLootItems`](idb://ffxivgame.ppu.elf.i64:00AE412C) `0x00AE412C` | `Client__Game__Network__Packet__OnLootItems` `0x140CC0360` | one-to-one | partially-windows-validated |
+| zone-down | 0x01BF | CreateTreasure | `missing: FFXIVIpcCreateTreasure` | `ZoneProtoDownGAME_CreateTreasure` (0x70) | [`CreateTreasure`](idb://ffxivgame.ppu.elf.i64:00AE38C8) `0x00AE38C8` | `Client__Game__Network__Packet__CreateTreasure` `0x140CBF6E0` | one-to-one | partially-windows-validated |
 | zone-down | 0x01C1 | MonsterNoteCategory | [`FFXIVIpcMonsterNoteCategory`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1240) | `ZoneProtoDownGAME_MonsterNoteCategory` (0x40) | [`OnReceiveMonsterNoteCategory`](idb://ffxivgame.ppu.elf.i64:00AE5F68) `0x00AE5F68` | `Client__Game__Network__Packet__OnReceiveMonsterNoteCategory` `0x140CC0110` | one-to-one | layout-unreviewed |
 | zone-down | 0x01C3 | EventPlay2 | `missing: FFXIVIpcEventPlay2` | `ZoneProtoDownGAME_PlayEventScene2` (0x20) | [`ReceivePlayEventScene`](idb://ffxivgame.ppu.elf.i64:00ADC454) `0x00ADC454` | `Client__Game__Network__EventPacket__ReceivePlayEventScene` `0x140CC3140` | shared | layout-unreviewed |
 | zone-down | 0x01C4 | EventPlay4 | `missing: FFXIVIpcEventPlay4` | `ZoneProtoDownGAME_PlayEventScene4` (0x28) | [`ReceivePlayEventScene`](idb://ffxivgame.ppu.elf.i64:00ADC454) `0x00ADC454` | `Client__Game__Network__EventPacket__ReceivePlayEventScene` `0x140CC3140` | shared | layout-unreviewed |
@@ -276,7 +276,7 @@ rows, field-level layouts, evidence, and filters.
 | zone-down | 0x0322 | QuestRepeatFlags | [`FFXIVIpcQuestRepeatFlags`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1551) | `ZoneProtoDownGAME_QuestRepeatFlags` (0x8) | [`ReceiveQuestRepeatFlags`](idb://ffxivgame.ppu.elf.i64:00AE93F4) `0x00AE93F4` | `Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags` `0x140CC25D0` | one-to-one | partially-windows-validated |
 | zone-down | 0x032A | HousingObjectTransformMultiResult | [`FFXIVIpcHousingObjectTransformMultiResult`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1907) | `ZoneProtoDownGAME_HousingObjectTransformMultiResult` (0x20) | [`OnHousingObjectTransformMultiResult`](idb://ffxivgame.ppu.elf.i64:00AE6740) `0x00AE6740` | `Client__Game__Network__Packet__OnHousingObjectTransformMultiResult` `0x140CC0D40` | one-to-one | layout-unreviewed |
 | zone-down | 0x032B | HousingLogWithHouseName | [`FFXIVIpcHousingLogWithHouseName`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1915) | `ZoneProtoDownGAME_HousingLogWithHouseName` (0x20) | [`OnHousingLogWithHouseName`](idb://ffxivgame.ppu.elf.i64:00AE6A54) `0x00AE6A54` | `Client__Game__Network__Packet__OnHousingLogWithHouseName` `0x140CD51E0` | one-to-one | layout-unreviewed |
-| zone-down | 0x032C | TreasureHuntReward | `missing: FFXIVIpcTreasureHuntReward` | `ZoneProtoDownGAME_TreasureHuntReward` (0x18) | [`OnTreasureHuntReward`](idb://ffxivgame.ppu.elf.i64:00AE41A8) `0x00AE41A8` | `Client__Game__Network__Packet__OnTreasureHuntReward` `0x140CC03D0` | one-to-one | layout-unreviewed |
+| zone-down | 0x032C | TreasureHuntReward | `missing: FFXIVIpcTreasureHuntReward` | `ZoneProtoDownGAME_TreasureHuntReward` (0x18) | [`OnTreasureHuntReward`](idb://ffxivgame.ppu.elf.i64:00AE41A8) `0x00AE41A8` | `Client__Game__Network__Packet__OnTreasureHuntReward` `0x140CC03D0` | one-to-one | partially-windows-validated |
 | zone-down | 0x032D | HousingCombinedObjectStatus | [`FFXIVIpcHousingCombinedObjectStatus`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1921) | `ZoneProtoDownGAME_HousingCombinedObjectStatus` (0x28) | [`OnHousingCombinedObjectStatus`](idb://ffxivgame.ppu.elf.i64:00AE6AD0) `0x00AE6AD0` | `Client__Game__Network__Packet__OnHousingCombinedObjectStatus` `0x140CC0F40` | one-to-one | layout-unreviewed |
 | zone-down | 0x032E | HouseBuddyModelData | [`FFXIVIpcHouseBuddyModelData`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1929) | `ZoneProtoDownGAME_HouseBuddyModelData` (0x18) | [`OnHouseBuddyModelData`](idb://ffxivgame.ppu.elf.i64:00AE6C10) `0x00AE6C10` | `Client__Game__Network__Packet__OnHouseBuddyModelData` `0x140CC0FD0` | one-to-one | layout-unreviewed |
 | zone-down | 0x0334 | Marker | `missing: FFXIVIpcMarker` | `ZoneProtoDownGAME_Marker` (0x70) | [`Marker`](idb://ffxivgame.ppu.elf.i64:00AE1DE4) `0x00AE1DE4` | `Client__Game__Network__Packet__Marker` `0x140CC12D0` | one-to-one | layout-unreviewed |
@@ -316,6 +316,18 @@ equivalent PS3 leaf function was established. They intentionally have no PS3 IDB
 | Channel | Opcode | Packet | Field | PS3 offset | Windows offset | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
 | zone-down | 0x019F | PlayerStatusUpdate | LvSync | 0x4 | 0x6 | 3.x synchronized-level load |
+| zone-down | 0x01BF | CreateTreasure | Timer | 0x14 | 0x18 | Treasure current-timer store |
+| zone-down | 0x01BF | CreateTreasure | MaxTimer | 0x18 | 0x1C | Treasure::SetMaxTimer argument |
+| zone-down | 0x01BF | CreateTreasure | MaxLootTimer | 0x1C | 0x20 | Treasure maximum-loot-timer store |
+| zone-down | 0x01BF | CreateTreasure | ContentId | 0x20 | 0x24 | GameObject::SetContentId argument |
+| zone-down | 0x01BF | CreateTreasure | TreasureType | 0x24 | 0x14 | Treasure type store and OnCreated state test |
+| zone-down | 0x01BF | CreateTreasure | SharedGroup | 0x26 | 0x28 | Treasure shared-group identifier store |
+| zone-down | 0x01BF | CreateTreasure | catalogueIds | 0x30 | 0x34 | catalogue-ID copy into indexed Treasure item slots |
+| zone-down | 0x032C | TreasureHuntReward | Rank | 0x0 | 0x4 | rank argument passed to TreasureManager reward handling |
+| zone-down | 0x032C | TreasureHuntReward | Exp | 0x4 | 0x8 | experience reward argument |
+| zone-down | 0x032C | TreasureHuntReward | Money | 0x8 | 0xC | currency reward argument |
+| zone-down | 0x032C | TreasureHuntReward | ItemCatalogId | 0xC | 0x10 | item catalogue reward argument |
+| zone-down | 0x032C | TreasureHuntReward | ItemStack | 0x10 | 0x14 | item stack reward argument |
 
 ## Observed Windows-only fields
 
@@ -326,9 +338,11 @@ Names marked as unknown are descriptive placeholders, not production definitions
 | --- | --- | --- | --- | --- | ---: | --- |
 | zone-down | 0x0190 | Create | OwnerId | 0x14 | 4 | local-owner comparison |
 | zone-down | 0x0190 | Create | ObjType | 0x33 | 1 | ObjType == 2 test |
+| zone-down | 0x01BF | CreateTreasure | unknown15 | 0x15 | 1 | 3.x-only byte forwarded to the object state/visibility helper at 0x1409DFF20 |
 | zone-down | 0x01E2 | QuestCompleteFlags | unknownCompleteMask | 0x136 | 32 | Windows dispatcher forwards a second 32-byte region at payload +0x136 |
 | zone-down | 0x01E3 | QuestCompleteFlag | unknown4 | 0x4 | 1 | optional 3.x bitset/UI update index |
 | zone-down | 0x0320 | DailyQuests | dailyQuestArray[6..11] | 0x1C | 24 | Windows processes 12 four-byte records; PS3 processes 6 |
+| zone-down | 0x032C | TreasureHuntReward | eventHandlerId | 0x0 | 4 | 3.x EventFramework handler lookup before displaying the reward |
 
 ## Reviewed but not promoted
 

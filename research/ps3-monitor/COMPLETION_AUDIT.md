@@ -34,19 +34,19 @@ current artifacts and direct verification evidence.
 | Review every obvious same-opcode/named-handler candidate | `case_reviews.json`: 21 retained unresolved reviews and no probable cases | Satisfied |
 | Leave no unreviewed high-likelihood candidate | `candidate_rankings.json` has zero entries; validator enforces this | Satisfied |
 | Record one-sided case presence without overclaiming semantics | 18 PS3-only and 88 Windows-only zone cases plus one PS3-only chat case; inventory limitation defines status scope | Satisfied |
-| Confirm as many defensible direct matches as possible | `packet_matches.json`: 209 packet-handler function pairs covering 253 cases (246 zone, 7 chat), plus 26 PS3-linked subsystem functions beyond the initial framework accessors, 10 Windows semantic functions, 7 Windows supporting functions, and 3 inline Windows cases without PS3 links | Satisfied |
+| Confirm as many defensible direct matches as possible | `packet_matches.json`: 209 packet-handler function pairs covering 253 cases (246 zone, 7 chat), plus 53 PS3-linked subsystem functions beyond the initial framework accessors, 10 Windows semantic functions, 9 Windows supporting functions, and 3 inline Windows cases without PS3 links | Satisfied |
 
 ## Windows IDB annotations
 
 | Requirement | Evidence | Result |
 | --- | --- | --- |
-| Give confirmed Windows functions stable names | 209 PS3-linked handler names plus constructor, two dispatchers, 28 subsystem/accessor names, 10 Windows-semantic handlers, and 7 supporting functions in the saved Windows IDB | Satisfied |
-| First repeatable-comment line uses the required PS3 URI | `ida_apply_matches.py` and `packet_matches.json`; IDA verification checked all 240 PS3-linked entries with zero failures | Satisfied |
+| Give confirmed Windows functions stable names | 209 PS3-linked handler names plus constructor, two dispatchers, 55 subsystem/accessor names, 10 Windows-semantic handlers, and 9 supporting functions in the saved Windows IDB | Satisfied |
+| First repeatable-comment line uses the required PS3 URI | `ida_apply_matches.py` and `packet_matches.json`; IDA verification checked all 267 PS3-linked entries with zero failures | Satisfied |
 | Use eight uppercase PS3 address digits and the exact database name | `validate_research.py` validates every `ps3IdbUrl` | Satisfied |
 | Do not authoritatively link unresolved cross-build matches | Windows-only semantic names are explicitly separated from PS3-linked matches; unresolved relationships retain no PS3 backlink | Satisfied |
-| Type dispatchers and proven complete-payload handlers conservatively | `readability_plan.json`: 67 typed functions; 31 packet views contain only Windows-confirmed fields | Satisfied |
+| Type dispatchers and proven complete-payload handlers conservatively | `readability_plan.json`: 101 typed functions; 36 packet views contain only Windows-confirmed fields | Satisfied |
 | Make opcode dispatch readable without overclaiming | Generated enums label confirmed semantics and explicitly name all other values `Unknown`; 309 grouped case comments record evidence status | Satisfied |
-| Recover high-leverage framework/inventory anchors | PS3-linked Framework, InfoModule/InfoProxyItemSearch, TreasureManager, and quest/leve EventFramework methods; typed item assembly context/fragment lists; four typed globals and one named TreasureManager global are saved and verified | Satisfied |
+| Recover high-leverage framework/inventory anchors | PS3-linked Framework, typed InfoModule/InfoProxyItemSearch lifecycle and records, Treasure/GameObject creation methods and packet views, and the quest/leve EventFramework handler tree; typed item assembly context/fragment lists; four typed globals and four named subsystem globals are saved and verified | Satisfied |
 | Save the Windows database | `ida_save_database` succeeded for `E:/Sapphire/game/ffxiv_dx11.exe.i64` after the final annotation batch | Satisfied |
 | Make annotations reproducible/verifiable | `ida_apply_matches.py` separately applies or verifies PS3-linked and Windows-only high-confidence mapping entries; `ida_apply_readability.py` does the same for types, globals, and case comments | Satisfied |
 
@@ -59,14 +59,14 @@ current artifacts and direct verification evidence.
 | Compare with current and ThreePointThree Sapphire declarations | Each structure records current and immutable historical path/line presence | Satisfied |
 | Record independent Windows field evidence | `windowsValidation` records confirmed same-offset fields and version deltas; unreviewed fields are explicitly labelled | Satisfied |
 | Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 99 missing declarations pending complete Windows validation | Satisfied |
-| Record confirmed version differences | `PlayerStatusUpdate.LvSync`: PS3 `+0x04`, Windows 3.x `+0x06` | Satisfied |
+| Record confirmed version differences | `PlayerStatusUpdate.LvSync` moves `+0x04`→`+0x06`; TreasureHuntReward gains a leading event-handler ID; CreateTreasure shifts timers/content/catalogue data by four bytes | Satisfied |
 | Make only conclusively supported production corrections | `FFXIVIpcQuestFinish` retains its proven 8-byte size while splitting the Windows-read byte at `+0x04` from three trailing padding bytes | Satisfied |
 
 ## Validation, build, and reporting
 
 | Requirement | Evidence | Result |
 | --- | --- | --- |
-| Validate JSON and cross-artifact consistency | `python research/ps3-monitor/validate_research.py` reports 253 confirmed cases/structures, 659 cases, zero candidates, 10 Windows semantic functions, 7 supporting functions, 3 inline cases, 31 known-field types, 67 typed functions, 4 typed globals, and 309 case comments | Satisfied |
+| Validate JSON and cross-artifact consistency | `python research/ps3-monitor/validate_research.py` reports 253 confirmed cases/structures, 659 cases, zero candidates, 10 Windows semantic functions, 9 supporting functions, 3 inline cases, 36 known-field types, 101 typed functions, 4 typed globals, and 309 case comments | Satisfied |
 | Check whitespace/diff integrity | `git diff --check` succeeds | Satisfied |
 | Build `common` and `world` if production headers change | After the `FFXIVIpcQuestFinish` correction, `cmake --build build --target common world` completed successfully | Satisfied |
 | Commit coherent local milestones | Multiple coherent research commits are present after `origin/build-cleanup` | Satisfied |

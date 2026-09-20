@@ -41,6 +41,10 @@ DIRECT_PAYLOAD_PACKETS = {
     "PcPartyResult",
     "PcPartyUpdate",
     "InviteCancelResult",
+    "CreateTreasure",
+    "OpenTreasure",
+    "TreasureOpenRight",
+    "LootItems",
 }
 
 
@@ -163,7 +167,7 @@ def known_fields(structure: dict[str, Any]) -> list[dict[str, Any]]:
                 "name": identifier(field["name"]),
                 "offset": int(field["offset"], 16),
                 "size": field["width"],
-                "sourceType": "Windows-only",
+                "sourceType": field.get("type", "Windows-only"),
                 "evidence": field["evidence"],
             }
         )
@@ -190,8 +194,19 @@ def struct_declaration(structure: dict[str, Any]) -> tuple[str, dict[str, Any]]:
             name += f"_{offset:04X}"
         names.add(name)
         primitive = primitive_decl(field["sourceType"], size)
+        array_match = re.fullmatch(r"(.+?)\[(\d+)\]", field["sourceType"].strip())
+        array_primitive = None
+        array_count = 0
+        if array_match:
+            array_count = int(array_match.group(2))
+            if array_count and size % array_count == 0:
+                array_primitive = primitive_decl(array_match.group(1), size // array_count)
         if primitive:
             lines.append(f"  {primitive} {name}; // +0x{offset:X}: {field['evidence']}")
+        elif array_primitive:
+            lines.append(
+                f"  {array_primitive} {name}[{array_count}]; // +0x{offset:X}: {field['evidence']}"
+            )
         else:
             lines.append(
                 f"  unsigned __int8 {name}[0x{size:X}]; // +0x{offset:X}: {field['evidence']}"
@@ -258,13 +273,156 @@ def build() -> tuple[str, dict[str, Any]]:
         "  void *chatVftable;\n"
         "  void *networkModuleProxy;\n"
         "};\n",
-        "struct Win335_EventFramework;\n",
+        "struct Win335_EventHandler\n{\n"
+        "  void *vftable;\n"
+        "  unsigned __int8 _unknown_0008[0x2A];\n"
+        "  unsigned __int16 handlerType;\n"
+        "};\n",
+        "struct Win335_EventHandlerTreeNode\n{\n"
+        "  Win335_EventHandlerTreeNode *left;\n"
+        "  Win335_EventHandlerTreeNode *parent;\n"
+        "  Win335_EventHandlerTreeNode *right;\n"
+        "  unsigned __int32 handlerId;\n"
+        "  unsigned __int8 _unknown_001C[0x4];\n"
+        "  Win335_EventHandler *handler;\n"
+        "  unsigned __int8 color;\n"
+        "  unsigned __int8 isNil;\n"
+        "};\n",
+        "struct Win335_EventFramework\n{\n"
+        "  unsigned __int8 _unknown_0000[0x58];\n"
+        "  Win335_EventHandlerTreeNode *eventHandlers;\n"
+        "  unsigned __int8 _unknown_0060[0x30];\n"
+        "  Win335_EventHandler *specialHandler_A0001;\n"
+        "  Win335_EventHandler *specialHandler_E0000;\n"
+        "  Win335_EventHandler *specialHandler_150001;\n"
+        "  Win335_EventHandler *specialHandler_140001;\n"
+        "  Win335_EventHandler *specialHandler_230001;\n"
+        "  Win335_EventHandler *specialHandler_B0129;\n"
+        "  Win335_EventHandler *specialHandler_B0130;\n"
+        "};\n",
         "struct Win335_Framework;\n",
         "struct Win335_UIModule;\n",
         "struct Win335_StorageManager;\n",
-        "struct Win335_InfoProxyInterface;\n",
         "struct Win335_InfoProxyItemSearch;\n",
-        "struct Win335_Treasure;\n",
+        "struct Win335_InfoProxyInterface\n{\n"
+        "  void *vftable;\n"
+        "  Win335_UIModule *ui;\n"
+        "  unsigned __int32 count;\n"
+        "};\n",
+        "struct Win335_InfoProxyItemSearchResult_KnownFields\n{\n"
+        "  unsigned __int64 itemId;\n"
+        "  unsigned __int64 sellRetainerId;\n"
+        "  unsigned __int64 signatureId;\n"
+        "  unsigned __int32 sellPrice;\n"
+        "  unsigned __int32 buyTax;\n"
+        "  unsigned __int32 stack;\n"
+        "  unsigned __int32 catalogId;\n"
+        "  unsigned __int16 containerIndex;\n"
+        "  unsigned __int16 durability;\n"
+        "  unsigned __int16 refine;\n"
+        "  unsigned __int16 materia[5];\n"
+        "  unsigned __int8 subQuality;\n"
+        "  unsigned __int8 materiaCount;\n"
+        "  unsigned __int8 registerMarket;\n"
+        "  unsigned __int8 unknown3B;\n"
+        "  unsigned __int8 _unknown_003C[0x4];\n"
+        "};\n",
+        "struct Win335_InfoProxyItemSearchRetainer_KnownFields\n{\n"
+        "  unsigned __int64 retainerId;\n"
+        "  unsigned __int8 registerMarket;\n"
+        "  unsigned __int8 isMarket;\n"
+        "  unsigned __int8 sellTaxRate;\n"
+        "  unsigned __int8 _unknown_000B;\n"
+        "  unsigned __int32 expirationSellTaxRateDate;\n"
+        "  unsigned __int8 retainerNameStorage[0x68];\n"
+        "};\n",
+        "struct Win335_InfoProxyItemSearchVTable\n{\n"
+        "  void *deletingDestructor;\n"
+        "  void (__fastcall *Add)(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count);\n"
+        "  void (__fastcall *Sub)(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count);\n"
+        "  void (__fastcall *Clear)(Win335_InfoProxyItemSearch *self);\n"
+        "  void *unknown20;\n"
+        "  unsigned __int8 (__fastcall *Request)(Win335_InfoProxyItemSearch *self);\n"
+        "  void (__fastcall *Finish)(Win335_InfoProxyItemSearch *self);\n"
+        "  unsigned __int32 (__fastcall *Count)(const Win335_InfoProxyItemSearch *self);\n"
+        "  void *unknown40;\n"
+        "  void *unknown48;\n"
+        "  void (__fastcall *AddPage)(Win335_InfoProxyItemSearch *self, const void *packet);\n"
+        "};\n",
+        "struct Win335_InfoProxyItemSearch\n{\n"
+        "  Win335_InfoProxyItemSearchVTable *vftable;\n"
+        "  Win335_UIModule *ui;\n"
+        "  unsigned __int32 count;\n"
+        "  unsigned __int8 _unknown_0014[0x5];\n"
+        "  unsigned __int8 requestKey;\n"
+        "  unsigned __int8 _unknown_001A[0x6];\n"
+        "  unsigned __int32 requestCatalogId;\n"
+        "  unsigned __int8 requestSubQuality;\n"
+        "  unsigned __int8 requestMateriaCount;\n"
+        "  unsigned __int8 _unknown_0026[0x2];\n"
+        "  Win335_InfoProxyItemSearchResult_KnownFields results[100];\n"
+        "  unsigned __int32 total;\n"
+        "  unsigned __int8 _unknown_192C[0x534];\n"
+        "  Win335_InfoProxyItemSearchRetainer_KnownFields retainers[8];\n"
+        "  unsigned __int32 retainerCount;\n"
+        "  unsigned __int8 _unknown_2224[0x3A];\n"
+        "  unsigned __int8 setData;\n"
+        "};\n",
+        "struct Win335_GameObject_KnownFields\n{\n"
+        "  void *vftable;\n"
+        "  unsigned __int8 _unknown_0008[0x68];\n"
+        "  unsigned __int8 permissionInvisibility;\n"
+        "  unsigned __int8 _unknown_0071[0x3];\n"
+        "  unsigned __int32 entityId;\n"
+        "  unsigned __int32 layoutId;\n"
+        "  unsigned __int8 _unknown_007C[0x78];\n"
+        "  unsigned __int32 contentId;\n"
+        "};\n",
+        "struct Win335_TreasureItemSlot\n{\n"
+        "  unsigned __int32 itemCatalogueId;\n"
+        "};\n",
+        "struct Win335_Treasure\n{\n"
+        "  void *vftable;\n"
+        "  unsigned __int8 _unknown_0008[0x68];\n"
+        "  unsigned __int8 permissionInvisibility;\n"
+        "  unsigned __int8 _unknown_0071[0x3];\n"
+        "  unsigned __int32 entityId;\n"
+        "  unsigned __int32 layoutId;\n"
+        "  unsigned __int8 _unknown_007C[0x4];\n"
+        "  unsigned __int32 baseId;\n"
+        "  unsigned __int8 _unknown_0084[0x6];\n"
+        "  unsigned __int8 objectKind;\n"
+        "  unsigned __int8 _unknown_008B[0x9];\n"
+        "  unsigned __int8 stateFlags;\n"
+        "  unsigned __int8 _unknown_0095[0x5F];\n"
+        "  unsigned __int32 contentId;\n"
+        "  unsigned __int8 _unknown_00F8[0x10];\n"
+        "  void *sharedGroup;\n"
+        "  unsigned __int8 _unknown_0110[0x80];\n"
+        "  unsigned __int32 graphicalState;\n"
+        "  float timer;\n"
+        "  float maxTimer;\n"
+        "  float maxLootTimer;\n"
+        "  Win335_TreasureItemSlot items[16];\n"
+        "  unsigned __int32 itemCount;\n"
+        "  unsigned __int8 _unknown_01E4[0x4];\n"
+        "  unsigned __int8 isOpened;\n"
+        "  unsigned __int8 _unknown_01E9[0x7];\n"
+        "  unsigned __int8 isFadeOut;\n"
+        "  unsigned __int8 isLoot;\n"
+        "  unsigned __int8 lootMode;\n"
+        "  unsigned __int8 _unknown_01F3;\n"
+        "  unsigned __int32 dropperNameId;\n"
+        "  unsigned __int16 layerId;\n"
+        "  unsigned __int8 _unknown_01FA[0x2];\n"
+        "  unsigned __int32 treasureType;\n"
+        "  unsigned __int16 sharedGroupId;\n"
+        "};\n",
+        "struct Win335_StaticObjectManager\n{\n"
+        "  unsigned __int8 _unknown_0000[0x10];\n"
+        "  Win335_GameObject_KnownFields *objects[40];\n"
+        "};\n",
+        "struct Win335_StandObjectManager;\n",
         "struct Win335_TreasureManager;\n",
         "struct Win335_InfoModule\n{\n"
         "  void *vftable;\n"
@@ -526,6 +684,126 @@ def build() -> tuple[str, dict[str, Any]]:
             "address": "0x1400464C0",
             "declaration": "void __fastcall Client__UI__Info__InfoModule__PrintErrorWithParam(Win335_InfoModule *self, unsigned __int32 infoCode, unsigned __int32 parameter)",
         },
+        {
+            "address": "0x14004C090",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__Add(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count)",
+        },
+        {
+            "address": "0x140037740",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__Sub(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count)",
+        },
+        {
+            "address": "0x140037750",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__Clear(Win335_InfoProxyItemSearch *self)",
+        },
+        {
+            "address": "0x14004C210",
+            "declaration": "unsigned __int8 __fastcall Client__UI__Info__InfoProxyItemSearch__Request(Win335_InfoProxyItemSearch *self)",
+        },
+        {
+            "address": "0x140037760",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__Finish(Win335_InfoProxyItemSearch *self)",
+        },
+        {
+            "address": "0x14004C2B0",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__AddPage(Win335_InfoProxyItemSearch *self, const void *packet)",
+        },
+        {
+            "address": "0x140037870",
+            "declaration": "void __fastcall Client__UI__Info__InfoProxyItemSearch__SetItemHistory_Impl(Win335_InfoProxyItemSearch *self, const void *records, unsigned __int32 count, unsigned __int8 itemHistoryMode)",
+        },
+        {
+            "address": "0x14007C740",
+            "declaration": "unsigned __int32 __fastcall Client__UI__Info__InfoProxyInterface__Count(const Win335_InfoProxyInterface *self)",
+        },
+        {
+            "address": "0x1409EC240",
+            "declaration": "void __fastcall Client__Game__Object__Treasure__FadeOut(Win335_Treasure *self)",
+        },
+        {
+            "address": "0x1409ED5D0",
+            "declaration": "void __fastcall Client__Game__Object__Treasure__SetMaxTimer(Win335_Treasure *self, float maxTimer)",
+        },
+        {
+            "address": "0x1409EBEF0",
+            "declaration": "Win335_TreasureItemSlot *__fastcall Client__Game__Object__Treasure__GetItemSlot(Win335_Treasure *self, unsigned __int32 index)",
+        },
+        {
+            "address": "0x1409EC030",
+            "declaration": "void __fastcall Client__Game__Object__Treasure__Open(Win335_Treasure *self)",
+        },
+        {
+            "address": "0x1409EC080",
+            "declaration": "void __fastcall Client__Game__Object__Treasure__OpenWithTimers(Win335_Treasure *self, float timer, float maxTimer, float maxLootTimer)",
+        },
+        {
+            "address": "0x1409EBA30",
+            "declaration": "Win335_GameObject_KnownFields *__fastcall Client__Game__Object__StaticObjectManager__GetObject(Win335_StaticObjectManager *self, unsigned __int32 index)",
+        },
+        {
+            "address": "0x140DC6040",
+            "declaration": "Win335_GameObject_KnownFields *__fastcall Client__Game__Object__StandObjectManager__GetObject(Win335_StandObjectManager *self, unsigned __int32 index)",
+        },
+        {
+            "address": "0x14065F1E0",
+            "declaration": "void __fastcall Client__Game__Event__EventHandlerModule__InitializeEventHandlers(Win335_EventFramework *self, unsigned __int16 handlerType)",
+        },
+        {
+            "address": "0x14065FF10",
+            "declaration": "void __fastcall Client__Game__Event__EventFramework__onQuestUpdate(Win335_EventFramework *self, signed __int32 updateType, unsigned __int16 questId, unsigned __int16 workIndex, Win335_EventHandler *handler)",
+        },
+        {
+            "address": "0x1406604E0",
+            "declaration": "void __fastcall Win335_EventFramework__InitializeQuestHandlersIfReady(Win335_EventFramework *self)",
+        },
+        {
+            "address": "0x140656ED0",
+            "declaration": "Win335_EventHandler *__fastcall Client__Game__Event__EventHandlerModule__GetEventHandler(const Win335_EventFramework *self, unsigned __int32 handlerId)",
+        },
+        {
+            "address": "0x14065EA80",
+            "declaration": "void __fastcall Client__Game__Event__EventHandlerModule__UpdateEventVisibility(Win335_EventFramework *self, unsigned __int16 handlerType)",
+        },
+        {
+            "address": "0x1409EC2B0",
+            "declaration": "void __fastcall Win335_Treasure__ApplyLootItems(Win335_Treasure *self, const Win335_LootItems_KnownFields *packet)",
+        },
+        {
+            "address": "0x140CC03D0",
+            "declaration": "void __fastcall Client__Game__Network__Packet__OnTreasureHuntReward(const Win335_TreasureHuntReward_KnownFields *packet)",
+        },
+        {
+            "address": "0x14054FE20",
+            "declaration": "void __fastcall Client__Game__Object__TreasureManager__OnTreasureHuntReward(Win335_TreasureManager *self, unsigned __int32 eventHandlerId, unsigned __int32 rank, signed __int32 experience, signed __int32 money, unsigned __int32 itemCatalogueId, unsigned __int32 itemStack)",
+        },
+        {
+            "address": "0x1409DE380",
+            "declaration": "void __fastcall Client__Game__Object__GameObject__SetEntityId(Win335_GameObject_KnownFields *self, unsigned __int32 entityId)",
+        },
+        {
+            "address": "0x1409DE350",
+            "declaration": "void __fastcall Client__Game__Object__GameObject__SetLayoutId(Win335_GameObject_KnownFields *self, unsigned __int32 layoutId)",
+        },
+        {
+            "address": "0x1409DE4B0",
+            "declaration": "void __fastcall Client__Game__Object__GameObject__SetContentId(Win335_GameObject_KnownFields *self, unsigned __int32 contentId)",
+        },
+        {
+            "address": "0x1409DE4F0",
+            "declaration": "void __fastcall Client__Game__Object__GameObject__SetPermissionInvisibility(Win335_GameObject_KnownFields *self, unsigned __int8 permissionInvisibility)",
+        },
+        {
+            "address": "0x1409EE530",
+            "declaration": "signed __int32 __fastcall Client__Game__Object__StaticObjectManager__CreateTreasure(Win335_StaticObjectManager *self, unsigned __int32 entityId, unsigned __int32 baseId, unsigned __int16 layerId, unsigned __int32 layoutId, signed __int32 index)",
+        },
+        {
+            "address": "0x1409EBE30",
+            "declaration": "void __fastcall Client__Game__Object__Treasure__Setup(Win335_Treasure *self, unsigned __int32 baseId, unsigned __int16 layerId, unsigned __int32 layoutId)",
+        },
+        {
+            "address": "0x1409EC260",
+            "declaration": "void __fastcall Client__Game__Object__Treasure__OnCreated(Win335_Treasure *self)",
+        },
     ]
     internal_function_types = [
         {
@@ -554,7 +832,7 @@ def build() -> tuple[str, dict[str, Any]]:
             "typedSubsystemFunctions": len(subsystem_function_types),
             "typedInternalFunctions": len(internal_function_types),
             "typedGlobals": 4,
-            "namedGlobals": 1,
+            "namedGlobals": 4,
             "dispatcherCaseComments": len(case_comments),
         },
         "dispatcherTypes": [
@@ -613,9 +891,24 @@ def build() -> tuple[str, dict[str, Any]]:
         ],
         "globalNames": [
             {
+                "address": "0x1411EA990",
+                "name": "Client__UI__Info__InfoProxyItemSearch__vftable",
+                "evidence": "Recovered vtable whose Add/Sub/Clear/Request/Finish/Count/AddPage slots match the PS3 DWARF class vtable and Windows method behavior.",
+            },
+            {
                 "address": "0x1417A4AA8",
                 "name": "Client__Game__Object__gTreasureManager",
                 "evidence": "Receiver passed to the PS3-linked TreasureManager entity-ID lookup by treasure packet handlers.",
+            },
+            {
+                "address": "0x14180C360",
+                "name": "Client__Game__Object__gStaticObjectManager",
+                "evidence": "Receiver used by the PS3-linked StaticObjectManager indexed accessor and treasure creation/lookup paths.",
+            },
+            {
+                "address": "0x14181BC90",
+                "name": "Client__Game__Object__gStandObjectManager",
+                "evidence": "Receiver used by the PS3-linked StandObjectManager indexed accessor and TreasureManager's second scan.",
             },
         ],
         "knownFieldTypes": type_records,

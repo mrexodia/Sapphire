@@ -116,6 +116,78 @@
         "field": "LvSync",
         "ps3Offset": "0x4",
         "windowsOffset": "0x6"
+      },
+      {
+        "packet": "CreateTreasure",
+        "field": "Timer",
+        "ps3Offset": "0x14",
+        "windowsOffset": "0x18"
+      },
+      {
+        "packet": "CreateTreasure",
+        "field": "MaxTimer",
+        "ps3Offset": "0x18",
+        "windowsOffset": "0x1C"
+      },
+      {
+        "packet": "CreateTreasure",
+        "field": "MaxLootTimer",
+        "ps3Offset": "0x1C",
+        "windowsOffset": "0x20"
+      },
+      {
+        "packet": "CreateTreasure",
+        "field": "ContentId",
+        "ps3Offset": "0x20",
+        "windowsOffset": "0x24"
+      },
+      {
+        "packet": "CreateTreasure",
+        "field": "TreasureType",
+        "ps3Offset": "0x24",
+        "windowsOffset": "0x14"
+      },
+      {
+        "packet": "CreateTreasure",
+        "field": "SharedGroup",
+        "ps3Offset": "0x26",
+        "windowsOffset": "0x28"
+      },
+      {
+        "packet": "CreateTreasure",
+        "field": "catalogueIds",
+        "ps3Offset": "0x30",
+        "windowsOffset": "0x34"
+      },
+      {
+        "packet": "TreasureHuntReward",
+        "field": "Rank",
+        "ps3Offset": "0x0",
+        "windowsOffset": "0x4"
+      },
+      {
+        "packet": "TreasureHuntReward",
+        "field": "Exp",
+        "ps3Offset": "0x4",
+        "windowsOffset": "0x8"
+      },
+      {
+        "packet": "TreasureHuntReward",
+        "field": "Money",
+        "ps3Offset": "0x8",
+        "windowsOffset": "0xC"
+      },
+      {
+        "packet": "TreasureHuntReward",
+        "field": "ItemCatalogId",
+        "ps3Offset": "0xC",
+        "windowsOffset": "0x10"
+      },
+      {
+        "packet": "TreasureHuntReward",
+        "field": "ItemStack",
+        "ps3Offset": "0x10",
+        "windowsOffset": "0x14"
       }
     ]
   },
@@ -7288,7 +7360,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "static-object creation and final base-ID store"
           }
         },
         {
@@ -7297,7 +7371,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x4",
+            "evidence": "static-object creation and GameObject::SetEntityId"
           }
         },
         {
@@ -7306,7 +7382,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x8",
+            "evidence": "GameObject::SetLayoutId argument"
           }
         },
         {
@@ -7324,7 +7402,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0xE",
+            "evidence": "static-object slot creation and lookup index"
           }
         },
         {
@@ -7333,7 +7413,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0xF",
+            "evidence": "conditional Treasure::Open branch"
           }
         },
         {
@@ -7342,7 +7424,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x10",
+            "evidence": "Treasure dropper-name field store"
           }
         },
         {
@@ -7351,7 +7435,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x11",
+            "evidence": "catalogue-ID loop bound and Treasure item count"
           }
         },
         {
@@ -7360,7 +7446,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x12",
+            "evidence": "GameObject::SetPermissionInvisibility argument"
           }
         },
         {
@@ -7369,7 +7457,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x13",
+            "evidence": "Treasure loot-mode field store"
           }
         },
         {
@@ -7378,7 +7468,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x18",
+            "evidence": "Treasure current-timer store"
           }
         },
         {
@@ -7387,7 +7479,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x1C",
+            "evidence": "Treasure::SetMaxTimer argument"
           }
         },
         {
@@ -7396,7 +7490,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x20",
+            "evidence": "Treasure maximum-loot-timer store"
           }
         },
         {
@@ -7405,7 +7501,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x24",
+            "evidence": "GameObject::SetContentId argument"
           }
         },
         {
@@ -7414,7 +7512,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x14",
+            "evidence": "Treasure type store and OnCreated state test"
           }
         },
         {
@@ -7432,7 +7532,9 @@
           "size": 2,
           "type": "uint16_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x28",
+            "evidence": "Treasure shared-group identifier store"
           }
         },
         {
@@ -7468,7 +7570,9 @@
           "size": 64,
           "type": "uint32_t[16]",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x34",
+            "evidence": "catalogue-ID copy into indexed Treasure item slots"
           }
         }
       ],
@@ -7481,8 +7585,16 @@
         "threePointThreeLine": null,
         "threePointThreeStatus": "missing"
       },
-      "windowsExtraFields": [],
-      "comparisonStatus": "layout-unreviewed",
+      "windowsExtraFields": [
+        {
+          "name": "unknown15",
+          "offset": "0x15",
+          "width": 1,
+          "type": "uint8_t",
+          "evidence": "3.x-only byte forwarded to the object state/visibility helper at 0x1409DFF20"
+        }
+      ],
+      "comparisonStatus": "partially-windows-validated",
       "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
     },
     {
@@ -8086,7 +8198,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "timer passed to Treasure::OpenWithTimers"
           }
         },
         {
@@ -8095,7 +8209,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x4",
+            "evidence": "maximum timer passed to Treasure::OpenWithTimers"
           }
         },
         {
@@ -8104,7 +8220,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x8",
+            "evidence": "maximum loot timer passed to Treasure::OpenWithTimers"
           }
         },
         {
@@ -8149,7 +8267,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x10",
+            "evidence": "TreasureManager entity-ID lookup"
           }
         },
         {
@@ -8172,7 +8292,7 @@
         "threePointThreeStatus": "missing"
       },
       "windowsExtraFields": [],
-      "comparisonStatus": "layout-unreviewed",
+      "comparisonStatus": "partially-windows-validated",
       "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
     },
     {
@@ -8490,7 +8610,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "TreasureManager entity-ID lookup"
           }
         },
         {
@@ -8499,7 +8621,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x4",
+            "evidence": "open-right result switch"
           }
         },
         {
@@ -8535,7 +8659,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x8",
+            "evidence": "result-specific log/message argument"
           }
         },
         {
@@ -8544,7 +8670,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0xC",
+            "evidence": "Treasure current-timer store"
           }
         },
         {
@@ -8553,7 +8681,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x10",
+            "evidence": "Treasure::SetMaxTimer argument"
           }
         },
         {
@@ -8562,7 +8692,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x14",
+            "evidence": "Treasure maximum-loot-timer store"
           }
         },
         {
@@ -8585,7 +8717,7 @@
         "threePointThreeStatus": "missing"
       },
       "windowsExtraFields": [],
-      "comparisonStatus": "layout-unreviewed",
+      "comparisonStatus": "partially-windows-validated",
       "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
     },
     {
@@ -8600,7 +8732,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "TreasureManager entity-ID lookup"
           }
         },
         {
@@ -8609,7 +8743,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x4",
+            "evidence": "item-copy loop bound and Treasure item count"
           }
         },
         {
@@ -8645,7 +8781,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x8",
+            "evidence": "Treasure current-timer store"
           }
         },
         {
@@ -8654,7 +8792,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0xC",
+            "evidence": "Treasure maximum-timer store"
           }
         },
         {
@@ -8663,7 +8803,9 @@
           "size": 4,
           "type": "float",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x10",
+            "evidence": "Treasure maximum-loot-timer store"
           }
         },
         {
@@ -8672,7 +8814,9 @@
           "size": 64,
           "type": "uint32_t[16]",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-same-offset",
+            "offset": "0x14",
+            "evidence": "catalogue-ID copy into indexed Treasure item slots"
           }
         }
       ],
@@ -8686,7 +8830,7 @@
         "threePointThreeStatus": "missing"
       },
       "windowsExtraFields": [],
-      "comparisonStatus": "layout-unreviewed",
+      "comparisonStatus": "partially-windows-validated",
       "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
     },
     {
@@ -11884,7 +12028,9 @@
           "size": 1,
           "type": "uint8_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x4",
+            "evidence": "rank argument passed to TreasureManager reward handling"
           }
         },
         {
@@ -11920,7 +12066,9 @@
           "size": 4,
           "type": "int32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x8",
+            "evidence": "experience reward argument"
           }
         },
         {
@@ -11929,7 +12077,9 @@
           "size": 4,
           "type": "int32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0xC",
+            "evidence": "currency reward argument"
           }
         },
         {
@@ -11938,7 +12088,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x10",
+            "evidence": "item catalogue reward argument"
           }
         },
         {
@@ -11947,7 +12099,9 @@
           "size": 4,
           "type": "uint32_t",
           "windowsValidation": {
-            "status": "unreviewed"
+            "status": "confirmed-version-delta",
+            "offset": "0x14",
+            "evidence": "item stack reward argument"
           }
         }
       ],
@@ -11960,8 +12114,16 @@
         "threePointThreeLine": null,
         "threePointThreeStatus": "missing"
       },
-      "windowsExtraFields": [],
-      "comparisonStatus": "layout-unreviewed",
+      "windowsExtraFields": [
+        {
+          "name": "eventHandlerId",
+          "offset": "0x0",
+          "width": 4,
+          "type": "uint32_t",
+          "evidence": "3.x EventFramework handler lookup before displaying the reward"
+        }
+      ],
+      "comparisonStatus": "partially-windows-validated",
       "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
     },
     {

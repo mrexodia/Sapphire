@@ -132,6 +132,53 @@ WINDOWS_FIELDS: dict[str, dict[str, tuple[int, str]]] = {
         "TargetCharacterName": (0x34, "target name"),
     },
     "InviteCancelResult": {"Result": (0x0, "result field layout"), "AuthType": (0x4, "party AuthType test")},
+    "CreateTreasure": {
+        "BaseId": (0x0, "static-object creation and final base-ID store"),
+        "EntityId": (0x4, "static-object creation and GameObject::SetEntityId"),
+        "LayoutId": (0x8, "GameObject::SetLayoutId argument"),
+        "Index": (0xE, "static-object slot creation and lookup index"),
+        "IsOpened": (0xF, "conditional Treasure::Open branch"),
+        "DropperNameId": (0x10, "Treasure dropper-name field store"),
+        "itemNumber": (0x11, "catalogue-ID loop bound and Treasure item count"),
+        "PermissionInvisibility": (0x12, "GameObject::SetPermissionInvisibility argument"),
+        "Loot": (0x13, "Treasure loot-mode field store"),
+        "TreasureType": (0x14, "Treasure type store and OnCreated state test"),
+        "Timer": (0x18, "Treasure current-timer store"),
+        "MaxTimer": (0x1C, "Treasure::SetMaxTimer argument"),
+        "MaxLootTimer": (0x20, "Treasure maximum-loot-timer store"),
+        "ContentId": (0x24, "GameObject::SetContentId argument"),
+        "SharedGroup": (0x28, "Treasure shared-group identifier store"),
+        "catalogueIds": (0x34, "catalogue-ID copy into indexed Treasure item slots"),
+    },
+    "OpenTreasure": {
+        "timer": (0x0, "timer passed to Treasure::OpenWithTimers"),
+        "maxTimer": (0x4, "maximum timer passed to Treasure::OpenWithTimers"),
+        "maxLootTimer": (0x8, "maximum loot timer passed to Treasure::OpenWithTimers"),
+        "entityId": (0x10, "TreasureManager entity-ID lookup"),
+    },
+    "TreasureOpenRight": {
+        "treasureEntityId": (0x0, "TreasureManager entity-ID lookup"),
+        "openRight": (0x4, "open-right result switch"),
+        "argument": (0x8, "result-specific log/message argument"),
+        "timer": (0xC, "Treasure current-timer store"),
+        "maxTimer": (0x10, "Treasure::SetMaxTimer argument"),
+        "maxLootTimer": (0x14, "Treasure maximum-loot-timer store"),
+    },
+    "LootItems": {
+        "entityId": (0x0, "TreasureManager entity-ID lookup"),
+        "itemNumber": (0x4, "item-copy loop bound and Treasure item count"),
+        "timer": (0x8, "Treasure current-timer store"),
+        "maxTimer": (0xC, "Treasure maximum-timer store"),
+        "maxLootTimer": (0x10, "Treasure maximum-loot-timer store"),
+        "catalogueIds": (0x14, "catalogue-ID copy into indexed Treasure item slots"),
+    },
+    "TreasureHuntReward": {
+        "Rank": (0x4, "rank argument passed to TreasureManager reward handling"),
+        "Exp": (0x8, "experience reward argument"),
+        "Money": (0xC, "currency reward argument"),
+        "ItemCatalogId": (0x10, "item catalogue reward argument"),
+        "ItemStack": (0x14, "item stack reward argument"),
+    },
 }
 
 WINDOWS_EXTRA_FIELDS = {
@@ -161,6 +208,24 @@ WINDOWS_EXTRA_FIELDS = {
             "offset": "0x4",
             "width": 1,
             "evidence": "optional 3.x bitset/UI update index",
+        }
+    ],
+    "CreateTreasure": [
+        {
+            "name": "unknown15",
+            "offset": "0x15",
+            "width": 1,
+            "type": "uint8_t",
+            "evidence": "3.x-only byte forwarded to the object state/visibility helper at 0x1409DFF20",
+        }
+    ],
+    "TreasureHuntReward": [
+        {
+            "name": "eventHandlerId",
+            "offset": "0x0",
+            "width": 4,
+            "type": "uint32_t",
+            "evidence": "3.x EventFramework handler lookup before displaying the reward",
         }
     ],
 }

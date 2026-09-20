@@ -11,13 +11,13 @@ Applied and verified:
 
 | Improvement | Count |
 | --- | ---: |
-| Concrete local types | 42 |
-| Typed functions | 67 |
+| Concrete local types | 59 |
+| Typed functions | 101 |
 | Typed globals | 4 |
-| Additional named globals | 1 |
+| Additional named globals | 4 |
 | Dispatcher case-address comments | 309 |
-| PS3-linked Windows names/comments | 240 |
-| Windows-semantic/supporting names/comments without PS3 links | 17 |
+| PS3-linked Windows names/comments | 267 |
+| Windows-semantic/supporting names/comments without PS3 links | 19 |
 
 The 309 comments cover all explicit Windows dispatcher cases that have distinct
 ctree case addresses; fall-through cases sharing an address are grouped in one
@@ -48,12 +48,12 @@ claim.
 
 ## Packet types
 
-`windows_readability_types.h` contains 31 `Win335_*_KnownFields` structures.
-They include only the 83 independently Windows-confirmed field observations
+`windows_readability_types.h` contains 36 `Win335_*_KnownFields` structures.
+They include only the 122 independently Windows-confirmed field observations
 recorded in `packet_structures.json`. Unknown gaps remain byte arrays, and no
 PS3-only trailing size is asserted.
 
-Twenty-five handlers that demonstrably receive the complete payload pointer now
+Twenty-nine handlers that demonstrably receive the complete payload pointer now
 use these types. For example, `InviteResult` decompiles using
 `packet->AuthType` and `packet->Result`, while `PlayerStatusUpdate` uses
 `packet->ClassJob`, `packet->Lv`, `packet->LvSync`, `packet->Exp`, and
@@ -78,16 +78,29 @@ Four high-leverage accessors/lookups are linked directly to PS3 DWARF identities
 
 `InfoModule::GetProxy` is confirmed by the same indexed proxy-array access and
 by eight matched retainer/market handlers using the same proxy IDs. Its partial
-receiver type turns the body into `self->proxies[proxyId]`. Nine downstream
-InfoModule/InfoProxyItemSearch methods are also linked and typed: request
-result, retainer-list and singular-retainer updates, market-buy result, market
-callback, item and retainer sales history, and both error-printer overloads.
-Their matched callers now decompile as a coherent proxy-ID-9 path instead of
-untyped calls.
+receiver type turns the body into `self->proxies[proxyId]`. Seventeen downstream InfoModule/InfoProxy methods are also linked and typed.
+In addition to request/history/retainer/error methods, this includes the full
+`Add`/`Sub`/`Clear`/`Request`/`Finish`/`AddPage` page lifecycle, the internal
+history copier, and `InfoProxyInterface::Count`. The recovered Windows vtable at
+`0x1411EA990` confirms these slots against the PS3 class vtable. Conservative
+result and retainer record views expose the independently observed fields while
+retaining unknown gaps. `AddPage` now decompiles through named vtable members and
+shows the matching request-key, continuation-packet, clear, append, and finish
+flow.
 
 The TreasureManager match is anchored by both object-table loops, entity-ID
-comparison, object-kind 4 check, and the same matched treasure callers. Its
-global receiver is named without asserting an unproven complete class layout.
+comparison, object-kind 4 check, and the same matched treasure callers. Fifteen
+additional object methods/accessors are linked: static and stand object lookup,
+`FadeOut`, `SetMaxTimer`, `GetItemSlot`, both `Open` overloads, hunt-reward
+presentation, four GameObject setters, static Treasure creation, `Setup`, and
+`OnCreated`. A partial Windows Treasure view now exposes the confirmed
+GameObject prefix, base/kind/state fields, entity/layout/content IDs, shared
+group, graphical state, timers, 16 item slots, open/fade/loot state, layer,
+treasure type, and dropper metadata. Four treasure packet views expose only
+their Windows-observed fields; `CreateTreasure` independently confirms the 3.x
+reordered `+0x14` region and shifted timer/content/catalogue offsets. The three
+object-manager globals are named without asserting an unproven complete
+StandObjectManager or TreasureManager layout.
 
 The Framework accessor remains especially high leverage: it has roughly 1,500
 callers and returns `Win335_UIModule *` rather than an untyped integer. Its
@@ -96,7 +109,7 @@ typed.
 
 ## Quest and leve notifications
 
-Fifteen downstream SyncTag/EventFramework boundaries are now PS3-linked and
+Nineteen downstream SyncTag/EventFramework boundaries are now PS3-linked and
 typed, including:
 
 - quest-array initialization and `OnSyncQuest`;
@@ -104,7 +117,9 @@ typed, including:
 - bulk and singular daily-quest synchronization;
 - repeat-flag initialization, bulk synchronization, and singular updates;
 - guildleve initialization and `OnSyncGuildleve`;
-- leve-completion initialization and incremental synchronization.
+- leve-completion initialization and incremental synchronization;
+- typed handler lookup, typed handler initialization, visibility updates, and
+  the shared quest-update core over a conservative red-black-tree node view.
 
 The three Windows leve initialization/completion notifications at
 `0x140604600`–`0x140604620` are dedicated no-ops in 3.x. They are still mapped
@@ -140,18 +155,18 @@ semantic islands:
 | Cluster | Root functions | Direct callees | Still auto-named |
 | --- | ---: | ---: | ---: |
 | Quest/leve | 14 | 34 | 17 |
-| Retainer/inventory | 28 | 72 | 55 |
+| Retainer/inventory | 28 | 72 | 41 |
 
 The priority score is triage only. The strongest next review targets are now:
 
-1. Resolve the remaining virtual InfoProxyItemSearch method at vtable slot
-   `+0x50` used by `GetItemSearchListResult`, and recover a conservative concrete
-   receiver layout for the proxy.
-2. Identify the static/stand object manager accessors and Treasure methods used
-   after `TreasureManager::GetTreasureFromEntityId`.
-3. Recover the shared EventFramework initialization implementation at
-   `0x1406604E0`, quest-update helper at `0x14065FF10`, and event-handler
-   container rooted at EventFramework `+0x58`.
+1. Recover the remaining InfoProxyItemSearch internal formatter/agent methods
+   downstream of the now-typed page and history paths.
+2. Resolve the remaining new 3.x `CreateTreasure` byte at payload `+0x15` and
+   prove exact trailing wire sizes before promoting the treasure layouts to
+   Sapphire declarations.
+3. Extend the typed EventFramework handler tree into the remaining update/range
+   boundaries and virtual event-handler methods without inventing a complete
+   class.
 4. Type the packet-family-specific 0x50-byte fragment payload variants and the
    StorageManager commit methods reached by the four assembler implementations.
 

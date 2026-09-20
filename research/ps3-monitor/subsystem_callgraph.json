@@ -1139,17 +1139,6 @@
           "priority": 300
         },
         {
-          "windowsAddress": "0x00000001409ED5D0",
-          "windowsName": "sub_1409ED5D0",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure",
-            "Client__Game__Network__Packet__OnTreasureOpenRight"
-          ],
-          "totalCallers": 2,
-          "autoNamed": true,
-          "priority": 235
-        },
-        {
           "windowsAddress": "0x000000014001F9F0",
           "windowsName": "sub_14001F9F0",
           "rootReferences": [
@@ -1181,6 +1170,17 @@
           "totalCallers": 919,
           "autoNamed": true,
           "priority": 225
+        },
+        {
+          "windowsAddress": "0x00000001409ED5D0",
+          "windowsName": "Client__Game__Object__Treasure__SetMaxTimer",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure",
+            "Client__Game__Network__Packet__OnTreasureOpenRight"
+          ],
+          "totalCallers": 2,
+          "autoNamed": false,
+          "priority": 210
         },
         {
           "windowsAddress": "0x00000001404D0800",
@@ -1219,16 +1219,6 @@
             "Client__Game__Network__Packet__ReceiveItemMessage"
           ],
           "totalCallers": 0,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x000000014054FE20",
-          "windowsName": "sub_14054FE20",
-          "rootReferences": [
-            "Client__Game__Network__Packet__OnTreasureHuntReward"
-          ],
-          "totalCallers": 1,
           "autoNamed": true,
           "priority": 135
         },
@@ -1309,76 +1299,6 @@
             "Client__Game__Network__Packet__CreateTreasure"
           ],
           "totalCallers": 4,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x00000001409EBEF0",
-          "windowsName": "sub_1409EBEF0",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x00000001409EC030",
-          "windowsName": "sub_1409EC030",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x00000001409EC080",
-          "windowsName": "sub_1409EC080",
-          "rootReferences": [
-            "Client__Game__Network__Packet__OnOpenTreasure"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x00000001409EC240",
-          "windowsName": "sub_1409EC240",
-          "rootReferences": [
-            "Client__Game__Network__Packet__TreasureFadeOut"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x00000001409EC260",
-          "windowsName": "sub_1409EC260",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x00000001409EC2B0",
-          "windowsName": "sub_1409EC2B0",
-          "rootReferences": [
-            "Client__Game__Network__Packet__OnLootItems"
-          ],
-          "totalCallers": 1,
-          "autoNamed": true,
-          "priority": 135
-        },
-        {
-          "windowsAddress": "0x00000001409EE530",
-          "windowsName": "sub_1409EE530",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 1,
           "autoNamed": true,
           "priority": 135
         },
@@ -1513,62 +1433,12 @@
           "priority": 125
         },
         {
-          "windowsAddress": "0x00000001409DE350",
-          "windowsName": "sub_1409DE350",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 15,
-          "autoNamed": true,
-          "priority": 125
-        },
-        {
-          "windowsAddress": "0x00000001409DE380",
-          "windowsName": "sub_1409DE380",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 14,
-          "autoNamed": true,
-          "priority": 125
-        },
-        {
-          "windowsAddress": "0x00000001409DE4B0",
-          "windowsName": "sub_1409DE4B0",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 6,
-          "autoNamed": true,
-          "priority": 125
-        },
-        {
-          "windowsAddress": "0x00000001409DE4F0",
-          "windowsName": "sub_1409DE4F0",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 7,
-          "autoNamed": true,
-          "priority": 125
-        },
-        {
           "windowsAddress": "0x00000001409DF370",
           "windowsName": "sub_1409DF370",
           "rootReferences": [
             "Client__Game__Network__Packet__CreateTreasure"
           ],
           "totalCallers": 401,
-          "autoNamed": true,
-          "priority": 125
-        },
-        {
-          "windowsAddress": "0x00000001409EBA30",
-          "windowsName": "sub_1409EBA30",
-          "rootReferences": [
-            "Client__Game__Network__Packet__CreateTreasure"
-          ],
-          "totalCallers": 26,
           "autoNamed": true,
           "priority": 125
         },
@@ -1663,6 +1533,86 @@
           "priority": 110
         },
         {
+          "windowsAddress": "0x000000014054FE20",
+          "windowsName": "Client__Game__Object__TreasureManager__OnTreasureHuntReward",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnTreasureHuntReward"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001409EBEF0",
+          "windowsName": "Client__Game__Object__Treasure__GetItemSlot",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001409EC030",
+          "windowsName": "Client__Game__Object__Treasure__Open",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001409EC080",
+          "windowsName": "Client__Game__Object__Treasure__OpenWithTimers",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnOpenTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001409EC240",
+          "windowsName": "Client__Game__Object__Treasure__FadeOut",
+          "rootReferences": [
+            "Client__Game__Network__Packet__TreasureFadeOut"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001409EC260",
+          "windowsName": "Client__Game__Object__Treasure__OnCreated",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001409EC2B0",
+          "windowsName": "Win335_Treasure__ApplyLootItems",
+          "rootReferences": [
+            "Client__Game__Network__Packet__OnLootItems"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001409EE530",
+          "windowsName": "Client__Game__Object__StaticObjectManager__CreateTreasure",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 1,
+          "autoNamed": false,
+          "priority": 110
+        },
+        {
           "windowsAddress": "0x0000000140CC7090",
           "windowsName": "Client__Game__Network__Packet__ReceiveRetainerPackets_Impl",
           "rootReferences": [
@@ -1701,12 +1651,62 @@
           "totalCallers": 0,
           "autoNamed": false,
           "priority": 110
+        },
+        {
+          "windowsAddress": "0x00000001409DE350",
+          "windowsName": "Client__Game__Object__GameObject__SetLayoutId",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 15,
+          "autoNamed": false,
+          "priority": 100
+        },
+        {
+          "windowsAddress": "0x00000001409DE380",
+          "windowsName": "Client__Game__Object__GameObject__SetEntityId",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 14,
+          "autoNamed": false,
+          "priority": 100
+        },
+        {
+          "windowsAddress": "0x00000001409DE4B0",
+          "windowsName": "Client__Game__Object__GameObject__SetContentId",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 6,
+          "autoNamed": false,
+          "priority": 100
+        },
+        {
+          "windowsAddress": "0x00000001409DE4F0",
+          "windowsName": "Client__Game__Object__GameObject__SetPermissionInvisibility",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 7,
+          "autoNamed": false,
+          "priority": 100
+        },
+        {
+          "windowsAddress": "0x00000001409EBA30",
+          "windowsName": "Client__Game__Object__StaticObjectManager__GetObject",
+          "rootReferences": [
+            "Client__Game__Network__Packet__CreateTreasure"
+          ],
+          "totalCallers": 26,
+          "autoNamed": false,
+          "priority": 100
         }
       ],
       "summary": {
         "roots": 28,
         "directCallees": 72,
-        "autoNamedCallees": 55
+        "autoNamedCallees": 41
       }
     }
   ]
