@@ -1,0 +1,2766 @@
+{
+  "schemaVersion": 1,
+  "policy": "These cases were explicitly reviewed but were not promoted. Probable is not permission to name a Windows function or add an authoritative PS3 IDB link.",
+  "summary": {
+    "reviewed": 95,
+    "probable": 74,
+    "unresolved": 21
+  },
+  "reviews": [
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0067",
+      "windowsOpcode": "0x0067",
+      "threePointThreePacket": "ChatToChannel",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F92F8",
+          "address": "0x00AE46CC",
+          "name": "Client::Game::Network::Packet::Chat"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD9587",
+          "address": "0x0000000140CC0080",
+          "name": "sub_140CC0080"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0067 as ChatToChannel.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x012D",
+      "windowsOpcode": "0x012D",
+      "threePointThreePacket": "SyncTag32",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9E88",
+          "address": "0x00AE7E88",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA066",
+          "address": "0x0000000140CC2270",
+          "name": "nullsub_127"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x012D as SyncTag32.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x012E",
+      "windowsOpcode": "0x012E",
+      "threePointThreePacket": "SyncTag64",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9E88",
+          "address": "0x00AE7E88",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA066",
+          "address": "0x0000000140CC2270",
+          "name": "nullsub_127"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x012E as SyncTag64.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x012F",
+      "windowsOpcode": "0x012F",
+      "threePointThreePacket": "SyncTag128",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9E88",
+          "address": "0x00AE7E88",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA066",
+          "address": "0x0000000140CC2270",
+          "name": "nullsub_127"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x012F as SyncTag128.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0130",
+      "windowsOpcode": "0x0130",
+      "threePointThreePacket": "SyncTag256",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9E88",
+          "address": "0x00AE7E88",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveSyncTag"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA066",
+          "address": "0x0000000140CC2270",
+          "name": "nullsub_127"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0130 as SyncTag256.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0143",
+      "windowsOpcode": "0x0143",
+      "threePointThreePacket": "OrderMySelf",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9610",
+          "address": "0x00AE9C48",
+          "name": "Client::Game::Network::Packet::Order"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD9781",
+          "address": "0x0000000140CC9600",
+          "name": "packetparser"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0143 as OrderMySelf.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0144",
+      "windowsOpcode": "0x0144",
+      "threePointThreePacket": "OrderTarget",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F95CC",
+          "address": "0x00AE9C48",
+          "name": "Client::Game::Network::Packet::Order"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD9757",
+          "address": "0x0000000140CC9600",
+          "name": "packetparser"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0144 as OrderTarget.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0192",
+      "windowsOpcode": "0x0192",
+      "threePointThreePacket": "ActorMove",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F94E0",
+          "address": "0x00AE1A68",
+          "name": "Client::Game::Network::Packet::Move"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD963B",
+          "address": "0x0000000140CC90B0",
+          "name": "sub_140CC90B0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0192 as ActorMove.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01A6",
+      "windowsOpcode": "0x01A6",
+      "threePointThreePacket": "Inspect",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9800",
+          "address": "0x00A9800C",
+          "name": "Client::Game::UI::Inspect::Receive"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD995C",
+          "address": "0x000000014053B6B0",
+          "name": "sub_14053B6B0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01A6 as Inspect.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01A7",
+      "windowsOpcode": "0x01A7",
+      "threePointThreePacket": "Name",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F981C",
+          "address": "0x00969BB4",
+          "name": "Client::Game::NameManager::SetCash"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD997A",
+          "address": "0x00000001405BD1A0",
+          "name": "sub_1405BD1A0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01A7 as Name.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01B6",
+      "windowsOpcode": "0x01B6",
+      "threePointThreePacket": "UpdateItem",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9874",
+          "address": "0x00AE2594",
+          "name": "Client::Game::Network::Packet::SetItem"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD99D5",
+          "address": "0x0000000140CBF0E0",
+          "name": "sub_140CBF0E0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01B6 as UpdateItem.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01C3",
+      "windowsOpcode": "0x01C3",
+      "threePointThreePacket": "EventPlay2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EAC",
+          "address": "0x00ADC454",
+          "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA18E",
+          "address": "0x0000000140CC3140",
+          "name": "sub_140CC3140"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01C3 as EventPlay2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01C4",
+      "windowsOpcode": "0x01C4",
+      "threePointThreePacket": "EventPlay4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EAC",
+          "address": "0x00ADC454",
+          "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA18E",
+          "address": "0x0000000140CC3140",
+          "name": "sub_140CC3140"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01C4 as EventPlay4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01C5",
+      "windowsOpcode": "0x01C5",
+      "threePointThreePacket": "EventPlay8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EAC",
+          "address": "0x00ADC454",
+          "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA18E",
+          "address": "0x0000000140CC3140",
+          "name": "sub_140CC3140"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01C5 as EventPlay8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01C6",
+      "windowsOpcode": "0x01C6",
+      "threePointThreePacket": "EventPlay16",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EAC",
+          "address": "0x00ADC454",
+          "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA18E",
+          "address": "0x0000000140CC3140",
+          "name": "sub_140CC3140"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01C6 as EventPlay16.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01C7",
+      "windowsOpcode": "0x01C7",
+      "threePointThreePacket": "EventPlay32",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EAC",
+          "address": "0x00ADC454",
+          "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA18E",
+          "address": "0x0000000140CC3140",
+          "name": "sub_140CC3140"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01C7 as EventPlay32.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01C8",
+      "windowsOpcode": "0x01C8",
+      "threePointThreePacket": "EventPlay64",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EAC",
+          "address": "0x00ADC454",
+          "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA18E",
+          "address": "0x0000000140CC3140",
+          "name": "sub_140CC3140"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01C8 as EventPlay64.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01C9",
+      "windowsOpcode": "0x01C9",
+      "threePointThreePacket": "EventPlay128",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EAC",
+          "address": "0x00ADC454",
+          "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA18E",
+          "address": "0x0000000140CC3140",
+          "name": "sub_140CC3140"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01C9 as EventPlay128.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01CA",
+      "windowsOpcode": "0x01CA",
+      "threePointThreePacket": "EventPlay255",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EAC",
+          "address": "0x00ADC454",
+          "name": "Client::Game::Network::EventPacket::ReceivePlayEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA18E",
+          "address": "0x0000000140CC3140",
+          "name": "sub_140CC3140"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01CA as EventPlay255.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01CF",
+      "windowsOpcode": "0x01CF",
+      "threePointThreePacket": "UpdateEventScene2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EC8",
+          "address": "0x00ADC4E4",
+          "name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1B8",
+          "address": "0x0000000140CBE380",
+          "name": "sub_140CBE380"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01CF as UpdateEventScene2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01D0",
+      "windowsOpcode": "0x01D0",
+      "threePointThreePacket": "UpdateEventScene4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EC8",
+          "address": "0x00ADC4E4",
+          "name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1B8",
+          "address": "0x0000000140CBE380",
+          "name": "sub_140CBE380"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01D0 as UpdateEventScene4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01D1",
+      "windowsOpcode": "0x01D1",
+      "threePointThreePacket": "UpdateEventScene8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EC8",
+          "address": "0x00ADC4E4",
+          "name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1B8",
+          "address": "0x0000000140CBE380",
+          "name": "sub_140CBE380"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01D1 as UpdateEventScene8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01D2",
+      "windowsOpcode": "0x01D2",
+      "threePointThreePacket": "UpdateEventScene16",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EC8",
+          "address": "0x00ADC4E4",
+          "name": "Client::Game::Network::EventPacket::ReceiveUpdateEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1B8",
+          "address": "0x0000000140CBE380",
+          "name": "sub_140CBE380"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01D2 as UpdateEventScene16.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01D8",
+      "windowsOpcode": "0x01D8",
+      "threePointThreePacket": "ResumeEventScene2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EE8",
+          "address": "0x00ADC53C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1D5",
+          "address": "0x0000000140CBE3E0",
+          "name": "sub_140CBE3E0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01D8 as ResumeEventScene2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01D9",
+      "windowsOpcode": "0x01D9",
+      "threePointThreePacket": "ResumeEventScene4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EE8",
+          "address": "0x00ADC53C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1D5",
+          "address": "0x0000000140CBE3E0",
+          "name": "sub_140CBE3E0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01D9 as ResumeEventScene4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01DA",
+      "windowsOpcode": "0x01DA",
+      "threePointThreePacket": "ResumeEventScene8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EE8",
+          "address": "0x00ADC53C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1D5",
+          "address": "0x0000000140CBE3E0",
+          "name": "sub_140CBE3E0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01DA as ResumeEventScene8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01DB",
+      "windowsOpcode": "0x01DB",
+      "threePointThreePacket": "ResumeEventScene16",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EE8",
+          "address": "0x00ADC53C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1D5",
+          "address": "0x0000000140CBE3E0",
+          "name": "sub_140CBE3E0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01DB as ResumeEventScene16.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01DC",
+      "windowsOpcode": "0x01DC",
+      "threePointThreePacket": "ResumeEventScene32",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EE8",
+          "address": "0x00ADC53C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1D5",
+          "address": "0x0000000140CBE3E0",
+          "name": "sub_140CBE3E0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01DC as ResumeEventScene32.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01DD",
+      "windowsOpcode": "0x01DD",
+      "threePointThreePacket": "ResumeEventScene64",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EE8",
+          "address": "0x00ADC53C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1D5",
+          "address": "0x0000000140CBE3E0",
+          "name": "sub_140CBE3E0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01DD as ResumeEventScene64.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01DE",
+      "windowsOpcode": "0x01DE",
+      "threePointThreePacket": "ResumeEventScene128",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EE8",
+          "address": "0x00ADC53C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1D5",
+          "address": "0x0000000140CBE3E0",
+          "name": "sub_140CBE3E0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01DE as ResumeEventScene128.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01DF",
+      "windowsOpcode": "0x01DF",
+      "threePointThreePacket": "ResumeEventScene255",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9EE8",
+          "address": "0x00ADC53C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1D5",
+          "address": "0x0000000140CBE3E0",
+          "name": "sub_140CBE3E0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01DF as ResumeEventScene255.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01E9",
+      "windowsOpcode": "0x01E9",
+      "threePointThreePacket": "Notice2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8D38",
+          "address": "0x00ADC714",
+          "name": "Client::Game::Network::EventPacket::ReceiveNotice"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA24F",
+          "address": "0x0000000140CBE5D0",
+          "name": "sub_140CBE5D0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01E9 as Notice2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01EA",
+      "windowsOpcode": "0x01EA",
+      "threePointThreePacket": "Notice4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8D38",
+          "address": "0x00ADC714",
+          "name": "Client::Game::Network::EventPacket::ReceiveNotice"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA24F",
+          "address": "0x0000000140CBE5D0",
+          "name": "sub_140CBE5D0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01EA as Notice4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01EB",
+      "windowsOpcode": "0x01EB",
+      "threePointThreePacket": "Notice8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8D38",
+          "address": "0x00ADC714",
+          "name": "Client::Game::Network::EventPacket::ReceiveNotice"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA24F",
+          "address": "0x0000000140CBE5D0",
+          "name": "sub_140CBE5D0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01EB as Notice8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01EC",
+      "windowsOpcode": "0x01EC",
+      "threePointThreePacket": "Notice16",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8D38",
+          "address": "0x00ADC714",
+          "name": "Client::Game::Network::EventPacket::ReceiveNotice"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA24F",
+          "address": "0x0000000140CBE5D0",
+          "name": "sub_140CBE5D0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01EC as Notice16.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01ED",
+      "windowsOpcode": "0x01ED",
+      "threePointThreePacket": "Notice32",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8D38",
+          "address": "0x00ADC714",
+          "name": "Client::Game::Network::EventPacket::ReceiveNotice"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA24F",
+          "address": "0x0000000140CBE5D0",
+          "name": "sub_140CBE5D0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x01ED as Notice32.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01EE",
+      "windowsOpcode": "0x01EE",
+      "threePointThreePacket": "Tracking",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA1E0",
+          "address": "0x00AE9AD0",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveTrackings"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA5A2",
+          "address": "0x0000000140CC6D50",
+          "name": "sub_140CC6D50"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01EE as Tracking.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01F2",
+      "windowsOpcode": "0x01F2",
+      "threePointThreePacket": "ResumeEventSceneStr32",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9F04",
+          "address": "0x00ADC59C",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA1FF",
+          "address": "0x0000000140CBE440",
+          "name": "sub_140CBE440"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01F2 as ResumeEventSceneStr32.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01FF",
+      "windowsOpcode": "0x01FF",
+      "threePointThreePacket": "ResumeEventScene2Str",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9F28",
+          "address": "0x00ADC5F4",
+          "name": "Client::Game::Network::EventPacket::ReceiveResumeEventScene"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA225",
+          "address": "0x0000000140CBE4A0",
+          "name": "sub_140CBE4A0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01FF as ResumeEventScene2Str.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0259",
+      "windowsOpcode": "0x0259",
+      "threePointThreePacket": "EventLogMessage2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA338",
+          "address": "0x00ADC8D0",
+          "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA5C0",
+          "address": "0x0000000140CBE7C0",
+          "name": "sub_140CBE7C0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0259 as EventLogMessage2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x025A",
+      "windowsOpcode": "0x025A",
+      "threePointThreePacket": "EventLogMessage4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA338",
+          "address": "0x00ADC8D0",
+          "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA5C0",
+          "address": "0x0000000140CBE7C0",
+          "name": "sub_140CBE7C0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x025A as EventLogMessage4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x025B",
+      "windowsOpcode": "0x025B",
+      "threePointThreePacket": "EventLogMessage8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA338",
+          "address": "0x00ADC8D0",
+          "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA5C0",
+          "address": "0x0000000140CBE7C0",
+          "name": "sub_140CBE7C0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x025B as EventLogMessage8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x025C",
+      "windowsOpcode": "0x025C",
+      "threePointThreePacket": "EventLogMessage16",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA338",
+          "address": "0x00ADC8D0",
+          "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA5C0",
+          "address": "0x0000000140CBE7C0",
+          "name": "sub_140CBE7C0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x025C as EventLogMessage16.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x025D",
+      "windowsOpcode": "0x025D",
+      "threePointThreePacket": "EventLogMessage32",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA338",
+          "address": "0x00ADC8D0",
+          "name": "Client::Game::Network::EventPacket::ReceiveLogMessage"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA5C0",
+          "address": "0x0000000140CBE7C0",
+          "name": "sub_140CBE7C0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x025D as EventLogMessage32.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0263",
+      "windowsOpcode": "0x0263",
+      "threePointThreePacket": "BattleTalk2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8E44",
+          "address": "0x00ADC76C",
+          "name": "Client::Game::Network::EventPacket::ReceiveBattleTalk"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA283",
+          "address": "0x0000000140CBE630",
+          "name": "sub_140CBE630"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0263 as BattleTalk2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0264",
+      "windowsOpcode": "0x0264",
+      "threePointThreePacket": "BattleTalk4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8E44",
+          "address": "0x00ADC76C",
+          "name": "Client::Game::Network::EventPacket::ReceiveBattleTalk"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA283",
+          "address": "0x0000000140CBE630",
+          "name": "sub_140CBE630"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0264 as BattleTalk4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0265",
+      "windowsOpcode": "0x0265",
+      "threePointThreePacket": "BattleTalk8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8E44",
+          "address": "0x00ADC76C",
+          "name": "Client::Game::Network::EventPacket::ReceiveBattleTalk"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA283",
+          "address": "0x0000000140CBE630",
+          "name": "sub_140CBE630"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0265 as BattleTalk8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x026D",
+      "windowsOpcode": "0x026D",
+      "threePointThreePacket": "MapMarker2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA3EC",
+          "address": "0x00ADC988",
+          "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA6A6",
+          "address": "0x0000000140CBE880",
+          "name": "Curl_base64_encode"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x026D as MapMarker2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x026E",
+      "windowsOpcode": "0x026E",
+      "threePointThreePacket": "MapMarker4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA408",
+          "address": "0x00ADC988",
+          "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA6C6",
+          "address": "0x0000000140CBE880",
+          "name": "Curl_base64_encode"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x026E as MapMarker4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x026F",
+      "windowsOpcode": "0x026F",
+      "threePointThreePacket": "MapMarker8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA424",
+          "address": "0x00ADC988",
+          "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA6E6",
+          "address": "0x0000000140CBE880",
+          "name": "Curl_base64_encode"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x026F as MapMarker8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0270",
+      "windowsOpcode": "0x0270",
+      "threePointThreePacket": "MapMarker16",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA440",
+          "address": "0x00ADC988",
+          "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA709",
+          "address": "0x0000000140CBE880",
+          "name": "Curl_base64_encode"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0270 as MapMarker16.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0271",
+      "windowsOpcode": "0x0271",
+      "threePointThreePacket": "MapMarker32",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA458",
+          "address": "0x00ADC988",
+          "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA72F",
+          "address": "0x0000000140CBE880",
+          "name": "Curl_base64_encode"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0271 as MapMarker32.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0272",
+      "windowsOpcode": "0x0272",
+      "threePointThreePacket": "MapMarker64",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA474",
+          "address": "0x00ADC988",
+          "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA755",
+          "address": "0x0000000140CBE880",
+          "name": "Curl_base64_encode"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0272 as MapMarker64.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0273",
+      "windowsOpcode": "0x0273",
+      "threePointThreePacket": "MapMarker128",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA490",
+          "address": "0x00ADC988",
+          "name": "Client::Game::Network::EventPacket::ReceiveMapMarker"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA77B",
+          "address": "0x0000000140CBE880",
+          "name": "Curl_base64_encode"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0273 as MapMarker128.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0290",
+      "windowsOpcode": "0x0290",
+      "threePointThreePacket": "GMOrder2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8F1C",
+          "address": "0x00AE4E90",
+          "name": "Client::Game::Network::Packet::GMOrder"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD979C",
+          "address": "0x0000000140CC6F40",
+          "name": "sub_140CC6F40"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0290 as GMOrder2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0291",
+      "windowsOpcode": "0x0291",
+      "threePointThreePacket": "GMOrder4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8F1C",
+          "address": "0x00AE4E90",
+          "name": "Client::Game::Network::Packet::GMOrder"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD979C",
+          "address": "0x0000000140CC6F40",
+          "name": "sub_140CC6F40"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0291 as GMOrder4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0292",
+      "windowsOpcode": "0x0292",
+      "threePointThreePacket": "GMOrder8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8F1C",
+          "address": "0x00AE4E90",
+          "name": "Client::Game::Network::Packet::GMOrder"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD979C",
+          "address": "0x0000000140CC6F40",
+          "name": "sub_140CC6F40"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0292 as GMOrder8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0293",
+      "windowsOpcode": "0x0293",
+      "threePointThreePacket": "GMOrder16",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8F1C",
+          "address": "0x00AE4E90",
+          "name": "Client::Game::Network::Packet::GMOrder"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD979C",
+          "address": "0x0000000140CC6F40",
+          "name": "sub_140CC6F40"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0293 as GMOrder16.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0294",
+      "windowsOpcode": "0x0294",
+      "threePointThreePacket": "GMOrder32",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F8F1C",
+          "address": "0x00AE4E90",
+          "name": "Client::Game::Network::Packet::GMOrder"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD979C",
+          "address": "0x0000000140CC6F40",
+          "name": "sub_140CC6F40"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0294 as GMOrder32.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02D5",
+      "windowsOpcode": "0x02D5",
+      "threePointThreePacket": "FateSyncLimitTime",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA524",
+          "address": "0x00ADCA5C",
+          "name": "Client::Game::Network::EventPacket::ReceiveSyncFateLimitTime"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA821",
+          "address": "0x0000000140CBE920",
+          "name": "public: static bool CReplayMgr::IsMapObjectExpectedToBeHidden"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02D5 as FateSyncLimitTime.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02DF",
+      "windowsOpcode": "0x02DF",
+      "threePointThreePacket": "ColosseumResult44",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA5FC",
+          "address": "0x00ADCB34",
+          "name": "Client::Game::Network::EventPacket::ReceiveColosseumResult"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA942",
+          "address": "0x0000000140CBE9E0",
+          "name": "sub_140CBE9E0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02DF as ColosseumResult44.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02E0",
+      "windowsOpcode": "0x02E0",
+      "threePointThreePacket": "ColosseumResult88",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA60C",
+          "address": "0x00ADCB74",
+          "name": "Client::Game::Network::EventPacket::ReceiveColosseumResult"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA955",
+          "address": "0x0000000140CBEA10",
+          "name": "sub_140CBEA10"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02E0 as ColosseumResult88.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02EB",
+      "windowsOpcode": "0x02EB",
+      "threePointThreePacket": "FateReward",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA6C0",
+          "address": "0x00B4C90C",
+          "name": "Client::Game::Fate::FateManager::OpenReward"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDAAC9",
+          "address": "0x0000000140D0D340",
+          "name": "sub_140D0D340"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02EB as FateReward.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x030C",
+      "windowsOpcode": "0x030C",
+      "threePointThreePacket": null,
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA5CC",
+          "address": "0x00DA4F64",
+          "name": "Client::Network::ContentMediator::ResponseContentBonus"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDAF10",
+          "address": "0x0000000140CC1980",
+          "name": "sub_140CC1980"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "No ThreePointThree semantic name was found for 0x030C.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0317",
+      "windowsOpcode": "0x0317",
+      "threePointThreePacket": "SalvageResult",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9970",
+          "address": "0x00ADB064",
+          "name": "Client::Game::Item::SalvageManager::ReceiveSalvageResults"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD9AAA",
+          "address": "0x00000001404D7520",
+          "name": "sub_1404D7520"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0317 as SalvageResult.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0336",
+      "windowsOpcode": "0x0336",
+      "threePointThreePacket": "Frontline01Result",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA61C",
+          "address": "0x00ADCBB4",
+          "name": "Client::Game::Network::EventPacket::ReceiveFrontline01ResultPacket"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DD967A",
+          "address": "0x0000000140CBEE10",
+          "name": "sub_140CBEE10"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0336 as Frontline01Result.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0337",
+      "windowsOpcode": "0x0337",
+      "threePointThreePacket": "Frontline01BaseInfo",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA62C",
+          "address": "0x00ADCBE0",
+          "name": "Client::Game::Network::EventPacket::ReceiveFrontline01BaseInfoPacket"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA97B",
+          "address": "0x0000000140CBEA50",
+          "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_2"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0337 as Frontline01BaseInfo.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0338",
+      "windowsOpcode": "0x0338",
+      "threePointThreePacket": "FinishContentMatchToClient",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 4,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA57C",
+          "address": "0x00DA4660",
+          "name": "Client::Network::ContentMediator::FinishContentMatch"
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA98E",
+          "address": "0x0000000140CBEA60",
+          "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0338 as FinishContentMatchToClient.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01E3",
+      "windowsOpcode": "0x01E3",
+      "threePointThreePacket": "QuestCompleteFlag",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 3,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA050",
+          "address": "0x00AE90F4",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveQuestCompleteFlag"
+        },
+        {
+          "callsite": "0x002FA030",
+          "address": null,
+          "name": null
+        },
+        {
+          "callsite": "0x002FA038",
+          "address": null,
+          "name": null
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA3B0",
+          "address": "0x0000000140CC6A90",
+          "name": "sub_140CC6A90"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01E3 as QuestCompleteFlag.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01E7",
+      "windowsOpcode": "0x01E7",
+      "threePointThreePacket": "LeveCompleteFlag",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 3,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA134",
+          "address": "0x00AE9844",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveLeveCompleteFlag"
+        },
+        {
+          "callsite": "0x002FA124",
+          "address": null,
+          "name": null
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA48F",
+          "address": "0x0000000140CC2710",
+          "name": "sub_140CC2710"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01E7 as LeveCompleteFlag.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0277",
+      "windowsOpcode": "0x0277",
+      "threePointThreePacket": "BalloonTalk2",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 3,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9F88",
+          "address": "0x00ADC7E4",
+          "name": "Client::Game::Network::EventPacket::ReceiveBalloonTalk"
+        },
+        {
+          "callsite": "0x002F9F40",
+          "address": null,
+          "name": null
+        },
+        {
+          "callsite": "0x002F9F5C",
+          "address": null,
+          "name": null
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA2D2",
+          "address": "0x0000000140CBE6C0",
+          "name": "sub_140CBE6C0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0277 as BalloonTalk2.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0278",
+      "windowsOpcode": "0x0278",
+      "threePointThreePacket": "BalloonTalk4",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 3,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9F88",
+          "address": "0x00ADC7E4",
+          "name": "Client::Game::Network::EventPacket::ReceiveBalloonTalk"
+        },
+        {
+          "callsite": "0x002F9F40",
+          "address": null,
+          "name": null
+        },
+        {
+          "callsite": "0x002F9F5C",
+          "address": null,
+          "name": null
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA2D2",
+          "address": "0x0000000140CBE6C0",
+          "name": "sub_140CBE6C0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0278 as BalloonTalk4.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0279",
+      "windowsOpcode": "0x0279",
+      "threePointThreePacket": "BalloonTalk8",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 3,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9F88",
+          "address": "0x00ADC7E4",
+          "name": "Client::Game::Network::EventPacket::ReceiveBalloonTalk"
+        },
+        {
+          "callsite": "0x002F9F40",
+          "address": null,
+          "name": null
+        },
+        {
+          "callsite": "0x002F9F5C",
+          "address": null,
+          "name": null
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA2D2",
+          "address": "0x0000000140CBE6C0",
+          "name": "sub_140CBE6C0"
+        }
+      ],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0279 as BalloonTalk8.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0321",
+      "windowsOpcode": "0x0321",
+      "threePointThreePacket": "DailyQuest",
+      "status": "probable",
+      "reviewed": true,
+      "scoreAtReview": 3,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA0AC",
+          "address": "0x00AE936C",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveDailyQuest"
+        },
+        {
+          "callsite": "0x002FA09C",
+          "address": null,
+          "name": null
+        }
+      ],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDA407",
+          "address": "0x0000000140CC2580",
+          "name": "sub_140CC2580"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0321 as DailyQuest.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "Both cases route packet data to an extracted handler target."
+      ],
+      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0142",
+      "windowsOpcode": "0x0142",
+      "threePointThreePacket": "Order",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 1,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002F9598",
+          "address": "0x00AE9C48",
+          "name": "Client::Game::Network::Packet::Order"
+        }
+      ],
+      "windowsPacketCalls": [],
+      "sharedRelationship": true,
+      "evidence": [
+        "ThreePointThree names 0x0142 as Order.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target.",
+        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0320",
+      "windowsOpcode": "0x0320",
+      "threePointThreePacket": "DailyQuests",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 1,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA088",
+          "address": "0x00AE9294",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveDailyQuests"
+        },
+        {
+          "callsite": "0x002FA078",
+          "address": null,
+          "name": null
+        }
+      ],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0320 as DailyQuests.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x0322",
+      "windowsOpcode": "0x0322",
+      "threePointThreePacket": "QuestRepeatFlags",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 1,
+      "ps3PacketCalls": [
+        {
+          "callsite": "0x002FA0D0",
+          "address": "0x00AE93F4",
+          "name": "Client::Game::Network::SyncTagPacket::ReceiveQuestRepeatFlags"
+        },
+        {
+          "callsite": "0x002FA0C0",
+          "address": null,
+          "name": null
+        }
+      ],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x0322 as QuestRepeatFlags.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01AA",
+      "windowsOpcode": "0x01AA",
+      "threePointThreePacket": "RetainerList",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01AA as RetainerList.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01AB",
+      "windowsOpcode": "0x01AB",
+      "threePointThreePacket": "RetainerData",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01AB as RetainerData.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01AC",
+      "windowsOpcode": "0x01AC",
+      "threePointThreePacket": "MarketPriceHeader",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01AC as MarketPriceHeader.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01AD",
+      "windowsOpcode": "0x01AD",
+      "threePointThreePacket": "MarketPrice",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01AD as MarketPrice.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01AF",
+      "windowsOpcode": "0x01AF",
+      "threePointThreePacket": "NormalItem",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01AF as NormalItem.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01B0",
+      "windowsOpcode": "0x01B0",
+      "threePointThreePacket": "ItemSize",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01B0 as ItemSize.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01B1",
+      "windowsOpcode": "0x01B1",
+      "threePointThreePacket": "ItemOperationBatch",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01B1 as ItemOperationBatch.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01B2",
+      "windowsOpcode": "0x01B2",
+      "threePointThreePacket": "ItemOperation",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01B2 as ItemOperation.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01B3",
+      "windowsOpcode": "0x01B3",
+      "threePointThreePacket": "GilItem",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01B3 as GilItem.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01B7",
+      "windowsOpcode": "0x01B7",
+      "threePointThreePacket": "AliasItem",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01B7 as AliasItem.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x01C0",
+      "windowsOpcode": "0x01C0",
+      "threePointThreePacket": "TreasureFadeOut",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x01C0 as TreasureFadeOut.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x029E",
+      "windowsOpcode": "0x029E",
+      "threePointThreePacket": "InspectQuests",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDAA46",
+          "address": "0x0000000140CC31D0",
+          "name": "sub_140CC31D0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x029E as InspectQuests.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x029F",
+      "windowsOpcode": "0x029F",
+      "threePointThreePacket": "InspectGuildleves",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDAA66",
+          "address": "0x0000000140CC35A0",
+          "name": "sub_140CC35A0"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x029F as InspectGuildleves.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02A0",
+      "windowsOpcode": "0x02A0",
+      "threePointThreePacket": "InspectReward",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDAA86",
+          "address": "0x0000000140CC6300",
+          "name": "sub_140CC6300"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02A0 as InspectReward.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02A1",
+      "windowsOpcode": "0x02A1",
+      "threePointThreePacket": "InspectBeastReputation",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [
+        {
+          "callsite": "0x0000000140DDAE0A",
+          "address": "0x0000000140CC3910",
+          "name": "sub_140CC3910"
+        }
+      ],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02A1 as InspectBeastReputation.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02D6",
+      "windowsOpcode": "0x02D6",
+      "threePointThreePacket": "EnableLogout",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02D6 as EnableLogout.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02D7",
+      "windowsOpcode": "0x02D7",
+      "threePointThreePacket": "LogMessage",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02D7 as LogMessage.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    },
+    {
+      "channel": "zone-down",
+      "ps3Opcode": "0x02E7",
+      "windowsOpcode": "0x02E7",
+      "threePointThreePacket": "CancelLogoutCountdown",
+      "status": "unresolved",
+      "reviewed": true,
+      "scoreAtReview": 0,
+      "ps3PacketCalls": [],
+      "windowsPacketCalls": [],
+      "sharedRelationship": false,
+      "evidence": [
+        "ThreePointThree names 0x02E7 as CancelLogoutCountdown.",
+        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
+        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
+      ],
+      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
+    }
+  ]
+}

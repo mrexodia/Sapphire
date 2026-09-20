@@ -159,6 +159,30 @@ def validate_structures(
     assert structures["summary"]["confirmedVersionDeltas"] == deltas
 
 
+def validate_reviews(
+    review_file: dict[str, Any], dispatchers: dict[tuple[str, str], dict[str, Any]]
+) -> None:
+    indexes = {
+        key: {case["opcode"]: case for case in dispatcher["cases"]}
+        for key, dispatcher in dispatchers.items()
+    }
+    seen: set[tuple[str, str, str]] = set()
+    for review in review_file["reviews"]:
+        key = (review["channel"], review["ps3Opcode"], review["windowsOpcode"])
+        assert key not in seen, key
+        seen.add(key)
+        assert review["reviewed"] is True, key
+        assert review["status"] in {"probable", "unresolved"}, key
+        assert review["evidence"] and review["reasonNotConfirmed"], key
+        assert indexes[("ps3-monitor-2.3", review["channel"])][review["ps3Opcode"]]["status"] == review["status"], key
+        assert indexes[("windows-3.x", review["channel"])][review["windowsOpcode"]]["status"] == review["status"], key
+    assert review_file["summary"] == {
+        "reviewed": len(review_file["reviews"]),
+        "probable": sum(item["status"] == "probable" for item in review_file["reviews"]),
+        "unresolved": sum(item["status"] == "unresolved" for item in review_file["reviews"]),
+    }
+
+
 def validate_candidates(
     candidate_file: dict[str, Any], dispatchers: dict[tuple[str, str], dict[str, Any]]
 ) -> None:
@@ -190,10 +214,12 @@ def main() -> None:
     matches = load("packet_matches.json")
     inventory = load("dispatcher_cases.json")
     candidates = load("candidate_rankings.json")
+    reviews = load("case_reviews.json")
     structures = load("packet_structures.json")
     confirmed = validate_matches(matches)
     dispatchers = validate_dispatchers(inventory, confirmed)
     validate_structures(structures, confirmed)
+    validate_reviews(reviews, dispatchers)
     validate_candidates(candidates, dispatchers)
     print(
         "validated: "

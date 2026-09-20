@@ -61,6 +61,23 @@ def assign_statuses(
             assert case["status"] in ALLOWED_STATUSES
 
 
+def apply_reviews(
+    ps3: dict[str, Any], windows: dict[str, Any], reviews: dict[str, Any]
+) -> None:
+    channel_keys = {"zone-down": "zone", "chat-down": "chat"}
+    for review in reviews.get("reviews", []):
+        channel = review["channel"]
+        channel_key = channel_keys[channel]
+        ps3_index = index_cases(ps3[channel_key]["cases"])
+        windows_index = index_cases(windows[channel_key]["cases"])
+        ps3_case = ps3_index[review["ps3Opcode"]]
+        windows_case = windows_index[review["windowsOpcode"]]
+        ps3_case["status"] = review["status"]
+        windows_case["status"] = review["status"]
+        ps3_case["reviewReference"] = "case_reviews.json"
+        windows_case["reviewReference"] = "case_reviews.json"
+
+
 def summarize(dispatcher: dict[str, Any]) -> dict[str, Any]:
     cases = dispatcher["cases"]
     return {
@@ -81,7 +98,7 @@ def build_candidates(
         for opcode in sorted(ps3_index.keys() & windows_index.keys()):
             ps3_case = ps3_index[opcode]
             windows_case = windows_index[opcode]
-            if ps3_case["status"] == "confirmed":
+            if ps3_case["status"] != "candidate":
                 continue
             ps3_packet_calls = ps3_case["packetCalls"]
             windows_packet_calls = windows_case["packetCalls"]
@@ -128,6 +145,11 @@ def main() -> None:
         default=Path(__file__).with_name("packet_matches.json"),
     )
     parser.add_argument(
+        "--reviews",
+        type=Path,
+        default=Path(__file__).with_name("case_reviews.json"),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path(__file__).with_name("dispatcher_cases.json"),
@@ -142,6 +164,7 @@ def main() -> None:
     ps3 = load_json(args.ps3)
     windows = load_json(args.windows)
     matches = load_json(args.matches)
+    reviews = load_json(args.reviews) if args.reviews.exists() else {"reviews": []}
     confirmed_by_channel = {
         channel: {
             match["opcode"]
@@ -163,6 +186,7 @@ def main() -> None:
         windows["chat"]["cases"],
         confirmed_by_channel["chat-down"],
     )
+    apply_reviews(ps3, windows, reviews)
 
     dispatchers = [ps3["zone"], windows["zone"], ps3["chat"], windows["chat"]]
     for dispatcher in dispatchers:
