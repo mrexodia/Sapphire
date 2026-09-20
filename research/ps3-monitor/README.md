@@ -48,7 +48,7 @@ chat-down dispatchers. It confirms 203 packet-handler function pairs covering
 246 opcode cases, reviews 28 additional same-opcode relationships, and leaves
 no unreviewed candidate in the generated ranking. Eleven exact shared-handler
 mappings preserve 54 many-opcode/one-function relationships without inventing
-separate functions. The remaining 7 probable relationships are retained
+separate functions. The remaining 4 probable relationships are retained
 without authoritative names.
 
 See `packet_matches.json` for confirmed addresses and evidence,

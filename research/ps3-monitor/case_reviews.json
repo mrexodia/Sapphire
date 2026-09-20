@@ -3,8 +3,8 @@
   "policy": "These cases were explicitly reviewed but were not promoted. Probable is not permission to name a Windows function or add an authoritative PS3 IDB link.",
   "summary": {
     "reviewed": 28,
-    "probable": 7,
-    "unresolved": 21
+    "probable": 4,
+    "unresolved": 24
   },
   "reviews": [
     {
@@ -12,7 +12,7 @@
       "ps3Opcode": "0x030C",
       "windowsOpcode": "0x030C",
       "threePointThreePacket": null,
-      "status": "probable",
+      "status": "unresolved",
       "reviewed": true,
       "scoreAtReview": 4,
       "ps3PacketCalls": [
@@ -35,14 +35,18 @@
         "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
         "Both cases route packet data to an extracted handler target."
       ],
-      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+      "reasonNotConfirmed": "Same numeric opcode is insufficient to connect these functions; a changed-opcode counterpart or packet capture is required.",
+      "manualReview": [
+        "Manual decompilation found divergent visible behavior: PS3 ResponseContentBonus processes eight role entries and updates the contents-finder agent, while Windows 0x140CC1980 stores one indexed dword in a global table.",
+        "Same numeric opcode is insufficient to connect these functions; a changed-opcode counterpart or packet capture is required."
+      ]
     },
     {
       "channel": "zone-down",
       "ps3Opcode": "0x0336",
       "windowsOpcode": "0x0336",
       "threePointThreePacket": "Frontline01Result",
-      "status": "probable",
+      "status": "unresolved",
       "reviewed": true,
       "scoreAtReview": 4,
       "ps3PacketCalls": [
@@ -65,7 +69,11 @@
         "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
         "Both cases route packet data to an extracted handler target."
       ],
-      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+      "reasonNotConfirmed": "No common manager or packet-layout behavior has been established, so the direct dispatcher targets are not a defensible function match.",
+      "manualReview": [
+        "PS3 routes a full Frontline result through EventFramework/InstanceContentFrontline01 and processes 72 player records; Windows 0x140CBEE10 only copies fifteen dwords to adjacent globals.",
+        "No common manager or packet-layout behavior has been established, so the direct dispatcher targets are not a defensible function match."
+      ]
     },
     {
       "channel": "zone-down",
@@ -95,14 +103,18 @@
         "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
         "Both cases route packet data to an extracted handler target."
       ],
-      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+      "reasonNotConfirmed": "The Windows downstream method at 0x140C9AAF0 is still unidentified, so the Frontline01BaseInfo identity remains probable rather than confirmed.",
+      "manualReview": [
+        "PS3 and Windows both obtain EventFramework, resolve the active instance-content director, null-check it, and forward the packet to a specialized downstream method.",
+        "The Windows downstream method at 0x140C9AAF0 is still unidentified, so the Frontline01BaseInfo identity remains probable rather than confirmed."
+      ]
     },
     {
       "channel": "zone-down",
       "ps3Opcode": "0x0338",
       "windowsOpcode": "0x0338",
       "threePointThreePacket": "FinishContentMatchToClient",
-      "status": "probable",
+      "status": "unresolved",
       "reviewed": true,
       "scoreAtReview": 4,
       "ps3PacketCalls": [
@@ -125,7 +137,11 @@
         "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
         "Both cases route packet data to an extracted handler target."
       ],
-      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
+      "reasonNotConfirmed": "Windows dispatch enters an EventFramework/instance-content-director wrapper and calls unidentified 0x140C94DD0; this does not yet support the PS3 ContentMediator identity.",
+      "manualReview": [
+        "PS3 FinishContentMatch updates the contents-finder UI using territory, class/job, flags, player count, progress, and start time.",
+        "Windows dispatch enters an EventFramework/instance-content-director wrapper and calls unidentified 0x140C94DD0; this does not yet support the PS3 ContentMediator identity."
+      ]
     },
     {
       "channel": "zone-down",

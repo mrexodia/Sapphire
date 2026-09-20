@@ -31,7 +31,7 @@ current artifacts and direct verification evidence.
 | --- | --- | --- |
 | Use multiple anchors rather than opcode alone | Confirmed mappings require ThreePointThree semantic name, PS3 DWARF handler identity, confirmed dispatcher/payload routing, and a unique Windows direct target; manually established mappings include field/callee/constant evidence | Satisfied |
 | Preserve splits, merges, and shared handlers | `packet_matches.json` explicitly records 11 shared functions covering 54 opcode cases; no false separate functions were invented | Satisfied |
-| Review every obvious same-opcode/named-handler candidate | `case_reviews.json`: 28 retained reviews; 7 probable and 21 unresolved | Satisfied |
+| Review every obvious same-opcode/named-handler candidate | `case_reviews.json`: 28 retained reviews; 4 probable and 24 unresolved | Satisfied |
 | Leave no unreviewed high-likelihood candidate | `candidate_rankings.json` has zero entries; validator enforces this | Satisfied |
 | Record one-sided case presence without overclaiming semantics | 18 PS3-only and 88 Windows-only zone cases plus one PS3-only chat case; inventory limitation defines status scope | Satisfied |
 | Confirm as many defensible direct matches as possible | `packet_matches.json`: 203 packet-handler function pairs covering 246 cases (239 zone, 7 chat) | Satisfied |
@@ -73,7 +73,7 @@ current artifacts and direct verification evidence.
 ## Completion judgment
 
 All finite core criteria are covered by direct artifacts and validators. The
-remaining 7 probable and 21 unresolved same-opcode relationships are not
+remaining 4 probable and 24 unresolved same-opcode relationships are not
 unreviewed work: each has an explicit evidence-backed review and reason it was
 not promoted. The 97 missing Sapphire declarations are documented gaps, not
 safe production edits, because complete Windows layouts remain unproven.

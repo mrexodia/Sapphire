@@ -6011,7 +6011,7 @@
               "name": "Client::Network::ContentMediator::ResponseContentBonus"
             }
           ],
-          "status": "probable",
+          "status": "unresolved",
           "counterpartOpcode": "0x030C",
           "reviewReference": "case_reviews.json"
         },
@@ -6331,7 +6331,7 @@
               "name": "Client::Game::Network::EventPacket::ReceiveFrontline01ResultPacket"
             }
           ],
-          "status": "probable",
+          "status": "unresolved",
           "counterpartOpcode": "0x0336",
           "reviewReference": "case_reviews.json"
         },
@@ -6377,7 +6377,7 @@
               "name": "Client::Network::ContentMediator::FinishContentMatch"
             }
           ],
-          "status": "probable",
+          "status": "unresolved",
           "counterpartOpcode": "0x0338",
           "reviewReference": "case_reviews.json"
         },
@@ -6426,9 +6426,9 @@
         },
         "statuses": {
           "confirmed": 239,
-          "probable": 7,
+          "probable": 4,
           "ps3-only": 18,
-          "unresolved": 22
+          "unresolved": 25
         }
       }
     },
@@ -12885,7 +12885,7 @@
               "name": "sub_140CC1980"
             }
           ],
-          "status": "probable",
+          "status": "unresolved",
           "counterpartOpcode": "0x030C",
           "reviewReference": "case_reviews.json"
         },
@@ -13398,7 +13398,7 @@
               "name": "sub_140CBEE10"
             }
           ],
-          "status": "probable",
+          "status": "unresolved",
           "counterpartOpcode": "0x0336",
           "reviewReference": "case_reviews.json"
         },
@@ -13444,7 +13444,7 @@
               "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_0"
             }
           ],
-          "status": "probable",
+          "status": "unresolved",
           "counterpartOpcode": "0x0338",
           "reviewReference": "case_reviews.json"
         },
@@ -14240,8 +14240,8 @@
         },
         "statuses": {
           "confirmed": 239,
-          "probable": 7,
-          "unresolved": 22,
+          "probable": 4,
+          "unresolved": 25,
           "windows-only": 88
         }
       }

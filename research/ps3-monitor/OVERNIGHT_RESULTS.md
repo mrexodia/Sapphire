@@ -16,17 +16,17 @@ premature.
 
 | Build/channel | Explicit opcodes | Confirmed | Probable | Build-only case presence | Unresolved |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| PS3 zone-down | 285 | 239 | 7 | 18 PS3-only | 22 |
-| Windows zone-down | 355 | 239 | 7 | 88 Windows-only | 22 |
+| PS3 zone-down | 285 | 239 | 4 | 18 PS3-only | 25 |
+| Windows zone-down | 355 | 239 | 4 | 88 Windows-only | 25 |
 | PS3 chat-down | 8 | 7 | 0 | 1 PS3-only | 1 |
 | Windows chat-down | 7 | 7 | 0 | 0 | 1 |
 
-The unresolved counts include each dispatcher's default case. Twenty-one
+The unresolved counts include each dispatcher's default case. Twenty-four
 same-opcode zone relationships remain unresolved after review. Eleven exact
 shared-handler mappings confirm 54 additional opcode cases while preserving
 their many-opcode/one-function relationship. Thirteen additional unique
 matches were confirmed by packet-field, loop-bound, constant, and
-downstream-call behavior. The remaining 7 probable relationships lack enough evidence for an
+downstream-call behavior. The remaining 4 probable relationships lack enough evidence for an
 authoritative function link.
 
 `ps3-only` and `windows-only` mean that the numeric dispatcher case occurs in
@@ -125,7 +125,7 @@ also serves as a clean baseline rather than validation of a packet-header edit.
 
 ## Remaining work
 
-1. Deepen the 7 probable direct relationships whose semantic names differ or
+1. Deepen the 4 probable direct relationships whose semantic names differ or
    whose PS3 path includes indirect/inlined calls; do not promote opcode-only
    agreement.
 2. Review the 21 unresolved same-opcode cases whose handlers are inline,
@@ -139,18 +139,20 @@ also serves as a clean baseline rather than validation of a packet-header edit.
 
 ## Residual blockers
 
-The seven probable cases are `0x030C`, `0x0336`, `0x0337`, `0x0338`, `0x01E3`,
-`0x01E7`, and `0x0321`. `0x030C` has materially different visible behavior
-between builds. The three `0x033x` Windows targets enter unidentified or
-mislabelled manager/thunk paths. The three SyncTag cases include indirect or
-inlined PS3 calls whose Windows manager identities have not been independently
-established. Dispatcher and opcode evidence alone is therefore insufficient.
+The four probable cases are `0x0337`, `0x01E3`, `0x01E7`, and `0x0321`.
+`0x0337` has matching EventFramework/instance-director wrapper behavior but an
+unidentified Windows downstream method. The three SyncTag cases include
+indirect or inlined PS3 calls whose Windows manager identities have not been
+independently established. Dispatcher and opcode evidence alone is therefore
+insufficient.
 
-The 21 unresolved same-opcode cases are `0x0142`, `0x0320`, `0x0322`, `0x01AA`,
+The 24 unresolved same-opcode cases are `0x030C`, `0x0336`, `0x0338`, `0x0142`,
+`0x0320`, `0x0322`, `0x01AA`,
 `0x01AB`, `0x01AC`, `0x01AD`, `0x01AF`, `0x01B0`, `0x01B1`, `0x01B2`, `0x01B3`,
 `0x01B7`, `0x01C0`, `0x029E`, `0x029F`, `0x02A0`, `0x02A1`, `0x02D6`, `0x02D7`,
-and `0x02E7`. At least one dispatcher side is ignored, inline, indirect, or has
-no extractable packet target. The next useful input would be type-applied
+and `0x02E7`. At least one dispatcher side is ignored, inline, indirect, has
+no extractable packet target, or exhibits materially divergent behavior. The
+next useful input would be type-applied
 Windows pseudocode/call graphs for the unidentified managers, or packet captures
 that distinguish changed-opcode semantics; without that, promotion would be
 speculative.
