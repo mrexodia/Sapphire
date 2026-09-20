@@ -11,6 +11,12 @@ from typing import Any
 
 from build_packet_catalog import build_outputs
 from build_readability_plan import build as build_readability
+from build_structure_inventory import (
+    CHAT_HEADER,
+    ROOT as REPOSITORY_ROOT,
+    ZONE_HEADER,
+    declared_packet_types,
+)
 
 ROOT = Path(__file__).resolve().parent
 ALLOWED_STATUSES = {
@@ -198,6 +204,22 @@ def validate_structures(
     assert structures["summary"]["structures"] == len(indexed)
     assert structures["summary"]["missingCurrentDeclarations"] == sorted(missing)
     assert structures["summary"]["confirmedVersionDeltas"] == deltas
+
+    declared = {
+        "zone-down": declared_packet_types(
+            (REPOSITORY_ROOT / ZONE_HEADER).read_text(encoding="utf-8")
+        ),
+        "chat-down": declared_packet_types(
+            (REPOSITORY_ROOT / CHAT_HEADER).read_text(encoding="utf-8")
+        ),
+    }
+    for (channel, packet), structure in indexed.items():
+        actual_type = declared[channel].get(packet)
+        if actual_type is not None:
+            assert structure["sapphire"]["currentStatus"] == "present", (channel, packet)
+            assert structure["sapphire"]["type"] == actual_type, (channel, packet, actual_type)
+        elif structure["sapphire"]["currentStatus"] == "missing":
+            assert f"{channel}:{packet}" in missing, (channel, packet)
 
 
 def validate_reviews(

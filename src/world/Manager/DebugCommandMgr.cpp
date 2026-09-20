@@ -618,9 +618,9 @@ void DebugCommandMgr::add( char* data, Entity::Player& player, std::shared_ptr< 
     {
       actorMovePacket->data().dir = pTarget->getRotUInt8();
       actorMovePacket->data().dirBeforeSlip = pTarget->getRotUInt8();
-      actorMovePacket->data().flag = animationType;
-      actorMovePacket->data().flag2 = animationState;
-      actorMovePacket->data().speed = speed;
+      actorMovePacket->data().animationType = animationType;
+      actorMovePacket->data().animationState = animationState;
+      actorMovePacket->data().animationSpeed = speed;
       actorMovePacket->data().pos[ 0 ] = Common::Util::floatToUInt16( x );
       actorMovePacket->data().pos[ 1 ] = Common::Util::floatToUInt16( y );
       actorMovePacket->data().pos[ 2 ] = Common::Util::floatToUInt16( z );

@@ -37,9 +37,9 @@ void QuestMgr::onCompleteQuest( Entity::Player& player, uint16_t questId, uint32
 {
   auto& server = Common::Service< World::WorldServer >::ref();
   auto questFinishPacket = makeZonePacket< FFXIVIpcQuestFinish >( player.getId() );
-  questFinishPacket->data().questId = questId;
-  questFinishPacket->data().flag1 = 1;
-  questFinishPacket->data().flag2 = 1;
+  questFinishPacket->data().bitIndex = questId;
+  questFinishPacket->data().completed = 1;
+  questFinishPacket->data().update = 1;
   server.queueForPlayer( player.getCharacterId(), questFinishPacket );
 
   giveQuestRewards( player, questId, optionalChoice );
@@ -109,15 +109,15 @@ bool QuestMgr::giveQuestRewards( Entity::Player& player, uint16_t questId, uint3
 void QuestMgr::sendQuestTracker( Entity::Player& player )
 {
   auto& server = Common::Service< World::WorldServer >::ref();
-  auto trackerPacket = makeZonePacket< FFXIVIpcQuestTracker >( player.getId() );
+  auto trackerPacket = makeZonePacket< FFXIVIpcTracking >( player.getId() );
 
   for( int32_t ii = 0; ii < 5; ii++ )
   {
     auto tracked = player.getQuestTracking( ii );
     if( tracked >= 0 )
     {
-      trackerPacket->data().entry[ ii ].active = 1;
-      trackerPacket->data().entry[ ii ].questIndex = static_cast< uint8_t >( tracked );
+      trackerPacket->data().entries[ ii ].type = 1;
+      trackerPacket->data().entries[ ii ].index = static_cast< uint8_t >( tracked );
     }
   }
   server.queueForPlayer( player.getCharacterId(), trackerPacket );

@@ -10,7 +10,7 @@ current artifacts and direct verification evidence.
 | Remain on `research/ps3-33-packet-matching` | `git branch --show-current` | Satisfied |
 | Do not push or rewrite history | Local milestone commits begin at `9efcdaec8`; remote `origin/build-cleanup` remains at `a4724c627` | Satisfied |
 | Do not modify the PS3 reference IDB | All PS3 scripts are read-only exporters; no PS3 save or mutation operation was performed | Satisfied |
-| Avoid unrelated production changes | Branch changes are research artifacts plus the independently Windows-validated `FFXIVIpcQuestFinish` byte/padding split | Satisfied |
+| Avoid unrelated production changes | Production edits are limited to evidence-backed packet names, the proven `FFXIVIpcQuestFinish` byte split, and the PS3/Windows-proven 16-byte `FFXIVIpcActorMove` size | Satisfied |
 | Do not commit binaries, IDBs, captures, decrypted assets, or bulk decompiler output | Branch diff contains Markdown, Python, and derived JSON only | Satisfied |
 
 ## Dispatcher inventory
@@ -58,9 +58,9 @@ current artifacts and direct verification evidence.
 | Record PS3 size, members, offsets, widths/types | Every exported structure contains `ps3Size` and member metadata | Satisfied |
 | Compare with current and ThreePointThree Sapphire declarations | Each structure records current and immutable historical path/line presence | Satisfied |
 | Record independent Windows field evidence | `windowsValidation` records confirmed same-offset fields and version deltas; unreviewed fields are explicitly labelled | Satisfied |
-| Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 99 missing declarations pending complete Windows validation | Satisfied |
+| Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 80 genuinely missing declarations pending complete Windows validation; 19 differently named existing Sapphire specializations are detected automatically | Satisfied |
 | Record confirmed version differences | `PlayerStatusUpdate.LvSync` moves `+0x04`→`+0x06`; TreasureHuntReward gains a leading event-handler ID; CreateTreasure shifts timers/content/catalogue data by four bytes | Satisfied |
-| Make only conclusively supported production corrections | `FFXIVIpcQuestFinish` retains its proven 8-byte size while splitting the Windows-read byte at `+0x04` from three trailing padding bytes | Satisfied |
+| Make only conclusively supported production corrections | `FFXIVIpcQuestFinish` retains its proven 8-byte size with semantic field names; `FFXIVIpcActorMove` is 16 bytes as proven by PS3 DWARF and the Windows fixed-size queue copy | Satisfied |
 
 ## Validation, build, and reporting
 
@@ -79,6 +79,7 @@ All finite core criteria are covered by direct artifacts and validators. The
 remaining 21 unresolved same-opcode relationships are not unreviewed work: each
 has an explicit evidence-backed review and reason no PS3↔Windows link was
 promoted. Nineteen now have a separately proven Windows semantic implementation;
-`0x030C` and `0x0338` retain genuine semantic conflicts. The 99 missing Sapphire
-declarations are documented gaps, not safe production edits, because complete
+`0x030C` and `0x0338` retain genuine semantic conflicts. The 80 genuinely
+missing Sapphire declarations are documented gaps, not safe production edits,
+because complete
 Windows layouts remain unproven.

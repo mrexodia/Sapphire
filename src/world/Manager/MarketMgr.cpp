@@ -62,7 +62,7 @@ bool MarketMgr::init()
 
 void MarketMgr::requestItemListingInfo( Entity::Player& player, uint32_t catalogId, uint32_t requestId )
 {
-  auto countPkt = makeZonePacket< FFFXIVIpcItemSearchResult >( player.getId() );
+  auto countPkt = makeZonePacket< FFXIVIpcItemSearchResult >( player.getId() );
   countPkt->data().Count = 0;
   countPkt->data().CatalogID = catalogId;
   countPkt->data().Result = requestId;

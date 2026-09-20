@@ -27,9 +27,9 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
 
       m_data.dir = actor.getRotUInt8();
       m_data.dirBeforeSlip = dirBeforeSlip;
-      m_data.flag = animationType;
-      m_data.flag2 = state;
-      m_data.speed = static_cast< uint8_t >( animationSpeed );
+      m_data.animationType = animationType;
+      m_data.animationState = state;
+      m_data.animationSpeed = static_cast< uint8_t >( animationSpeed );
       m_data.pos[0] = Common::Util::floatToUInt16( actor.getPos().x );
       m_data.pos[1] = Common::Util::floatToUInt16( actor.getPos().y );
       m_data.pos[2] = Common::Util::floatToUInt16( actor.getPos().z );

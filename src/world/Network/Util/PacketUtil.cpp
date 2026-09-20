@@ -32,7 +32,7 @@ using namespace Sapphire::Network::ActorControl;
 void Util::Packet::sendConfigFlags( Entity::Player& player )
 {
   auto paramPacket = makeZonePacket< FFXIVIpcConfig >( player.getId() );
-  paramPacket->data().flag = player.getConfigFlags();
+  paramPacket->data().configFlags = player.getConfigFlags();
   server().queueForPlayers( player.getInRangePlayerIds( true ), paramPacket );
 }
 

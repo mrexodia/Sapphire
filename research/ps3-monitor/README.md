@@ -87,6 +87,19 @@ family, and the shared item-fragment assembler layouts. `build_readability_plan.
 plan/header, while `ida_apply_readability.py` applies or verifies the changes in
 the Windows IDB.
 
+## Sapphire packet declaration cleanup
+
+The production header now uses evidence-backed semantic names for quest
+completion, tracking entries, condition/configuration flags, and actor movement
+state. The `FFFXIVIpcItemSearchResult` typo is corrected. No PS3 layout is
+copied wholesale: `FFXIVIpcActorMove` gains four trailing padding bytes only
+because both PS3 DWARF size and the Windows fixed 16-byte queue copy prove the
+wire size. Structure inventory generation discovers actual
+`FFXIVIpcBasePacket<Role>` specializations, reducing false missing declarations
+from 99 to 80 while preserving descriptive Sapphire type names. See
+[`SAPPHIRE_PACKET_CLEANUP.md`](SAPPHIRE_PACKET_CLEANUP.md) for the per-field
+evidence classification and deliberately retained unknowns.
+
 ## Next iteration
 
 1. Recover remaining InfoProxyItemSearch formatter/agent methods downstream of
@@ -96,6 +109,6 @@ the Windows IDB.
 3. Extend EventFramework update/range boundaries and type packet-family-specific
    item-assembly fragment payloads.
 4. Normalize and export outbound Zone/Chat DWARF packet types.
-5. Fully validate Windows layouts before promoting any of the 99 missing
-   Sapphire declarations, and retain the `0x030C`/`0x0338` conflicts until
+5. Fully validate Windows layouts before promoting any of the 80 genuinely
+   missing Sapphire declarations, and retain the `0x030C`/`0x0338` conflicts until
    runtime or packet-capture evidence distinguishes them.

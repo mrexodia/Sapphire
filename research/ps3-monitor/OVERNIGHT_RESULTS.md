@@ -135,10 +135,13 @@ Windows proves that byte `+0x04`, previously grouped into a `uint32_t padding`
 field, is consumed. Sapphire now represents it as `unknown4` plus three padding
 bytes while preserving `sizeof(FFXIVIpcQuestFinish) == 8`.
 
-Ninety-nine confirmed packet roles currently lack a correspondingly named
-Sapphire declaration. They are recorded as research gaps rather than production
-changes because many complete 3.x sizes and unaccessed fields remain unproven.
-The complete list is in `packet_structures.json` under
+Eighty confirmed packet roles currently lack a Sapphire declaration. The
+inventory now discovers the actual `FFXIVIpcBasePacket<Role>` specialization,
+so nineteen descriptive Sapphire names—such as `FFXIVIpcActorControl`,
+`FFXIVIpcActorFreeSpawn`, `FFXIVIpcEventStart`, and the EventPlay templates—are
+no longer falsely reported as missing. The remaining roles stay research gaps
+because many complete 3.x sizes and unaccessed fields remain unproven. The
+complete list is in `packet_structures.json` under
 `summary.missingCurrentDeclarations`.
 
 ## Reproducibility artifacts
@@ -183,8 +186,9 @@ common and world targets completed successfully
 git diff --check
 ```
 
-The successful build validates the wire-size-preserving
-`FFXIVIpcQuestFinish` packet-header correction.
+The successful build validates the packet naming cleanup, the
+wire-size-preserving `FFXIVIpcQuestFinish` field rename, and the independently
+proven 16-byte `FFXIVIpcActorMove` payload.
 
 ## Remaining work
 
@@ -194,8 +198,8 @@ The successful build validates the wire-size-preserving
    packet captures, or stronger downstream type recovery.
 3. Triage the 18 PS3-only and 88 Windows-only zone cases for changed-opcode or
    newly introduced semantics.
-4. Fully validate Windows sizes and every member of the 99 missing Sapphire
-   declarations before adding production definitions.
+4. Fully validate Windows sizes and every member of the 80 genuinely missing
+   Sapphire declarations before adding production definitions.
 5. Recover remaining InfoProxyItemSearch formatter/agent methods,
    EventFramework handler-container internals, and packet-family-specific item
    fragment payloads only when call semantics support them.

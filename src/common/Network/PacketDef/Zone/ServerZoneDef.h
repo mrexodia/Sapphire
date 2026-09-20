@@ -395,7 +395,7 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
     uint8_t SupportCount;
   };
 
-  struct FFFXIVIpcItemSearchResult : FFXIVIpcBasePacket< ItemSearchResult >
+  struct FFXIVIpcItemSearchResult : FFXIVIpcBasePacket< ItemSearchResult >
   {
     uint32_t CatalogID;
     uint32_t Result;
@@ -559,8 +559,10 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
     uint16_t Mp;
     uint16_t Tp;
     uint16_t Gp;
-    uint32_t Unknown_3_2;
+    uint16_t __padding1;
+    uint32_t __padding2;
   };
+  static_assert( sizeof( FFXIVIpcResting ) == 16 );
 
   struct FFXIVIpcRecastGroup : FFXIVIpcBasePacket< RecastGroup >
   {
@@ -713,7 +715,7 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
 
   /**
   * Structural representation of the packet sent by the server
-  * to show player movement
+  * to remove an actor
   */
   struct FFXIVIpcActorFreeSpawn : FFXIVIpcBasePacket< Delete >
   {
@@ -729,12 +731,15 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
   {
     uint8_t dir;
     uint8_t dirBeforeSlip;
-    uint8_t flag;
-    uint8_t flag2;
-    uint8_t speed;
+    uint8_t animationType;
+    uint8_t animationState;
+    uint8_t animationSpeed;
     uint8_t __padding1;
     uint16_t pos[3];
+    uint32_t __padding2;
   };
+  // PS3 DWARF and the Windows movement queue both establish a 16-byte payload.
+  static_assert( sizeof( FFXIVIpcActorMove ) == 16 );
 
   struct FFXIVIpcTransfer : FFXIVIpcBasePacket< Transfer >
   {
@@ -995,8 +1000,8 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
   */
   struct FFXIVIpcCondition : FFXIVIpcBasePacket< Condition >
   {
-    uint8_t flags[12];
-    uint32_t padding;
+    uint8_t conditionFlags[12];
+    uint32_t __padding1;
   };
 
   /**
@@ -1457,11 +1462,11 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
   */
   struct FFXIVIpcQuestFinish : FFXIVIpcBasePacket< QuestCompleteFlag >
   {
-    uint16_t questId;
-    uint8_t flag1; // bool completed
-    uint8_t flag2; // bool update
+    uint16_t bitIndex;
+    uint8_t completed;
+    uint8_t update;
     uint8_t unknown4;
-    uint8_t padding[3];
+    uint8_t __padding1[3];
   };
   static_assert( sizeof( FFXIVIpcQuestFinish ) == 8 );
 
@@ -1491,15 +1496,17 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
   struct FFXIVIpcNotice16 : FFXIVIpcBasePacket< Notice16 >, FFXIVIpcNoticeN< 16 > {};
   struct FFXIVIpcNotice32 : FFXIVIpcBasePacket< Notice32 >, FFXIVIpcNoticeN< 32 > {};
 
-  struct FFXIVIpcQuestTracker : FFXIVIpcBasePacket< Tracking >
+  struct FFXIVIpcTracking : FFXIVIpcBasePacket< Tracking >
   {
-    struct TrackerEntry
+    struct TrackingEntry
     {
-      uint8_t active;
-      uint8_t questIndex;
-    } entry[5];
-    uint16_t padding[3];
+      uint8_t type; // 1: quest, 2: leve
+      uint8_t index;
+    } entries[5];
+    uint16_t __padding1[3];
   };
+  // Windows consumes five two-byte records; the remaining bytes are protocol padding.
+  static_assert( sizeof( FFXIVIpcTracking ) == 16 );
 
 
   struct FFXIVIpcWeatherId : FFXIVIpcBasePacket< WeatherId >
@@ -1672,7 +1679,7 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
   */
   struct FFXIVIpcConfig : FFXIVIpcBasePacket< Config >
   {
-    uint16_t flag;
+    uint16_t configFlags;
   };
 
 struct FFXIVIpcEorzeaTimeOffset : FFXIVIpcBasePacket< TimeOffset >

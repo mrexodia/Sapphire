@@ -43,7 +43,7 @@ namespace Sapphire::Network::Packets::WorldPackets::Server
   private:
     void initialize( const uint8_t* flags )
     {
-      memcpy( m_data.flags, flags, 12 );
+      memcpy( m_data.conditionFlags, flags, 12 );
     };
   };
 

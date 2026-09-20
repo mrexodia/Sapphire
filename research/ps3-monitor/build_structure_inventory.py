@@ -243,6 +243,20 @@ def source_location(text: str, type_name: str) -> int | None:
     return None
 
 
+def declared_packet_types(text: str) -> dict[str, str]:
+    """Map protocol role names to the actual Sapphire struct names.
+
+    Sapphire intentionally uses descriptive names such as FFXIVIpcActorControl
+    for the protocol role named Order. Discovering the FFXIVIpcBasePacket
+    specialization prevents those aliases from being reported as missing.
+    """
+    pattern = re.compile(
+        r"\bstruct\s+(\w+)\s*:\s*FFXIVIpcBasePacket\s*<\s*(\w+)\s*>",
+        re.MULTILINE,
+    )
+    return {match.group(2): match.group(1) for match in pattern.finditer(text)}
+
+
 def git_show(path: Path) -> str:
     result = subprocess.run(
         ["git", "show", f"{HISTORICAL_REF}:{path.as_posix()}"],
@@ -276,17 +290,25 @@ def main() -> None:
         "chat-down": git_show(CHAT_HEADER),
     }
     source_paths = {"zone-down": ZONE_HEADER, "chat-down": CHAT_HEADER}
+    current_types = {
+        channel: declared_packet_types(text) for channel, text in current_text.items()
+    }
+    historical_types = {
+        channel: declared_packet_types(text) for channel, text in historical_text.items()
+    }
 
     missing: list[str] = []
     changed_offsets: list[dict[str, Any]] = []
     for structure in ps3["structures"]:
         packet = structure["packet"]
         channel = structure["channel"]
-        type_name = sapphire_type(packet)
-        current_line = source_location(current_text[channel], type_name)
-        historical_line = source_location(historical_text[channel], type_name)
+        fallback_type = sapphire_type(packet)
+        current_type = current_types[channel].get(packet, fallback_type)
+        historical_type = historical_types[channel].get(packet, current_type)
+        current_line = source_location(current_text[channel], current_type)
+        historical_line = source_location(historical_text[channel], historical_type)
         structure["sapphire"] = {
-            "type": type_name,
+            "type": current_type,
             "path": source_paths[channel].as_posix(),
             "currentLine": current_line,
             "currentStatus": "present" if current_line else "missing",
