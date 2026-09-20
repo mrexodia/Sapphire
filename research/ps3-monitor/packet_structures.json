@@ -8,7 +8,7 @@
   },
   "policy": "PS3 fields describe 2.3. A field is a 3.x fact only when windowsValidation is confirmed; unreviewed fields must not be promoted into production definitions.",
   "summary": {
-    "structures": 247,
+    "structures": 253,
     "missingCurrentDeclarations": [
       "chat-down:GetChannelListResult",
       "chat-down:GetChannelMemberListResult",
@@ -31,6 +31,7 @@
       "zone-down:ConfusionTurnCancel",
       "zone-down:ContentClearFlags",
       "zone-down:CreateTreasure",
+      "zone-down:DailyQuest",
       "zone-down:Delete",
       "zone-down:Director",
       "zone-down:EventPlay128",
@@ -49,6 +50,7 @@
       "zone-down:FateReward",
       "zone-down:FateSyncLimitTime",
       "zone-down:FcChestLog",
+      "zone-down:Frontline01BaseInfo",
       "zone-down:GMOrder16",
       "zone-down:GMOrder2",
       "zone-down:GMOrder32",
@@ -68,6 +70,7 @@
       "zone-down:IsMarket",
       "zone-down:ItemMessage",
       "zone-down:ItemSearchResult",
+      "zone-down:LeveCompleteFlag",
       "zone-down:LeveCompleteFlags",
       "zone-down:LogText",
       "zone-down:LootActionResult",
@@ -80,6 +83,7 @@
       "zone-down:MarketStorageUpdate",
       "zone-down:NpcYell",
       "zone-down:OpenTreasure",
+      "zone-down:Order",
       "zone-down:OrderMySelf",
       "zone-down:OrderTarget",
       "zone-down:PopEventState",
@@ -13179,6 +13183,284 @@
     },
     {
       "channel": "zone-down",
+      "packet": "LeveCompleteFlag",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_LeveCompleteFlag",
+      "ps3Size": 8,
+      "members": [
+        {
+          "name": "bitIndex",
+          "offset": "0x0",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "leve-completion bit index"
+          }
+        },
+        {
+          "name": "completed",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x2",
+            "evidence": "set/clear boolean"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcLeveCompleteFlag",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "partially-windows-validated",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "DailyQuests",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_DailyQuests",
+      "ps3Size": 32,
+      "members": [
+        {
+          "name": "update",
+          "offset": "0x0",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "daily-quest synchronization update boolean"
+          }
+        },
+        {
+          "name": "__padding1",
+          "offset": "0x1",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding2",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "dailyQuestArray",
+          "offset": "0x4",
+          "size": 24,
+          "type": "Client::Network::Protocol::Zone::ZoneProtoDownDailyQuest[6]",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x4",
+            "evidence": "12 DailyQuest records in Windows versus 6 in PS3"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcDailyQuests",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": 1566,
+        "currentStatus": "present",
+        "threePointThreeLine": 1537,
+        "threePointThreeStatus": "present"
+      },
+      "windowsExtraFields": [
+        {
+          "name": "dailyQuestArray[6..11]",
+          "offset": "0x1C",
+          "width": 24,
+          "evidence": "Windows processes 12 four-byte records; PS3 processes 6"
+        }
+      ],
+      "comparisonStatus": "partially-windows-validated",
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "DailyQuest",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_DailyQuest",
+      "ps3Size": 8,
+      "members": [
+        {
+          "name": "index",
+          "offset": "0x0",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "daily-quest slot index"
+          }
+        },
+        {
+          "name": "update",
+          "offset": "0x1",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x1",
+            "evidence": "daily-quest synchronization update boolean"
+          }
+        },
+        {
+          "name": "__padding1",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "dailyQuest",
+          "offset": "0x4",
+          "size": 4,
+          "type": "Client::Network::Protocol::Zone::ZoneProtoDownDailyQuest",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x4",
+            "evidence": "quest ID and flags record"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcDailyQuest",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "partially-windows-validated",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "QuestRepeatFlags",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_QuestRepeatFlags",
+      "ps3Size": 8,
+      "members": [
+        {
+          "name": "update",
+          "offset": "0x0",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x0",
+            "evidence": "repeat-flag synchronization update boolean"
+          }
+        },
+        {
+          "name": "repeatFlagArray",
+          "offset": "0x1",
+          "size": 1,
+          "type": "uint8_t[1]",
+          "windowsValidation": {
+            "status": "confirmed-same-offset",
+            "offset": "0x1",
+            "evidence": "one-byte repeat-quest mask"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcQuestRepeatFlags",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": 1551,
+        "currentStatus": "present",
+        "threePointThreeLine": 1522,
+        "threePointThreeStatus": "present"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "partially-windows-validated",
+      "productionDecision": "Existing Sapphire declaration; retain unless a complete Windows comparison proves a correction."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "Frontline01BaseInfo",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_Frontline01BaseInfo",
+      "ps3Size": 8,
+      "members": [
+        {
+          "name": "Index",
+          "offset": "0x0",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "State",
+          "offset": "0x1",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Team",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Gauge",
+          "offset": "0x3",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "GaugeTeam",
+          "offset": "0x4",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcFrontline01BaseInfo",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
       "packet": "SyncTag32",
       "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGSYSTEM_SyncTag32",
       "ps3Size": 48,
@@ -13427,6 +13709,89 @@
       "status": "exported",
       "sapphire": {
         "type": "FFXIVIpcSyncTag256",
+        "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
+        "currentLine": null,
+        "currentStatus": "missing",
+        "threePointThreeLine": null,
+        "threePointThreeStatus": "missing"
+      },
+      "windowsExtraFields": [],
+      "comparisonStatus": "layout-unreviewed",
+      "productionDecision": "Do not add yet: missing declaration recorded, but complete Windows size/layout is not proven."
+    },
+    {
+      "channel": "zone-down",
+      "packet": "Order",
+      "ps3Type": "Client::Network::Protocol::Zone::ZoneProtoDownGAME_Order",
+      "ps3Size": 24,
+      "members": [
+        {
+          "name": "Id",
+          "offset": "0x0",
+          "size": 2,
+          "type": "uint16_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding1",
+          "offset": "0x2",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "__padding2",
+          "offset": "0x3",
+          "size": 1,
+          "type": "uint8_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Arg0",
+          "offset": "0x4",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Arg1",
+          "offset": "0x8",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Arg2",
+          "offset": "0xC",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        },
+        {
+          "name": "Arg3",
+          "offset": "0x10",
+          "size": 4,
+          "type": "uint32_t",
+          "windowsValidation": {
+            "status": "unreviewed"
+          }
+        }
+      ],
+      "status": "exported",
+      "sapphire": {
+        "type": "FFXIVIpcOrder",
         "path": "src/common/Network/PacketDef/Zone/ServerZoneDef.h",
         "currentLine": null,
         "currentStatus": "missing",

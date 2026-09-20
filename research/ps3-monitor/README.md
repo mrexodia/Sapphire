@@ -44,12 +44,12 @@ Raw function size and CFG similarity are not sufficient across PPC64 and x64.
 ## Current coverage
 
 The exhaustive pass records 285 PS3 and 355 Windows zone-down opcodes plus both
-chat-down dispatchers. It confirms 204 packet-handler function pairs covering
-247 opcode cases, reviews 27 additional same-opcode relationships, and leaves
-no unreviewed candidate in the generated ranking. Eleven exact shared-handler
-mappings preserve 54 many-opcode/one-function relationships without inventing
-separate functions. The remaining 3 probable relationships are retained
-without authoritative names.
+chat-down dispatchers. It confirms 209 packet-handler function pairs covering
+253 opcode cases and leaves no probable or unreviewed candidate in the generated
+ranking. Eleven exact shared-handler mappings preserve 55 many-opcode/one-function
+relationships without inventing separate functions. Twenty-one relationships
+remain unresolved across builds; the Windows side is nevertheless identified for
+19 of them through ten semantic function mappings and three inline dispatcher cases.
 
 Start with the combined [`PACKET_CATALOG.md`](PACKET_CATALOG.md), or open the
 searchable [`packet_catalog.html`](packet_catalog.html) for field layouts,
@@ -74,9 +74,11 @@ The detailed execution plan and pasteable persistent goal remain in
 
 ## Next iteration
 
-1. Identify the three probable downstream manager functions with type-applied
-   Windows pseudocode or runtime traces.
-2. Investigate changed-opcode counterparts for build-only numeric cases.
-3. Normalize and export outbound Zone/Chat DWARF packet types.
-4. Fully validate Windows layouts before promoting any of the 95 missing
+1. Recover defensible PS3↔Windows links for the 19 cases whose Windows behavior
+   is known but whose PS3 leaf function is absent, inline, or structurally divergent.
+2. Resolve the remaining `0x030C` and `0x0338` semantic conflicts with runtime
+   traces, packet captures, or stronger downstream type recovery.
+3. Investigate changed-opcode counterparts for build-only numeric cases.
+4. Normalize and export outbound Zone/Chat DWARF packet types.
+5. Fully validate Windows layouts before promoting any of the 99 missing
    Sapphire declarations.

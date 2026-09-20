@@ -87,6 +87,59 @@ def enum_names(enum_name: str) -> dict[str, str]:
     }
 
 
+def sapphire_payload_index() -> dict[tuple[str, str], dict[str, Any]]:
+    headers = {
+        "zone-down": Path("src/common/Network/PacketDef/Zone/ServerZoneDef.h"),
+        "chat-down": Path("src/common/Network/PacketDef/Chat/ServerChatDef.h"),
+    }
+    output: dict[tuple[str, str], dict[str, Any]] = {}
+    pattern = re.compile(
+        r"\bstruct\s+(\w+)\s*:\s*FFXIVIpcBasePacket\s*<\s*(\w+)\s*>", re.S
+    )
+    for channel, path in headers.items():
+        text = (REPO_ROOT / path).read_text(encoding="utf-8")
+        for match in pattern.finditer(text):
+            output[(channel, match.group(2))] = {
+                "type": match.group(1),
+                "path": path.as_posix(),
+                "currentLine": text.count("\n", 0, match.start()) + 1,
+                "currentStatus": "present",
+            }
+    return output
+
+
+def flatten_windows_mappings(mapping: dict[str, Any]) -> list[dict[str, Any]]:
+    sources = sapphire_payload_index()
+    rows: list[dict[str, Any]] = []
+    for entry in mapping.get("windowsMappings", []):
+        channel = entry.get("channel", "zone-down")
+        for opcode, packet in zip(entry["opcodes"], entry["packets"]):
+            rows.append(
+                {
+                    **entry,
+                    "channel": channel,
+                    "opcode": opcode,
+                    "packet": packet,
+                    "sapphire": sources.get((channel, packet)),
+                    "implementation": "function",
+                }
+            )
+    for entry in mapping.get("windowsInlineMappings", []):
+        channel = entry.get("channel", "zone-down")
+        packet = entry["packet"]
+        rows.append(
+            {
+                **entry,
+                "channel": channel,
+                "windowsName": "inline in PacketDispatcher",
+                "windowsAddress": entry["windowsCaseEa"],
+                "sapphire": sources.get((channel, packet)),
+                "implementation": "inline",
+            }
+        )
+    return sorted(rows, key=lambda row: (row["channel"], int(row["opcode"], 16)))
+
+
 def one_sided_cases(inventory: dict[str, Any]) -> list[dict[str, Any]]:
     names = {
         "zone-down": enum_names("ServerZoneIpcType"),
@@ -143,6 +196,7 @@ def render_markdown(
     confirmed: list[dict[str, Any]],
     reviews: dict[str, Any],
     one_sided: list[dict[str, Any]],
+    windows_rows: list[dict[str, Any]],
     mapping: dict[str, Any],
 ) -> str:
     status_counts = Counter(review["status"] for review in reviews["reviews"])
@@ -162,6 +216,9 @@ def render_markdown(
         f"| Confirmed opcode cases | {len(confirmed)} |",
         f"| One-to-one handler functions | {len(mapping['matches'])} |",
         f"| Shared handler functions | {len(mapping.get('sharedMatches', []))} |",
+        f"| Windows semantic functions without PS3 links | {len(mapping.get('windowsMappings', []))} |",
+        f"| Windows inline semantic cases | {len(mapping.get('windowsInlineMappings', []))} |",
+        f"| Windows semantic opcode cases without PS3 links | {len(windows_rows)} |",
         f"| Probable reviewed cases | {status_counts['probable']} |",
         f"| Unresolved reviewed cases | {status_counts['unresolved']} |",
         f"| PS3-only numeric cases | {sum(row['status'] == 'ps3-only' for row in one_sided)} |",
@@ -198,6 +255,26 @@ def render_markdown(
                 )
             )
             + " |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Confirmed Windows semantic mappings without PS3 function links",
+            "",
+            "These names are supported by Sapphire enums/structures and Windows behavior, but no",
+            "equivalent PS3 leaf function was established. They intentionally have no PS3 IDB backlink.",
+            "",
+            "| Channel | Opcode | Sapphire opcode | Sapphire payload | Windows handler | Evidence |",
+            "| --- | --- | --- | --- | --- | --- |",
+        ]
+    )
+    for row in windows_rows:
+        sapphire = source_link(row["sapphire"]) if row.get("sapphire") else "—"
+        lines.append(
+            f"| {row['channel']} | {row['opcode']} | {row['packet']} | {sapphire} | "
+            f"`{short_type(row['windowsName'])}` `{row['windowsAddress']}` ({row['implementation']}) | "
+            f"{md_escape(' '.join(row['evidence']))} |"
         )
 
     deltas = []
@@ -352,6 +429,7 @@ def render_html(
     confirmed: list[dict[str, Any]],
     reviews: dict[str, Any],
     one_sided: list[dict[str, Any]],
+    windows_rows: list[dict[str, Any]],
     mapping: dict[str, Any],
 ) -> str:
     status_counts = Counter(review["status"] for review in reviews["reviews"])
@@ -370,6 +448,19 @@ def render_html(
             f"<td><code>{html.escape(short_type(row['windowsName']))}</code><br><code>{html.escape(row['windowsAddress'])}</code></td>"
             f"<td>{html.escape(row['mappingKind'])}<br>{html.escape(structure['comparisonStatus'])}</td>"
             f"<td>{field_details(row)}</td></tr>"
+        )
+
+    windows_mapping_rows = []
+    for row in windows_rows:
+        evidence = "".join(f"<li>{html.escape(item)}</li>" for item in row["evidence"])
+        sapphire = source_link(row["sapphire"], html_view=True) if row.get("sapphire") else "—"
+        windows_mapping_rows.append(
+            f'<tr class="catalog-row" data-status="windows-semantic" data-channel="{html.escape(row["channel"])}">'
+            '<td><span class="badge windows-semantic">windows-semantic</span></td>'
+            f"<td>{html.escape(row['channel'])}</td><td><code>{html.escape(row['opcode'])}</code></td>"
+            f"<td><strong>{html.escape(row['packet'])}</strong></td><td>{sapphire}</td>"
+            f"<td><code>{html.escape(short_type(row['windowsName']))}</code><br><code>{html.escape(row['windowsAddress'])}</code><br>{html.escape(row['implementation'])}</td>"
+            f"<td><details><summary>Evidence</summary><ul>{evidence}</ul></details></td></tr>"
         )
 
     review_rows = []
@@ -411,20 +502,23 @@ main{{max-width:1800px;margin:auto;padding:24px}} h1,h2{{margin-top:1.3em}} a{{c
 .summary{{display:flex;flex-wrap:wrap;gap:12px}} .card{{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px;min-width:150px}} .card b{{display:block;font-size:24px}}
 .controls{{position:sticky;top:0;z-index:2;display:flex;gap:8px;flex-wrap:wrap;background:rgba(16,20,25,.96);padding:12px 0}} input,select{{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:8px}}
 input{{min-width:320px}} .table-wrap{{overflow:auto;border:1px solid var(--line);border-radius:8px}} table{{border-collapse:collapse;width:100%;background:var(--panel)}} th,td{{border-bottom:1px solid var(--line);padding:8px;vertical-align:top;text-align:left}} th{{position:sticky;top:0;background:#202a34}} tr:hover{{background:#202a34}}
-.badge{{display:inline-block;border-radius:999px;padding:2px 7px;font-size:12px}} .confirmed{{background:#173d25;color:#7ee787}} .probable{{background:#453715;color:#e3b341}} .unresolved{{background:#472024;color:#ff7b72}} .ps3-only,.windows-only{{background:#27384a;color:#79c0ff}}
+.badge{{display:inline-block;border-radius:999px;padding:2px 7px;font-size:12px}} .confirmed{{background:#173d25;color:#7ee787}} .probable{{background:#453715;color:#e3b341}} .unresolved{{background:#472024;color:#ff7b72}} .ps3-only,.windows-only,.windows-semantic{{background:#27384a;color:#79c0ff}}
 details{{max-width:700px}} summary{{cursor:pointer;color:var(--accent)}} .fields{{margin-top:8px;font-size:12px}} .fields th{{position:static}} .muted{{color:var(--muted)}} .hidden{{display:none}}
 </style></head><body><main>
 <h1>PS3 Monitor packet catalog</h1>
 <p class="muted">Generated from the source-controlled dispatcher, match, structure, and review ledgers. Numeric opcode equality alone is not semantic proof.</p>
 <div class="summary">
 <div class="card"><b>{len(confirmed)}</b>confirmed cases</div><div class="card"><b>{len(mapping['matches'])}</b>one-to-one functions</div><div class="card"><b>{len(mapping.get('sharedMatches', []))}</b>shared functions</div>
+<div class="card"><b>{len(mapping.get('windowsMappings', []))}</b>Windows semantic functions</div><div class="card"><b>{len(mapping.get('windowsInlineMappings', []))}</b>Windows inline cases</div><div class="card"><b>{len(windows_rows)}</b>Windows semantic cases</div>
 <div class="card"><b>{status_counts['probable']}</b>probable</div><div class="card"><b>{status_counts['unresolved']}</b>unresolved</div>
 <div class="card"><b>{sum(row['status']=='ps3-only' for row in one_sided)}</b>PS3-only numbers</div><div class="card"><b>{sum(row['status']=='windows-only' for row in one_sided)}</b>Windows-only numbers</div>
 </div>
-<div class="controls"><input id="search" type="search" placeholder="Search opcode, packet, type, handler, evidence…"><select id="status"><option value="">All statuses</option><option>confirmed</option><option>probable</option><option>unresolved</option><option>ps3-only</option><option>windows-only</option></select><select id="channel"><option value="">All channels</option><option>zone-down</option><option>chat-down</option></select><span id="visible" class="muted"></span></div>
+<div class="controls"><input id="search" type="search" placeholder="Search opcode, packet, type, handler, evidence…"><select id="status"><option value="">All statuses</option><option>confirmed</option><option>windows-semantic</option><option>probable</option><option>unresolved</option><option>ps3-only</option><option>windows-only</option></select><select id="channel"><option value="">All channels</option><option>zone-down</option><option>chat-down</option></select><span id="visible" class="muted"></span></div>
 <h2>Confirmed Sapphire ↔ PS3 ↔ Windows mappings</h2>
 <div class="table-wrap"><table><thead><tr><th>Status</th><th>Channel</th><th>Opcode</th><th>Sapphire opcode</th><th>Sapphire payload</th><th>PS3 payload</th><th>PS3 handler</th><th>Windows handler</th><th>Mapping/layout</th><th>Fields/evidence</th></tr></thead><tbody>{''.join(confirmed_rows)}</tbody></table></div>
-<h2>Reviewed but not promoted</h2><p class="muted">These rows do not authorize Windows IDB names or PS3 backlinks.</p>
+<h2>Confirmed Windows semantic mappings without PS3 function links</h2><p class="muted">These names are supported by Sapphire and Windows behavior but intentionally have no PS3 backlink.</p>
+<div class="table-wrap"><table><thead><tr><th>Status</th><th>Channel</th><th>Opcode</th><th>Sapphire opcode</th><th>Sapphire payload</th><th>Windows handler</th><th>Evidence</th></tr></thead><tbody>{''.join(windows_mapping_rows)}</tbody></table></div>
+<h2>Reviewed but not promoted</h2><p class="muted">These rows do not authorize cross-build PS3 links.</p>
 <div class="table-wrap"><table><thead><tr><th>Status</th><th>Channel</th><th>Opcode</th><th>Sapphire name</th><th>PS3 target</th><th>Windows target</th><th>Reason/evidence</th></tr></thead><tbody>{''.join(review_rows)}</tbody></table></div>
 <h2>Build-only numeric dispatcher cases</h2><p class="muted">The Sapphire name is the current name at the same number, not proof of semantic equivalence.</p>
 <div class="table-wrap"><table><thead><tr><th>Status</th><th>Channel</th><th>Opcode</th><th>Sapphire same-number name</th><th>Dispatch</th><th>Extracted target</th></tr></thead><tbody>{''.join(one_sided_rows)}</tbody></table></div>
@@ -443,9 +537,10 @@ def build_outputs(root: Path = ROOT) -> tuple[str, str]:
     inventory = load(root, "dispatcher_cases.json")
     confirmed = flatten_confirmed(mapping, structures)
     one_sided = one_sided_cases(inventory)
+    windows_rows = flatten_windows_mappings(mapping)
     return (
-        render_markdown(confirmed, reviews, one_sided, mapping),
-        render_html(confirmed, reviews, one_sided, mapping),
+        render_markdown(confirmed, reviews, one_sided, windows_rows, mapping),
+        render_html(confirmed, reviews, one_sided, windows_rows, mapping),
     )
 
 

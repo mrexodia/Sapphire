@@ -1,9 +1,10 @@
 """Apply or verify confirmed PS3 Monitor mappings in the Windows IDB.
 
 Load through IDA Nexus with an active Windows database, then call
-`apply_confirmed_matches(db, mapping_path)` or
-`verify_confirmed_matches(db, mapping_path)`. The PS3 database is never opened
-or modified by this module.
+`apply_confirmed_matches(db, mapping_path)` / `verify_confirmed_matches(...)`
+for PS3-linked entries, or `apply_windows_mappings(...)` /
+`verify_windows_mappings(...)` for independently proven Windows semantics.
+The PS3 database is never opened or modified by this module.
 """
 
 from __future__ import annotations
@@ -22,6 +23,10 @@ def _entries(mapping: dict[str, Any]) -> list[dict[str, Any]]:
     )
 
 
+def _windows_entries(mapping: dict[str, Any]) -> list[dict[str, Any]]:
+    return mapping.get("windowsMappings", [])
+
+
 def _load(mapping_path: str | Path) -> dict[str, Any]:
     return json.loads(Path(mapping_path).read_text(encoding="utf-8"))
 
@@ -29,6 +34,15 @@ def _load(mapping_path: str | Path) -> dict[str, Any]:
 def _comment(entry: dict[str, Any]) -> str:
     evidence = " ".join(entry.get("evidence", []))
     first_line = f"PS3 Monitor: {entry['ps3IdbUrl']}"
+    return first_line if not evidence else f"{first_line}\nEvidence: {evidence}"
+
+
+def _windows_comment(entry: dict[str, Any]) -> str:
+    cases = ", ".join(
+        f"{opcode} {packet}" for opcode, packet in zip(entry["opcodes"], entry["packets"])
+    )
+    evidence = " ".join(entry.get("evidence", []))
+    first_line = f"Sapphire packet mapping: {entry['channel']} {cases}"
     return first_line if not evidence else f"{first_line}\nEvidence: {evidence}"
 
 
@@ -105,6 +119,86 @@ def apply_confirmed_matches(
                     "windowsName": expected_name,
                     "ps3IdbUrl": entry["ps3IdbUrl"],
                 }
+            )
+        else:
+            failures.append(
+                {
+                    "windowsAddress": entry["windowsAddress"],
+                    "error": "IDA rejected name or comment",
+                    "nameOk": name_ok,
+                    "commentOk": comment_ok,
+                }
+            )
+    return {"applied": applied, "failures": failures, "ok": not failures}
+
+
+def verify_windows_mappings(db: Any, mapping_path: str | Path) -> dict[str, Any]:
+    mapping = _load(mapping_path)
+    failures: list[dict[str, Any]] = []
+    for entry in _windows_entries(mapping):
+        address = int(entry["windowsAddress"], 16)
+        function = db.functions.get_at(address)
+        if function is None:
+            failures.append({"windowsAddress": entry["windowsAddress"], "error": "missing function"})
+            continue
+        actual_name = db.functions.get_name(function)
+        actual_comment = db.functions.get_comment(function, repeatable=True) or ""
+        expected_comment = _windows_comment(entry)
+        if actual_name != entry["windowsName"]:
+            failures.append(
+                {
+                    "windowsAddress": entry["windowsAddress"],
+                    "error": "name mismatch",
+                    "expected": entry["windowsName"],
+                    "actual": actual_name,
+                }
+            )
+        if actual_comment != expected_comment:
+            failures.append(
+                {
+                    "windowsAddress": entry["windowsAddress"],
+                    "error": "comment mismatch",
+                    "expected": expected_comment.splitlines()[0],
+                    "actual": actual_comment.splitlines()[0] if actual_comment else "",
+                }
+            )
+    return {
+        "checked": len(_windows_entries(mapping)),
+        "failures": failures,
+        "ok": not failures,
+    }
+
+
+def apply_windows_mappings(
+    db: Any, mapping_path: str | Path, *, force_names: bool = False
+) -> dict[str, Any]:
+    mapping = _load(mapping_path)
+    applied: list[dict[str, Any]] = []
+    failures: list[dict[str, Any]] = []
+    for entry in _windows_entries(mapping):
+        address = int(entry["windowsAddress"], 16)
+        function = db.functions.get_at(address)
+        if function is None:
+            failures.append({"windowsAddress": entry["windowsAddress"], "error": "missing function"})
+            continue
+        current_name = db.functions.get_name(function)
+        expected_name = entry["windowsName"]
+        auto_name = current_name.startswith(("sub_", "nullsub_", "j_sub_", "_sub_"))
+        if current_name != expected_name and not (auto_name or force_names):
+            failures.append(
+                {
+                    "windowsAddress": entry["windowsAddress"],
+                    "error": "refusing to replace intentional name",
+                    "expected": expected_name,
+                    "actual": current_name,
+                }
+            )
+            continue
+        name_ok = current_name == expected_name or db.functions.set_name(function, expected_name)
+        comment_ok = db.functions.set_comment(function, _windows_comment(entry), repeatable=True)
+        if name_ok and comment_ok:
+            applied.append(
+                {"windowsAddress": entry["windowsAddress"], "windowsName": expected_name}
             )
         else:
             failures.append(

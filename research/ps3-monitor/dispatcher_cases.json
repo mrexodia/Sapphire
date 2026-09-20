@@ -1518,9 +1518,8 @@
               "name": "Client::Game::Network::Packet::Order"
             }
           ],
-          "status": "unresolved",
-          "counterpartOpcode": "0x0142",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0142"
         },
         {
           "opcode": "0x0143",
@@ -3418,9 +3417,8 @@
               "name": null
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01E7",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01E7"
         },
         {
           "opcode": "0x01E9",
@@ -6087,9 +6085,8 @@
               "name": null
             }
           ],
-          "status": "unresolved",
-          "counterpartOpcode": "0x0320",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0320"
         },
         {
           "opcode": "0x0321",
@@ -6120,9 +6117,8 @@
               "name": null
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0321",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0321"
         },
         {
           "opcode": "0x0322",
@@ -6153,9 +6149,8 @@
               "name": null
             }
           ],
-          "status": "unresolved",
-          "counterpartOpcode": "0x0322",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0322"
         },
         {
           "opcode": "0x032A",
@@ -6353,9 +6348,8 @@
               "name": "Client::Game::Network::EventPacket::ReceiveFrontline01BaseInfoPacket"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0337",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0337"
         },
         {
           "opcode": "0x0338",
@@ -6424,10 +6418,9 @@
           "shared": 9
         },
         "statuses": {
-          "confirmed": 240,
-          "probable": 3,
+          "confirmed": 246,
           "ps3-only": 18,
-          "unresolved": 25
+          "unresolved": 22
         }
       }
     },
@@ -8190,9 +8183,8 @@
           "packetDataOffset": null,
           "packetCalls": [],
           "directCalls": [],
-          "status": "unresolved",
-          "counterpartOpcode": "0x0142",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0142"
         },
         {
           "opcode": "0x0143",
@@ -10531,9 +10523,8 @@
               "name": "sub_140CC2710"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x01E7",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x01E7"
         },
         {
           "opcode": "0x01E9",
@@ -13059,9 +13050,8 @@
               "name": "sub_140CC2500"
             }
           ],
-          "status": "unresolved",
-          "counterpartOpcode": "0x0320",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0320"
         },
         {
           "opcode": "0x0321",
@@ -13087,9 +13077,8 @@
               "name": "sub_140CC2580"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0321",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0321"
         },
         {
           "opcode": "0x0322",
@@ -13109,9 +13098,8 @@
               "name": "sub_140CC25D0"
             }
           ],
-          "status": "unresolved",
-          "counterpartOpcode": "0x0322",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0322"
         },
         {
           "opcode": "0x032A",
@@ -13419,9 +13407,8 @@
               "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_2"
             }
           ],
-          "status": "probable",
-          "counterpartOpcode": "0x0337",
-          "reviewReference": "case_reviews.json"
+          "status": "confirmed",
+          "counterpartOpcode": "0x0337"
         },
         {
           "opcode": "0x0338",
@@ -14237,9 +14224,8 @@
           "inline": 19
         },
         "statuses": {
-          "confirmed": 240,
-          "probable": 3,
-          "unresolved": 25,
+          "confirmed": 246,
+          "unresolved": 22,
           "windows-only": 88
         }
       }

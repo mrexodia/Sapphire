@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "policy": "These cases were explicitly reviewed but were not promoted. Probable is not permission to name a Windows function or add an authoritative PS3 IDB link.",
   "summary": {
-    "reviewed": 27,
-    "probable": 3,
-    "unresolved": 24
+    "reviewed": 21,
+    "probable": 0,
+    "unresolved": 21
   },
   "reviews": [
     {
@@ -77,40 +77,6 @@
     },
     {
       "channel": "zone-down",
-      "ps3Opcode": "0x0337",
-      "windowsOpcode": "0x0337",
-      "threePointThreePacket": "Frontline01BaseInfo",
-      "status": "probable",
-      "reviewed": true,
-      "scoreAtReview": 4,
-      "ps3PacketCalls": [
-        {
-          "callsite": "0x002FA62C",
-          "address": "0x00ADCBE0",
-          "name": "Client::Game::Network::EventPacket::ReceiveFrontline01BaseInfoPacket"
-        }
-      ],
-      "windowsPacketCalls": [
-        {
-          "callsite": "0x0000000140DDA97B",
-          "address": "0x0000000140CBEA50",
-          "name": "j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_2"
-        }
-      ],
-      "sharedRelationship": false,
-      "evidence": [
-        "ThreePointThree names 0x0337 as Frontline01BaseInfo.",
-        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
-        "Both cases route packet data to an extracted handler target."
-      ],
-      "reasonNotConfirmed": "The Windows downstream method at 0x140C9AAF0 is still unidentified, so the Frontline01BaseInfo identity remains probable rather than confirmed.",
-      "manualReview": [
-        "PS3 and Windows both obtain EventFramework, resolve the active instance-content director, null-check it, and forward the packet to a specialized downstream method.",
-        "The Windows downstream method at 0x140C9AAF0 is still unidentified, so the Frontline01BaseInfo identity remains probable rather than confirmed."
-      ]
-    },
-    {
-      "channel": "zone-down",
       "ps3Opcode": "0x0338",
       "windowsOpcode": "0x0338",
       "threePointThreePacket": "FinishContentMatchToClient",
@@ -142,159 +108,6 @@
         "PS3 FinishContentMatch updates the contents-finder UI using territory, class/job, flags, player count, progress, and start time.",
         "Windows dispatch enters an EventFramework/instance-content-director wrapper and calls unidentified 0x140C94DD0; this does not yet support the PS3 ContentMediator identity."
       ]
-    },
-    {
-      "channel": "zone-down",
-      "ps3Opcode": "0x01E7",
-      "windowsOpcode": "0x01E7",
-      "threePointThreePacket": "LeveCompleteFlag",
-      "status": "probable",
-      "reviewed": true,
-      "scoreAtReview": 3,
-      "ps3PacketCalls": [
-        {
-          "callsite": "0x002FA134",
-          "address": "0x00AE9844",
-          "name": "Client::Game::Network::SyncTagPacket::ReceiveLeveCompleteFlag"
-        },
-        {
-          "callsite": "0x002FA124",
-          "address": null,
-          "name": null
-        }
-      ],
-      "windowsPacketCalls": [
-        {
-          "callsite": "0x0000000140DDA48F",
-          "address": "0x0000000140CC2710",
-          "name": "sub_140CC2710"
-        }
-      ],
-      "sharedRelationship": false,
-      "evidence": [
-        "ThreePointThree names 0x01E7 as LeveCompleteFlag.",
-        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
-        "Both cases route packet data to an extracted handler target."
-      ],
-      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
-    },
-    {
-      "channel": "zone-down",
-      "ps3Opcode": "0x0321",
-      "windowsOpcode": "0x0321",
-      "threePointThreePacket": "DailyQuest",
-      "status": "probable",
-      "reviewed": true,
-      "scoreAtReview": 3,
-      "ps3PacketCalls": [
-        {
-          "callsite": "0x002FA0AC",
-          "address": "0x00AE936C",
-          "name": "Client::Game::Network::SyncTagPacket::ReceiveDailyQuest"
-        },
-        {
-          "callsite": "0x002FA09C",
-          "address": null,
-          "name": null
-        }
-      ],
-      "windowsPacketCalls": [
-        {
-          "callsite": "0x0000000140DDA407",
-          "address": "0x0000000140CC2580",
-          "name": "sub_140CC2580"
-        }
-      ],
-      "sharedRelationship": false,
-      "evidence": [
-        "ThreePointThree names 0x0321 as DailyQuest.",
-        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
-        "Both cases route packet data to an extracted handler target."
-      ],
-      "reasonNotConfirmed": "Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link."
-    },
-    {
-      "channel": "zone-down",
-      "ps3Opcode": "0x0142",
-      "windowsOpcode": "0x0142",
-      "threePointThreePacket": "Order",
-      "status": "unresolved",
-      "reviewed": true,
-      "scoreAtReview": 1,
-      "ps3PacketCalls": [
-        {
-          "callsite": "0x002F9598",
-          "address": "0x00AE9C48",
-          "name": "Client::Game::Network::Packet::Order"
-        }
-      ],
-      "windowsPacketCalls": [],
-      "sharedRelationship": true,
-      "evidence": [
-        "ThreePointThree names 0x0142 as Order.",
-        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
-        "At least one case is ignored, inline, indirect, or lacks an extractable packet target.",
-        "The handler is shared by multiple opcodes in at least one build, so a one-to-one IDB link would be misleading."
-      ],
-      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
-    },
-    {
-      "channel": "zone-down",
-      "ps3Opcode": "0x0320",
-      "windowsOpcode": "0x0320",
-      "threePointThreePacket": "DailyQuests",
-      "status": "unresolved",
-      "reviewed": true,
-      "scoreAtReview": 1,
-      "ps3PacketCalls": [
-        {
-          "callsite": "0x002FA088",
-          "address": "0x00AE9294",
-          "name": "Client::Game::Network::SyncTagPacket::ReceiveDailyQuests"
-        },
-        {
-          "callsite": "0x002FA078",
-          "address": null,
-          "name": null
-        }
-      ],
-      "windowsPacketCalls": [],
-      "sharedRelationship": false,
-      "evidence": [
-        "ThreePointThree names 0x0320 as DailyQuests.",
-        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
-        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
-      ],
-      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
-    },
-    {
-      "channel": "zone-down",
-      "ps3Opcode": "0x0322",
-      "windowsOpcode": "0x0322",
-      "threePointThreePacket": "QuestRepeatFlags",
-      "status": "unresolved",
-      "reviewed": true,
-      "scoreAtReview": 1,
-      "ps3PacketCalls": [
-        {
-          "callsite": "0x002FA0D0",
-          "address": "0x00AE93F4",
-          "name": "Client::Game::Network::SyncTagPacket::ReceiveQuestRepeatFlags"
-        },
-        {
-          "callsite": "0x002FA0C0",
-          "address": null,
-          "name": null
-        }
-      ],
-      "windowsPacketCalls": [],
-      "sharedRelationship": false,
-      "evidence": [
-        "ThreePointThree names 0x0322 as QuestRepeatFlags.",
-        "PS3 and Windows dispatcher cases were inspected in the exhaustive ctree inventory.",
-        "At least one case is ignored, inline, indirect, or lacks an extractable packet target."
-      ],
-      "reasonNotConfirmed": "No defensible direct cross-build function match remains from dispatcher evidence alone."
     },
     {
       "channel": "zone-down",

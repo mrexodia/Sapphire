@@ -46,12 +46,32 @@ def validate_matches(matches: dict[str, Any]) -> dict[tuple[str, str], dict[str,
         assert entry["windowsAddress"] not in seen_windows, entry["windowsAddress"]
         seen_windows.add(entry["windowsAddress"])
         assert entry["evidence"], entry
+    for entry in matches.get("windowsMappings", []):
+        assert len(entry["opcodes"]) == len(entry["packets"]), entry
+        assert entry["confidence"] == "high", entry
+        assert entry["mappingKind"] == "windows-semantic", entry
+        assert entry["evidence"], entry
+        assert "ps3IdbUrl" not in entry and "ps3Address" not in entry, entry
+        assert entry["windowsAddress"] not in seen_windows, entry["windowsAddress"]
+        seen_windows.add(entry["windowsAddress"])
+        for opcode in entry["opcodes"]:
+            assert OPCODE_RE.fullmatch(opcode), (entry, opcode)
+    seen_inline: set[tuple[str, str]] = set()
+    for entry in matches.get("windowsInlineMappings", []):
+        key = (entry["channel"], entry["opcode"])
+        assert key not in seen_inline, key
+        seen_inline.add(key)
+        assert OPCODE_RE.fullmatch(entry["opcode"]), entry
+        assert entry["confidence"] == "high", entry
+        assert entry["mappingKind"] == "windows-inline", entry
+        assert entry["evidence"] and entry["windowsCaseEa"].startswith("0x"), entry
     confirmed = {
         (entry.get("channel", "zone-down"), entry["opcode"]): entry
         for entry in matches["matches"]
     }
     for entry in matches.get("sharedMatches", []):
         assert len(entry["opcodes"]) == len(entry["packets"]), entry
+        assert set(entry.get("inlineOpcodes", [])).issubset(entry["opcodes"]), entry
         for opcode, packet in zip(entry["opcodes"], entry["packets"]):
             key = (entry.get("channel", "zone-down"), opcode)
             assert key not in confirmed, key
@@ -126,11 +146,12 @@ def validate_dispatchers(
             and int(call["address"], 16) == int(match["ps3Address"], 16)
             for call in ps3_case["packetCalls"]
         ), (channel, opcode)
-        assert any(
-            call["address"] is not None
-            and int(call["address"], 16) == int(match["windowsAddress"], 16)
-            for call in windows_case["directCalls"]
-        ), (channel, opcode)
+        if opcode not in match.get("inlineOpcodes", []):
+            assert any(
+                call["address"] is not None
+                and int(call["address"], 16) == int(match["windowsAddress"], 16)
+                for call in windows_case["directCalls"]
+            ), (channel, opcode)
     return by_key
 
 
@@ -246,7 +267,9 @@ def main() -> None:
         "validated: "
         f"{len(confirmed)} confirmed packet cases and structures, "
         f"{sum(len(item['cases']) for item in inventory['dispatchers'])} dispatcher cases, "
-        f"{len(candidates['candidates'])} ranked candidates"
+        f"{len(candidates['candidates'])} ranked candidates, "
+        f"{len(matches.get('windowsMappings', []))} Windows-only semantic functions, "
+        f"{len(matches.get('windowsInlineMappings', []))} Windows inline cases"
     )
 
 

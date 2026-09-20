@@ -10,11 +10,14 @@ opcode is not by itself proof of equivalent semantics.
 
 | Item | Count |
 | --- | ---: |
-| Confirmed opcode cases | 247 |
-| One-to-one handler functions | 193 |
+| Confirmed opcode cases | 253 |
+| One-to-one handler functions | 198 |
 | Shared handler functions | 11 |
-| Probable reviewed cases | 3 |
-| Unresolved reviewed cases | 24 |
+| Windows semantic functions without PS3 links | 10 |
+| Windows inline semantic cases | 3 |
+| Windows semantic opcode cases without PS3 links | 19 |
+| Probable reviewed cases | 0 |
+| Unresolved reviewed cases | 21 |
 | PS3-only numeric cases | 19 |
 | Windows-only numeric cases | 88 |
 
@@ -95,6 +98,7 @@ rows, field-level layouts, evidence, and filters.
 | zone-down | 0x0130 | SyncTag256 | `missing: FFXIVIpcSyncTag256` | `ZoneProtoDownGSYSTEM_SyncTag256` (0x110) | [`ReceiveSyncTag`](idb://ffxivgame.ppu.elf.i64:00AE7E88) `0x00AE7E88` | `Client__Game__Network__SyncTagPacket__ReceiveSyncTag` `0x140CC2270` | shared | layout-unreviewed |
 | zone-down | 0x0140 | HudParam | [`FFXIVIpcHudParam`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L571) | `ZoneProtoDownGAME_HudParam` (0x180) | [`HudParam`](idb://ffxivgame.ppu.elf.i64:00AE02B8) `0x00AE02B8` | `Client__Game__Network__Packet__HudParam` `0x140CC83A0` | one-to-one | layout-unreviewed |
 | zone-down | 0x0141 | ActionIntegrity | [`FFXIVIpcActionIntegrity`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L488) | `ZoneProtoDownGAME_ActionIntegrity` (0x60) | [`ActionIntegrity`](idb://ffxivgame.ppu.elf.i64:00AE0754) `0x00AE0754` | `Client__Game__Network__Packet__ActionIntegrity` `0x140CBFBD0` | one-to-one | layout-unreviewed |
+| zone-down | 0x0142 | Order | `missing: FFXIVIpcOrder` | `ZoneProtoDownGAME_Order` (0x18) | [`Order`](idb://ffxivgame.ppu.elf.i64:00AE9C48) `0x00AE9C48` | `Client__Game__Network__Packet__Order` `0x140CC9600` | shared | layout-unreviewed |
 | zone-down | 0x0143 | OrderMySelf | `missing: FFXIVIpcOrderMySelf` | `ZoneProtoDownGAME_OrderMySelf` (0x20) | [`Order`](idb://ffxivgame.ppu.elf.i64:00AE9C48) `0x00AE9C48` | `Client__Game__Network__Packet__Order` `0x140CC9600` | shared | layout-unreviewed |
 | zone-down | 0x0144 | OrderTarget | `missing: FFXIVIpcOrderTarget` | `ZoneProtoDownGAME_OrderTarget` (0x20) | [`Order`](idb://ffxivgame.ppu.elf.i64:00AE9C48) `0x00AE9C48` | `Client__Game__Network__Packet__Order` `0x140CC9600` | shared | layout-unreviewed |
 | zone-down | 0x0145 | Resting | [`FFXIVIpcResting`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L556) | `ZoneProtoDownGAME_Resting` (0x10) | [`Resting`](idb://ffxivgame.ppu.elf.i64:00AE014C) `0x00AE014C` | `Client__Game__Network__Packet__Resting` `0x140CC8290` | one-to-one | layout-unreviewed |
@@ -168,6 +172,7 @@ rows, field-level layouts, evidence, and filters.
 | zone-down | 0x01E4 | Guildleves | `missing: FFXIVIpcGuildleves` | `ZoneProtoDownGAME_Guildleves` (0xa0) | [`ReceiveGuildleves`](idb://ffxivgame.ppu.elf.i64:00AE9700) `0x00AE9700` | `Client__Game__Network__SyncTagPacket__ReceiveGuildleves` `0x140CC80E0` | one-to-one | layout-unreviewed |
 | zone-down | 0x01E5 | Guildleve | `missing: FFXIVIpcGuildleve` | `ZoneProtoDownGAME_Guildleve` (0x10) | [`ReceiveGuildleve`](idb://ffxivgame.ppu.elf.i64:00AE9550) `0x00AE9550` | `Client__Game__Network__SyncTagPacket__ReceiveGuildleve` `0x140CC6BE0` | one-to-one | layout-unreviewed |
 | zone-down | 0x01E6 | LeveCompleteFlags | `missing: FFXIVIpcLeveCompleteFlags` | `ZoneProtoDownGAME_LeveCompleteFlags` (0xc8) | [`ReceiveLeveCompleteFlags`](idb://ffxivgame.ppu.elf.i64:00AE97C8) `0x00AE97C8` | `Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlags` `0x140CC26C0` | one-to-one | layout-unreviewed |
+| zone-down | 0x01E7 | LeveCompleteFlag | `missing: FFXIVIpcLeveCompleteFlag` | `ZoneProtoDownGAME_LeveCompleteFlag` (0x8) | [`ReceiveLeveCompleteFlag`](idb://ffxivgame.ppu.elf.i64:00AE9844) `0x00AE9844` | `Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlag` `0x140CC2710` | one-to-one | partially-windows-validated |
 | zone-down | 0x01E9 | Notice2 | [`FFXIVIpcNotice2`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1488) | `ZoneProtoDownGAME_Notice2` (0x10) | [`ReceiveNotice`](idb://ffxivgame.ppu.elf.i64:00ADC714) `0x00ADC714` | `Client__Game__Network__EventPacket__ReceiveNotice` `0x140CBE5D0` | shared | layout-unreviewed |
 | zone-down | 0x01EA | Notice4 | [`FFXIVIpcNotice4`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1489) | `ZoneProtoDownGAME_Notice4` (0x18) | [`ReceiveNotice`](idb://ffxivgame.ppu.elf.i64:00ADC714) `0x00ADC714` | `Client__Game__Network__EventPacket__ReceiveNotice` `0x140CBE5D0` | shared | layout-unreviewed |
 | zone-down | 0x01EB | Notice8 | [`FFXIVIpcNotice8`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1490) | `ZoneProtoDownGAME_Notice8` (0x28) | [`ReceiveNotice`](idb://ffxivgame.ppu.elf.i64:00ADC714) `0x00ADC714` | `Client__Game__Network__EventPacket__ReceiveNotice` `0x140CBE5D0` | shared | layout-unreviewed |
@@ -265,6 +270,9 @@ rows, field-level layouts, evidence, and filters.
 | zone-down | 0x0309 | HouseTrainBuddyData | [`FFXIVIpcHouseTrainBuddyData`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1899) | `ZoneProtoDownGAME_HouseTrainBuddyData` (0x8) | [`OnHouseTrainBuddyData`](idb://ffxivgame.ppu.elf.i64:00AE6C68) `0x00AE6C68` | `Client__Game__Network__Packet__OnHouseTrainBuddyData` `0x140CC1010` | one-to-one | layout-unreviewed |
 | zone-down | 0x0316 | FcChestLog | `missing: FFXIVIpcFcChestLog` | `ZoneProtoDownGAME_FcChestLog` (0x3c8) | [`ReceiveFcChestLog`](idb://ffxivgame.ppu.elf.i64:00AD6190) `0x00AD6190` | `Client__Game__Item__StorageManager__ReceiveFcChestLog` `0x1404D5EA0` | one-to-one | layout-unreviewed |
 | zone-down | 0x0317 | SalvageResult | `missing: FFXIVIpcSalvageResult` | `ZoneProtoDownGAME_SalvageResult` (0x20) | [`ReceiveSalvageResults`](idb://ffxivgame.ppu.elf.i64:00ADB064) `0x00ADB064` | `Client__Game__Item__SalvageManager__ReceiveSalvageResults` `0x1404D7520` | one-to-one | layout-unreviewed |
+| zone-down | 0x0320 | DailyQuests | [`FFXIVIpcDailyQuests`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1566) | `ZoneProtoDownGAME_DailyQuests` (0x20) | [`ReceiveDailyQuests`](idb://ffxivgame.ppu.elf.i64:00AE9294) `0x00AE9294` | `Client__Game__Network__SyncTagPacket__ReceiveDailyQuests` `0x140CC2500` | one-to-one | partially-windows-validated |
+| zone-down | 0x0321 | DailyQuest | `missing: FFXIVIpcDailyQuest` | `ZoneProtoDownGAME_DailyQuest` (0x8) | [`ReceiveDailyQuest`](idb://ffxivgame.ppu.elf.i64:00AE936C) `0x00AE936C` | `Client__Game__Network__SyncTagPacket__ReceiveDailyQuest` `0x140CC2580` | one-to-one | partially-windows-validated |
+| zone-down | 0x0322 | QuestRepeatFlags | [`FFXIVIpcQuestRepeatFlags`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1551) | `ZoneProtoDownGAME_QuestRepeatFlags` (0x8) | [`ReceiveQuestRepeatFlags`](idb://ffxivgame.ppu.elf.i64:00AE93F4) `0x00AE93F4` | `Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags` `0x140CC25D0` | one-to-one | partially-windows-validated |
 | zone-down | 0x032A | HousingObjectTransformMultiResult | [`FFXIVIpcHousingObjectTransformMultiResult`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1907) | `ZoneProtoDownGAME_HousingObjectTransformMultiResult` (0x20) | [`OnHousingObjectTransformMultiResult`](idb://ffxivgame.ppu.elf.i64:00AE6740) `0x00AE6740` | `Client__Game__Network__Packet__OnHousingObjectTransformMultiResult` `0x140CC0D40` | one-to-one | layout-unreviewed |
 | zone-down | 0x032B | HousingLogWithHouseName | [`FFXIVIpcHousingLogWithHouseName`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1915) | `ZoneProtoDownGAME_HousingLogWithHouseName` (0x20) | [`OnHousingLogWithHouseName`](idb://ffxivgame.ppu.elf.i64:00AE6A54) `0x00AE6A54` | `Client__Game__Network__Packet__OnHousingLogWithHouseName` `0x140CD51E0` | one-to-one | layout-unreviewed |
 | zone-down | 0x032C | TreasureHuntReward | `missing: FFXIVIpcTreasureHuntReward` | `ZoneProtoDownGAME_TreasureHuntReward` (0x18) | [`OnTreasureHuntReward`](idb://ffxivgame.ppu.elf.i64:00AE41A8) `0x00AE41A8` | `Client__Game__Network__Packet__OnTreasureHuntReward` `0x140CC03D0` | one-to-one | layout-unreviewed |
@@ -272,7 +280,35 @@ rows, field-level layouts, evidence, and filters.
 | zone-down | 0x032E | HouseBuddyModelData | [`FFXIVIpcHouseBuddyModelData`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1929) | `ZoneProtoDownGAME_HouseBuddyModelData` (0x18) | [`OnHouseBuddyModelData`](idb://ffxivgame.ppu.elf.i64:00AE6C10) `0x00AE6C10` | `Client__Game__Network__Packet__OnHouseBuddyModelData` `0x140CC0FD0` | one-to-one | layout-unreviewed |
 | zone-down | 0x0334 | Marker | `missing: FFXIVIpcMarker` | `ZoneProtoDownGAME_Marker` (0x70) | [`Marker`](idb://ffxivgame.ppu.elf.i64:00AE1DE4) `0x00AE1DE4` | `Client__Game__Network__Packet__Marker` `0x140CC12D0` | one-to-one | layout-unreviewed |
 | zone-down | 0x0335 | GroundMarker | `missing: FFXIVIpcGroundMarker` | `ZoneProtoDownGAME_GroundMarker` (0x40) | [`GroundMarker`](idb://ffxivgame.ppu.elf.i64:00AE1E20) `0x00AE1E20` | `Client__Game__Network__Packet__GroundMarker` `0x140CBEDF0` | one-to-one | layout-unreviewed |
+| zone-down | 0x0337 | Frontline01BaseInfo | `missing: FFXIVIpcFrontline01BaseInfo` | `ZoneProtoDownGAME_Frontline01BaseInfo` (0x8) | [`ReceiveFrontline01BaseInfoPacket`](idb://ffxivgame.ppu.elf.i64:00ADCBE0) `0x00ADCBE0` | `Client__Game__Network__EventPacket__ReceiveFrontline01BaseInfoPacket` `0x140CBEA50` | one-to-one | layout-unreviewed |
 | zone-down | 0x033E | UnMountLink | `missing: FFXIVIpcUnMountLink` | `ZoneProtoDownGAME_UnMountLink` (0x10) | [`OnUnMountLink`](idb://ffxivgame.ppu.elf.i64:00AE7150) `0x00AE7150` | `Client__Game__Network__Packet__OnUnMountLink` `0x140CC1780` | one-to-one | layout-unreviewed |
+
+## Confirmed Windows semantic mappings without PS3 function links
+
+These names are supported by Sapphire enums/structures and Windows behavior, but no
+equivalent PS3 leaf function was established. They intentionally have no PS3 IDB backlink.
+
+| Channel | Opcode | Sapphire opcode | Sapphire payload | Windows handler | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| zone-down | 0x01AA | RetainerList | — | `Client__Game__Network__Packet__ReceiveRetainerPackets` `0x140CC8730` (function) | The Windows dispatcher groups exactly RetainerList and RetainerData into this wrapper. Its downstream function explicitly switches on IPC opcodes 0x01AA and 0x01AB and accumulates retainer records by owner/context ID. |
+| zone-down | 0x01AB | RetainerData | — | `Client__Game__Network__Packet__ReceiveRetainerPackets` `0x140CC8730` (function) | The Windows dispatcher groups exactly RetainerList and RetainerData into this wrapper. Its downstream function explicitly switches on IPC opcodes 0x01AA and 0x01AB and accumulates retainer records by owner/context ID. |
+| zone-down | 0x01AC | MarketPriceHeader | — | `Client__Game__Network__Packet__ReceiveMarketPricePackets` `0x140CC8710` (function) | The Windows dispatcher groups exactly MarketPriceHeader and MarketPrice into this wrapper. Its downstream function explicitly switches on 0x01AC and 0x01AD and assembles the associated market-price records. |
+| zone-down | 0x01AD | MarketPrice | — | `Client__Game__Network__Packet__ReceiveMarketPricePackets` `0x140CC8710` (function) | The Windows dispatcher groups exactly MarketPriceHeader and MarketPrice into this wrapper. Its downstream function explicitly switches on 0x01AC and 0x01AD and assembles the associated market-price records. |
+| zone-down | 0x01AF | NormalItem | [`FFXIVIpcNormalItem`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1157) | `Client__Game__Network__Packet__ReceiveItemStoragePackets` `0x140CC8FE0` (function) | The Windows dispatcher groups these four Sapphire item-storage opcodes into this wrapper. The downstream switch handles 0x01AF/0x01B3/0x01B7 as item records and 0x01B0 as the item-count/size record before committing storage state. |
+| zone-down | 0x01B0 | ItemSize | [`FFXIVIpcItemSize`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1169) | `Client__Game__Network__Packet__ReceiveItemStoragePackets` `0x140CC8FE0` (function) | The Windows dispatcher groups these four Sapphire item-storage opcodes into this wrapper. The downstream switch handles 0x01AF/0x01B3/0x01B7 as item records and 0x01B0 as the item-count/size record before committing storage state. |
+| zone-down | 0x01B1 | ItemOperationBatch | [`FFXIVIpcItemOperationBatch`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1188) | `Client__Game__Network__Packet__ReceiveItemOperationPackets` `0x140CC86F0` (function) | The Windows dispatcher groups exactly ItemOperationBatch and ItemOperation into this wrapper. The downstream function explicitly switches on 0x01B1 and 0x01B2, copies operation records, and commits the completed batch. |
+| zone-down | 0x01B2 | ItemOperation | [`FFXIVIpcItemOperation`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1197) | `Client__Game__Network__Packet__ReceiveItemOperationPackets` `0x140CC86F0` (function) | The Windows dispatcher groups exactly ItemOperationBatch and ItemOperation into this wrapper. The downstream function explicitly switches on 0x01B1 and 0x01B2, copies operation records, and commits the completed batch. |
+| zone-down | 0x01B3 | GilItem | [`FFXIVIpcGilItem`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L1182) | `Client__Game__Network__Packet__ReceiveItemStoragePackets` `0x140CC8FE0` (function) | The Windows dispatcher groups these four Sapphire item-storage opcodes into this wrapper. The downstream switch handles 0x01AF/0x01B3/0x01B7 as item records and 0x01B0 as the item-count/size record before committing storage state. |
+| zone-down | 0x01B7 | AliasItem | — | `Client__Game__Network__Packet__ReceiveItemStoragePackets` `0x140CC8FE0` (function) | The Windows dispatcher groups these four Sapphire item-storage opcodes into this wrapper. The downstream switch handles 0x01AF/0x01B3/0x01B7 as item records and 0x01B0 as the item-count/size record before committing storage state. |
+| zone-down | 0x01C0 | TreasureFadeOut | — | `Client__Game__Network__Packet__TreasureFadeOut` `0x140CC03A0` (function) | Sapphire identifies 0x01C0 as TreasureFadeOut. The Windows target resolves the dispatcher target actor through the game-object table and invokes its fade/removal path. |
+| zone-down | 0x029E | InspectQuests | — | `Client__Game__Network__Packet__InspectQuests` `0x140CC31D0` (function) | The dispatcher extracts actor ID, content ID, a payload array, and count 30 for Sapphire opcode InspectQuests. The target iterates 12-byte quest records and formats quest ID, sequence, flags, class/job, and variables using an explicit quest diagnostic string. |
+| zone-down | 0x029F | InspectGuildleves | — | `Client__Game__Network__Packet__InspectGuildleves` `0x140CC35A0` (function) | The dispatcher extracts actor ID, content ID, a payload array, and count 16 for Sapphire opcode InspectGuildleves. The target iterates leve records and formats ID, sequence, flags, seed, and class using an explicit leve diagnostic string. |
+| zone-down | 0x02A0 | InspectReward | — | `Client__Game__Network__Packet__InspectReward` `0x140CC6300` (function) | The dispatcher extracts actor ID, content ID, a reward bitset, and count 64 for Sapphire opcode InspectReward. The target enumerates every reward bit and formats explicit reward diagnostics for the inspected character. |
+| zone-down | 0x02A1 | InspectBeastReputation | — | `Client__Game__Network__Packet__InspectBeastReputation` `0x140CC3910` (function) | The dispatcher extracts actor ID, content ID, rank/value arrays, and count 8 for Sapphire opcode InspectBeastReputation. The target resolves beast-reputation names and formats each rank and value using an explicit brep diagnostic string. |
+| zone-down | 0x02D6 | EnableLogout | [`FFXIVIpcEnableLogout`](../../src/common/Network/PacketDef/Zone/ServerZoneDef.h#L60) | `inline in PacketDispatcher` `0x140DD94EA` (inline) | The Windows dispatcher handles this case inline by resolving the framework/UI command interface and invoking command 7 with the packet. |
+| zone-down | 0x02D7 | LogMessage | — | `inline in PacketDispatcher` `0x140DD9593` (inline) | The Windows dispatcher handles this case inline through the same framework/UI command interface using command 4. |
+| zone-down | 0x02E7 | CancelLogoutCountdown | — | `inline in PacketDispatcher` `0x140DD947E` (inline) | The Windows dispatcher handles this case inline through the same framework/UI command interface using command 8. |
+| zone-down | 0x0336 | Frontline01Result | — | `Client__Game__Network__Packet__ReceiveFrontline01Result` `0x140CBEE10` (function) | Current and ThreePointThree Sapphire enums identify 0x0336 as Frontline01Result. The Windows target copies fifteen consecutive result dwords into a dedicated global result block; this is a Windows semantic label only because the PS3 packet layout is materially different. |
 
 ## Confirmed field-layout differences
 
@@ -291,6 +327,7 @@ Names marked as unknown are descriptive placeholders, not production definitions
 | zone-down | 0x0190 | Create | ObjType | 0x33 | 1 | ObjType == 2 test |
 | zone-down | 0x01E2 | QuestCompleteFlags | unknownCompleteMask | 0x136 | 32 | Windows dispatcher forwards a second 32-byte region at payload +0x136 |
 | zone-down | 0x01E3 | QuestCompleteFlag | unknown4 | 0x4 | 1 | optional 3.x bitset/UI update index |
+| zone-down | 0x0320 | DailyQuests | dailyQuestArray[6..11] | 0x1C | 24 | Windows processes 12 four-byte records; PS3 processes 6 |
 
 ## Reviewed but not promoted
 
@@ -298,10 +335,6 @@ These relationships do not authorize Windows IDB names or PS3 backlinks.
 
 | Status | Channel | Opcode | Sapphire name | PS3 target | Windows target | Reason |
 | --- | --- | --- | --- | --- | --- | --- |
-| probable | zone-down | 0x01E7 | LeveCompleteFlag | Client::Game::Network::SyncTagPacket::ReceiveLeveCompleteFlag (0x00AE9844) | sub_140CC2710 (0x0000000140CC2710) | Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link. |
-| probable | zone-down | 0x0321 | DailyQuest | Client::Game::Network::SyncTagPacket::ReceiveDailyQuest (0x00AE936C) | sub_140CC2580 (0x0000000140CC2580) | Shared/merged handler or semantic behavior has not been separated sufficiently for an authoritative function link. |
-| probable | zone-down | 0x0337 | Frontline01BaseInfo | Client::Game::Network::EventPacket::ReceiveFrontline01BaseInfoPacket (0x00ADCBE0) | j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_2 (0x0000000140CBEA50) | The Windows downstream method at 0x140C9AAF0 is still unidentified, so the Frontline01BaseInfo identity remains probable rather than confirmed. |
-| unresolved | zone-down | 0x0142 | Order | Client::Game::Network::Packet::Order (0x00AE9C48) | — | No defensible direct cross-build function match remains from dispatcher evidence alone. |
 | unresolved | zone-down | 0x01AA | RetainerList | — | — | No defensible direct cross-build function match remains from dispatcher evidence alone. |
 | unresolved | zone-down | 0x01AB | RetainerData | — | — | No defensible direct cross-build function match remains from dispatcher evidence alone. |
 | unresolved | zone-down | 0x01AC | MarketPriceHeader | — | — | No defensible direct cross-build function match remains from dispatcher evidence alone. |
@@ -321,8 +354,6 @@ These relationships do not authorize Windows IDB names or PS3 backlinks.
 | unresolved | zone-down | 0x02D7 | LogMessage | — | — | No defensible direct cross-build function match remains from dispatcher evidence alone. |
 | unresolved | zone-down | 0x02E7 | CancelLogoutCountdown | — | — | No defensible direct cross-build function match remains from dispatcher evidence alone. |
 | unresolved | zone-down | 0x030C | — | Client::Network::ContentMediator::ResponseContentBonus (0x00DA4F64) | sub_140CC1980 (0x0000000140CC1980) | Same numeric opcode is insufficient to connect these functions; a changed-opcode counterpart or packet capture is required. |
-| unresolved | zone-down | 0x0320 | DailyQuests | Client::Game::Network::SyncTagPacket::ReceiveDailyQuests (0x00AE9294) | — | No defensible direct cross-build function match remains from dispatcher evidence alone. |
-| unresolved | zone-down | 0x0322 | QuestRepeatFlags | Client::Game::Network::SyncTagPacket::ReceiveQuestRepeatFlags (0x00AE93F4) | — | No defensible direct cross-build function match remains from dispatcher evidence alone. |
 | unresolved | zone-down | 0x0336 | Frontline01Result | Client::Game::Network::EventPacket::ReceiveFrontline01ResultPacket (0x00ADCBB4) | sub_140CBEE10 (0x0000000140CBEE10) | No common manager or packet-layout behavior has been established, so the direct dispatcher targets are not a defensible function match. |
 | unresolved | zone-down | 0x0338 | FinishContentMatchToClient | Client::Network::ContentMediator::FinishContentMatch (0x00DA4660) | j_?RemoveFromVehicleChaseDirector@CTaskVehicleChase@@AEAAXXZ_0 (0x0000000140CBEA60) | Windows dispatch enters an EventFramework/instance-content-director wrapper and calls unidentified 0x140C94DD0; this does not yet support the PS3 ContentMediator identity. |
 

@@ -26,6 +26,7 @@ SAPPHIRE_TYPES = {
     "QuestCompleteFlags": "FFXIVIpcQuestCompleteList",
     "QuestCompleteFlag": "FFXIVIpcQuestFinish",
     "LegacyQuestCompleteFlags": "FFXIVIpcLegacyQuestCompleteList",
+    "DailyQuest": "FFXIVIpcDailyQuest",
 }
 
 # Fields independently observed in the Windows handler. An offset differing
@@ -49,6 +50,10 @@ WINDOWS_FIELDS: dict[str, dict[str, tuple[int, str]]] = {
         "RestPoint": (0xC, "rested experience update"),
     },
     "PlayerStatus": {"Crest": (0x8, "crest update")},
+    "LeveCompleteFlag": {
+        "bitIndex": (0x0, "leve-completion bit index"),
+        "completed": (0x2, "set/clear boolean"),
+    },
     "QuestCompleteFlags": {
         "completeFlagArray": (0x0, "Windows copies 0x136 bytes; PS3 copies 0xC8 bytes"),
     },
@@ -56,6 +61,19 @@ WINDOWS_FIELDS: dict[str, dict[str, tuple[int, str]]] = {
         "bitIndex": (0x0, "quest-completion bit index"),
         "completed": (0x2, "set/clear boolean"),
         "update": (0x3, "EventFramework update boolean"),
+    },
+    "DailyQuests": {
+        "update": (0x0, "daily-quest synchronization update boolean"),
+        "dailyQuestArray": (0x4, "12 DailyQuest records in Windows versus 6 in PS3"),
+    },
+    "DailyQuest": {
+        "index": (0x0, "daily-quest slot index"),
+        "update": (0x1, "daily-quest synchronization update boolean"),
+        "dailyQuest": (0x4, "quest ID and flags record"),
+    },
+    "QuestRepeatFlags": {
+        "update": (0x0, "repeat-flag synchronization update boolean"),
+        "repeatFlagArray": (0x1, "one-byte repeat-quest mask"),
     },
     "ChatFrom": {
         "fromCharacterID": (0x0, "sender ID use"),
@@ -127,6 +145,14 @@ WINDOWS_EXTRA_FIELDS = {
             "offset": "0x136",
             "width": 32,
             "evidence": "Windows dispatcher forwards a second 32-byte region at payload +0x136",
+        }
+    ],
+    "DailyQuests": [
+        {
+            "name": "dailyQuestArray[6..11]",
+            "offset": "0x1C",
+            "width": 24,
+            "evidence": "Windows processes 12 four-byte records; PS3 processes 6",
         }
     ],
     "QuestCompleteFlag": [

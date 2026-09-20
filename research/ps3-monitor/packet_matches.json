@@ -3116,6 +3116,86 @@
       ],
       "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE90F4",
       "channel": "zone-down"
+    },
+    {
+      "opcode": "0x01E7",
+      "packet": "LeveCompleteFlag",
+      "ps3Address": "0x00AE9844",
+      "ps3Name": "Client::Game::Network::SyncTagPacket::ReceiveLeveCompleteFlag",
+      "windowsAddress": "0x140CC2710",
+      "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveLeveCompleteFlag",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both index a leve-completion bitset by bitIndex >> 3 and use the mask 0x80 >> (bitIndex & 7).",
+        "Both set or clear the bit from the completed boolean, enforce the same 0xC8-byte bound, and notify EventFramework with the leve ID."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE9844",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0320",
+      "packet": "DailyQuests",
+      "ps3Address": "0x00AE9294",
+      "ps3Name": "Client::Game::Network::SyncTagPacket::ReceiveDailyQuests",
+      "windowsAddress": "0x140CC2500",
+      "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveDailyQuests",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both copy fixed-size DailyQuest records from payload +0x04, initialize daily-quest state once, and notify EventFramework with the update boolean.",
+        "Windows processes 12 records where PS3 processes 6, matching Sapphire's 12-entry 3.x declaration."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE9294",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0321",
+      "packet": "DailyQuest",
+      "ps3Address": "0x00AE936C",
+      "ps3Name": "Client::Game::Network::SyncTagPacket::ReceiveDailyQuest",
+      "windowsAddress": "0x140CC2580",
+      "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveDailyQuest",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both use the leading index and update bytes, copy one DailyQuest record from payload +0x04, and notify EventFramework.",
+        "Windows expands the accepted index bound from 6 to 12, agreeing with the expanded 3.x DailyQuests array."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE936C",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0322",
+      "packet": "QuestRepeatFlags",
+      "ps3Address": "0x00AE93F4",
+      "ps3Name": "Client::Game::Network::SyncTagPacket::ReceiveQuestRepeatFlags",
+      "windowsAddress": "0x140CC25D0",
+      "windowsName": "Client__Game__Network__SyncTagPacket__ReceiveQuestRepeatFlags",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both copy the one-byte repeat-quest mask from payload +0x01, initialize repeat-flag state once, and notify EventFramework with payload byte +0x00 as update.",
+        "The dispatcher field offsets and one-byte copy length agree exactly across builds and Sapphire's declaration."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE93F4",
+      "channel": "zone-down"
+    },
+    {
+      "opcode": "0x0337",
+      "packet": "Frontline01BaseInfo",
+      "ps3Address": "0x00ADCBE0",
+      "ps3Name": "Client::Game::Network::EventPacket::ReceiveFrontline01BaseInfoPacket",
+      "windowsAddress": "0x140CBEA50",
+      "windowsName": "Client__Game__Network__EventPacket__ReceiveFrontline01BaseInfoPacket",
+      "confidence": "high",
+      "evidence": [
+        "The same unique opcode routes packet payload data at +0x10 to these functions in both dispatchers.",
+        "Both obtain EventFramework, resolve the active instance-content director, null-check it, and forward the Frontline01BaseInfo payload.",
+        "The Windows dispatcher thunk reaches 0x140C9EF80, whose three-call wrapper shape matches PS3 before entering the version-specific downstream implementation."
+      ],
+      "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00ADCBE0",
+      "channel": "zone-down"
     }
   ],
   "idbLinkFormat": "idb://ffxivgame.ppu.elf.i64:{PS3_ADDRESS_8_HEX_UPPER}",
@@ -3163,10 +3243,12 @@
     },
     {
       "opcodes": [
+        "0x0142",
         "0x0143",
         "0x0144"
       ],
       "packets": [
+        "Order",
         "OrderMySelf",
         "OrderTarget"
       ],
@@ -3178,10 +3260,14 @@
       "evidence": [
         "Every listed opcode routes to the same PS3 DWARF function and the same unique Windows function.",
         "The shared opcode sets agree across both dispatchers and ThreePointThree names each packet variant.",
-        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links."
+        "Both builds pass packet payload data at +0x10; this is a many-opcode/one-function match, not separate one-to-one links.",
+        "Windows inlines argument extraction before joining the same Order call used by 0x0143 and 0x0144."
       ],
       "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE9C48",
-      "channel": "zone-down"
+      "channel": "zone-down",
+      "inlineOpcodes": [
+        "0x0142"
+      ]
     },
     {
       "opcodes": [
@@ -3440,6 +3526,225 @@
       ],
       "ps3IdbUrl": "idb://ffxivgame.ppu.elf.i64:00AE4E90",
       "channel": "zone-down"
+    }
+  ],
+  "windowsMappings": [
+    {
+      "opcodes": [
+        "0x01AA",
+        "0x01AB"
+      ],
+      "packets": [
+        "RetainerList",
+        "RetainerData"
+      ],
+      "windowsAddress": "0x140CC8730",
+      "windowsName": "Client__Game__Network__Packet__ReceiveRetainerPackets",
+      "evidence": [
+        "The Windows dispatcher groups exactly RetainerList and RetainerData into this wrapper.",
+        "Its downstream function explicitly switches on IPC opcodes 0x01AA and 0x01AB and accumulates retainer records by owner/context ID."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x01AC",
+        "0x01AD"
+      ],
+      "packets": [
+        "MarketPriceHeader",
+        "MarketPrice"
+      ],
+      "windowsAddress": "0x140CC8710",
+      "windowsName": "Client__Game__Network__Packet__ReceiveMarketPricePackets",
+      "evidence": [
+        "The Windows dispatcher groups exactly MarketPriceHeader and MarketPrice into this wrapper.",
+        "Its downstream function explicitly switches on 0x01AC and 0x01AD and assembles the associated market-price records."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x01AF",
+        "0x01B0",
+        "0x01B3",
+        "0x01B7"
+      ],
+      "packets": [
+        "NormalItem",
+        "ItemSize",
+        "GilItem",
+        "AliasItem"
+      ],
+      "windowsAddress": "0x140CC8FE0",
+      "windowsName": "Client__Game__Network__Packet__ReceiveItemStoragePackets",
+      "evidence": [
+        "The Windows dispatcher groups these four Sapphire item-storage opcodes into this wrapper.",
+        "The downstream switch handles 0x01AF/0x01B3/0x01B7 as item records and 0x01B0 as the item-count/size record before committing storage state."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x01B1",
+        "0x01B2"
+      ],
+      "packets": [
+        "ItemOperationBatch",
+        "ItemOperation"
+      ],
+      "windowsAddress": "0x140CC86F0",
+      "windowsName": "Client__Game__Network__Packet__ReceiveItemOperationPackets",
+      "evidence": [
+        "The Windows dispatcher groups exactly ItemOperationBatch and ItemOperation into this wrapper.",
+        "The downstream function explicitly switches on 0x01B1 and 0x01B2, copies operation records, and commits the completed batch."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x01C0"
+      ],
+      "packets": [
+        "TreasureFadeOut"
+      ],
+      "windowsAddress": "0x140CC03A0",
+      "windowsName": "Client__Game__Network__Packet__TreasureFadeOut",
+      "evidence": [
+        "Sapphire identifies 0x01C0 as TreasureFadeOut.",
+        "The Windows target resolves the dispatcher target actor through the game-object table and invokes its fade/removal path."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x029E"
+      ],
+      "packets": [
+        "InspectQuests"
+      ],
+      "windowsAddress": "0x140CC31D0",
+      "windowsName": "Client__Game__Network__Packet__InspectQuests",
+      "evidence": [
+        "The dispatcher extracts actor ID, content ID, a payload array, and count 30 for Sapphire opcode InspectQuests.",
+        "The target iterates 12-byte quest records and formats quest ID, sequence, flags, class/job, and variables using an explicit quest diagnostic string."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x029F"
+      ],
+      "packets": [
+        "InspectGuildleves"
+      ],
+      "windowsAddress": "0x140CC35A0",
+      "windowsName": "Client__Game__Network__Packet__InspectGuildleves",
+      "evidence": [
+        "The dispatcher extracts actor ID, content ID, a payload array, and count 16 for Sapphire opcode InspectGuildleves.",
+        "The target iterates leve records and formats ID, sequence, flags, seed, and class using an explicit leve diagnostic string."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x02A0"
+      ],
+      "packets": [
+        "InspectReward"
+      ],
+      "windowsAddress": "0x140CC6300",
+      "windowsName": "Client__Game__Network__Packet__InspectReward",
+      "evidence": [
+        "The dispatcher extracts actor ID, content ID, a reward bitset, and count 64 for Sapphire opcode InspectReward.",
+        "The target enumerates every reward bit and formats explicit reward diagnostics for the inspected character."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x02A1"
+      ],
+      "packets": [
+        "InspectBeastReputation"
+      ],
+      "windowsAddress": "0x140CC3910",
+      "windowsName": "Client__Game__Network__Packet__InspectBeastReputation",
+      "evidence": [
+        "The dispatcher extracts actor ID, content ID, rank/value arrays, and count 8 for Sapphire opcode InspectBeastReputation.",
+        "The target resolves beast-reputation names and formats each rank and value using an explicit brep diagnostic string."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    },
+    {
+      "opcodes": [
+        "0x0336"
+      ],
+      "packets": [
+        "Frontline01Result"
+      ],
+      "windowsAddress": "0x140CBEE10",
+      "windowsName": "Client__Game__Network__Packet__ReceiveFrontline01Result",
+      "evidence": [
+        "Current and ThreePointThree Sapphire enums identify 0x0336 as Frontline01Result.",
+        "The Windows target copies fifteen consecutive result dwords into a dedicated global result block; this is a Windows semantic label only because the PS3 packet layout is materially different."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-semantic"
+    }
+  ],
+  "windowsInlineMappings": [
+    {
+      "opcode": "0x02D6",
+      "packet": "EnableLogout",
+      "windowsCaseEa": "0x140DD94EA",
+      "evidence": [
+        "The Windows dispatcher handles this case inline by resolving the framework/UI command interface and invoking command 7 with the packet."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-inline"
+    },
+    {
+      "opcode": "0x02D7",
+      "packet": "LogMessage",
+      "windowsCaseEa": "0x140DD9593",
+      "evidence": [
+        "The Windows dispatcher handles this case inline through the same framework/UI command interface using command 4."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-inline"
+    },
+    {
+      "opcode": "0x02E7",
+      "packet": "CancelLogoutCountdown",
+      "windowsCaseEa": "0x140DD947E",
+      "evidence": [
+        "The Windows dispatcher handles this case inline through the same framework/UI command interface using command 8."
+      ],
+      "channel": "zone-down",
+      "confidence": "high",
+      "mappingKind": "windows-inline"
     }
   ]
 }

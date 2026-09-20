@@ -30,32 +30,32 @@ current artifacts and direct verification evidence.
 | Requirement | Evidence | Result |
 | --- | --- | --- |
 | Use multiple anchors rather than opcode alone | Confirmed mappings require ThreePointThree semantic name, PS3 DWARF handler identity, confirmed dispatcher/payload routing, and a unique Windows direct target; manually established mappings include field/callee/constant evidence | Satisfied |
-| Preserve splits, merges, and shared handlers | `packet_matches.json` explicitly records 11 shared functions covering 54 opcode cases; no false separate functions were invented | Satisfied |
-| Review every obvious same-opcode/named-handler candidate | `case_reviews.json`: 27 retained reviews; 3 probable and 24 unresolved | Satisfied |
+| Preserve splits, merges, and shared handlers | `packet_matches.json` explicitly records 11 shared functions covering 55 opcode cases; no false separate functions were invented | Satisfied |
+| Review every obvious same-opcode/named-handler candidate | `case_reviews.json`: 21 retained unresolved reviews and no probable cases | Satisfied |
 | Leave no unreviewed high-likelihood candidate | `candidate_rankings.json` has zero entries; validator enforces this | Satisfied |
 | Record one-sided case presence without overclaiming semantics | 18 PS3-only and 88 Windows-only zone cases plus one PS3-only chat case; inventory limitation defines status scope | Satisfied |
-| Confirm as many defensible direct matches as possible | `packet_matches.json`: 204 packet-handler function pairs covering 247 cases (240 zone, 7 chat) | Satisfied |
+| Confirm as many defensible direct matches as possible | `packet_matches.json`: 209 packet-handler function pairs covering 253 cases (246 zone, 7 chat), plus 10 Windows semantic functions and 3 inline Windows cases without PS3 links | Satisfied |
 
 ## Windows IDB annotations
 
 | Requirement | Evidence | Result |
 | --- | --- | --- |
-| Give confirmed Windows functions stable names | 204 handler names plus constructor and two dispatchers in the saved Windows IDB | Satisfied |
-| First repeatable-comment line uses the required PS3 URI | `ida_apply_matches.py` and `packet_matches.json`; IDA verification checked all 207 entries with zero failures | Satisfied |
+| Give confirmed Windows functions stable names | 209 PS3-linked handler names plus constructor and two dispatchers, and 10 Windows-only semantic handler names, in the saved Windows IDB | Satisfied |
+| First repeatable-comment line uses the required PS3 URI | `ida_apply_matches.py` and `packet_matches.json`; IDA verification checked all 212 PS3-linked entries with zero failures | Satisfied |
 | Use eight uppercase PS3 address digits and the exact database name | `validate_research.py` validates every `ps3IdbUrl` | Satisfied |
-| Do not authoritatively name probable/unresolved matches | Probable and unresolved relationships exist only in `case_reviews.json` and dispatcher status records | Satisfied |
+| Do not authoritatively link unresolved cross-build matches | Windows-only semantic names are explicitly separated from PS3-linked matches; unresolved relationships retain no PS3 backlink | Satisfied |
 | Save the Windows database | `ida_save_database` succeeded for `E:/Sapphire/game/ffxiv_dx11.exe.i64` after the final annotation batch | Satisfied |
-| Make annotations reproducible/verifiable | `ida_apply_matches.py` applies or verifies all high-confidence mapping entries | Satisfied |
+| Make annotations reproducible/verifiable | `ida_apply_matches.py` separately applies or verifies PS3-linked and Windows-only high-confidence mapping entries | Satisfied |
 
 ## Structures and Sapphire gaps
 
 | Requirement | Evidence | Result |
 | --- | --- | --- |
-| Inventory PS3 DWARF structures used by confirmed handlers | `packet_structures.json`: 247 structures; exported by `ida_type_export.py` | Satisfied |
+| Inventory PS3 DWARF structures used by confirmed handlers | `packet_structures.json`: 253 structures; exported by `ida_type_export.py` | Satisfied |
 | Record PS3 size, members, offsets, widths/types | Every exported structure contains `ps3Size` and member metadata | Satisfied |
 | Compare with current and ThreePointThree Sapphire declarations | Each structure records current and immutable historical path/line presence | Satisfied |
 | Record independent Windows field evidence | `windowsValidation` records confirmed same-offset fields and version deltas; unreviewed fields are explicitly labelled | Satisfied |
-| Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 95 missing declarations pending complete Windows validation | Satisfied |
+| Do not promote PS3-only layout assumptions | Production decisions explicitly withhold 99 missing declarations pending complete Windows validation | Satisfied |
 | Record confirmed version differences | `PlayerStatusUpdate.LvSync`: PS3 `+0x04`, Windows 3.x `+0x06` | Satisfied |
 | Make only conclusively supported production corrections | `FFXIVIpcQuestFinish` retains its proven 8-byte size while splitting the Windows-read byte at `+0x04` from three trailing padding bytes | Satisfied |
 
@@ -63,7 +63,7 @@ current artifacts and direct verification evidence.
 
 | Requirement | Evidence | Result |
 | --- | --- | --- |
-| Validate JSON and cross-artifact consistency | `python research/ps3-monitor/validate_research.py` reports 247 confirmed cases/structures, 659 cases, zero candidates | Satisfied |
+| Validate JSON and cross-artifact consistency | `python research/ps3-monitor/validate_research.py` reports 253 confirmed cases/structures, 659 cases, zero candidates, 10 Windows semantic functions, and 3 inline Windows cases | Satisfied |
 | Check whitespace/diff integrity | `git diff --check` succeeds | Satisfied |
 | Build `common` and `world` if production headers change | After the `FFXIVIpcQuestFinish` correction, `cmake --build build --target common world` completed successfully | Satisfied |
 | Commit coherent local milestones | Multiple coherent research commits are present after `origin/build-cleanup` | Satisfied |
@@ -73,7 +73,9 @@ current artifacts and direct verification evidence.
 ## Completion judgment
 
 All finite core criteria are covered by direct artifacts and validators. The
-remaining 3 probable and 24 unresolved same-opcode relationships are not
-unreviewed work: each has an explicit evidence-backed review and reason it was
-not promoted. The 95 missing Sapphire declarations are documented gaps, not
-safe production edits, because complete Windows layouts remain unproven.
+remaining 21 unresolved same-opcode relationships are not unreviewed work: each
+has an explicit evidence-backed review and reason no PS3↔Windows link was
+promoted. Nineteen now have a separately proven Windows semantic implementation;
+`0x030C` and `0x0338` retain genuine semantic conflicts. The 99 missing Sapphire
+declarations are documented gaps, not safe production edits, because complete
+Windows layouts remain unproven.
