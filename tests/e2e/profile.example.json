@@ -9,5 +9,6 @@
   "transition_catalog": "C:/path/to/transition.json",
   "combat_catalog": "C:/path/to/combat-catalog.json",
   "shop_catalog": "C:/path/to/shop.json",
+  "respawn_catalog": "C:/path/to/respawn.json",
   "artifacts": "C:/CodeBlocks/Sapphire/.e2e-artifacts"
 }

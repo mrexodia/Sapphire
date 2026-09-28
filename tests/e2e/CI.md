@@ -20,13 +20,13 @@ self-hosted runners (checked through the read-only Actions runners API).
    unrestricted asset-bearing runner to a public repository accepting PR code.
 2. Provision legally available matching game data, including its adjacent
    `ffxivgame.ver` (`2016.07.05.0000.0001`). Keep it outside the checkout. Provision
-   private compatible w1t1/w1f2 meshes and all five catalogs described in
+   private compatible w1t1/w1f2 meshes and all six catalogs described in
    [README.md](README.md). The route and server w1t1 meshes must hash identically.
    Legacy MSET files are rejected. Do not modify installed game assets to pass.
 3. Put a local JSON profile outside the checkout with `game_data`, `mariadb_bin`,
    `navigation`, `quest_catalog`, `follow_up_catalog`, `transition_catalog`,
-   `combat_catalog`, and `shop_catalog`. Normal local profiles also specify
-   `binaries` and `worker`;
+   `combat_catalog`, `shop_catalog`, and `respawn_catalog`. Normal local profiles
+   also specify `binaries` and `worker`;
    the workflow overrides these with its newly built out-of-tree outputs. No DB
    credentials or connection strings belong in this profile. Fixtures create a
    fresh private DB and accounts, not a connection to an existing service.
@@ -48,7 +48,7 @@ self-hosted runners (checked through the read-only Actions runners API).
 The workflow pins its external actions, uses a read-only token, disables checkout
 credential persistence, serializes gameplay jobs without cancelling an active run,
 and limits the job to 45 minutes. It rebuilds the checked-out server, all discovered
-native script modules, worker and five framework native tests using the
+native script modules, worker and all six framework native tests using the
 `sapphire_gameplay_ci` CMake target. GUI tools and Recast's separate test suite are
 not part of that target. Framework CTest execution has a 60-second per-test timeout.
 
@@ -88,8 +88,8 @@ separate evidence that its binaries came from the checkout.
 ## Gates and evidence
 
 - Preflight verifies files, archive-version marker, script availability, quest
-  chain/action/transition/shop metadata, tile-cache headers and route/server mesh
-  identity. This checks availability and consistency, **not** game correctness or
+  chain/action/transition/shop/homepoint metadata, tile-cache headers and route/server
+  mesh identity. This checks availability and consistency, **not** game correctness or
   independent real-client compatibility. Static prerequisite validation never
   modifies quest progress; the live chain must complete its first quest normally.
 - The entry point collects the six whole live modules and requires exactly the
@@ -113,12 +113,13 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `b30883295` passed the nine-case strict
-gate in 540.585 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and removed private runtime. The chained case took 236.861s and
-included the source-bound persisted gil-shop sale. Evidence is
-`build-e2e/ci-summary-shop.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-hgdmh_8k`. This remains a local rehearsal, not a
+Latest local evidence: clean revision `67ef4b144` passed the nine-case strict
+gate in 514.181 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and removed private runtime. The player-defeat case took 78.746s
+and included the source-bound observed/persisted homepoint return; the chained case
+retained the persisted gil-shop sale. Evidence is
+`build-e2e/ci-summary-respawn.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-t1kaqsfb`. This remains a local rehearsal, not a
 hosted protected-runner execution.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its

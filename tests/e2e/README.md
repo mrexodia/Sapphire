@@ -60,7 +60,10 @@ lobby, world and MariaDB processes with matching game data:
   observed natural level-14 enemy, then performs no further actions. Both the
   fighter and a stationary observer receive every retaliation effect and its exact
   pre/post committed HP, including natural regeneration between hits, through zero
-  player HP and defeated-player despawn. This does not cover respawn or pursuit.
+  player HP. The defeated fighter then sends the ordinary bounded return command,
+  transitions to its source-bound Ul'dah homepoint at full HP, is observed there by
+  a third client, and preserves that live position/HP after restart. This does not
+  cover raises, death penalties or pursuit.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -136,7 +139,9 @@ not replace the live suite.
    the compatible Central Thanalan mesh in `navigation`.
 7. For the chained inventory/economy path, generate the source-bound shop catalog
    below and set `shop_catalog`.
-8. Run:
+8. For the player-defeat return path, generate the source-bound respawn catalog
+   below and set `respawn_catalog`.
+9. Run:
 
 ```sh
 python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
@@ -435,12 +440,29 @@ cover the fix. This does not claim collision safety across multiple world proces
 
 `test_live_player_defeat.py` uses unchanged natural population layout 3749193
 (base 302, level 14). One received/range-checked Fast Blade establishes ordinary
-hostility; no later player action is sent. For every retaliation, the worker records
-the target's received HP immediately before and after the matching integrity packet,
-so intervening natural regeneration cannot be mistaken for damage. Both clients
-require the identical effect sequence and exact committed decrease through zero HP,
-then the observer requires ordinary defeated-player despawn. The scenario does not
-claim automatic aggro, respawn/homepoint behavior, pursuit or general combat.
+hostility; no later player combat action is sent. For every retaliation, the worker
+records the target's received HP immediately before and after the matching integrity
+packet, so intervening natural regeneration cannot be mistaken for damage. Both
+clients require the identical effect sequence and exact committed decrease through
+zero HP. The worker then permits only received-dead state in Central Thanalan with
+canonical homepoint 9 to send `REVIVE/Return`; it does not expose arbitrary revive
+or teleport arguments. The fighter must transition to the generated homepoint-9
+pop range in Ul'dah with full HP, disappear from the old observer, appear alive to a
+pre-positioned destination observer, and reload the same position/full HP after
+logout and world restart. The scenario does not claim automatic aggro, raises,
+death penalties, pursuit or general combat.
+
+Generate the private binding from matching game data:
+
+```sh
+cmake --build build --target sapphire_test_respawn_catalog --config Debug
+bin/sapphire_test_respawn_catalog <game/sqpack> build-e2e/respawn.json
+```
+
+Use `.exe` on Windows and set `respawn_catalog` to the absolute output path. The
+verified catalog resolves Gladiator homepoint 9 through Aetheryte metadata to the
+single source pop range 3693863 in territory 130. It contains no invented return
+position and is not a general respawn or teleport catalog.
 
 The artifact manifest hashes the action catalog and staged player-action/population
 files. Bounded event journals include decoded effects, HP integrity and action-start

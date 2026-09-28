@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale delta and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded sale |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard and one exact gil-shop sale; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot and one independently observed player defeat | Representative subset verified; item use, purchases, overflow merges, equipment/currency-container moves, pursuit, respawn, combos and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard and one exact gil-shop sale; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; one independently observed player defeat plus observed/persisted homepoint return | Representative subset verified; item use, purchases, overflow merges, equipment/currency-container moves, pursuit, raises, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus one source-bound scene-40 gil-shop sale return | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -51,14 +51,14 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same six CTest executables pass.
-- 246 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 247 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `b30883295` took 540.585s with zero skips/errors/failures and verified
+  rehearsal at `67ef4b144` took 514.181s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-hgdmh_8k` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-shop.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-t1kaqsfb` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-respawn.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -67,8 +67,9 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   does not prove hosted approval, cancellation cleanup or independent compatibility.
 - Nine live cases pass together: rejected credentials, login/idle/logout, observed
   movement/Say/position persistence, single quest, chained quests plus inventory
-  persistence and one persisted gil-shop sale, zoning persistence, enemy defeat/rewards, player defeat and normal
-  lobby creation plus the first Ul'dah opening branch. Both public tested territories use compatible
+  persistence and one persisted gil-shop sale, zoning persistence, enemy defeat/rewards,
+  player defeat plus source-bound homepoint return, and normal lobby creation plus the
+  first Ul'dah opening branch. Both public tested territories use compatible
   server-side meshes; the private opening territory does not make a navigation claim.
 - The initial single-action combat slice uses a fresh level-one Gladiator and the unchanged Central Thanalan
   population. The action catalog validates normally learned Fast Blade (9),
@@ -80,8 +81,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   first extension below covered three paced strikes and the first retaliation hit.
   The later defeat/reward extension now covers one complete level-one defeat and
   persisted current-test-table loot/EXP. Combos, general cooldown scheduling,
-  dynamic pursuit and production loot selection remain uncovered. A later increment
-  below covers one player defeat, but not respawn/homepoint behavior.
+  dynamic pursuit and production loot selection remain uncovered. Later increments
+  below cover one player defeat and homepoint return, but not raises or death penalties.
   Initial position is fixture setup.
   The decoded `sapphire-e2e-wd3lpulz` journal records nine damage, NPC HP 94 → 85 on both clients,
   and source TP 40 after the action. A conservative local recast guard follows the
@@ -388,10 +389,52 @@ SHA-256 was
 `233b53537476d69c0dc62e01f30fc1baf2a96298b4a25175e8a036191c25c7d2`;
 the private runtime root is absent.
 
-This proves one player defeat after one initiating strike. It does not prove
-natural proximity aggro, arbitrary enemy levels/abilities, pursuit, party combat,
-respawn/homepoint return, death penalties, persistence while dead or real-client
-death presentation.
+That original increment proves one player defeat after one initiating strike. It
+does not prove natural proximity aggro, arbitrary enemy levels/abilities, pursuit,
+party combat, death penalties, persistence while dead or real-client death
+presentation. The later extension below adds only the bounded homepoint return.
+
+## Source-bound homepoint return after player defeat
+
+A new read-only generator resolves canonical Gladiator homepoint 9 through matching
+3.3 Aetheryte metadata to exactly one source LGB pop range: ID 3693863 in territory
+130 at `[-144.30470, -3.15489, -163.05969]`. The validator rejects another profile,
+homepoint, territory, malformed transform or ambiguous/missing pop. The clean gate's
+private catalog SHA-256 is
+`d8450f888c65bff44c240acbbae3c6d615f382aebc026547cbdf50f652519218`.
+
+The worker now records the received `HomePoint` from player status. Its semantic
+return operation is deliberately limited to a received-dead self actor in territory
+141 with homepoint 9, no movement/event in progress, and the source-defined
+`REVIVE` command with `ResurrectType::Return`; every unused command field remains
+zero. Native fixtures pin those bytes and reject a living actor, another territory
+or another homepoint. This is not an arbitrary revive or teleport API.
+
+The existing natural-defeat scenario now pre-positions a third ordinary witness at
+the source pop range. After both Central Thanalan clients prove the complete natural
+defeat, the fighter sends the return, disappears from the old witness, reaches
+territory 130 at exactly the generated position with full 94 HP, and appears there
+alive to the destination witness. After normal logout, world restart and fresh HTTP/
+lobby/world authentication, the fighter reloads the same territory, position and
+full HP. No fixture move, grant, handler call, raise or packet injection supplies
+that evidence. `combat-player-defeat.json` SHA-256 in the clean gate is
+`27c89c6b3255b6d434d8e2d60cefbd7077fd0f48c9f2550681d62aa6a305e1e5`.
+
+The clean nine-case gate at `67ef4b144` passed in **514.181s**, zero skips/errors/
+failures, exact collection/inputs and verified cleanup. The extended player-defeat
+case took **78.746s**. Evidence: `build-e2e/ci-summary-respawn.json`,
+`.e2e-artifacts/ci/gameplay-ci-t1kaqsfb/live.xml`, environment
+`sapphire-e2e-ets9haqq`. Worker SHA-256 is
+`d1cf8399b6ec49b3f31224cea5c96fc72e732f86c32feac9096dc43150cf5424`;
+server SHA-256 remains
+`923851751f5bb9503a355058dec9e7a6e39cc5052e54ee3efccb67b4e8193e23`.
+The private runtime root is absent. All 247 Python contracts pass with Clang/MSVC
+workers and in network-isolated Linux; all six native suites pass with Clang, MSVC
+and GNU 11.4.
+
+This proves one ordinary return-to-homepoint path. It does not prove raise spells,
+other homepoints/classes, death penalties, same-territory return, persistence while
+dead, pursuit, party combat or real-client death/return presentation.
 
 ## Persisted ordinary-bag move and swap
 
@@ -684,8 +727,8 @@ multi-process allocation safety, crash consistency or leak-freedom.
    replay is flat; this does not establish capacity or memory stability for all
    code paths. Generator histories/allocator retention also remain distinct from
    server resource behavior.
-2. Extend combat beyond the now-verified enemy and player defeat slices and persisted
-   current-test-table rewards: pursuit, respawn, combos, additional abilities
+2. Extend combat beyond the now-verified enemy/player defeat, homepoint return and persisted
+   current-test-table rewards: pursuit, raises, combos, additional abilities
    and production loot selection remain uncovered. Preserve observed resource/range
    checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond
