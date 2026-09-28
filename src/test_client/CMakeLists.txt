@@ -16,6 +16,7 @@ endif()
 find_package(Threads REQUIRED)
 add_library(sapphire_test_protocol STATIC
   Protocol.cpp
+  CreationActions.cpp
   RewardsState.cpp
   InventoryActions.cpp
   ShopActions.cpp

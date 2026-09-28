@@ -1,4 +1,5 @@
 #include "Protocol.h"
+#include "CreationActions.h"
 #include "RespawnActions.h"
 #include "ShopActions.h"
 #include "TransitionActions.h"
@@ -100,6 +101,15 @@ int main()
     rejects([&] { exitRangeRequest(130, {1,2,3}, disabledExit); });
     auto tiltedExit = exit; tiltedExit["rotation"][0] = 0.1;
     rejects([&] { exitRangeRequest(130, {1,2,3}, tiltedExit); });
+
+    for(const auto classJob : {1, 2, 7})
+    {
+      const auto creation = nlohmann::json::parse(canonicalUldahCreationPayload(classJob));
+      require(creation["content"].size() == 7 && creation["content"][0].size() == 26 &&
+              creation["content"][5] == std::to_string(classJob) && creation["content"][6] == "1",
+              "bounded Ul'dah creation payload fixture");
+    }
+    rejects([&] { canonicalUldahCreationPayload(3); });
 
     nlohmann::json defeatedActors = {{"2097153", {{"hp", 0}}}};
     auto homepoint = returnHomepointRequest(2097153, 141, 9, defeatedActors);

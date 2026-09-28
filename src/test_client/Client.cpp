@@ -1,4 +1,5 @@
 #include "Client.h"
+#include "CreationActions.h"
 #include "InventoryActions.h"
 #include "ShopActions.h"
 #include "RespawnActions.h"
@@ -143,6 +144,10 @@ namespace Sapphire::Testing
          return c == ' ' || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
        }))
       throw ProtocolError("created character name must contain only alphabetic ASCII and spaces");
+    if(args.value("create_character", false))
+      canonicalUldahCreationPayload(args.value("creation_class", 1));
+    else if(args.contains("creation_class"))
+      throw ProtocolError("creation class is valid only for character creation");
     const auto timeout = args.value("timeout", 30);
     if(timeout < 1 || timeout > 120) throw ProtocolError("login timeout outside 1..120 seconds");
     m_login = args;
@@ -263,7 +268,7 @@ namespace Sapphire::Testing
       request.operation = LC::CharacterOperation::CHARAOPE_MAKECHARA;
       request.worldId = p.chrArray[0].worldId;
       copyText(request.chracterName, wanted);
-      constexpr auto details = "{\"content\":[[\"1\",\"0\",\"1\",\"50\",\"1\",\"1\",\"1\",\"1\",\"0\",\"0\",\"0\",\"1\",\"1\",\"1\",\"1\",\"1\",\"1\",\"1\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\"],\"1\",\"1\",\"1\",\"1\",\"1\",\"1\"]}";
+      const auto details = canonicalUldahCreationPayload(m_login.value("creation_class", 1));
       copyText(request.charaMakeData, details);
       phase("character_creating");
       sendLobby(request._ServerIpcType, objectBytes(request));

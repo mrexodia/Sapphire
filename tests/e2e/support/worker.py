@@ -208,9 +208,12 @@ class Bot:
                             session=auth["sId"], character=character)
         return self.wait_world_ready(timeout)
 
-    def create_character_via_lobby(self, auth, character, timeout=30):
+    def create_character_via_lobby(self, auth, character, creation_class=1, timeout=30):
+        if creation_class not in {1, 2, 7}:
+            raise WorkerError("unsupported Ul'dah starting class")
         self.worker.request("login", self.name, host=auth["lobbyHost"], port=auth["lobbyPort"],
-                            session=auth["sId"], character=character, create_character=True)
+                            session=auth["sId"], character=character, create_character=True,
+                            creation_class=creation_class)
         state = self.wait_world_ready(timeout)
         if state.get("created_via_lobby") is not True:
             raise WorkerError("character creation was not confirmed by refreshed lobby list")

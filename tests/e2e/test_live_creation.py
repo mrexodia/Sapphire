@@ -13,18 +13,22 @@ pytestmark = pytest.mark.live
 def test_lobby_character_creation_and_opening_persistence(environment, live_worker):
     catalog = json.loads((Path(__file__).parent / "scene_catalog/opening_uldah.json").read_text())
     assert catalog["profile"] == "sapphire-3.3" and catalog["event_id"] == 1245187
-    branches = [("choose_ring_4423", 4423), ("choose_ring_4424", 4424),
-                ("choose_ring_4425", 4425), ("choose_ring_4426", 4426)]
+    branches = [("choose_ring_4423", 4423, 1), ("choose_ring_4424", 4424, 2),
+                ("choose_ring_4425", 4425, 7), ("choose_ring_4426", 4426, 1)]
     records = []
 
-    for index, (choice, item_id) in enumerate(branches):
+    for index, (choice, item_id, class_job) in enumerate(branches):
         account = environment.fresh_account()
         player = Bot(live_worker, f"new-character-{index}")
-        state = player.create_character_via_lobby(account["auth"], account["name"])
+        state = player.create_character_via_lobby(account["auth"], account["name"], class_job)
         assert state["created_via_lobby"] is True and state["territory"] == 182
         assert state["gm_rank"] == 0 and state["actors"][str(state["entity_id"])]["level"] == 1
+        assert state["rewards"]["class_job"] == class_job
         assert [row["name"] for row in state["characters"]] == [account["name"]]
-        before = player.reward_snapshot(1)
+        work_indices = [index for index, level in enumerate(state["rewards"]["level_by_index"]) if level == 1]
+        assert len(work_indices) == 1
+        work_index = work_indices[0]
+        before = player.reward_snapshot(work_index)
         assert before["items"] == {} and before["exp"] == 0 and before["level"] == 1
 
         player.start_uldah_opening()
@@ -45,7 +49,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         assert state["created_via_lobby"] is False and state["territory"] == 182 and state["gm_rank"] == 0
         expected = deepcopy(before)
         expected["items"][str(item_id)] = 1
-        state = reloaded.expect_rewards(expected, 1)
+        state = reloaded.expect_rewards(expected, work_index)
         inventory = deepcopy(state["rewards"]["inventory"])
         assert len([item for item in inventory.values() if item["id"] == item_id and item["count"] == 1]) == 1
 
@@ -59,7 +63,8 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         reloaded.wait_event_finished()
         reloaded.logout(wait_server_close=True)
         reloaded.close()
-        records.append({"account": account, "choice": choice, "item": item_id,
+        records.append({"account": account, "choice": choice, "item": item_id, "class_job": class_job,
+                        "work_index": work_index,
                         "before": before, "expected": expected, "inventory": inventory})
 
     environment.restart_world()
@@ -70,7 +75,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         restarted = Bot(live_worker, f"new-character-restarted-{index}")
         state = restarted.login_via_lobby(auth, account["name"])
         assert state["territory"] == 182 and state["gm_rank"] == 0
-        state = restarted.expect_rewards(record["expected"], 1)
+        state = restarted.expect_rewards(record["expected"], record["work_index"])
         assert state["rewards"]["inventory"] == record["inventory"]
         restarted.start_uldah_opening()
         scene = live_worker.wait_state(restarted.name,
@@ -82,7 +87,9 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         restarted.logout()
         restarted.close()
         evidence.append({"character": account["name"], "choice": record["choice"],
-                         "item": record["item"], "first_scenes": [0, 1],
+                         "item": record["item"], "class_job": record["class_job"],
+                         "work_index": record["work_index"],
+                         "first_scenes": [0, 1],
                          "scene_after_fresh_login": 40, "scene_after_restart": 40,
                          "rewards_before": record["before"],
                          "rewards_after_restart": record["expected"],
@@ -90,5 +97,5 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
 
     (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
-        "scope": "four canonical Gladiators created through lobby reserve/finalize, all source-defined ring choices, first Ul'dah opening branch and persisted continuation; not account signup UI, appearance/class coverage or complete opening quest"
+        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all source-defined ring choices, first opening branch and persisted continuation; not account signup UI, appearance breadth or complete opening quest"
     }, indent=2), encoding="utf-8")
