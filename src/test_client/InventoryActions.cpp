@@ -19,6 +19,32 @@ namespace Sapphire::Testing
     p.SrcStack = inventory.at(key).at("count"); p.SrcCatalogId = expectedItem;
     return objectBytes(p);
   }
+  Bytes unequipItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
+                           uint32_t gearSlot, uint32_t expectedItem,
+                           uint32_t destinationStorage, uint32_t destinationSlot)
+  {
+    constexpr uint32_t gearStorage = 1000;
+    if(gearSlot > Common::GearSetSlot::SoulCrystal || destinationStorage > 3 ||
+       destinationSlot >= 25 || !expectedItem || !rewards.at("inventory_ready").get<bool>())
+      throw ProtocolError("unequip requires an observed equipment slot and empty ordinary bag slot");
+    const auto key = std::to_string(gearStorage) + ":" + std::to_string(gearSlot);
+    const auto destination = std::to_string(destinationStorage) + ":" + std::to_string(destinationSlot);
+    const auto& inventory = rewards.at("inventory");
+    if(!inventory.contains(key) || inventory.at(key).at("id") != expectedItem ||
+       inventory.at(key).at("count") == 0 || inventory.contains(destination))
+      throw ProtocolError("unequip source/destination does not match observed inventory");
+    for(auto storage : {gearStorage, destinationStorage})
+      if(!rewards.at("containers").contains(std::to_string(storage)) ||
+         rewards.at("containers").at(std::to_string(storage)) != true)
+        throw ProtocolError("unequip requires complete equipment and destination snapshots");
+    Wire::WorldPackets::Client::FFXIVIpcClientInventoryItemOperation p{};
+    p.ContextId = context; p.OperationType = Common::ITEM_OPERATION_TYPE_MOVEITEM;
+    p.SrcActorId = p.DstActorId = entity;
+    p.SrcStorageId = gearStorage; p.SrcContainerIndex = static_cast<int16_t>(gearSlot);
+    p.SrcStack = inventory.at(key).at("count"); p.SrcCatalogId = expectedItem;
+    p.DstStorageId = destinationStorage; p.DstContainerIndex = static_cast<int16_t>(destinationSlot);
+    return objectBytes(p);
+  }
   Bytes moveItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                         uint32_t storage, uint32_t slot, uint32_t expectedItem,
                         uint32_t destinationStorage, uint32_t destinationSlot)

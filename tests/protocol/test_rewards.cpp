@@ -69,6 +69,30 @@ int main()
     check(move == moveExpected, "move request must match exact bounded empty-destination wire fixture");
     check(state.state()["inventory"].contains("1:2") && !state.state()["inventory"].contains("3:24"),
           "request serialization never moves inventory");
+    auto gearState = state.state();
+    gearState["containers"]["1000"] = true;
+    gearState["inventory"]["1000:0"] = {{"storage", 1000}, {"slot", 0}, {"id", 1601}, {"count", 1}};
+    auto unequip = unequipItemRequest(gearState, 0x12345678, 0x01020308, 0, 1601, 3, 24);
+    Bytes unequipExpected = moveExpected;
+    unequipExpected[0] = 8;
+    unequipExpected[12] = 0xe8; unequipExpected[13] = 0x03;
+    unequipExpected[16] = 0; unequipExpected[20] = 1;
+    unequipExpected[24] = 0x41; unequipExpected[25] = 0x06;
+    check(unequip == unequipExpected, "unequip request must match exact gear-to-bag wire fixture");
+    for(int fault = 0; fault < 7; ++fault)
+    {
+      auto invalid = gearState;
+      if(fault == 0) invalid["inventory_ready"] = false;
+      if(fault == 1) invalid["containers"].erase("1000");
+      if(fault == 2) invalid["inventory"].erase("1000:0");
+      if(fault == 3) invalid["inventory"]["1000:0"]["id"] = 1602;
+      if(fault == 4) invalid["inventory"]["3:24"] = invalid["inventory"]["1000:0"];
+      rejected = false;
+      try { unequipItemRequest(invalid, 1, 1, fault == 5 ? 14 : 0, 1601,
+                               fault == 6 ? 4 : 3, 24); }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "invalid/unobserved/mismatched unequip rejected");
+    }
     for(auto bad : {std::array<uint32_t, 5>{4, 2, 4551, 3, 24}, {1, 25, 4551, 3, 24},
                    {1, 2, 4551, 4, 24}, {1, 2, 4551, 3, 25}, {1, 2, 4551, 1, 2},
                    {1, 2, 0, 3, 24}, {1, 2, 4555, 3, 24}, {0, 0, 4551, 3, 24},

@@ -104,8 +104,10 @@ class Worker:
                 self._pending.add(identifier)
                 if method not in {"snapshot", "capabilities"}:
                     safe_args = args if method in {"walk_to", "interact", "choose_scene", "say", "discard_item", "fast_blade"} else {}
-                    if method in {"request_item_move", "request_item_swap", "request_item_split", "request_item_merge"}:
-                        keys = ("storage", "slot", "expected_item", "destination_storage", "destination_slot")
+                    if method in {"request_item_unequip", "request_item_move", "request_item_swap", "request_item_split", "request_item_merge"}:
+                        keys = (("gear_slot", "expected_item", "destination_storage", "destination_slot")
+                                if method == "request_item_unequip" else
+                                ("storage", "slot", "expected_item", "destination_storage", "destination_slot"))
                         if method == "request_item_swap":
                             keys += ("expected_destination_item",)
                         elif method == "request_item_split":
@@ -336,6 +338,16 @@ class Bot:
         return self.worker.wait_state(self.name,
             lambda s: s["rewards"]["inventory_ready"] and key not in s["rewards"]["inventory"],
             "discarded stack absent in received inventory", timeout)
+
+    def request_item_unequip(self, gear_slot, destination_storage, destination_slot, expected_item, timeout=10):
+        context = self.worker.request("request_item_unequip", self.name, gear_slot=gear_slot,
+            destination_storage=destination_storage, destination_slot=destination_slot,
+            expected_item=expected_item)["context"]
+        self.worker.wait_state(self.name,
+            lambda s: any(row["context"] == context and row["operation"] == 8 and row["error"] == 0
+                          for row in s["rewards"]["operation_batches"]),
+            "matching unequip acknowledgement (not inventory mutation)", timeout)
+        return {"context": context, "operation": 8, "acknowledged": True, "inventory_change_verified": False}
 
     def request_item_move(self, storage, slot, destination_storage, destination_slot, expected_item, timeout=10):
         context = self.worker.request("request_item_move", self.name, storage=storage, slot=slot,

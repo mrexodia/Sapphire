@@ -741,6 +741,19 @@ namespace Sapphire::Testing
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};
     }
+    if(method == "request_item_unequip")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      for(const auto* key : {"gear_slot", "expected_item", "destination_storage", "destination_slot"})
+        if(!args.at(key).is_number_unsigned() || args.at(key) > uint64_t{0xffffffff})
+          throw ProtocolError("inventory arguments must be unsigned 32-bit integers");
+      if(m_inventoryContext == 0xffffffff) throw ProtocolError("inventory context budget exhausted");
+      auto payload = unequipItemRequest(m_rewards.state(), m_entity, ++m_inventoryContext,
+                                    args.at("gear_slot"), args.at("expected_item"),
+                                    args.at("destination_storage"), args.at("destination_slot"));
+      sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
+      return {{"context", m_inventoryContext}};
+    }
     if(method == "request_item_move")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
