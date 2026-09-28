@@ -32,6 +32,8 @@ def test_observed_movement_and_position_persistence(environment, live_worker):
     observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
     actor = str(mover_state["entity_id"])
     live_worker.wait_state(observer.name, lambda s: actor in s["actors"], "mover spawn")
+    mover.say("Sapphire E2E observer check")
+    observer.expect_say(mover_state["entity_id"], "Sapphire E2E observer check")
     # Deliberately small starter-area segment, not a claim of general pathfinding.
     destination = list(mover_state["observed_position"])
     destination[0] += 1.0

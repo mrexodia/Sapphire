@@ -1,0 +1,10 @@
+{
+  "profile": "sapphire-3.3",
+  "version": 1,
+  "quest_id": 65686,
+  "source": "src/scripts/quest/subquest/uldah/SubWil001.cpp",
+  "scenes": {
+    "65686:0": {"choices": {"accept": [1], "cancel": [0]}},
+    "65686:1": {"choices": {"complete_without_optional_item": [1, 0]}}
+  }
+}

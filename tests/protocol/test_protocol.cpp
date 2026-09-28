@@ -77,6 +77,14 @@ int main()
     char unterminated[2]{'a', 'b'};
     rejects([&] { text(unterminated); });
 
+    // Independent completion-list fixture: quest 150 is byte 18, bit 0x02.
+    // The incremental completion packet carries 150 directly; it is not byte order.
+    std::array<uint8_t, 310> completion{};
+    completion[18] = 0x02;
+    require(questCompletionFlag(completion.data(), completion.size(), 150), "quest flag MSB order");
+    require(!questCompletionFlag(completion.data(), completion.size(), 145), "quest flag must not use condition-bit order");
+    rejects([&] { questCompletionFlag(completion.data(), completion.size(), completion.size() * 8); });
+
     LobbyCipher sender, receiver;
     auto hello = sender.initialize(42, "SapphireE2E");
     receiver.initialize(42, "SapphireE2E");

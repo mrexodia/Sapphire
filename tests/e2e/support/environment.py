@@ -5,11 +5,13 @@ import base64
 import configparser
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import secrets
 import shutil
 import socket
+import stat
 import subprocess
 import tempfile
 import time
@@ -44,6 +46,24 @@ def write_config(path, values):
     config.read_dict(values)
     with path.open("w", encoding="utf-8") as stream:
         config.write(stream)
+
+
+def remove_runtime(root, timeout=5):
+    # Windows image scanners can briefly retain executable handles after wait().
+    # Retry only permission/sharing failures, with a bounded deadline, never ignore them.
+    deadline = time.monotonic() + timeout
+    def writable_retry(function, path, error):
+        if not isinstance(error[1], PermissionError):
+            raise error[1]
+        os.chmod(path, stat.S_IREAD | stat.S_IWRITE)
+        function(path)
+    while root.exists():
+        try:
+            shutil.rmtree(root, onerror=writable_retry)
+        except PermissionError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.1)
 
 
 def sha256(path):
@@ -137,6 +157,13 @@ class Environment:
                                  for name in ("api", "lobby", "server", "dbm")},
                     "worker_sha256": sha256(self.worker),
                     "scripts": {p.name: sha256(p) for p in (self.runtime / "compiledscripts").glob("*") if p.is_file()}}
+        if self.profile.get("quest_catalog"):
+            path = Path(self.profile["quest_catalog"]).resolve()
+            manifest["quest_catalog"] = {"path": str(path), "sha256": sha256(path)}
+            catalog = json.loads(path.read_text(encoding="utf-8"))
+            if catalog.get("navigation", {}).get("mesh"):
+                mesh = Path(catalog["navigation"]["mesh"])
+                manifest["quest_navigation"] = {"path": str(mesh), "sha256": sha256(mesh)}
         (self.artifacts / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     def _run(self, name, args, timeout=120):
@@ -224,7 +251,9 @@ class Environment:
             self.redactions.add(result["sId"])
         return result
 
-    def fresh_character(self):
+    def fresh_character(self, position=None):
+        if position is not None and (len(position) != 3 or not all(math.isfinite(v) and abs(v) < 1000 for v in position)):
+            raise SetupError("invalid fixture start position")
         username = "e2e_" + uuid.uuid4().hex
         password = secrets.token_hex(16)
         self.redactions.add(password)
@@ -242,8 +271,11 @@ class Environment:
         # Fixture setup ONLY, before this character's first world connection. Opening
         # territories are private; replication tests start in the public counterpart.
         # Never mutate this state once the tested journey has begun.
+        coordinates = ""
+        if position is not None:
+            coordinates = ", " + ", ".join(f"{column}={float(value):.9g}" for column, value in zip(("PosX", "PosY", "PosZ"), position))
         sql = ("UPDATE charainfo SET TerritoryType=130, TerritoryId=0, "
-               f"IsNewGame=0, OpeningSequence=2 WHERE Name='{name}';")
+               f"IsNewGame=0, OpeningSequence=2{coordinates} WHERE Name='{name}';")
         self._run("fixture-seed", [self.mariadb / ("mariadb" + self.suffix),
                   f"--defaults-extra-file={self.runtime / 'config' / 'mysql-client.ini'}",
                   f"--database={self.db_name}", "--execute", sql])
@@ -269,7 +301,6 @@ class Environment:
     def close(self):
         if self._closed:
             return
-        self._closed = True
         for name in reversed(list(self.processes)):
             self._stop(name)
         for stream in self.streams:
@@ -283,4 +314,5 @@ class Environment:
             target = self.artifacts / path.relative_to(self.runtime)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(text, encoding="utf-8")
-        shutil.rmtree(self.root)
+        remove_runtime(self.root)
+        self._closed = True

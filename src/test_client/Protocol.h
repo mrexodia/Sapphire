@@ -65,6 +65,12 @@ namespace Sapphire::Testing
   Bytes ipc(uint16_t opcode, const Bytes& payload);
   uint32_t timeSeconds();
   uint64_t timeMillis();
+  inline bool questCompletionFlag(const uint8_t* bytes, size_t byteCount, size_t questId)
+  {
+    if(questId / 8 >= byteCount) throw ProtocolError("quest flag index out of range");
+    // Quest completion uses MSB-first bits, unlike player condition flags.
+    return (bytes[questId / 8] & (0x80u >> (questId % 8))) != 0;
+  }
 
   class LobbyCipher
   {

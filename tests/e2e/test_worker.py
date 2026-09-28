@@ -136,3 +136,61 @@ def test_scene_response_preserves_observed_identity():
     Bot(stub, "test").choose_dialogue(
         {"profile": "sapphire-3.3", "scenes": {"1:2": {"choices": {"accept": [1]}}}}, "accept")
     assert stub.calls == [(("choose_scene", "test"), {"event_id": 1, "scene_id": 2, "token": 3, "results": [1]})]
+
+
+def test_unrelated_responses_do_not_cause_snapshot_polling():
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+    from .support.worker import Worker
+    waiting = threading.Event()
+    class Condition(threading.Condition):
+        def wait(self, timeout=None):
+            waiting.set()
+            return super().wait(timeout)
+    instance = object.__new__(Worker)
+    instance._cv = Condition()
+    instance._version, instance._failure = 0, None
+    calls = []
+    def snapshot(bot):
+        calls.append(bot)
+        return {"phase": "ready"}
+    instance.snapshot = snapshot
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(instance.wait_state, "idle", lambda s: False, "no event", 1)
+        assert waiting.wait(1)
+        for _ in range(5):
+            waiting.clear()
+            with instance._cv:
+                instance._cv.notify_all()  # An unrelated response, not a game-state event.
+            assert waiting.wait(1)
+        with pytest.raises(WorkerError, match="timeout"):
+            future.result(timeout=2)
+    assert calls == ["idle"]
+
+
+def test_transient_cleanup_failure_is_retried(tmp_path, monkeypatch):
+    from .support import environment
+    root = tmp_path / "runtime"
+    root.mkdir()
+    original = environment.shutil.rmtree
+    calls = []
+    def flaky(path, **kwargs):
+        calls.append(path)
+        if len(calls) == 1:
+            raise PermissionError("temporary image handle")
+        return original(path, **kwargs)
+    monkeypatch.setattr(environment.shutil, "rmtree", flaky)
+    environment.remove_runtime(root)
+    assert len(calls) == 2 and not root.exists()
+
+
+def test_permanent_cleanup_failure_is_not_hidden(tmp_path, monkeypatch):
+    from .support import environment
+    root = tmp_path / "runtime"
+    root.mkdir()
+    def fail(*args, **kwargs):
+        raise PermissionError("retained handle")
+    monkeypatch.setattr(environment.shutil, "rmtree", fail)
+    with pytest.raises(PermissionError):
+        environment.remove_runtime(root, timeout=0)
+    assert root.exists()

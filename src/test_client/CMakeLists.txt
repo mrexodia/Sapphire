@@ -6,9 +6,17 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   include(CTest)
 endif()
 get_filename_component(SAPPHIRE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND BUILD_TESTING)
+  set(RECASTNAVIGATION_DEMO OFF CACHE BOOL "" FORCE)
+  set(RECASTNAVIGATION_TESTS OFF CACHE BOOL "" FORCE)
+  set(RECASTNAVIGATION_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(RECASTNAVIGATION_DT_POLYREF64 ON CACHE BOOL "" FORCE)
+  add_subdirectory("${SAPPHIRE_ROOT}/deps/recastnavigation" "${CMAKE_CURRENT_BINARY_DIR}/recast" EXCLUDE_FROM_ALL)
+endif()
 find_package(Threads REQUIRED)
 add_library(sapphire_test_protocol STATIC
   Protocol.cpp
+  RewardsState.cpp
   "${SAPPHIRE_ROOT}/src/common/Crypt/blowfish.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/md5.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/Random.cpp")
@@ -32,8 +40,17 @@ if(WIN32)
 endif()
 target_link_libraries(sapphire_test_protocol PUBLIC Threads::Threads)
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  add_executable(sapphire_test_catalog Catalog.cpp)
+  add_executable(sapphire_test_catalog Catalog.cpp NavigationRoute.cpp)
   target_link_libraries(sapphire_test_catalog PRIVATE common)
+  set(NAV_EXPORT "${SAPPHIRE_ROOT}/src/tools/nav_export")
+  add_executable(sapphire_test_navbuild BuildNavigation.cpp
+    "${NAV_EXPORT}/nav/TiledNavmeshGenerator.cpp"
+    "${NAV_EXPORT}/nav/ext/MeshLoaderObj.cpp"
+    "${NAV_EXPORT}/nav/ext/ChunkyTriMesh.cpp")
+  target_link_libraries(sapphire_test_navbuild PRIVATE common Recast DetourTileCache)
+  target_include_directories(sapphire_test_navbuild PRIVATE "${NAV_EXPORT}"
+    "${SAPPHIRE_ROOT}/deps/recastnavigation/DebugUtils/Include"
+    "${SAPPHIRE_ROOT}/deps/recastnavigation/RecastDemo/Include")
 endif()
 add_executable(sapphire_test_client main.cpp Client.cpp)
 target_link_libraries(sapphire_test_client PRIVATE sapphire_test_protocol)
@@ -41,4 +58,12 @@ if(BUILD_TESTING)
   add_executable(sapphire_protocol_tests "${SAPPHIRE_ROOT}/tests/protocol/test_protocol.cpp")
   target_link_libraries(sapphire_protocol_tests PRIVATE sapphire_test_protocol)
   add_test(NAME sapphire_protocol COMMAND sapphire_protocol_tests)
+  add_executable(sapphire_reward_tests "${SAPPHIRE_ROOT}/tests/protocol/test_rewards.cpp")
+  target_link_libraries(sapphire_reward_tests PRIVATE sapphire_test_protocol)
+  add_test(NAME sapphire_rewards COMMAND sapphire_reward_tests)
+  add_executable(sapphire_navigation_tests NavigationRoute.cpp "${SAPPHIRE_ROOT}/tests/protocol/test_navigation.cpp")
+  target_compile_features(sapphire_navigation_tests PRIVATE cxx_std_17)
+  target_include_directories(sapphire_navigation_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+  target_link_libraries(sapphire_navigation_tests PRIVATE Detour)
+  add_test(NAME sapphire_navigation COMMAND sapphire_navigation_tests)
 endif()

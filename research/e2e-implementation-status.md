@@ -1,109 +1,97 @@
 # E2E implementation checkpoint and requirement audit
 
-**Overall goal: not complete.** This is an implementation checkpoint, not a claim
-that the entire proposed framework or all six rollout stages have shipped.
+**Overall goal: not complete.** Green tests cover a supported subset, not all six
+rollout stages or real-client compatibility. Branch: `feature/headless-e2e`.
 
-Branch: `feature/headless-e2e`.
+## Contract
 
-## Concrete success criteria
+Implement an external C++ headless client controlled by Python/pytest through
+normal authentication, lobby and world connections to disposable servers. Use
+non-GM fixtures, received-state assertions, independent observers, explicit scene
+adapters, rewards/restart tests, diagnostics, CI and supported-action exploration
+and soak workflows. Keep fixture setup distinct from gameplay. Never silently
+accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
-Implement an external C++ headless Sapphire client controlled by Python scenarios,
-using genuine authentication/lobby/world connections against disposable servers.
-Provide observed-state assertions, two-client movement tests, supported quest
-scene handling, reward/persistence tests, diagnostics, CI integration, and later
-supported-action exploration/soak workflows. Keep fixtures separate from tested
-actions, do not use GM shortcuts, and do not claim mock/codec tests prove gameplay
-or real-client compatibility.
+## Requirement audit
 
-## Prompt-to-artifact audit
-
-| Requirement / named deliverable | Artifact and actual evidence | Status |
+| Requirement | Evidence | Status |
 |---|---|---|
-| Research/architecture plan | `research/autonomous-testing-plan.md` | Written; original proposal, not completion evidence |
-| Dedicated branch / atomic commits | `feature/headless-e2e`; session fix and C++ worker are separate commits | In progress |
-| External C++ worker, no server-handler calls | `src/test_client/{main,Client,Protocol}.{cpp,h}`; standalone build; live journeys use sockets | Verified for enabled actions |
-| Reuse wire definitions / lobby encryption | Shared `PacketDef` headers plus `Protocol.cpp`; CTest layouts/stream/cipher tests and successful live lobby login | Verified for current profile |
-| Python + pytest / JSON-lines control | `tests/e2e/support/worker.py`, `conftest.py`, tests; C++ stdin/stdout dispatcher | Implemented and tested |
-| Multi-bot client state / async keepalives | C++ Bot/Channel state machines; live two-bot test; per-channel keepalive assertions | Verified |
-| Normal HTTP authentication / lobby character selection | `Environment.api`, `Bot.login_via_lobby`; live login scenario | Verified |
-| Normal creation journey | Fixtures use account/character provisioning; character creation through lobby not tested | Missing dedicated journey |
-| Isolated database/config/processes | `support/environment.py`; private MariaDB, unique schema/ports, staged executables and configs; successful live setup/teardown | Windows verified; Linux provisioned path unverified |
-| Application readiness | Self-spawn + received cleared BetweenAreas after FINISH_LOADING; live scenario | Verified, more lifecycle tests useful |
-| `login_via_lobby`, `wait_world_ready`, `logout` | Python Bot methods; live login/idle/logout test | Verified |
-| `walk_to`, route actions | Interpolated C++ movement; Python `walk_route`; independent observer position assertion | Tiny public-Ul'dah segment verified; general routing not verified |
-| Navigation reuse / matching data | Optional `Catalog.cpp` links existing EXD/PathFinder libraries; NPC metadata resolves | Path attempt blocked by current mesh tile-data load failure |
-| `interact`, `choose_dialogue`, unknown-scene stop | C++ exact scene identity/token validation; Python catalog lookup; unit tests reject unknown choices | Implemented, not live quest verified |
-| Versioned routes / scene metadata | `scene_catalog/due_diligence.json` is source-derived; optional catalog export | Scene file present; no verified quest route yet |
-| Quest-state/completion observations | C++ decodes quest slot updates/full list/completion flags; Python expectation methods | Implemented, not live quest verified |
-| Quest range/discovery/territory trigger evaluation | Not implemented | Missing |
-| Yield/resume / scene variants | Capability report explicitly lists scene yield unsupported; only one/two-result returns supported | Incomplete |
-| One complete quest / accept and cancel branches | Candidate: Due Diligence; its NPC/requirements metadata resolved locally | Not achieved |
-| Quest reward assertions | No inventory/currency/XP state model/assertions yet | Missing |
-| Persistence through server restart | Live observer-movement scenario logs out, observes despawn, restarts world, logs in and verifies position | Position verified; quest/reward persistence missing |
-| More supported gameplay / territory transition / combat / social | Not implemented beyond initial movement and login | Missing |
-| Independent observer / non-optimistic assertions | `test_observed_movement_and_position_persistence`; predicted and received positions separate | Verified for movement |
-| Non-GM accounts / real sessions / no gameplay shortcuts | Test configs rank 0, sessions required; worker checks received GM rank; only fixture setup edits initial DB state | Verified for live suite |
-| Deterministic authored regression scenarios | Three live tests and contract suite | Initial subset implemented |
-| Seeded exploration / action preconditions / invariant checks | Worker has some action preconditions; no exploratory policy engine | Missing |
-| Semantic replay / failure minimization | Bounded sanitized action journal exists; no replay/minimizer | Incomplete |
-| Soak/load / bounded ramp / success/latency/resources | Max 64 bots in worker, but no workload controller/metrics | Missing |
-| Deadline/cancellation/cleanup | Per-login C++ timer, per-action Python deadlines, close/remove, subprocess cleanup; worker-death tests | Initial implementation verified; stress/signal testing remains |
-| Failure artifacts / versions / JUnit | Redacted logs, observed event and action rings, hashes/fixture manifest; local JUnit files | Implemented for current suite |
-| Public asset-independent CI | `.github/workflows/test-client.yml` for Windows/Linux contracts | Authored; no hosted CI run yet |
-| Provisioned gameplay CI | Local opt-in profile and commands documented | No dedicated trusted-runner workflow yet |
-| Independent real-client compatibility / golden captures | Fixed layout tests exist; no independently captured real-client golden session | Missing |
-| Full goal completion | Green current subset does not cover missing rows above | **Not achieved; do not complete goal** |
+| Architecture / dedicated branch / atomic commits | Original proposal `autonomous-testing-plan.md`; `feature/headless-e2e` | Implemented incrementally |
+| External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
+| Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
+| Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
+| Normal character creation/opening journey | Pre-connection account/character fixture provisioning and public Ul'dah start | Not covered |
+| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
+| Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
+| Compatible navigation assets | `BuildNavigation.cpp` reuses exporter; separate TSET output, originals unchanged; `NavigationRoute.cpp` requires complete corridors and sampled surfaces | Verified for Motivational Speaking; Due Diligence disconnected |
+| Versioned route/scene data | Private generated catalog v1; checked-in explicit `motivational_speaking.json` scene choices | One live verified adapter; Due Diligence remains source-derived |
+| Interact / choose dialogue / unknown-scene failure | Exact received event/scene/token; no default choice or raw-packet control; contract tests | Verified for supported one/two-result returns |
+| Quest state / accept and cancel / completion | `test_live_quest.py`: Motivational Speaking (65686), cancel unchanged, accept sequence 255, completion | Verified |
+| Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
+| Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
+| World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
+| More quests / zoning / inventory operations / combat / social | Ordinary Say observed by another bot; quest-created inventory observed | Social subset verified; additional quests, zoning, item actions and combat missing |
+| Range/discovery/territory event triggers | No general adapter yet | Missing |
+| Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
+| Deterministic authored regression suite | Four live scenarios, native tests and Python contracts | Initial suite verified |
+| Seeded exploration / bounded soak / replay / resource metrics | Follow-on policy work | In progress; not established by quest tests |
+| Failure minimization | No reducer | Missing |
+| Deadlines / cancellation / cleanup | Timers, bounded waits, owned-process teardown, redaction; bounded Windows sharing-error retries | Initial paths verified; broader stress/signal testing remains |
+| Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
+| Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
+| Provisioned gameplay CI | Local opt-in profile and documented commands | Dedicated trusted-runner workflow missing |
+| Independent real-client/golden trace compatibility | No independently captured session | Missing |
+| Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
-## Verification performed
+## Verified results
 
-- Standalone Clang/Ninja build of `sapphire_test_client` and protocol tests.
-- Standalone MSVC/Visual Studio Debug build of the same targets.
-- `ctest --test-dir build-e2e --output-on-failure`: 1 test executable passed.
-- `ctest --test-dir build-e2e-msvc -C Debug --output-on-failure`: passed.
-- `python -m pytest tests/e2e/test_worker.py --e2e-worker build-e2e/sapphire_test_client.exe`: 14 passed.
-- Same 14 Python contracts with `build-e2e-msvc/Debug/sapphire_test_client.exe`: passed.
-- `python -m pytest tests/e2e/test_live.py --e2e-profile .e2e-local.json -v --junitxml=build-e2e/live.xml`: 3 passed, latest run approximately 46 seconds.
-- Full-build `sapphire_test_catalog` target compiled and returned candidate quest/NPC metadata from locally available matching game data.
-- Catalog navmesh route attempt failed explicitly with `PathFinder: Couldn't read tile data` for `w1t1.nav`; no successful route was fabricated.
+- Clang/Ninja and MSVC/Visual Studio: three CTest executables pass (protocol,
+  rewards, synthetic navigation). Navigation tests reject disconnected and
+  off-mesh destinations rather than accepting a partial Detour path.
+- GNU 11.4/Ubuntu 22.04: standalone build and the same three CTest executables pass.
+- Python worker contracts pass on Windows and in a network-isolated Linux
+  container. This WSL instance refuses even Python-only loopback connections;
+  the failing WSL socket check was not skipped or rewritten to make it pass.
+- Four live scenarios pass together in 96.16s: rejected credentials, login/idle/
+  logout, observed movement/Say/position persistence, and full quest/rewards/
+  completion persistence.
+- Current navigation generated separately in `.e2e-assets/uldah-v2`; repeat output
+  refused, original OBJ and legacy mesh hashes unchanged. The 65686 route has
+  322 points and length approximately 152.375m, with nearby walkable NPC approaches.
+- `test_live_quest.py` never seeds quest flags or grants rewards. Initial character
+  position/opening state are fixture setup before the first connection, not claims
+  of a creation/opening/travel journey.
 
-Local generated verification outputs (ignored by git): `build-e2e/contracts.xml`,
-`build-e2e/live.xml`, `build-e2e/Testing/Temporary/LastTest.log`,
-`build-e2e/catalog.json`, `.e2e-artifacts/sapphire-e2e-*/`.
-The exact runtime/server/module hashes are recorded per live run.
+Ignored local evidence: `build-e2e/{contracts,live,quest}.xml`,
+`build-e2e-msvc/contracts.xml`, `build-e2e-linux/container-contracts.xml`, CTest logs,
+private generated catalogs, and `.e2e-artifacts/sapphire-e2e-*/` manifests/journals.
+Existing server binaries are staged and hashed, not silently rebuilt by the runner.
 
-## Supporting correction uncovered during real execution
+## Corrections exposed by execution
 
-Independent bot accounts initially interfered during session creation. The narrow
-supporting fix in `src/api/SapphireApi.cpp` now obtains fresh 62-character tokens
-from the OS random source via `src/common/Crypt/Random.*`, rather than global RNG
-state. Existing wire length is preserved; errors fail closed. The API was rebuilt
-before the successful multi-bot runs. This is a separate commit from the testing
-framework, not a timing workaround in tests.
+- Concurrent accounts exposed time-reseeded API session collisions. The separate
+  session fix uses OS randomness while retaining the existing wire length.
+- Movement exposed premature self-spawn readiness; the worker now sends the normal
+  FINISH_LOADING command and observes the server clearing BetweenAreas.
+- Live quest reward creation required destination-based CREATEITEM transactions,
+  not only source-based updates. Both are staged until successful batch commit.
+- Restart exposed MSB-first quest-completion masks, unlike LSB-first condition
+  flags. A manually specified quest-150 bit fixture guards the corrected decoder.
+- One Windows teardown encountered a transient executable-file permission failure.
+  Bounded retries were added; persistent failures remain visible and retryable.
 
-The first worker revision also incorrectly treated self-spawn as complete
-readiness. Live movement verification exposed the missing FINISH_LOADING command;
-the worker now waits for a received condition update before reporting ready.
-Sapphire registers its current logout handler under StartLogoutCountdown; the
-client follows that normal path and observes the logout acknowledgement.
+## Next actions / boundaries
 
-## Next concrete actions
+1. Finish bounded supported-action policies, replay and metrics with live evidence.
+2. Add more implemented quests, normal zoning, inventory actions and combat; add
+   the corresponding received-state and independent-observer assertions.
+3. Extend explicit trigger/scene adapters; unknown content must still fail.
+4. Validate provisioned gameplay CI and longer/higher-population stability runs.
+5. Obtain an appropriate locally run real client or a maintainer-supplied sanitized
+   trace. Shared schemas and headless-to-server agreement cannot substitute for it.
 
-1. Generate a compatible Ul'dah navmesh into a **separate local test asset
-   directory**, using existing export/Recast tooling. Do not rewrite the developer's
-   existing `bin/navi` or bypass the failure with teleport/straight-line fallback.
-   Re-run the catalog path query and independently check start/end/route geometry.
-2. Decode inventory/currency/XP observations required for the selected quest's
-   rewards, with wire fixtures. Build a data-backed fixture near the quest giver
-   before first login, then test acceptance/cancellation, route, scene hand-ins,
-   completion/rewards and restart persistence through normal packets.
-3. Add the remaining supported event triggers and a curated zone-transition test;
-   explicitly report unsupported content instead of silently succeeding.
-4. Add bounded seeded exploration and soak policies using the same action API,
-   then semantic trace replay and metrics.
-5. Validate Linux provisioning and hosted contract CI; obtain a known-good local
-   real-client trace for independent compatibility checks.
-
-The navmesh failure is an unresolved dependency for the chosen quest route, not
-proof that route generation is impossible. Continue with the existing exporter
-before declaring that user input is required. Real-client compatibility will need
-an appropriate locally run client or a sanitized trace supplied by the maintainer.
+The original legacy mesh-loading blocker is resolved without modifying developer
+assets. Due Diligence still lacks a complete corridor, but it no longer blocks the
+first quest: Motivational Speaking is verified. Independent real-client evidence
+still requires an appropriate client run/trace; other missing scenarios remain
+implementation work, not proof that user input is the only next step.

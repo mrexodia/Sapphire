@@ -1,5 +1,6 @@
 #pragma once
 #include "Protocol.h"
+#include "RewardsState.h"
 #include <asio.hpp>
 #include <nlohmann/json.hpp>
 #include <deque>
@@ -59,6 +60,7 @@ namespace Sapphire::Testing
     Emit m_emit;
     uint64_t m_seq = 0;
     Json m_state;
+    RewardsState m_rewards;
     Json m_login;
     std::shared_ptr<Channel> m_lobby, m_zone, m_chat;
     LobbyCipher m_cipher;

@@ -98,7 +98,7 @@ class Worker:
             with self._cv:
                 self._pending.add(identifier)
                 if method not in {"snapshot", "capabilities"}:
-                    safe_args = args if method in {"walk_to", "interact", "choose_scene"} else {}
+                    safe_args = args if method in {"walk_to", "interact", "choose_scene", "say"} else {}
                     self._actions.append({"id": identifier, "method": method, "bot": bot,
                                           "args": safe_args, "monotonic": time.monotonic()})
             try:
@@ -143,10 +143,11 @@ class Worker:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise WorkerError(f"{bot}: timeout waiting for {description}; state={state}")
-                if version == self._version and not self._failure:
-                    self._cv.wait(remaining)
+                changed = self._cv.wait_for(lambda: self._version != version or self._failure, remaining)
                 if self._failure:
                     raise WorkerError(self._failure)
+                if not changed:
+                    raise WorkerError(f"{bot}: timeout waiting for {description}; state={state}")
 
     def close(self):
         if self._closed:
@@ -222,6 +223,29 @@ class Bot:
             raise UnsupportedScene("scene catalog profile mismatch")
         self.worker.request("choose_scene", self.name, **scene_arguments(scene), results=results)
 
+    def say(self, message):
+        self.worker.request("say", self.name, message=message)
+
+    def expect_say(self, actor, message, timeout=10):
+        return self.worker.wait_state(self.name,
+            lambda s: any(m["actor"] == actor and m["message"] == message for m in s["chat"]),
+            "say received from expected actor", timeout)
+
+    def wait_event_finished(self, timeout=10):
+        return self.worker.wait_state(self.name, lambda s: s["event_id"] is None and s["scene"] is None,
+                                      "event finished", timeout)
+
+    def reward_snapshot(self, work_index, timeout=10):
+        state = self.worker.wait_state(self.name,
+            lambda s: s["rewards"]["inventory_ready"] and len(s["rewards"]["exp_by_index"]) > work_index,
+            "inventory and experience snapshot", timeout)
+        return reward_values(state["rewards"], work_index)
+
+    def expect_rewards(self, expected, work_index, timeout=10):
+        return self.worker.wait_state(self.name,
+            lambda s: s["rewards"]["inventory_ready"] and reward_values(s["rewards"], work_index) == expected,
+            "exact reward state", timeout)
+
     def expect_quest_active(self, quest, sequence=None, timeout=10):
         key = str(quest & 0xffff)
         return self.worker.wait_state(self.name,
@@ -240,6 +264,22 @@ class Bot:
 
     def close(self):
         self.worker.request("remove", self.name)
+
+
+def reward_values(state, work_index):
+    if not state["inventory_ready"] or len(state["exp_by_index"]) <= work_index:
+        raise WorkerError("reward baseline is not observed yet")
+    items, currencies = {}, {}
+    for slot in state["inventory"].values():
+        if slot["storage"] not in {0, 1, 2, 3, 2000}:
+            continue
+        target = currencies if slot["storage"] == 2000 else items
+        key = str(slot["id"])
+        target[key] = target.get(key, 0) + slot["count"]
+    job = str(state["class_job"])
+    return {"items": items, "currencies": currencies,
+            "exp": state["exp_by_class"].get(job, state["exp_by_index"][work_index]),
+            "level": state["level"] if state["level"] is not None else state["level_by_index"][work_index]}
 
 
 def scene_arguments(scene):

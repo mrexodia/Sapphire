@@ -24,7 +24,7 @@ namespace Sapphire::Testing
     if(!address.is_loopback() || !port) throw ProtocolError("test endpoints must be loopback with a nonzero port");
     m_socket.async_connect({address, port}, [self = shared_from_this(), ready](auto ec) {
       if(self->m_closed) return;
-      if(ec) return self->error("connection failed");
+      if(ec) return self->error("connection failed: " + ec.message());
       self->m_socket.set_option(asio::ip::tcp::no_delay(true));
       self->read();
       try { ready(); } catch(const std::exception& e) { self->error(e.what()); }
@@ -82,6 +82,7 @@ namespace Sapphire::Testing
   {
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
+      {"chat", Json::array()},
       {"scene", nullptr}, {"event_id", nullptr}, {"heartbeat_replies", 0},
       {"heartbeats", {{"zone", 0}, {"chat", 0}}}, {"packets_received", 0}};
   }
@@ -290,6 +291,8 @@ namespace Sapphire::Testing
     const auto h = readObject<Wire::FFXIVARR_IPC_HEADER>(segment.data);
     event("packet", {{"channel", name}, {"opcode", h.type}, {"source", segment.header.source_actor}});
     constexpr size_t off = sizeof(Wire::FFXIVARR_IPC_HEADER);
+    if(segment.header.source_actor == m_entity && m_rewards.receive(h.type, segment.data))
+      event("rewards_changed");
     if(h.type == WS::FFXIVIpcInitZone::_ServerIpcType)
     {
       const auto p = readObject<WS::FFXIVIpcInitZone>(segment.data, off);
@@ -367,7 +370,8 @@ namespace Sapphire::Testing
       auto p = readObject<WS::FFXIVIpcQuestCompleteList>(segment.data, off);
       m_state["complete_quests"] = Json::object();
       for(size_t i = 0; i < sizeof(p.questCompleteMask) * 8; ++i)
-        if(p.questCompleteMask[i / 8] & (1 << (i % 8))) m_state["complete_quests"][std::to_string(i)] = true;
+        if(questCompletionFlag(p.questCompleteMask, sizeof(p.questCompleteMask), i))
+          m_state["complete_quests"][std::to_string(i)] = true;
       event("quest_completion_list");
     }
     else if(h.type == WS::FFXIVIpcQuestFinish::_ServerIpcType)
@@ -392,6 +396,14 @@ namespace Sapphire::Testing
       auto p = readObject<WS::FFXIVIpcEventFinish>(segment.data, off);
       m_state["event_id"] = nullptr; m_state["scene"] = nullptr;
       event("event_finish", {{"event_id", p.handlerId}});
+    }
+    else if(h.type == WS::FFXIVIpcChat::_ServerIpcType)
+    {
+      auto p = readObject<WS::FFXIVIpcChat>(segment.data, off);
+      Json message{{"actor", p.entityId}, {"kind", p.type}, {"message", text(p.message)}, {"token", m_seq + 1}};
+      m_state["chat"].push_back(message);
+      if(m_state["chat"].size() > 64) m_state["chat"].erase(m_state["chat"].begin());
+      event("chat", message);
     }
     else if(h.type == WS::FFXIVIpcEnableLogout::_ServerIpcType)
     {
@@ -423,7 +435,11 @@ namespace Sapphire::Testing
 
   Json Bot::command(const std::string& method, const Json& args)
   {
-    if(method == "snapshot") { auto state = m_state; state["seq"] = m_seq; state["moving"] = m_moving; return state; }
+    if(method == "snapshot")
+    {
+      auto state = m_state; state["seq"] = m_seq; state["moving"] = m_moving;
+      state["rewards"] = m_rewards.state(); return state;
+    }
     if(method == "close") { close(); phase("closed"); return Json::object(); }
     if(m_state["phase"] != "ready") throw ProtocolError("action requires a world-ready bot");
     if(method == "walk_to")
@@ -440,7 +456,13 @@ namespace Sapphire::Testing
       if(!std::isfinite(speed) || speed <= 0 || speed > 6 || distance > 100 * 100)
         throw ProtocolError("waypoint exceeds 100m or speed outside (0,6]");
       m_destination = destination; m_speed = speed; m_moving = true;
-      moveStep(); return {{"completion", "route_sent is prediction only; verify with an observer"}};
+      // Include the first tick in the cadence, also when chaining short waypoints.
+      m_movement.expires_from_now(std::chrono::milliseconds(100));
+      m_movement.async_wait([self = shared_from_this()](auto ec) {
+        if(ec) return;
+        try { self->moveStep(); } catch(const std::exception& e) { self->fail(e.what()); }
+      });
+      return {{"completion", "route_sent is prediction only; verify with an observer"}};
     }
     if(method == "interact")
     {
@@ -461,6 +483,18 @@ namespace Sapphire::Testing
       std::copy(results.begin(), results.end(), p.results);
       sendZone(p._ServerIpcType, objectBytes(p)); m_state["scene"] = nullptr;
       return Json::object();
+    }
+    if(method == "say")
+    {
+      const auto message = args.at("message").get<std::string>();
+      if(message.empty() || message.size() > 128 || message[0] == '!' ||
+         !std::all_of(message.begin(), message.end(), [](unsigned char c) { return c >= 32 && c <= 126; }))
+        throw ProtocolError("say requires 1..128 printable ASCII characters, not a debug command");
+      WC::FFXIVIpcChatHandler p{};
+      p.clientTimeValue = timeSeconds(); p.position.originEntityId = m_entity;
+      std::copy(m_predicted.begin(), m_predicted.end(), p.position.pos);
+      p.chatType = Common::ChatType::Say; copyText(p.message, message);
+      sendZone(p._ServerIpcType, objectBytes(p)); return Json::object();
     }
     if(method == "logout")
     {

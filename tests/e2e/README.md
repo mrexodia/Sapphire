@@ -19,12 +19,16 @@ lobby, world and MariaDB processes with matching game data:
 - A second bot observes another bot spawning, walking a one-metre segment, and
   despawning after logout.
 - The moved position survives a world-process restart and a new HTTP/lobby login.
+- Another bot receives the sender's ordinary Say message.
+- **Motivational Speaking (65686)**: cancellation leaves quest/reward state unchanged;
+  acceptance, a roughly 152m navmesh route, explicit completion scene, 50 XP and two
+  potions are verified. A nearby bot independently observes arrival.
+- Quest completion, tracked bag item counts/currencies and XP survive world restart and
+  a fresh HTTP/lobby login. Completion-list bit order has a regression fixture.
 
-The worker also decodes quests/completion flags and scenes, and supports explicit
-scene responses, but **a complete quest/reward journey has not yet been verified**.
-The source-derived `scene_catalog/due_diligence.json` is not evidence of a passing
-quest test. General navigation, combat, scene yields, autonomous exploration,
-soak/load policies and real-client/UI compatibility are not implemented yet.
+The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
+are not connected by the available regenerated mesh. General navigation, combat,
+scene yields and independent real-client/UI compatibility remain unsupported.
 
 Asset-independent tests are not labeled as gameplay coverage. See the
 [implementation status](../../research/e2e-implementation-status.md) for the
@@ -51,14 +55,18 @@ python -m pytest tests/e2e/test_worker.py \
 On Windows, append `.exe`. With the Visual Studio generator the executable is
 `build-e2e/Debug/sapphire_test_client.exe`. Ninja builds place it directly in
 `build-e2e/`. Both Clang/Ninja and MSVC/Visual Studio builds have passed locally.
-Linux CI is configured but has not been run in this implementation session.
+GNU/Linux builds and all three CTest executables pass under Ubuntu 22.04/WSL.
+Python contracts also pass in a network-isolated Linux container. WSL's current
+loopback fails even a Python-only socket check; no host networking was changed to
+work around that. Hosted CI has not been run in this implementation session.
 
 To include the worker in the normal Sapphire build, configure with
 `-DSAPPHIRE_BUILD_TEST_CLIENT=ON`. It is off by default.
 
-The CTest executable verifies explicit header/layout fixtures, all split points
-of a sample TCP frame, one-byte reads, coalesced frames, bounded parsing, lobby
-cipher roundtrips and OS-generated session token format/independence. The Python
+CTest verifies explicit header/layout fixtures, split/coalesced TCP frames,
+bounded parsing, lobby cipher roundtrips, OS-generated tokens, quest flag order,
+deferred inventory transaction publication, XP snapshots, and complete versus
+partial/disconnected navigation paths using synthetic geometry. The Python
 contract tests cover control errors, connection failures, pre-readiness action
 rejection, worker death, scene selection, redaction and setup checks. These do
 not replace the live suite.
@@ -71,12 +79,16 @@ not replace the live suite.
 3. Copy `tests/e2e/profile.example.json` to `.e2e-local.json` and edit its paths.
    Profiles must point to binaries you trust. The root `.gitignore` excludes local
    `.e2e-*.json` profiles and `.e2e-artifacts/`.
-4. Run:
+4. For quest coverage, generate the private route catalog below and add its absolute
+   path as `quest_catalog` in the local profile. The quest test fails if it is absent.
+5. Run:
 
 ```sh
-python -m pytest tests/e2e/test_live.py --e2e-profile .e2e-local.json \
-  -v --junitxml=build-e2e/live.xml
+python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
+  --e2e-profile .e2e-local.json -v --junitxml=build-e2e/live.xml
 ```
+
+Omit `test_live_quest.py` for the smaller login/movement/social smoke slice.
 
 Missing required assets, missing binaries or setup errors **fail** an explicitly
 requested live run. Without `--e2e-profile`, live tests are explicitly skipped.
@@ -96,9 +108,13 @@ The runner:
   **before their first world connection**. This is fixture setup, not coverage of
   character creation, the opening quest, or travel into Ul'dah. Opening territory
   182 is private and is not appropriate for two-player replication assertions.
+  Quest fixtures start at the catalog's first walkable waypoint; this is not proof
+  of travel from character creation to the quest giver. Quest state is never seeded.
 - Uses no GM movement or quest completion commands during tested journeys.
 - Stops only the processes it owns, redacts credentials/session identifiers from
   collected text logs, and removes the private runtime/database on teardown.
+  Transient Windows file-sharing failures get bounded cleanup retries; persistent
+  cleanup failures remain errors, not ignored successes.
 
 Live tests currently use the already-built server binaries. `manifest.json`
 records their hashes, script hashes, worker hash, source revision/dirty status,
@@ -136,8 +152,9 @@ bot.logout()   # Waits for a received logout acknowledgement, then closes socket
 bot.close()    # Removes the bot from the worker.
 ```
 
-Additional actions: `wait_world_ready`, `walk_route`, `interact`,
-`choose_dialogue`, `expect_quest_active`, `expect_quest_complete`.
+Additional actions: `wait_world_ready`, `walk_route`, `interact`, `choose_dialogue`,
+`wait_event_finished`, `expect_quest_active`, `expect_quest_complete`,
+`reward_snapshot`, `expect_rewards`, `say`, and `expect_say`.
 Use `worker.wait_state(...)` for bounded predicates against received state. Event
 notifications wake waits; snapshots also cover observations received before the
 wait was registered. No automatic gameplay retry is performed after a timeout.
@@ -162,22 +179,28 @@ build, since it links the existing game-data and navigation libraries:
 
 ```sh
 cmake -S . -B build -DSAPPHIRE_BUILD_TEST_CLIENT=ON
-cmake --build build --target sapphire_test_catalog --config Debug
-bin/sapphire_test_catalog <game/sqpack>
-bin/sapphire_test_catalog <game/sqpack> <mesh-root> <private-output.json>
+cmake --build build --target sapphire_test_navbuild sapphire_test_catalog --config Debug
+bin/sapphire_test_navbuild bin/navi/w1t1/w1t1.obj .e2e-assets/uldah-v1 w1t1
+bin/sapphire_test_catalog <game/sqpack> .e2e-assets/uldah-v1/navi build-e2e/quest.json 65686
 ```
 
-Add `.exe` on Windows. The first form prints limited Due Diligence metadata. The
-second attempts a navmesh route between its two NPCs and writes JSON only after a
-successful path query. Failure to load the mesh or find a path is an error, not a
-straight-line fallback. Generated data is local asset-derived material; do not
-publish bulk game data as CI artifacts.
+Add `.exe` on Windows. The builder reuses the existing exporter, requires a new
+output directory, and refuses overwrites. It copies collision geometry into that
+private directory and emits current TSET tiles. Original OBJ/mesh hashes were
+checked unchanged. The bundled legacy MSET mesh is not rewritten.
 
-Current local evidence: both NPCs resolve to territory 130 and the quest has level
-1/no previous-quest requirements. However, the available `w1t1.nav` fails the
-current `PathFinder` tile-data load. Regenerating a compatible mesh in a separate
-test asset directory is the next step, followed by route validation and live
-quest/reward/persistence assertions. The tool does not modify the existing mesh.
+The catalog loads through `NaviProvider` and extracts quest prerequisites, rewards,
+actor identities and a versioned Detour route. It requires a complete corridor,
+rejects truncation/off-mesh links and samples polygon surfaces at approximately
+0.5m spacing. Endpoints must be within 2m of the selected NPCs. Partial paths or
+missing meshes fail, with no straight-line fallback. The Python scenario rechecks
+route bounds/length/endpoints. The verified 65686 route contains 322 waypoints.
+
+Set `quest_catalog` to the generated JSON path. Manifests record its hash and the
+navigation mesh hash. Generated routes, collision geometry and meshes are private
+asset-derived material; keep them under ignored directories, not public artifacts.
+Due Diligence (default quest ID 65685 if omitted) still fails the complete-corridor
+requirement; it is not counted as coverage.
 
 ## Artifacts and CI
 
