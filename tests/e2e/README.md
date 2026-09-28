@@ -57,13 +57,14 @@ lobby, world and MariaDB processes with matching game data:
   server's enabled `testTable` loot pools; exact rewards survive a fresh login.
   Enemies, skills and resources are not granted or modified.
 - A separate fresh level-one Gladiator uses one ordinary Fast Blade against an
-  observed natural level-14 enemy, then performs no further actions. Both the
-  fighter and a stationary observer receive every retaliation effect and its exact
+  observed natural level-14 enemy, then performs no further combat actions while
+  walking a bounded source route. Both clients observe the enemy's natural pursuit;
+  the fighter and stationary observer receive every retaliation effect and its exact
   pre/post committed HP, including natural regeneration between hits, through zero
   player HP. The defeated fighter then sends the ordinary bounded return command,
   transitions to its source-bound Ul'dah homepoint at full HP, is observed there by
   a third client, and preserves that live position/HP after restart. This does not
-  cover raises, death penalties or pursuit.
+  cover raises, death penalties or general pursuit/leash behavior.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -140,7 +141,8 @@ not replace the live suite.
 7. For the chained inventory/economy path, generate the source-bound shop catalog
    below and set `shop_catalog`.
 8. For the player-defeat return path, generate the source-bound respawn catalog
-   below and set `respawn_catalog`.
+   below and set `respawn_catalog`; generate the bounded pursuit catalog below and
+   set `pursuit_catalog`.
 9. Run:
 
 ```sh
@@ -444,8 +446,11 @@ cover the fix. This does not claim collision safety across multiple world proces
 
 `test_live_player_defeat.py` uses unchanged natural population layout 3749193
 (base 302, level 14). One received/range-checked Fast Blade establishes ordinary
-hostility; no later player combat action is sent. For every retaliation, the worker
-records the target's received HP immediately before and after the matching integrity
+hostility; no later player combat action is sent. The fighter then follows a
+source-generated ten-metre navmesh route while the stationary witness verifies its
+arrival. Both clients must observe the hostile enemy move at least two metres from
+its natural spawn toward the route endpoint before the defeat may pass. For every
+retaliation, the worker records the target's received HP immediately before and after the matching integrity
 packet, so intervening natural regeneration cannot be mistaken for damage. Both
 clients require the identical effect sequence and exact committed decrease through
 zero HP. The worker then permits only received-dead state in Central Thanalan with
@@ -454,7 +459,7 @@ or teleport arguments. The fighter must transition to the generated homepoint-9
 pop range in Ul'dah with full HP, disappear from the old observer, appear alive to a
 pre-positioned destination observer, and reload the same position/full HP after
 logout and world restart. The scenario does not claim automatic aggro, raises,
-death penalties, pursuit or general combat.
+death penalties, general pursuit/leash behavior or general combat.
 
 Generate the private binding from matching game data:
 
@@ -467,6 +472,19 @@ Use `.exe` on Windows and set `respawn_catalog` to the absolute output path. The
 verified catalog resolves Gladiator homepoint 9 through Aetheryte metadata to the
 single source pop range 3693863 in territory 130. It contains no invented return
 position and is not a general respawn or teleport catalog.
+
+Generate the pursuit binding from the staged unchanged population and matching
+private Central Thanalan mesh:
+
+```sh
+cmake --build build --target sapphire_test_pursuit_catalog --config Debug
+bin/sapphire_test_pursuit_catalog <mesh-root> data/bnpcs/w1f2/w1f2.json build-e2e/pursuit.json
+```
+
+The validator fixes natural layout 3749193/base 302/level 14, requires a complete
+continuous route starting beside it and ending at least eight metres away, and
+preflight requires the route mesh to match the staged server mesh. This proves one
+observed pursuit response, not general pathfinding, leash behavior or aggro policy.
 
 The artifact manifest hashes the action catalog and staged player-action/population
 files. Bounded event journals include decoded effects, HP integrity and action-start

@@ -20,12 +20,13 @@ self-hosted runners (checked through the read-only Actions runners API).
    unrestricted asset-bearing runner to a public repository accepting PR code.
 2. Provision legally available matching game data, including its adjacent
    `ffxivgame.ver` (`2016.07.05.0000.0001`). Keep it outside the checkout. Provision
-   private compatible w1t1/w1f2 meshes and all six catalogs described in
+   private compatible w1t1/w1f2 meshes and all seven catalogs described in
    [README.md](README.md). The route and server w1t1 meshes must hash identically.
    Legacy MSET files are rejected. Do not modify installed game assets to pass.
 3. Put a local JSON profile outside the checkout with `game_data`, `mariadb_bin`,
    `navigation`, `quest_catalog`, `follow_up_catalog`, `transition_catalog`,
-   `combat_catalog`, `shop_catalog`, and `respawn_catalog`. Normal local profiles
+   `combat_catalog`, `shop_catalog`, `respawn_catalog`, and `pursuit_catalog`.
+   Normal local profiles
    also specify `binaries` and `worker`;
    the workflow overrides these with its newly built out-of-tree outputs. No DB
    credentials or connection strings belong in this profile. Fixtures create a
@@ -113,13 +114,13 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `fc89b2422` passed the nine-case strict
-gate in 549.892 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and removed private runtime. The chained case took 224.179s and
-included the source-bound persisted sale and purchase; the player-defeat case
-retained the observed/persisted homepoint return. Evidence is
-`build-e2e/ci-summary-purchase.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-hb8amp8t`. This remains a local rehearsal, not a
+Latest local evidence: clean revision `482204b56` passed the nine-case strict
+gate in 524.777 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and removed private runtime. The player-defeat case took 83.044s
+and included independently observed natural pursuit plus the persisted homepoint
+return; the chain retained the persisted sale/purchase. Evidence is
+`build-e2e/ci-summary-pursuit.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-usy4rlkp`. This remains a local rehearsal, not a
 hosted protected-runner execution.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
