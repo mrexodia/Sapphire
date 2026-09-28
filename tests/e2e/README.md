@@ -290,9 +290,11 @@ merged ether stack and verifies that deletion across the next restart. One remai
 verified after another restart, and the character walks a source-derived route to
 an observed gil-shop actor. An independent client verifies arrival. The worker
 opens only the matching received shop scenes, sells the observed one-item ordinary-
-bag stack, and requires the exact item decrease and 28-gil increase immediately
-and after fresh authentication plus a world restart. `gil-shop-sale.json` records
-those snapshots; the operation-10 acknowledgement remains explicitly separate
+bag stack, and requires the exact item decrease and 28-gil increase. From the
+refreshed received shop scene it then buys source-listed item 5890 for exactly eight
+gil, requiring the new item and 20-gil balance immediately and after fresh
+authentication plus a world restart. `gil-shop-sale.json` records those snapshots;
+the operation-10 acknowledgement remains explicitly separate
 from mutation evidence. The server split implementation creates the new persistent
 item directly at the requested slot; it no longer aliases an `addItem()` auto-slot
 into a second destination. The first zero-to-nonzero currency credit was also fixed
@@ -302,9 +304,10 @@ No database mutation, grant, optimistic slot update, forced resync or fabricated
 server response supplies gameplay evidence.
 
 This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
-swap, one partial split, one no-overflow same-item merge, discard, and one exact
-single-item sale—not equipment or currency-container moves, purchases, overflow
-merges, item use, arbitrary shops/items, immediate operation publication, crash
+swap, one partial split, one no-overflow same-item merge, discard, one exact
+single-item sale and one exact single-item purchase—not equipment or currency-
+container moves, overflow merges, item use, arbitrary shops/items or quantities,
+immediate operation publication, crash
 consistency or independent real-client inventory presentation.
 
 `close` cancels pending connection/movement timers and closes sockets; `remove`
@@ -343,7 +346,7 @@ asset-derived material; keep them under ignored directories, not public artifact
 Due Diligence (default quest ID 65685 if omitted) still fails the complete-corridor
 requirement; it is not counted as coverage.
 
-## Source-bound gil-shop sale
+## Source-bound gil-shop sale and purchase
 
 The full-build shop tool extracts the sale value for the normally earned potion,
 finds ordinary gil-shop event handlers in territory 130, and selects a complete
@@ -358,10 +361,11 @@ bin/sapphire_test_shop_catalog <game/sqpack> .e2e-assets/uldah-v2/navi build-e2e
 
 Use `.exe` on Windows and set `shop_catalog` to the absolute output path. The
 verified private catalog binds potion 4551 to one sale for 28 gil, ENpc base
-1009247/layout 4757046/event 262468, and a 641-point route of approximately
-302.30m. Python validates the exact supported sale, event family, route continuity,
-and endpoint range. This does not establish buying, arbitrary sale quantities,
-other shops/items, currency-container manipulation, or real-client shop UI.
+1009247/layout 4757046/event 262468, a 641-point route of approximately 302.30m,
+and that shop's source-listed index-zero item 5890 for an eight-gil purchase.
+Python validates both exact transactions, the event family, route continuity, and
+endpoint range. This does not establish arbitrary quantities/items, other shops,
+currency-container manipulation, concurrent transactions, or real-client shop UI.
 
 ## Curated exit crossing
 

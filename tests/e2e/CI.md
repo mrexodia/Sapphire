@@ -113,13 +113,13 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `67ef4b144` passed the nine-case strict
-gate in 514.181 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and removed private runtime. The player-defeat case took 78.746s
-and included the source-bound observed/persisted homepoint return; the chained case
-retained the persisted gil-shop sale. Evidence is
-`build-e2e/ci-summary-respawn.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-t1kaqsfb`. This remains a local rehearsal, not a
+Latest local evidence: clean revision `fc89b2422` passed the nine-case strict
+gate in 549.892 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and removed private runtime. The chained case took 224.179s and
+included the source-bound persisted sale and purchase; the player-defeat case
+retained the observed/persisted homepoint return. Evidence is
+`build-e2e/ci-summary-purchase.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-hb8amp8t`. This remains a local rehearsal, not a
 hosted protected-runner execution.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
