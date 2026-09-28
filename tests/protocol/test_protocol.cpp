@@ -1,0 +1,92 @@
+#include "Protocol.h"
+#include <Crypt/Random.h>
+#include <set>
+#include <Network/PacketDef/Lobby/ClientLobbyDef.h>
+#include <Network/PacketDef/Zone/ClientZoneDef.h>
+#include <Network/PacketDef/Zone/ServerZoneDef.h>
+#include <iostream>
+
+using namespace Sapphire::Testing;
+void require(bool value, const char* message)
+{
+  if(!value) throw std::runtime_error(message);
+}
+template<class F> void rejects(F action)
+{
+  bool rejected = false;
+  try { action(); } catch(const ProtocolError&) { rejected = true; }
+  require(rejected, "expected protocol rejection");
+}
+int main()
+{
+  try
+  {
+    std::set<std::string> tokens;
+    for(int i = 0; i < 100; ++i)
+    {
+      auto token = Sapphire::Common::Util::randomHexToken(31);
+      require(token.size() == 62 && token.find_first_not_of("0123456789abcdef") == std::string::npos,
+        "session token wire format");
+      require(tokens.insert(token).second, "independent session tokens");
+    }
+    // Explicit wire layout checks, in addition to roundtrips using shared definitions.
+    using namespace Wire::WorldPackets;
+    static_assert(sizeof(Client::FFXIVIpcUpdatePosition) == 24);
+    static_assert(sizeof(Client::FFXIVIpcEventHandlerTalk) == 16);
+    static_assert(sizeof(Client::FFXIVIpcReturnEventScene2) == 16);
+    static_assert(sizeof(Server::FFXIVIpcActorMove) == 16);
+    static_assert(sizeof(Server::FFXIVIpcQuestFinish) == 8);
+    auto payload = ipc(0x1234, Bytes{1, 2, 3, 4});
+    require(payload.size() == 24 && payload[0] == 0x14 && payload[2] == 0x34 && payload[3] == 0x12,
+      "IPC little-endian header fixture");
+    auto bytes = frame(1, 3, payload, 0x10203040);
+    require(bytes.size() == 80 && bytes[24] == 80 && bytes[28] == 1 && bytes[30] == 1,
+      "bundle length/channel/count fixture");
+    require(bytes[40] == 40 && bytes[44] == 0x40 && bytes[47] == 0x10 && bytes[52] == 3,
+      "segment length/source/type fixture");
+
+    for(size_t split = 0; split <= bytes.size(); ++split)
+    {
+      Decoder decoder;
+      auto first = decoder.feed(bytes.data(), split);
+      auto second = decoder.feed(bytes.data() + split, bytes.size() - split);
+      require(first.size() + second.size() == 1, "every TCP split delivers exactly once");
+    }
+    Decoder bytewise;
+    size_t delivered = 0;
+    for(auto byte : bytes) delivered += bytewise.feed(&byte, 1).size();
+    require(delivered == 1, "one-byte reads");
+    auto two = bytes; two.insert(two.end(), bytes.begin(), bytes.end());
+    Decoder coalesced;
+    auto segments = coalesced.feed(two.data(), two.size());
+    require(segments.size() == 2 && segments[0].data == payload && segments[1].data == payload,
+      "coalesced TCP frames");
+    for(auto offset : {24, 40})
+    {
+      auto bad = bytes; bad[offset] = 0;
+      rejects([&] { Decoder d; d.feed(bad.data(), bad.size()); });
+    }
+    auto compressed = bytes; compressed[33] = 1;
+    rejects([&] { Decoder d; d.feed(compressed.data(), compressed.size()); });
+    auto count = bytes; count[30] = 0;
+    rejects([&] { Decoder d; d.feed(count.data(), count.size()); });
+    rejects([&] { readObject<uint64_t>(Bytes(7)); });
+    rejects([&] { readObject<uint16_t>(Bytes(8), 9); });
+    char shortField[4]{};
+    rejects([&] { copyText(shortField, "abcd"); });
+    char unterminated[2]{'a', 'b'};
+    rejects([&] { text(unterminated); });
+
+    LobbyCipher sender, receiver;
+    auto hello = sender.initialize(42, "SapphireE2E");
+    receiver.initialize(42, "SapphireE2E");
+    require(hello.size() == 104 && hello[100] == 42 && hello[36] == 'S', "handshake fixture");
+    auto encrypted = payload; sender.encrypt(encrypted);
+    require(encrypted != payload, "encryption changes payload");
+    receiver.decrypt(encrypted); require(encrypted == payload, "lobby cipher roundtrip");
+    rejects([&] { Bytes bad(3); sender.encrypt(bad); });
+    std::cout << "Protocol layout, stream assembly, bounds, and lobby cipher tests passed\n";
+    return 0;
+  }
+  catch(const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
+}

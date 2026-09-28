@@ -39,6 +39,11 @@ add_custom_target( copy_runtime_files ALL
 file( COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} )
 
 option( SAPPHIRE_BUILD_TOOLKIT "Build the Sapphire Toolkit" ON )
+option( SAPPHIRE_BUILD_TEST_CLIENT "Build the external headless E2E client" OFF )
+if( SAPPHIRE_BUILD_TEST_CLIENT )
+  include( CTest )
+  add_subdirectory( "src/test_client" )
+endif()
 
 ##############################
 #             Git            #
