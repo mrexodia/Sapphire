@@ -38,7 +38,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | No reducer | Missing |
-| Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; workload cleanup precedes diagnostics and survives sampler/write exceptions | Initial paths and synthetic diagnostic-fault contracts verified; broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults and a controlled live diagnostic-write failure verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built binaries; hosted execution/runner controls unverified, no registered runners |
@@ -209,10 +209,40 @@ serialization/summary failure, retained roots and multiple simultaneous errors.
 The old artifact-failure path demonstrably skipped cleanup; the new contracts
 require cleanup before failing diagnostics and reject a passing partial report.
 All **176** Python contracts pass with the Windows worker and in network-isolated
-Linux. No native code changed. Live rehearsal of the revised orchestration is
-pending at this checkpoint; successful prior workloads are not evidence for the
-new failure ordering. Hard-kill recovery, blocked OS calls and all individual
-process-teardown faults remain outside this verification.
+Linux. No native code changed.
+
+The changed orchestration was then exercised at clean revision
+`6db6dcf094fe3191306b88d71c889300f211b96d` against the actual isolated servers:
+
+- `.e2e-artifacts/sapphire-e2e-iu8sj47a`: two bots, eight successful walk/Say/
+  heartbeat actions, four paced rounds, ten liveness checkpoints and 7.359s
+  activity for a six-second minimum. Overall elapsed time 41.156s. Normal
+  shutdown, final diagnostics and actual whole-runtime removal passed.
+- `.e2e-artifacts/sapphire-e2e-f708iskq`: a fresh byte-identical replay completed
+  all eight gameplay actions, then a private driver deliberately raised an
+  `OSError` on the final `resources.jsonl.tmp` write. The driver changed no game
+  packets, fixtures, action outcomes or server behavior. The runner returned
+  **exit 1**, `status=failed`, `failure_stage=artifacts`, preserving the specific
+  diagnostic error while publishing the other final artifacts. No canonical
+  resource trace was published; its absence is not concealed by the remaining
+  resource summary. Overall elapsed time 44.234s.
+- At the injected failure, the driver independently checked the whole private
+  root was absent and all **five** owned API/lobby/world/database/worker process
+  identities had exited, using PID plus creation time. The same checks passed
+  after return. `fault-control.json` records the failure and process evidence.
+- Raw outcomes, logical action identity/order, round/checkpoint counts, activity
+  spans, clean manifests and removed runtime roots were independently audited.
+  Both plan files have SHA-256
+  `1170fd62180b7f0b1f7edba9ec3ef47df2a07ef5c3d2507cbe30e63034c03f4f`.
+  CLI evidence is in `build-e2e/cleanup-live-smoke.json` and
+  `cleanup-live-fault.json`. The private diagnostic fault driver SHA-256 is
+  `49704250fc2fea775f6aad204e93f20b0b98c42399f1b7f5be9ca78c846d23af`.
+
+This verifies the revised ordering under a controlled write exception, not an
+actual full filesystem, sustained load, capacity, every sampler failure live,
+or every cleanup failure. Hard-kill recovery, blocked OS calls and all individual
+process-teardown faults remain outside this verification. The prior 30-minute
+workload was not repeated without a new stability hypothesis.
 
 ## Corrections exposed by execution
 
