@@ -361,7 +361,19 @@ Verified locally: two-bot exploration/replay, four-bot/120-action soak, and a
 sixteen-bot/960-action soak plus fresh replay of the same plan (about five minutes
 each including setup/teardown). A one-second-budget run fails with a retained
 diagnostic plan and cleans up. These are bounded smoke results, **not**
-large-population capacity or long-duration stability evidence. Resource samples cover API/lobby/world/DB plus worker/runner;
+large-population capacity or long-duration stability evidence.
+
+Separately, the paced command above passed at clean revision `063ea281b`:
+488 successful actions, 61 full eight-bot rounds, **1805.281s of activity**, and
+966 liveness checkpoints (`sapphire-e2e-q0klh2yf`). Each bot participated for at
+least 1803.078s; both received keepalive channels advanced throughout. This is
+30-minute low-rate town-workflow coverage, not an overnight or capacity claim.
+World first/last five-minute median RSS rose from 370,196,480 to 400,510,976 bytes;
+that growth remains uncharacterized, so this result does **not** establish memory
+stability or leak-freedom. The short paced plan was replayed separately; the full
+30-minute plan has not yet been replayed.
+
+Resource samples cover API/lobby/world/DB plus worker/runner;
 CPU deltas and peak RSS are reported separately. Action-duration percentiles
 include walking and event waits, not pure network RTT or server tick latency.
 State waits use bot-specific event versions; unrelated responses or another bot's

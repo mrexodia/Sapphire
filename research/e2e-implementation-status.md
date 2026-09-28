@@ -35,8 +35,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
-| Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit duration; process RSS/CPU and action timings | Sixteen bots / 960 actions and fresh replay verified; not capacity or long-running evidence |
-| Semantic replay | Versioned allowlisted plans, route hash, logical bot roles, recorded time/ramp limits | Passing exploration plan replayed; scheduling is not deterministic |
+| Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness checks; process RSS/CPU and action timings | Eight bots / 488 actions over 1805s verified; sixteen-bot five-minute smoke/replay also verified; not capacity, leak-freedom or overnight evidence |
+| Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | No reducer | Missing |
 | Deadlines / cancellation / cleanup | Timers, bounded waits, owned-process teardown, redaction; bounded Windows sharing-error retries | Initial paths verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
@@ -133,7 +133,25 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   Four-bot/16-action paced smoke passed (`sapphire-e2e-6akqm2ey`), with 17.25s of
   actual activity for a 15s minimum; fresh replay preserved pacing and passed
   (`sapphire-e2e-tnobg4b0`). The old v1 exploration plan also replayed successfully
-  (`sapphire-e2e-u7p2e6ex`). Longer sustained evidence is still pending.
+  (`sapphire-e2e-u7p2e6ex`).
+- Seed 2026/eight bots/488 actions: **30-minute paced soak passed** at clean
+  framework revision `063ea281b` (`sapphire-e2e-q0klh2yf`). The actual successful
+  action span was 1805.281s, excluding setup/teardown (1880.782s total). Inspection
+  of outcomes/rounds/checkpoints independently confirmed all 61 complete rounds,
+  224 walks, 136 Say operations, 128 heartbeat waits, and 966 eight-bot liveness
+  checkpoints. Every bot participated for at least 1803.078s; minimum round spacing
+  was 30.015s and maximum checkpoint gap 3.985s. Both channels advanced by 600–601
+  received replies per bot without resets. Private runtime removal was verified.
+  Action p95 was 2.5s (not RTT); world/worker/runner peak RSS was respectively
+  403,779,584 / 9,887,744 / 35,311,616 bytes. This is low-rate supported-town-workflow
+  evidence, not capacity, broad gameplay, overnight stability or leak-freedom.
+  **Memory growth remains uncharacterized:** world median RSS increased from
+  370,196,480 bytes in the first five active minutes to 400,510,976 in the last
+  five; worker medians rose from 8,429,568 to 9,740,288 and runner from 28,356,608
+  to 34,574,336. Sampling/checkpoint histories contribute to runner retention;
+  the run does not distinguish other retention, warm-up, allocator or leak causes.
+  The full 30-minute plan has not itself been replayed; replay was checked on the
+  separate short paced plan.
 - One-second action budget fails explicitly after one attempted action, records
   workflow failure/outcomes and cleans up (`sapphire-e2e-6lr093zy`). Replaying that
   plan preserves the one-second limit and reproduces the failure
@@ -171,15 +189,16 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
 
 ## Next actions / boundaries
 
-1. Broaden the supported-state policy coverage and run longer/higher-population
-   workloads; short passing runs do not prove stability or capacity.
+1. Broaden the supported-state policy coverage and characterize resource growth
+   from the eight-bot 30-minute run. Add longer/higher-population controls; bounded
+   low-rate liveness evidence does not prove capacity or memory stability.
 2. Extend the initial combat slice with normally timed repeated actions, enemy
    defeat, received combat rewards and retaliation assertions. Preserve observed
    resource/range checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters; unknown content must still fail.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   Continue longer-duration stability runs; current five-minute evidence is insufficient.
+   The separate 30-minute paced workload is not part of the seven-case CI gate.
 5. Evaluate the existing `E:/Sapphire/game/ffxiv*.exe` candidates for an isolated
    real-client run, or obtain a sanitized trace. Executable presence is not
    compatibility evidence: first verify version, loopback bootstrap and isolated
