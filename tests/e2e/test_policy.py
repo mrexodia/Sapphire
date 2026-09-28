@@ -3,7 +3,8 @@ from copy import deepcopy
 import pytest
 
 from .support.catalog import (validate_combat_catalog, validate_quest_catalog,
-                              validate_shop_catalog, validate_transition_catalog)
+                              validate_respawn_catalog, validate_shop_catalog,
+                              validate_transition_catalog)
 from .support.combat import combat_reward_delta
 from .support.workload import build_plan, validate_plan
 from .support.worker import WorkerError, reward_values
@@ -20,6 +21,17 @@ def test_combat_catalog_rejects_unsupported_action_metadata(patch):
     assert validate_combat_catalog(data) == data
     with pytest.raises(WorkerError, match="Fast Blade"):
         validate_combat_catalog({**data, **patch})
+
+
+def test_respawn_catalog_binds_canonical_uldah_homepoint():
+    data = {"version": 1, "profile": "sapphire-3.3", "homepoint": 9, "territory": 130,
+            "pop_range": {"id": 1, "position": [1, 2, 3], "rotation": [0, 1, 0]}}
+    assert validate_respawn_catalog(data) == data
+    for changed in ({**data, "homepoint": 8}, {**data, "territory": 141},
+                    {**data, "pop_range": {**data["pop_range"], "position": [float("nan"), 2, 3]}},
+                    {**data, "pop_range": {**data["pop_range"], "extra": 1}}):
+        with pytest.raises(WorkerError):
+            validate_respawn_catalog(changed)
 
 
 def test_shop_catalog_binds_route_actor_and_exact_sale():

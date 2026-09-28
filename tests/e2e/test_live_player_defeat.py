@@ -4,6 +4,7 @@ import math
 
 import pytest
 
+from .support.catalog import load_respawn_catalog
 from .support.worker import Bot
 from .support.combat import damage_value
 
@@ -11,6 +12,9 @@ pytestmark = pytest.mark.live
 
 
 def test_natural_enemy_defeats_level_one_player(environment, live_worker):
+    path = environment.profile.get("respawn_catalog")
+    assert path, "player defeat requires a source-bound homepoint catalog"
+    respawn = load_respawn_catalog(path)
     population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
     candidates = []
     for group in population.values():
@@ -26,8 +30,11 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     observer_position[0] -= 30.0
     fighter_fixture = environment.fresh_character(fighter_position, 141)
     observer_fixture = environment.fresh_character(observer_position, 141)
+    return_observer_fixture = environment.fresh_character(respawn["pop_range"]["position"], respawn["territory"])
     observer = Bot(live_worker, "defeat-observer")
     observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
+    return_observer = Bot(live_worker, "return-observer")
+    return_observer.login_via_lobby(return_observer_fixture["auth"], return_observer_fixture["name"])
     fighter = Bot(live_worker, "defeated-fighter")
     initial = fighter.login_via_lobby(fighter_fixture["auth"], fighter_fixture["name"])
     entity = initial["entity_id"]
@@ -83,14 +90,46 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
                             for row in defeated["combat"]["integrities"]
                             if row["target"] == entity and row["result"] in {effect["result"] for effect in incoming}]
     assert len(incoming_integrities) == len(incoming)
+
+    returned = fighter.return_homepoint(respawn["territory"], respawn["pop_range"]["position"])
+    live_worker.wait_state(observer.name, lambda s: str(entity) not in s["actors"],
+                           "defeated fighter leaves Central Thanalan", 30)
+    return_seen = live_worker.wait_state(return_observer.name,
+        lambda s: str(entity) in s["actors"]
+                  and s["actors"][str(entity)]["hp"] == s["actors"][str(entity)]["hp_max"]
+                  and math.dist(s["actors"][str(entity)]["position"], respawn["pop_range"]["position"]) < 0.15,
+        "independent observer sees living fighter at homepoint", 30)
+    assert returned["homepoint"] == 9 and returned["territory"] == 130
+    returned_position = returned["observed_position"]
+    returned_hp = returned["actors"][str(entity)]["hp"]
+    assert returned_hp == returned["actors"][str(entity)]["hp_max"] == before["hp_max"]
+
+    fighter.logout()
+    live_worker.wait_state(return_observer.name, lambda s: str(entity) not in s["actors"],
+                           "returned fighter session cleanup", 30)
     fighter.close()
-    live_worker.wait_state(observer.name, lambda s: str(entity) not in s["actors"], "defeated player despawn", 30)
     observer.logout()
+    observer.close()
+    return_observer.logout()
+    return_observer.close()
+    environment.restart_world()
+    auth = environment.api("login", {"username": fighter_fixture["username"], "pass": fighter_fixture["password"]})
+    reloaded = Bot(live_worker, "returned-reloaded")
+    persisted = reloaded.login_via_lobby(auth, fighter_fixture["name"])
+    persisted_self = persisted["actors"][str(persisted["entity_id"])]
+    assert persisted["territory"] == respawn["territory"]
+    assert math.dist(persisted["observed_position"], respawn["pop_range"]["position"]) < 0.15
+    assert persisted_self["hp"] == persisted_self["hp_max"] == before["hp_max"]
+    reloaded.logout()
+    reloaded.close()
     (environment.artifacts / "combat-player-defeat.json").write_text(json.dumps({
         "population_layout": int(layout_id), "enemy_base_id": 302, "enemy_level": 14,
         "fighter_hp_before": before["hp"], "opening_effect": opening_effect,
         "incoming_effects": incoming, "incoming_integrities": incoming_integrities,
         "fighter_hp_after": 0, "enemy_hp_after": enemy["hp"],
-        "both_clients_verified": True,
-        "scope": "one natural level-14 enemy defeats a level-one player after one ordinary initiating Fast Blade; no respawn, pursuit or general combat claim"
+        "homepoint": respawn, "returned_position": returned_position, "returned_hp": returned_hp,
+        "return_observer_hp": return_seen["actors"][str(entity)]["hp"],
+        "persisted_position": persisted["observed_position"], "persisted_hp": persisted_self["hp"],
+        "both_defeat_clients_verified": True, "return_observer_verified": True,
+        "scope": "one natural level-14 enemy defeat followed by an ordinary source-bound homepoint return and restart persistence; no raise, pursuit or general combat claim"
     }, indent=2), encoding="utf-8")

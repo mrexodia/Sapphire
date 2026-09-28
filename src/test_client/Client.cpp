@@ -1,6 +1,7 @@
 #include "Client.h"
 #include "InventoryActions.h"
 #include "ShopActions.h"
+#include "RespawnActions.h"
 #include "TransitionActions.h"
 #include <Network/CommonActorControl.h>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
@@ -83,7 +84,7 @@ namespace Sapphire::Testing
     m_io(io), m_id(std::move(id)), m_emit(std::move(emit)),
     m_deadline(io), m_heartbeat(io), m_movement(io)
   {
-    m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0},
+    m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
       {"chat", Json::array()}, {"created_via_lobby", false},
       {"scene", nullptr}, {"event_id", nullptr}, {"heartbeat_replies", 0},
@@ -405,6 +406,11 @@ namespace Sapphire::Testing
       }
       event("combat_changed", detail);
     }
+    if(h.type == WS::FFXIVIpcPlayerStatus::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcPlayerStatus>(segment.data, off);
+      m_state["homepoint"] = p.HomePoint;
+    }
     if(h.type == WS::FFXIVIpcInitZone::_ServerIpcType)
     {
       const auto p = readObject<WS::FFXIVIpcInitZone>(segment.data, off);
@@ -657,6 +663,20 @@ namespace Sapphire::Testing
       // Conservative request pacing; the received ActionStart moves this deadline forward.
       m_fastBladeReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(2500);
       return {{"request", m_actionRequest}};
+    }
+    if(method == "return_homepoint")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      if(m_state["homepoint"].is_null()) throw ProtocolError("return requires a received homepoint");
+      auto payload = returnHomepointRequest(m_entity, m_state.at("territory").get<uint16_t>(),
+        m_state.at("homepoint").get<uint8_t>(), m_state.at("actors"));
+      sendZone(WC::FFXIVIpcClientTrigger::_ServerIpcType, payload);
+      phase("zoning");
+      m_deadline.expires_from_now(std::chrono::seconds(30));
+      m_deadline.async_wait([self = shared_from_this()](auto ec) {
+        if(!ec) self->fail("homepoint return deadline exceeded");
+      });
+      return Json::object();
     }
     if(method == "cross_exit")
     {

@@ -19,6 +19,7 @@ add_library(sapphire_test_protocol STATIC
   RewardsState.cpp
   InventoryActions.cpp
   ShopActions.cpp
+  RespawnActions.cpp
   TransitionActions.cpp
   CombatState.cpp
   "${SAPPHIRE_ROOT}/src/common/Crypt/blowfish.cpp"
@@ -48,6 +49,8 @@ if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   target_link_libraries(sapphire_test_combat_catalog PRIVATE common)
   add_executable(sapphire_test_shop_catalog ShopCatalog.cpp NavigationRoute.cpp)
   target_link_libraries(sapphire_test_shop_catalog PRIVATE common)
+  add_executable(sapphire_test_respawn_catalog RespawnCatalog.cpp)
+  target_link_libraries(sapphire_test_respawn_catalog PRIVATE common)
   add_executable(sapphire_test_transitions TransitionCatalog.cpp NavigationRoute.cpp)
   target_link_libraries(sapphire_test_transitions PRIVATE common)
   add_executable(sapphire_test_catalog Catalog.cpp NavigationRoute.cpp)

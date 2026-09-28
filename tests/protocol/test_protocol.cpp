@@ -1,7 +1,9 @@
 #include "Protocol.h"
+#include "RespawnActions.h"
 #include "ShopActions.h"
 #include "TransitionActions.h"
 #include <Crypt/Random.h>
+#include <algorithm>
 #include <set>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
 #include <Network/PacketDef/Zone/ClientZoneDef.h>
@@ -98,6 +100,16 @@ int main()
     rejects([&] { exitRangeRequest(130, {1,2,3}, disabledExit); });
     auto tiltedExit = exit; tiltedExit["rotation"][0] = 0.1;
     rejects([&] { exitRangeRequest(130, {1,2,3}, tiltedExit); });
+
+    nlohmann::json defeatedActors = {{"2097153", {{"hp", 0}}}};
+    auto homepoint = returnHomepointRequest(2097153, 141, 9, defeatedActors);
+    require(homepoint.size() == 32 && homepoint[0] == 0xC8 && homepoint[4] == 8 &&
+            std::all_of(homepoint.begin() + 8, homepoint.end(), [](uint8_t byte) { return byte == 0; }),
+            "homepoint return command fixture");
+    rejects([&] { returnHomepointRequest(2097153, 130, 9, defeatedActors); });
+    rejects([&] { returnHomepointRequest(2097153, 141, 8, defeatedActors); });
+    defeatedActors["2097153"]["hp"] = 1;
+    rejects([&] { returnHomepointRequest(2097153, 141, 9, defeatedActors); });
 
     auto sale = shopSaleReturn(0x00040005, 3, 24, 4551);
     require(sale.size() == 1028 && sale[0] == 5 && sale[2] == 4 && sale[4] == 40 && sale[7] == 255,

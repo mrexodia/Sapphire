@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections import deque
 from pathlib import Path
 import json
+import math
 import subprocess
 import threading
 import time
@@ -240,6 +241,20 @@ class Bot:
 
     def start_uldah_opening(self):
         self.worker.request("start_uldah_opening", self.name)
+
+    def return_homepoint(self, territory, position, timeout=30):
+        state = self.worker.snapshot(self.name)
+        entity = str(state["entity_id"])
+        if state["homepoint"] != 9 or state["territory"] != 141 or state["actors"][entity]["hp"] != 0:
+            raise WorkerError("homepoint return requires the supported received defeated state")
+        self.worker.request("return_homepoint", self.name)
+        return self.worker.wait_state(self.name,
+            lambda s: s["phase"] == "ready" and s["territory"] == territory
+                      and math.dist(s["observed_position"], position) < 0.15
+                      and s["actors"].get(str(s["entity_id"]), {}).get("hp", 0) > 0
+                      and s["actors"][str(s["entity_id"])]["hp"]
+                          == s["actors"][str(s["entity_id"])]["hp_max"],
+            "alive at source-bound homepoint", timeout)
 
     def open_gil_shop(self, layout_id, event_id, timeout=10):
         if type(event_id) is not int or event_id >> 16 != 4:

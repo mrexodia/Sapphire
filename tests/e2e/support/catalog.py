@@ -70,6 +70,22 @@ def validate_transition_catalog(data):
     return data
 
 
+def validate_respawn_catalog(data):
+    if (data.get("profile") != "sapphire-3.3" or data.get("version") != 1
+            or data.get("homepoint") != 9 or data.get("territory") != 130):
+        raise WorkerError("unsupported respawn catalog binding")
+    pop = data.get("pop_range", {})
+    if set(pop) != {"id", "position", "rotation"} or type(pop.get("id")) is not int or pop["id"] <= 0:
+        raise WorkerError("invalid homepoint pop-range binding")
+    for field in ("position", "rotation"):
+        point = pop[field]
+        if (not isinstance(point, list) or len(point) != 3
+                or not all(type(value) in (int, float) and math.isfinite(value) and abs(value) < 1000
+                           for value in point)):
+            raise WorkerError("invalid homepoint transform")
+    return data
+
+
 def validate_shop_catalog(data):
     if data.get("profile") != "sapphire-3.3" or data.get("version") != 1 or data.get("territory") != 130:
         raise WorkerError("unsupported shop catalog profile/territory")
@@ -96,6 +112,10 @@ def validate_combat_catalog(data):
     if any(type(data.get(key)) is not type(value) or data[key] != value for key, value in expected.items()):
         raise WorkerError("combat catalog does not match the supported level-one Fast Blade profile")
     return data
+
+
+def load_respawn_catalog(path):
+    return validate_respawn_catalog(json.loads(Path(path).read_text(encoding="utf-8")))
 
 
 def load_shop_catalog(path):

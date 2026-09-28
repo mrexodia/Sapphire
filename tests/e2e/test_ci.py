@@ -55,6 +55,9 @@ def profile(tmp_path):
             "shop": {"layout_id": 3, "base_id": 4, "event_id": 0x40005, "position": [1, 0, 0]},
             "sale": {"item": 4551, "quantity": 1, "gil": 28}}
     Path(p["shop_catalog"]).write_text(json.dumps(shop))
+    respawn = {"version": 1, "profile": "sapphire-3.3", "homepoint": 9, "territory": 130,
+               "pop_range": {"id": 1, "position": [0, 0, 0], "rotation": [0, 0, 0]}}
+    Path(p["respawn_catalog"]).write_text(json.dumps(respawn))
     return p
 
 
