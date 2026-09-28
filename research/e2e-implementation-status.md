@@ -20,20 +20,20 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | Pre-connection account/character fixture provisioning and public Ul'dah start | Not covered |
+| Normal character creation/opening journey | `test_live_creation.py`: empty account, lobby name reservation/finalization, refreshed list/select, private territory 182, explicit source-defined Ul'dah scenes 0/1, ring and scene-40 continuation after fresh authentication and restart | First opening branch verified; complete opening quest and travel to public Ul'dah remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
-| Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking and Gil for Gold choices | Two live verified adapters; Due Diligence remains source-derived |
+| Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking, Gil for Gold and committed Ul'dah opening choices | Three live verified adapters; Due Diligence remains source-derived |
 | Interact / choose dialogue / unknown-scene failure | Exact received event/scene/token; no default choice or raw-packet control; contract tests | Verified for supported one/two-result returns |
 | Quest state / accept and cancel / completion | `test_live_quest.py`: Motivational Speaking (65686), cancel unchanged, accept sequence 255, completion | Verified |
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
 | More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge and discard; ordinary Say; 130-to-141 crossing/persistence; paced Fast Blades through one enemy defeat with independent retaliation/death/removal plus persisted EXP/loot | Representative subset verified; item use, overflow merges, equipment/currency operations, pursuit, player defeat, combos and general combat remain uncovered |
-| Range/discovery/territory event triggers | Curated physical ExitRange crossing; no general quest-range/discovery adapter | Exit subset verified; remaining adapters missing |
+| Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
-| Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
+| Deterministic authored regression suite | Eight allowlisted live cases, native tests and Python contracts | Existing seven-case clean suite and new creation case verified separately; combined clean gate pending |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
@@ -51,7 +51,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same six CTest executables pass.
-- 242 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 245 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all seven cases against a fresh out-of-tree
@@ -446,6 +446,45 @@ This proves one partial split and one no-overflow merge for ordinary bags. It do
 not prove overflow behavior, immediate delta publication, crash consistency,
 equipment/currency operations, item use or real-client inventory presentation.
 
+## Normal lobby creation and first Ul'dah opening branch
+
+The new `test_live_creation.py` starts from an ordinary account with no character.
+The external worker authenticates to the encrypted lobby, receives an empty list,
+uses `CHARAOPE_RESERVENAME` and `CHARAOPE_MAKECHARA` with the same canonical
+Gladiator description already accepted by Sapphire's public creation path, refreshes
+the list, selects the newly observed character IDs and enters the world. The test
+requires rank zero, level one, territory 182 and `created_via_lobby=true`; the API
+character fixture endpoint is not used for this journey.
+
+In private opening territory 182, a narrowly bounded action sends only Sapphire's
+source-defined enter-territory event 1245187. The committed scene catalog chooses
+ring branch 1 from received scene 0, requires chained scene 1, and finishes it.
+After a normal logout and fresh HTTP/lobby authentication, the complete received
+inventory contains exactly one item 4423 while level, EXP and currencies remain
+unchanged. Starting the same event now yields scene 40 rather than replaying scene
+0, indirectly proving `OpeningSequence=1`; both the inventory and scene selection
+remain identical after a world-process restart.
+
+Logout/relogin synchronization does not use a fixed sleep. For this case the worker
+waits for the server's post-ack transport close, which occurs after the server has
+removed and unloaded the old session, before allowing the next login/restart. Other
+scenarios retain their existing faster logout behavior. The targeted dirty-checkpoint
+run passed in **47.92s** with normal teardown and no retained runtime:
+`.e2e-artifacts/creation-live/sapphire-e2e-q2wlefd1`. Its
+`character-creation-opening.json` SHA-256 is
+`2a684d4a7d356cfaa2dc6fa4413df381021050fa1f65f7c2167a2c513657e8cd`;
+the worker SHA-256 is
+`600586442c6a74ac88c309e23012921e819898fe8f9286f472b7e693d651829b`.
+All 245 Python contracts pass with Clang/MSVC workers and in network-isolated
+Linux; all six native suites pass with Clang, MSVC and GNU 11.4. This is not yet a
+combined clean eight-case gate.
+
+This evidence is deliberately narrow: it covers one canonical Gladiator, one ring
+choice and the initial/continuation opening scenes. It does not establish account
+signup UI, all appearance/class combinations, name rejection/deletion, the complete
+opening quest, travel into public Ul'dah, real-client cutscene presentation or
+broader protocol compatibility.
+
 ## Workload diagnostic-failure cleanup hardening
 
 Inspection found that `run_workload.py` stopped metrics and wrote resource/action
@@ -565,10 +604,11 @@ workload was not repeated without a new stability hypothesis.
    current-test-table rewards: pursuit, player defeat, combos, additional abilities
    and production loot selection remain uncovered. Preserve observed resource/range
    checks and require genuine navigation for any pursuit.
-3. Extend explicit trigger/scene adapters; unknown content must still fail.
+3. Extend explicit trigger/scene adapters and the normal creation journey beyond
+   the first Ul'dah opening branch; unknown content must still fail.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   The separate 30-minute paced workload is not part of the seven-case CI gate.
+   The separate 30-minute paced workload is not part of the eight-case CI gate.
 5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
    coverage and independently captured trace/layout checks. Strengthen fault and
    cancellation coverage separately from successful-path evidence. Do not alter

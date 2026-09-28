@@ -20,6 +20,7 @@ def test_capabilities(worker):
     assert "request_item_swap" in caps["methods"]
     assert "request_item_split" in caps["methods"]
     assert "request_item_merge" in caps["methods"]
+    assert "start_uldah_opening" in caps["methods"]
 
 
 def test_unknown_bot_and_invalid_method(worker):
@@ -35,6 +36,13 @@ def test_nonlocal_endpoint_rejected_and_secret_not_recorded(worker):
     assert worker.request("capabilities")["control_version"] == 1
     worker.close()
     assert "sensitive-session-fixture" not in (worker.artifacts / "events.jsonl").read_text()
+
+
+def test_creation_rejects_nonalphabetic_character_name(worker):
+    with pytest.raises(WorkerError, match="alphabetic ASCII"):
+        worker.request("login", "test", host="127.0.0.1", port=1, session="test-session",
+                       character="Bad_Name", create_character=True)
+    assert worker.request("capabilities")["control_version"] == 1
 
 
 def test_failed_connect_is_observed_not_ready(worker):
@@ -62,6 +70,8 @@ def test_action_before_readiness_is_rejected(worker):
                 worker.request("walk_to", "test", position=[0, 0, 0])
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("fast_blade", "test", target=123)
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("start_uldah_opening", "test")
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("request_item_move", "test", storage=0, slot=0,
                                expected_item=4555, destination_storage=3, destination_slot=24)

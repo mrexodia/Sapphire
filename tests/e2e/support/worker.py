@@ -207,6 +207,14 @@ class Bot:
                             session=auth["sId"], character=character)
         return self.wait_world_ready(timeout)
 
+    def create_character_via_lobby(self, auth, character, timeout=30):
+        self.worker.request("login", self.name, host=auth["lobbyHost"], port=auth["lobbyPort"],
+                            session=auth["sId"], character=character, create_character=True)
+        state = self.wait_world_ready(timeout)
+        if state.get("created_via_lobby") is not True:
+            raise WorkerError("character creation was not confirmed by refreshed lobby list")
+        return state
+
     def wait_world_ready(self, timeout=30):
         state = self.worker.wait_state(self.name, lambda s: s["phase"] == "ready", "world ready", timeout)
         if state["gm_rank"] != 0:
@@ -229,6 +237,9 @@ class Bot:
 
     def interact(self, actor_id, event_id):
         self.worker.request("interact", self.name, actor_id=actor_id, event_id=event_id)
+
+    def start_uldah_opening(self):
+        self.worker.request("start_uldah_opening", self.name)
 
     def choose_dialogue(self, catalog, choice, timeout=10):
         state = self.worker.wait_state(self.name, lambda s: s["scene"] is not None, "scene", timeout)
@@ -351,9 +362,12 @@ class Bot:
         return self.worker.wait_state(self.name, lambda s: s["complete_quests"].get(key) is True,
                                       f"quest {quest} complete", timeout)
 
-    def logout(self, timeout=10):
+    def logout(self, timeout=10, wait_server_close=False):
         self.worker.request("logout", self.name)
         self.worker.wait_state(self.name, lambda s: s["phase"] == "logged_out", "logout acknowledgement", timeout)
+        if wait_server_close:
+            self.worker.wait_state(self.name, lambda s: s["phase"] == "logout_complete",
+                                   "server logout connection close", timeout)
         self.worker.request("close", self.name)
 
     def close(self):

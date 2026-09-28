@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "profile": "sapphire-3.3",
+  "event_id": 1245187,
+  "scenes": {
+    "1245187:0": {"choices": {"choose_ring": [1]}},
+    "1245187:1": {"choices": {"finish": [0]}},
+    "1245187:40": {"choices": {"finish": [0]}}
+  }
+}

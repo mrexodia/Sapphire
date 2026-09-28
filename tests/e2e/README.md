@@ -11,7 +11,10 @@ lobby, world and MariaDB processes with matching game data:
 
 - Invalid credentials are rejected.
 - Genuine HTTP login, encrypted lobby negotiation, character selection and world
-  handoff succeed with non-GM accounts.
+  handoff succeed with non-GM accounts. A separate case starts with an account that
+  has no characters, reserves a name and finalizes one canonical Gladiator through
+  lobby operations, refreshes the character list, and enters its normal private
+  opening territory.
 - Readiness requires zone initialization, self-spawn **and the server clearing
   BetweenAreas after the normal FINISH_LOADING command**. A connected socket or
   self-spawn alone is insufficient.
@@ -42,6 +45,11 @@ lobby, world and MariaDB processes with matching game data:
   received deletion, checks every tracked slot for unintended changes, and verifies
   the deletion plus retained quest progress after the final restart.
 
+- The newly created Gladiator starts Ul'dah event 1245187 through its source-defined
+  enter-territory operation, chooses one explicit ring branch, receives chained
+  scenes 0 then 1, and persists item 4423 plus the scene-40 continuation through
+  fresh authentication and a world restart. This covers only the first opening
+  branch, not the complete opening quest or travel into public Ul'dah.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot
   verifies every matching result/committed HP decrease, the first natural retaliation,
@@ -125,7 +133,7 @@ not replace the live suite.
 
 ```sh
 python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
-  tests/e2e/test_live_zoning.py tests/e2e/test_live_combat.py \
+  tests/e2e/test_live_zoning.py tests/e2e/test_live_combat.py tests/e2e/test_live_creation.py \
   --e2e-profile .e2e-local.json -v --junitxml=build-e2e/live.xml
 ```
 
@@ -144,11 +152,16 @@ The runner:
 - Initializes, migrates and checks a new `sapphire_e2e_<uuid>` schema via `dbm`.
 - Generates test-specific configs with `DefaultGMRank=0`,
   `AllowNoSessionConnect=false` and script hot swap disabled.
-- Provisions fresh account/character fixtures, then uses the normal HTTP login.
-- By default places fixtures in public Ul'dah (130), with opening progression initialized,
-  **before their first world connection**. This is fixture setup, not coverage of
-  character creation, the opening quest, or travel into Ul'dah. Opening territory
-  182 is private and is not appropriate for two-player replication assertions.
+- Provisions fresh account/character fixtures for scenarios that need controlled
+  public placement, then uses the normal HTTP login. The creation scenario instead
+  provisions only an empty account and performs reserve/finalize/list/select through
+  the encrypted lobby connection.
+- By default places ordinary fixtures in public Ul'dah (130), with opening progression
+  initialized **before their first world connection**. That remains fixture setup,
+  not evidence of travel into Ul'dah. The dedicated creation case verifies only the
+  first Ul'dah opening branch in private territory 182; the complete opening quest
+  and travel to the public territory remain uncovered. Territory 182 is not
+  appropriate for two-player replication assertions.
   Quest fixtures start at the catalog's first walkable waypoint; this is not proof
   of travel from character creation to the quest giver. Quest state is never seeded.
 - Uses no GM movement or quest completion commands during tested journeys.

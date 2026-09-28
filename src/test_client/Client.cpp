@@ -84,7 +84,7 @@ namespace Sapphire::Testing
   {
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
-      {"chat", Json::array()},
+      {"chat", Json::array()}, {"created_via_lobby", false},
       {"scene", nullptr}, {"event_id", nullptr}, {"heartbeat_replies", 0},
       {"heartbeats", {{"zone", 0}, {"chat", 0}}}, {"packets_received", 0}};
   }
@@ -118,7 +118,13 @@ namespace Sapphire::Testing
       [weak, name](const std::string& reason) {
         if(auto bot = weak.lock())
         {
-          if(bot->m_state["phase"] == "logged_out") return;
+          if(bot->m_state["phase"] == "logged_out")
+          {
+            bot->phase("logout_complete");
+            bot->event("server_logout_complete", {{"channel", name}});
+            return;
+          }
+          if(bot->m_state["phase"] == "logout_complete") return;
           bot->fail(name + ": " + reason);
         }
       });
@@ -127,7 +133,14 @@ namespace Sapphire::Testing
   {
     if(m_state["phase"] != "disconnected") throw ProtocolError("bot already started; create a fresh bot");
     const auto session = args.at("session").get<std::string>();
+    const auto character = args.at("character").get<std::string>();
     if(session.empty() || session.size() >= 64) throw ProtocolError("invalid session length");
+    if(character.empty() || character.size() >= 32) throw ProtocolError("invalid character name length");
+    if(args.value("create_character", false) &&
+       !std::all_of(character.begin(), character.end(), [](unsigned char c) {
+         return c == ' ' || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+       }))
+      throw ProtocolError("created character name must contain only alphabetic ASCII and spaces");
     const auto timeout = args.value("timeout", 30);
     if(timeout < 1 || timeout > 120) throw ProtocolError("login timeout outside 1..120 seconds");
     m_login = args;
@@ -186,13 +199,17 @@ namespace Sapphire::Testing
       if(p.activeAccountCount == 0) throw ProtocolError("no service account available");
       LC::FFXIVIpcServiceLogin request{};
       request.requestNumber = 2; request.clientTimeValue = timeSeconds();
-      request.accountId = p.accountArray[0].accountId; request.accountIndex = p.accountArray[0].accountIndex;
+      m_serviceAccountId = p.accountArray[0].accountId;
+      m_serviceAccountIndex = p.accountArray[0].accountIndex;
+      request.accountId = m_serviceAccountId; request.accountIndex = m_serviceAccountIndex;
       phase("character_list");
       m_state["characters"] = Json::array();
       sendLobby(request._ServerIpcType, objectBytes(request));
     }
-    else if(h.type == LS::FFXIVIpcServiceLoginReply::_ServerIpcType && m_state["phase"] == "character_list")
+    else if(h.type == LS::FFXIVIpcServiceLoginReply::_ServerIpcType &&
+            (m_state["phase"] == "character_list" || m_state["phase"] == "character_list_after_creation"))
     {
+      const bool afterCreation = m_state["phase"] == "character_list_after_creation";
       auto p = readObject<LS::FFXIVIpcServiceLoginReply>(segment.data, sizeof(h));
       if(p.count > 2) throw ProtocolError("invalid character list count");
       for(size_t i = 0; i < p.count; ++i)
@@ -207,15 +224,60 @@ namespace Sapphire::Testing
       for(const auto& c : m_state["characters"])
       {
         if(c["name"] != wanted) continue;
+        if(afterCreation) m_state["created_via_lobby"] = true;
         LC::FFXIVIpcGameLogin request{};
-        request.requestNumber = 3; request.clientTimeValue = timeSeconds();
+        request.requestNumber = afterCreation ? 6 : 3; request.clientTimeValue = timeSeconds();
         request.playerId = c["entity_id"]; request.characterId = c["character_id"];
         request.characterIndex = c["index"]; request.worldId = c["world"];
         phase("world_handoff");
         sendLobby(request._ServerIpcType, objectBytes(request));
         return;
       }
-      throw ProtocolError("requested character not found in lobby list");
+      if(!afterCreation && m_login.value("create_character", false) && m_state["characters"].empty())
+      {
+        LC::FFXIVIpcCharaMake request{};
+        request.requestNumber = 3; request.clientTimeValue = timeSeconds();
+        request.operation = LC::CharacterOperation::CHARAOPE_RESERVENAME;
+        copyText(request.chracterName, wanted);
+        phase("character_name_reservation");
+        sendLobby(request._ServerIpcType, objectBytes(request));
+        return;
+      }
+      throw ProtocolError(afterCreation ? "created character absent from refreshed lobby list" :
+                                           "requested character not found in lobby list");
+    }
+    else if(h.type == LS::FFXIVIpcCharaMakeReply::_ServerIpcType &&
+            m_state["phase"] == "character_name_reservation")
+    {
+      const auto p = readObject<LS::FFXIVIpcCharaMakeReply>(segment.data, sizeof(h));
+      const std::string wanted = m_login.at("character");
+      if(p.optionParam != LC::CharacterOperation::CHARAOPE_RESERVENAME || p.count != 1 ||
+         text(p.chrArray[0].chrName) != wanted || !p.chrArray[0].characterId)
+        throw ProtocolError("invalid character-name reservation reply");
+      m_creationCharacterId = p.chrArray[0].characterId;
+      LC::FFXIVIpcCharaMake request{};
+      request.requestNumber = 4; request.clientTimeValue = timeSeconds();
+      request.characterId = m_creationCharacterId;
+      request.operation = LC::CharacterOperation::CHARAOPE_MAKECHARA;
+      request.worldId = p.chrArray[0].worldId;
+      copyText(request.chracterName, wanted);
+      constexpr auto details = "{\"content\":[[\"1\",\"0\",\"1\",\"50\",\"1\",\"1\",\"1\",\"1\",\"0\",\"0\",\"0\",\"1\",\"1\",\"1\",\"1\",\"1\",\"1\",\"1\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\"],\"1\",\"1\",\"1\",\"1\",\"1\",\"1\"]}";
+      copyText(request.charaMakeData, details);
+      phase("character_creating");
+      sendLobby(request._ServerIpcType, objectBytes(request));
+    }
+    else if(h.type == LS::FFXIVIpcCharaMakeReply::_ServerIpcType && m_state["phase"] == "character_creating")
+    {
+      const auto p = readObject<LS::FFXIVIpcCharaMakeReply>(segment.data, sizeof(h));
+      if(p.optionParam != LC::CharacterOperation::CHARAOPE_MAKECHARA || p.count != 1 ||
+         text(p.chrArray[0].chrName) != m_login.at("character"))
+        throw ProtocolError("invalid character-creation reply");
+      LC::FFXIVIpcServiceLogin request{};
+      request.requestNumber = 5; request.clientTimeValue = timeSeconds();
+      request.accountId = m_serviceAccountId; request.accountIndex = m_serviceAccountIndex;
+      m_state["characters"] = Json::array();
+      phase("character_list_after_creation");
+      sendLobby(request._ServerIpcType, objectBytes(request));
     }
     else if(h.type == LS::FFXIVIpcGameLoginReply::_ServerIpcType && m_state["phase"] == "world_handoff")
     {
@@ -530,6 +592,16 @@ namespace Sapphire::Testing
       WC::FFXIVIpcEventHandlerTalk p{};
       p.actorId = args.at("actor_id"); p.eventId = args.at("event_id");
       sendZone(p._ServerIpcType, objectBytes(p)); return Json::object();
+    }
+    if(method == "start_uldah_opening")
+    {
+      if(m_moving || !m_state["event_id"].is_null() || !m_state["scene"].is_null() ||
+         m_state["territory"] != 182)
+        throw ProtocolError("Ul'dah opening requires an idle character in opening territory 182");
+      WC::FFXIVIpcEnterTerritoryHandler p{};
+      p.eventId = 1245187;
+      sendZone(p._ServerIpcType, objectBytes(p));
+      return Json::object();
     }
     if(method == "choose_scene")
     {

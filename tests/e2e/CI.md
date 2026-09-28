@@ -91,8 +91,8 @@ separate evidence that its binaries came from the checkout.
   identity. This checks availability and consistency, **not** game correctness or
   independent real-client compatibility. Static prerequisite validation never
   modifies quest progress; the live chain must complete its first quest normally.
-- The entry point collects the four whole live modules and requires exactly the
-  seven expected cases. Added/removed cases require explicit review of `CASES`.
+- The entry point collects the five whole live modules and requires exactly the
+  eight expected cases. Added/removed cases require explicit review of `CASES`.
   Inherited pytest selection options and automatic third-party plugins are
   disabled. No tests, skipped cases, missing/duplicate phase reports, unexpected
   tests, failing setup/call/teardown, nonzero pytest exit, live child processes, or
@@ -110,7 +110,7 @@ separate evidence that its binaries came from the checkout.
   upload glob to include these directories, catalogs, assets or runtime trees.
 - Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. A passed summary covers this seven-scenario headless suite only.
+  local run. A passed summary covers this eight-scenario headless suite only.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
 rebuilt binaries passed all seven live cases in 245.450 seconds with no skips,

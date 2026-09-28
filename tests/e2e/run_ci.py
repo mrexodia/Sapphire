@@ -28,6 +28,7 @@ CASES = (
     "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[chain]",
     "tests/e2e/test_live_zoning.py::test_observed_exit_crossing_and_territory_persistence",
     "tests/e2e/test_live_combat.py::test_observed_fast_blade_damage",
+    "tests/e2e/test_live_creation.py::test_lobby_character_creation_and_opening_persistence",
 )
 SUITES = tuple(dict.fromkeys(case.split("::", 1)[0] for case in CASES))
 CATALOGS = ("quest_catalog", "follow_up_catalog", "transition_catalog", "combat_catalog")

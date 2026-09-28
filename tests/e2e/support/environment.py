@@ -138,7 +138,7 @@ class Environment:
         write_config(config / "world.ini", {
             "Scripts": {"Path": "./compiledscripts/", "CachePath": "./cache/", "HotSwap": "false"},
             "Network": {"ListenIp": "127.0.0.1", "ListenPort": self.zone_port, "DisconnectTimeout": 20},
-            "General": {"SkipOpening": "true", "MotD": "Sapphire isolated E2E"},
+            "General": {"SkipOpening": "false", "MotD": "Sapphire isolated E2E"},
             "Navigation": {"MeshPath": self.navigation.as_posix()},
             "Map": {"EagerENpcEObjCache": "false"},
         })
@@ -260,6 +260,14 @@ class Environment:
             self.redactions.add(result["sId"])
         return result
 
+    def fresh_account(self):
+        username = "e2e_" + uuid.uuid4().hex
+        password = secrets.token_hex(16)
+        self.redactions.add(password)
+        name = "Tester " + "".join(chr(65 + int(c, 16)) for c in uuid.uuid4().hex[:10])
+        auth = self.api("createAccount", {"username": username, "pass": password})
+        return {"username": username, "password": password, "name": name, "auth": auth}
+
     def fresh_character(self, position=None, territory=130):
         if type(territory) is not int or territory not in {130, 131, 140, 141}:
             raise SetupError("unsupported public fixture territory")
@@ -267,12 +275,9 @@ class Environment:
             raise SetupError("nondefault fixture territory requires an explicit position")
         if position is not None and (len(position) != 3 or not all(math.isfinite(v) and abs(v) < 1000 for v in position)):
             raise SetupError("invalid fixture start position")
-        username = "e2e_" + uuid.uuid4().hex
-        password = secrets.token_hex(16)
-        self.redactions.add(password)
+        account = self.fresh_account()
+        username, password, name, auth = (account[key] for key in ("username", "password", "name", "auth"))
         # Alphabetic fixture names, valid starter class, 26 customization bytes.
-        name = "Tester " + "".join(chr(65 + int(c, 16)) for c in uuid.uuid4().hex[:10])
-        auth = self.api("createAccount", {"username": username, "pass": password})
         appearance = [1, 0, 1, 50, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
         content = [[str(v) for v in appearance], "1", "1", "1", "1", "1", "1"]
         info = json.dumps({"content": content}, separators=(",", ":"))
