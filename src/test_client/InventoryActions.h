@@ -11,4 +11,9 @@ namespace Sapphire::Testing
   Bytes moveItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                         uint32_t storage, uint32_t slot, uint32_t expectedItem,
                         uint32_t destinationStorage, uint32_t destinationSlot);
+  // Swap two observed occupied ordinary bag slots. Receipt is NOT mutation proof.
+  Bytes swapItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
+                        uint32_t storage, uint32_t slot, uint32_t expectedItem,
+                        uint32_t destinationStorage, uint32_t destinationSlot,
+                        uint32_t expectedDestinationItem);
 }

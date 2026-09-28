@@ -124,6 +124,48 @@ def move_reward_and_verify_reconnect(environment, worker, player, observer, fixt
         "scope": "earned whole stack to empty ordinary bag; no swap/split/merge/equipment claim"}
 
 
+def swap_reward_and_verify_restart(environment, worker, player, fixture, expected, work_index, quests):
+    state = player.expect_rewards(expected, work_index)
+    before = deepcopy(state["rewards"]["inventory"])
+    sources = [(key, item) for key, item in before.items()
+               if item["id"] == 4555 and item["storage"] in range(4)]
+    destinations = [(key, item) for key, item in sorted(before.items())
+                    if item["id"] != 4555 and item["storage"] in range(4)]
+    assert len(sources) == 1 and sources[0][1]["count"] == 3 and destinations
+    source, source_item = sources[0]
+    destination, destination_item = destinations[0]
+    assert source != destination and source_item["id"] != destination_item["id"]
+    expected_inventory = deepcopy(before)
+    swapped_source = deepcopy(source_item)
+    swapped_destination = deepcopy(destination_item)
+    swapped_source.update(storage=destination_item["storage"], slot=destination_item["slot"])
+    swapped_destination.update(storage=source_item["storage"], slot=source_item["slot"])
+    expected_inventory[destination] = swapped_source
+    expected_inventory[source] = swapped_destination
+    entity = state["entity_id"]
+    position = state["observed_position"]
+    receipt = player.request_item_swap(source_item["storage"], source_item["slot"],
+        destination_item["storage"], destination_item["slot"], source_item["id"], destination_item["id"])
+    assert receipt["acknowledged"] and receipt["inventory_change_verified"] is False
+    player.logout()
+    player.close()
+    environment.restart_world()
+    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    state = player.login_via_lobby(auth, fixture["name"])
+    assert state["entity_id"] == entity and math.dist(state["observed_position"], position) < 0.15
+    state = player.expect_rewards(expected, work_index)
+    assert state["rewards"]["inventory"] == expected_inventory
+    for quest in quests:
+        player.expect_quest_complete(quest)
+    evidence = {"source": source, "destination": destination,
+        "source_item": source_item["id"], "destination_item": destination_item["id"],
+        "receipt": receipt, "before": before,
+        "after_restart": deepcopy(state["rewards"]["inventory"]),
+        "scope": "two observed occupied ordinary bag slots; no equipment or arbitrary operation"}
+    (environment.artifacts / "inventory-swap.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+    return player, expected_inventory, evidence
+
+
 def discard_reward_and_verify_restart(environment, worker, player, fixture, expected, work_index, quests):
     state = worker.snapshot(player.name)
     inventory = deepcopy(state["rewards"]["inventory"])
@@ -245,6 +287,10 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
         assert state["rewards"]["inventory"] == moved_inventory
         move_evidence["after_restart"] = deepcopy(state["rewards"]["inventory"])
         (environment.artifacts / "inventory-move.json").write_text(json.dumps(move_evidence, indent=2), encoding="utf-8")
+        reloaded, swapped_inventory, _ = swap_reward_and_verify_restart(
+            environment, live_worker, reloaded, player_fixture, expected,
+            catalog["work_index"], completed_quests)
+        assert live_worker.snapshot(reloaded.name)["rewards"]["inventory"] == swapped_inventory
         reloaded = discard_reward_and_verify_restart(environment, live_worker, reloaded, player_fixture,
                                                     expected, catalog["work_index"], completed_quests)
     reloaded.logout()

@@ -91,6 +91,41 @@ int main()
       catch(const ProtocolError&) { rejected = true; }
       check(rejected, "unready/occupied/unobserved/empty move rejected");
     }
+    auto swapState = state.state();
+    swapState["inventory"]["3:24"] = {{"storage", 3}, {"slot", 24}, {"id", 4555}, {"count", 3}};
+    auto swap = swapItemRequest(swapState, 0x12345678, 0x01020305, 1, 2, 4551, 3, 24, 4555);
+    Bytes swapExpected = moveExpected;
+    swapExpected[0] = 5; swapExpected[4] = 9;
+    swapExpected[40] = 3; swapExpected[44] = 0xcb; swapExpected[45] = 0x11;
+    check(swap == swapExpected, "swap request must match exact bounded occupied-destination wire fixture");
+    check(swapState["inventory"]["1:2"]["id"] == 4551 && swapState["inventory"]["3:24"]["id"] == 4555,
+          "swap serialization never changes inventory");
+    for(int fault = 0; fault < 8; ++fault)
+    {
+      auto invalid = swapState;
+      if(fault == 0) invalid["inventory_ready"] = false;
+      if(fault == 1) invalid["inventory"].erase("3:24");
+      if(fault == 2) invalid["inventory"]["3:24"]["id"] = 999;
+      if(fault == 3) invalid["inventory"]["3:24"]["count"] = 0;
+      if(fault == 4) invalid["containers"].erase("3");
+      rejected = false;
+      try
+      {
+        if(fault == 5) swapItemRequest(invalid, 1, 1, 1, 2, 4551, 1, 2, 4555);
+        else if(fault == 6) swapItemRequest(invalid, 1, 1, 1, 2, 4551, 3, 24, 4551);
+        else if(fault == 7) swapItemRequest(invalid, 1, 1, 1, 2, 4551, 4, 24, 4555);
+        else swapItemRequest(invalid, 1, 1, 1, 2, 4551, 3, 24, 4555);
+      }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "invalid/unready/unobserved/mismatched swap rejected");
+    }
+    batch.contextId = 0x01020305; batch.operationType = 9; batch.errorType = 0;
+    auto swapInventoryBeforeAck = state.state()["inventory"];
+    receive(state, batch);
+    check(state.state()["inventory"] == swapInventoryBeforeAck, "swap acknowledgement is NOT mutation proof");
+    check(state.state()["operation_batches"].back() == nlohmann::json{{"context", 0x01020305}, {"operation", 9}, {"error", 0}},
+          "swap acknowledgement retains exact context/type/error");
+
     auto inventoryBeforeAck = state.state()["inventory"];
     batch.contextId = 0x01020304; batch.operationType = 8; batch.errorType = 0; receive(state, batch);
     check(state.state()["inventory"] == inventoryBeforeAck, "move acknowledgement is NOT mutation proof");

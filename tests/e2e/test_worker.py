@@ -17,6 +17,7 @@ def test_capabilities(worker):
     assert "general_combat" in caps["unsupported"]
     assert "fast_blade" in caps["methods"]
     assert "request_item_move" in caps["methods"]
+    assert "request_item_swap" in caps["methods"]
 
 
 def test_unknown_bot_and_invalid_method(worker):
@@ -62,9 +63,17 @@ def test_action_before_readiness_is_rejected(worker):
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("request_item_move", "test", storage=0, slot=0,
                                expected_item=4555, destination_storage=3, destination_slot=24)
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("request_item_swap", "test", storage=0, slot=0, expected_item=4555,
+                               destination_storage=3, destination_slot=24,
+                               expected_destination_item=4551)
             move = next(row for row in worker._actions if row["method"] == "request_item_move")
             assert move["args"] == {"storage": 0, "slot": 0, "expected_item": 4555,
                                     "destination_storage": 3, "destination_slot": 24}
+            swap = next(row for row in worker._actions if row["method"] == "request_item_swap")
+            assert swap["args"] == {"storage": 0, "slot": 0, "expected_item": 4555,
+                                    "destination_storage": 3, "destination_slot": 24,
+                                    "expected_destination_item": 4551}
             worker.request("close", "test")
             assert worker.snapshot("test")["phase"] == "closed"
         finally:

@@ -36,10 +36,11 @@ lobby, world and MariaDB processes with matching game data:
   and position after world restart.
 - The chain test moves the earned ether stack to an observed empty ordinary bag
   slot, verifies exact placement through a fresh login and again after world
-  restart, preserving all other tracked slots and rewards. It then discards that stack
-  through the normal item-operation packet. It waits for a committed received
-  deletion, checks every tracked slot for unintended changes, and verifies the
-  deletion plus retained quest progress after a second restart.
+  restart, preserving all other tracked slots and rewards. It then swaps the
+  occupied ether and potion slots and verifies the exact exchange after another
+  restart. Finally it discards the relocated ether stack, waits for a committed
+  received deletion, checks every tracked slot for unintended changes, and verifies
+  the deletion plus retained quest progress after the final restart.
 
 - A level-one Gladiator waits for naturally regenerated TP, performs three paced
   Fast Blades against an observed nearby level-one marmot, and an independent bot
@@ -189,8 +190,9 @@ bot.close()    # Removes the bot from the worker.
 
 Additional actions: `wait_world_ready`, `walk_route`, `interact`, `choose_dialogue`,
 `wait_event_finished`, `expect_quest_active`, `expect_quest_complete`,
-`reward_snapshot`, `expect_rewards`, `request_item_move`, `discard_item`, `cross_exit`,
-`say`, `expect_say`, `wait_fast_blade_ready`, and `fast_blade`.
+`reward_snapshot`, `expect_rewards`, `request_item_move`, `request_item_swap`,
+`discard_item`, `cross_exit`, `say`, `expect_say`, `wait_fast_blade_ready`, and
+`fast_blade`.
 Use `worker.wait_state(...)` for bounded predicates against received state. Event
 notifications wake waits; snapshots also cover observations received before the
 wait was registered. No automatic gameplay retry is performed after a timeout.
@@ -221,20 +223,33 @@ Neither that receipt nor successful request serialization changes the worker's
 inventory. `rewards.operation_batches` retains at most 128 received context/type/
 error records; these are acknowledgements, not universal commit records.
 
+`request_item_swap(storage, slot, destination_storage, destination_slot,
+expected_item, expected_destination_item)` swaps two observed **occupied** ordinary
+bag slots. Both identities/counts and complete bag snapshots are required. Equal
+identities are rejected so the bounded regression has an unambiguous exact-map
+result. The caller still cannot choose counts or an arbitrary operation, and the
+operation-9 acknowledgement is not mutation evidence.
+
 The chain regression earns its three ethers normally, requests the move to bag 3,
 slot 24, logs out and authenticates again. Complete received snapshots must then
 show the source absent, that exact destination holding all three ethers, and every
 other tracked slot unchanged—not merely equal bag totals. The nearby observer
 checks identity/position/despawn/reappearance, not private inventory contents.
 The same placement and unchanged rewards/quest completions are checked after an
-orderly world restart. `inventory-move.json` records those observations. The
-existing discard test subsequently deletes the **moved** stack and verifies that
-deletion across another restart. No database mutation, grant, optimistic slot
-update, forced resync or fabricated server response supplies gameplay evidence.
+orderly world restart. `inventory-move.json` records those observations.
 
-This covers an ordinary empty-destination whole-stack move, not split/merge/swap,
-equipment/currency moves, item use, immediate move publication, crash consistency
-or independent real-client inventory presentation.
+The reloaded client then swaps the occupied ether and potion slots. It normally
+logs out, the world restarts, and a fresh authentication must show both exact
+identities/counts exchanged with every other tracked slot unchanged.
+`inventory-swap.json` records the operation-9 acknowledgement separately from the
+post-restart map. The existing discard test subsequently deletes the relocated
+ether stack and verifies that deletion across the final restart. No database
+mutation, grant, optimistic slot update, forced resync or fabricated server
+response supplies gameplay evidence.
+
+This covers an ordinary empty-destination whole-stack move and a two-occupied-slot
+swap, not split/merge, equipment/currency moves, item use, immediate operation
+publication, crash consistency or independent real-client inventory presentation.
 
 `close` cancels pending connection/movement timers and closes sockets; `remove`
 also releases the bot. End-of-input shuts down all worker-owned connections.

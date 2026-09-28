@@ -595,6 +595,21 @@ namespace Sapphire::Testing
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};
     }
+    if(method == "request_item_swap")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      for(const auto* key : {"storage", "slot", "expected_item", "destination_storage",
+                             "destination_slot", "expected_destination_item"})
+        if(!args.at(key).is_number_unsigned() || args.at(key) > uint64_t{0xffffffff})
+          throw ProtocolError("inventory arguments must be unsigned 32-bit integers");
+      if(m_inventoryContext == 0xffffffff) throw ProtocolError("inventory context budget exhausted");
+      auto payload = swapItemRequest(m_rewards.state(), m_entity, ++m_inventoryContext,
+                                    args.at("storage"), args.at("slot"), args.at("expected_item"),
+                                    args.at("destination_storage"), args.at("destination_slot"),
+                                    args.at("expected_destination_item"));
+      sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
+      return {{"context", m_inventoryContext}};
+    }
     if(method == "say")
     {
       const auto message = args.at("message").get<std::string>();
