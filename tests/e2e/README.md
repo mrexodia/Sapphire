@@ -72,7 +72,9 @@ python -m pip install -r tests/e2e/requirements.txt
 For a single-config generator:
 
 ```sh
-python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_soak.py \
+python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
+  tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
+  tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py \
   --e2e-worker build-e2e/sapphire_test_client --junitxml=build-e2e/contracts.xml
 ```
 
@@ -392,7 +394,37 @@ python -m tests.e2e.run_workload --profile .e2e-local.json \
   Recorded duration/ramp/pacing/minimum-span limits are reused unless explicitly
   overridden. Unknown fields and no-op walks are rejected. Soak plans start with
   one walk and one Say per bot, then use seeded choices. Scheduling is not
-  deterministic and failing traces are not automatically minimized.
+  deterministic.
+
+### Failed-plan minimization
+
+A failed unpaced exploration or soak plan can be reduced through fresh isolated
+replays:
+
+```sh
+python -m tests.e2e.run_minimize --profile .e2e-local.json \
+  --plan .e2e-artifacts/<failed-run>/plan.json \
+  --output .e2e-artifacts/minimized-plan.json --max-attempts 32
+```
+
+The original plan is rerun as the baseline; historical failure artifacts alone
+are not trusted. Each candidate provisions and cleans a separate environment.
+Only a workflow action failure with the same failing semantic action and exact
+normalized assertion text is accepted. Normalization removes only the ephemeral
+worker state dump after `; state=`. Passing candidates, different failures,
+setup/cleanup/artifact failures, missing outcomes and unverified runtime removal
+are rejected. Exploration removes ordered actions; soak removes complete actor
+rounds. Every candidate is revalidated, so no-op walks, broken actor ordering or
+invalid limits are never executed or accepted.
+
+`--max-attempts` (1..100) bounds actual isolated executions, including the
+baseline. The report records every candidate hash, retained original indexes,
+accepted signature, artifact directory, whether the budget was exhausted and
+whether no single remaining valid action/round can be removed. Output overwrite
+is refused. The minimized plan remains a semantic reproduction aid—not packet or
+scheduling determinism, proof of root cause, or a passing test. Paced/minimum-span
+plans are deliberately rejected because deleting rounds would weaken their
+sustained-work claim.
 
 ### Sustained, paced workloads
 
