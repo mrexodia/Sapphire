@@ -66,7 +66,7 @@ python -m pip install -r tests/e2e/requirements.txt
 For a single-config generator:
 
 ```sh
-python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py \
+python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
   --e2e-worker build-e2e/sapphire_test_client --junitxml=build-e2e/contracts.xml
 ```
 
@@ -358,5 +358,10 @@ runtime, raw database, game assets, local profiles or unredacted configs.
 
 `.github/workflows/test-client.yml` builds and tests the asset-independent client
 on Linux and Windows. It does **not** provision game data, run gameplay tests, or
-claim real-client compatibility. Full gameplay CI requires a trusted, suitably
-provisioned runner with appropriate isolation from untrusted PR code.
+claim real-client compatibility. The opt-in `gameplay-e2e.yml` workflow and
+`python -m tests.e2e.run_ci` entry point implement a separate seven-case gameplay
+gate, with strict preflight, no skips, staged-input identity and cleanup checks.
+Only an allowlisted summary is publishable; raw pytest/JUnit and gameplay logs
+stay private. See [CI.md](CI.md) for runner access restrictions, approval settings,
+VM disposal requirements and local rehearsal commands. Local rebuilt-binary
+rehearsal passes; a protected GitHub runner execution remains unverified.

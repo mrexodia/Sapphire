@@ -1,0 +1,106 @@
+name: Provisioned gameplay E2E
+
+# Never run repository code from a PR on a runner containing private game assets.
+on:
+  workflow_dispatch:
+    inputs:
+      reviewed_default_branch:
+        description: I reviewed the default-branch code and the private runner provisioning
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sapphire-private-gameplay
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require explicit opt-in and the trusted default branch
+        env:
+          ACK: ${{ inputs.reviewed_default_branch }}
+          ENABLED: ${{ vars.SAPPHIRE_PRIVATE_E2E_ENABLED }}
+          SELECTED_REF: ${{ github.ref }}
+          TRUSTED_REF: refs/heads/${{ github.event.repository.default_branch }}
+        shell: bash
+        run: |
+          test "$ACK" = true || { echo 'Explicit review acknowledgement required'; exit 1; }
+          test "$ENABLED" = true || { echo 'Private E2E runner is not enabled'; exit 1; }
+          test "$SELECTED_REF" = "$TRUSTED_REF" || { echo 'Only the trusted default branch is allowed'; exit 1; }
+
+  gameplay:
+    needs: authorize
+    # Configure required reviewers and default-branch deployment restrictions BEFORE enabling.
+    environment: sapphire-private-e2e
+    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+      - name: Load the provisioned C++ toolchain
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $installation = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $installation) { throw 'C++ toolchain missing' }
+          $devCmd = Join-Path $installation 'Common7\Tools\VsDevCmd.bat'
+          $environment = & cmd.exe /s /c "`"$devCmd`" -arch=x64 -host_arch=x64 >nul && set"
+          if ($LASTEXITCODE -ne 0) { throw 'Toolchain setup failed' }
+          foreach ($line in $environment) {
+            $separator = $line.IndexOf('=')
+            if ($separator -le 0) { continue }
+            # Only publish toolchain-related values, not every private runner variable.
+            $name = $line.Substring(0, $separator)
+            if ($name -match '^(PATH|INCLUDE|LIB|LIBPATH|VCINSTALLDIR|VCToolsInstallDir|VSINSTALLDIR|WindowsSdkDir|WindowsSDKVersion|UniversalCRTSdkDir|UCRTVersion)$') {
+              $line | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            }
+          }
+      - name: Build the checked-out server, scripts and client
+        run: |
+          cmake -S . -B build-e2e-ci -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DSAPPHIRE_BUILD_TEST_CLIENT=ON -DSAPPHIRE_BUILD_TOOLKIT=OFF -DSAPPHIRE_BUILD_IN_TREE=OFF -DRECASTNAVIGATION_TESTS=OFF -DRECASTNAVIGATION_DEMO=OFF -DRECASTNAVIGATION_EXAMPLES=OFF
+          if ($LASTEXITCODE -ne 0) { throw 'Configure failed' }
+          cmake --build build-e2e-ci --target sapphire_gameplay_ci
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+          ctest --test-dir build-e2e-ci --output-on-failure --timeout 60 --no-tests=error -R '^sapphire_'
+          if ($LASTEXITCODE -ne 0) { throw 'Native contracts failed' }
+          python -m pip install -r tests/e2e/requirements.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Python dependencies failed' }
+      - name: Controller and CI gate contracts
+        run: |
+          python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
+          if ($LASTEXITCODE -ne 0) { throw 'Controller contracts failed' }
+      - name: Isolated gameplay and evidence gate
+        id: gameplay
+        env:
+          SAPPHIRE_E2E_PROFILE: ${{ secrets.SAPPHIRE_E2E_PROFILE }}
+        run: |
+          if (-not $env:SAPPHIRE_E2E_PROFILE) { throw 'Private profile path is not configured' }
+          if (Test-Path .e2e-ci-summary.json) { throw 'Summary destination must start absent' }
+          python -m tests.e2e.run_ci --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$env:RUNNER_TEMP/sapphire-private-e2e" --summary .e2e-ci-summary.json --require-clean
+          $gateExit = $LASTEXITCODE
+          if (Test-Path .e2e-ci-summary.json) {
+            'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          }
+          if ($gateExit -ne 0) { throw 'Gameplay evidence gate failed; inspect private runner diagnostics' }
+      - name: Publish allowlisted evidence only
+        if: always() && steps.gameplay.outputs.summary_created == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gameplay-summary-${{ github.run_id }}
+          path: .e2e-ci-summary.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+          # Never add private logs, JUnit XML, profiles, catalogs or runtime trees here.

@@ -175,3 +175,15 @@ add_subdirectory( "src/scripts" )
 ##############################
 set( CMAKE_FOLDER "tools" )
 add_subdirectory( "src/tools" )
+
+# Provisioned gameplay CI needs the complete server/script set, but not GUI tools.
+if( SAPPHIRE_BUILD_TEST_CLIENT )
+  get_property( SAPPHIRE_SCRIPT_TARGETS DIRECTORY "${CMAKE_SOURCE_DIR}/src/scripts" PROPERTY BUILDSYSTEM_TARGETS )
+  add_custom_target( sapphire_gameplay_ci )
+  add_dependencies( sapphire_gameplay_ci api lobby server dbm copy_runtime_files
+                    sapphire_test_client ${SAPPHIRE_SCRIPT_TARGETS} )
+  if( BUILD_TESTING )
+    add_dependencies( sapphire_gameplay_ci sapphire_protocol_tests sapphire_reward_tests
+                      sapphire_combat_tests sapphire_navigation_tests )
+  endif()
+endif()

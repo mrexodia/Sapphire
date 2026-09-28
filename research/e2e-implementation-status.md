@@ -41,7 +41,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Deadlines / cancellation / cleanup | Timers, bounded waits, owned-process teardown, redaction; bounded Windows sharing-error retries | Initial paths verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
-| Provisioned gameplay CI | Local opt-in profile and documented commands | Dedicated trusted-runner workflow missing |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built binaries; hosted execution/runner controls unverified, no registered runners |
 | Independent real-client/golden trace compatibility | No independently captured session | Missing |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
@@ -51,9 +51,19 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same four CTest executables pass.
-- 44 Python worker/policy contracts pass with the MSVC worker and in a
+- 69 Python worker/policy/CI-gate contracts pass with the MSVC worker and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
+- The provisioned CI entry point passes all seven cases against a fresh out-of-tree
+  server/script/client build. Latest input-bound rehearsal: 243.468s, zero skips,
+  collection/input hashes/normal cleanup all verified (`gameplay-ci-khdbpmya` under
+  `.e2e-artifacts/ci`, summary `build-e2e/ci-summary-bound-inputs.json`). These runs
+  used a dirty implementation checkout, explicitly recorded in their summaries.
+  `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
+  found zero registered self-hosted runners; no runner/settings were created.
+  See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
+  protected-environment approval and VM disposal responsibilities. Local rehearsal
+  does not prove hosted approval, cancellation cleanup or independent compatibility.
 - Seven live cases pass together in 255.94s (`sapphire-e2e-qpyhw78e`) after
   bot-specific state-wait notification filtering: rejected
   credentials, login/idle/logout, observed movement/Say/position persistence,
@@ -156,7 +166,9 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
    defeat, received combat rewards and retaliation assertions. Preserve observed
    resource/range checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters; unknown content must still fail.
-4. Validate provisioned gameplay CI and longer/higher-population stability runs.
+4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
+   runner (none is currently registered), including approval/cancellation/disposal.
+   Continue longer-duration stability runs; current five-minute evidence is insufficient.
 5. Evaluate the existing `E:/Sapphire/game/ffxiv*.exe` candidates for an isolated
    real-client run, or obtain a sanitized trace. Executable presence is not
    compatibility evidence: first verify version, loopback bootstrap and isolated
