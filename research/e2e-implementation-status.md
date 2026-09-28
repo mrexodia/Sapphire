@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; one independently observed player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, equipment/currency-container moves, general pursuit/leash behavior, raises, combos and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed main-hand unequip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; one independently observed player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, re-equipping/broader equipment and currency-container moves, general pursuit/leash behavior, raises, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -55,10 +55,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `59ab9e539` took 556.957s with zero skips/errors/failures and verified
+  rehearsal at `30f8a21f3` took 581.964s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-y62rdmhf` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-opening-classes.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-8xe58h5r` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-equipment-unequip.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -602,12 +602,25 @@ the private runtime root is absent. The immediately preceding failed gate is ret
 under `.e2e-artifacts/ci/gameplay-ci-a5wh09qq`: it used the stale profile worker and
 also caught natural target drift before Fast Blade, so it is not success evidence.
 
+At `30f8a21f3`, the first newly created Gladiator additionally moved its received
+starter sword 1601 from main-hand slot `1000:0` to observed-empty bag slot `0:0`
+through ordinary operation 8 before starting the event. The operation receipt is
+explicitly marked as non-proof. Exact source absence, destination item/count and
+subsequent ring placement were first established by a fresh HTTP/lobby session and
+then remained byte-for-field identical after restart. Native malformed-state tests
+bound the action to one observed gear slot, a complete gear snapshot and an empty
+ordinary slot. The clean gate passed in **581.964s**; creation took **59.418s**,
+artifact SHA-256 is
+`b546ef6ead17aa7080f23c12e25b2e1e963bf5da8c757644537a911c1ac4bdb0`,
+and worker SHA-256 is
+`d9357ec002694d802c9481ec31e13efa444161b697f1da56c87a2f09774e048c`.
+
 This evidence remains deliberately narrow: it covers the three Ul'dah starting
-classes, one canonical appearance payload, all ring choices and the
-initial/continuation opening scenes. It does not establish account signup UI,
-appearance breadth, other cities/classes, name rejection/deletion, the complete
-opening quest, travel into public Ul'dah, real-client cutscene presentation or
-broader protocol compatibility.
+classes, one canonical appearance payload, all ring choices, one main-hand unequip
+and the initial/continuation opening scenes. It does not establish re-equipping,
+other equipment operations, account signup UI, appearance breadth, other
+cities/classes, name rejection/deletion, the complete opening quest, travel into
+public Ul'dah, real-client cutscene presentation or broader protocol compatibility.
 
 ## Workload diagnostic-failure cleanup hardening
 

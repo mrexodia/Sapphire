@@ -50,9 +50,12 @@ lobby, world and MariaDB processes with matching game data:
   enter-territory operation and exercise all explicit ring results 1..4. Each
   receives scenes 0 then 1, exactly one corresponding item 4423..4426, and the
   scene-40 continuation through fresh authentication and a shared world restart.
-  This covers only the three Ul'dah starting classes, ring choice and first opening
-  branch, not appearance breadth, other cities/classes, the complete opening quest
-  or travel into public Ul'dah.
+  Before the first journey, the client also moves the observed starter sword from
+  main hand to an observed empty ordinary-bag slot; only fresh authentication and
+  restart snapshots prove the exact persisted mutation. This covers only one
+  unequip, the three Ul'dah starting classes, ring choice and first opening branch,
+  not re-equipping, appearance breadth, other cities/classes, the complete opening
+  quest or travel into public Ul'dah.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot
   verifies every matching result/committed HP decrease, the first natural retaliation,
