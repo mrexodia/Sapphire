@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move and occupied-slot swap, discard, ordinary Say, 130-to-141 crossing/persistence, and three paced Fast Blades plus independently observed retaliation | Representative subset verified; inventory split/merge/use and general combat not covered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move and occupied-slot swap, discard, ordinary Say, 130-to-141 crossing/persistence, and paced Fast Blades through one enemy defeat with independent retaliation/death/removal plus persisted EXP/loot | Representative subset verified; inventory split/merge/use, pursuit, player defeat, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing; no general quest-range/discovery adapter | Exit subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
@@ -47,11 +47,11 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 
 ## Verified results
 
-- Clang/Ninja and MSVC/Visual Studio: five CTest executables pass (protocol,
-  rewards, combat, synthetic navigation and borrowed database bindings). Navigation tests reject disconnected and
+- Clang/Ninja and MSVC/Visual Studio: six CTest executables pass (protocol,
+  rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
-- GNU 11.4/Ubuntu 22.04: standalone build and the same five CTest executables pass.
-- 113 Python worker/policy/CI/pacing/resource-control contracts pass with the MSVC worker and in a
+- GNU 11.4/Ubuntu 22.04: standalone build and the same six CTest executables pass.
+- 242 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all seven cases against a fresh out-of-tree
@@ -77,9 +77,11 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   level-one marmot. Request acknowledgement/effect alone is insufficient.
   The fighter disconnects; it does not bypass in-combat logout restrictions.
   That original slice did not establish repeated actions or retaliation; the
-  extension below now covers three paced strikes and the first retaliation hit.
-  Kills, combat XP/loot, combos, general cooldown scheduling and dynamic pursuit
-  remain uncovered. Initial position is fixture setup.
+  first extension below covered three paced strikes and the first retaliation hit.
+  The later defeat/reward extension now covers one complete level-one defeat and
+  persisted current-test-table loot/EXP. Combos, general cooldown scheduling,
+  player defeat, dynamic pursuit and production loot selection remain uncovered.
+  Initial position is fixture setup.
   The decoded `sapphire-e2e-wd3lpulz` journal records nine damage, NPC HP 94 → 85 on both clients,
   and source TP 40 after the action. A conservative local recast guard follows the
   received 250-centisecond action-start value. Private runtime cleanup succeeded.
@@ -296,6 +298,59 @@ starts. The manifest/source cleanliness, input identities and whole-runtime
 removal were also audited. This is a local headless CI rehearsal, not hosted
 runner execution or independent real-client combat compatibility.
 
+## Enemy defeat, persisted rewards and item-ID collision fix
+
+`fe4630824c79c2ce9c290efd88bf1fe68d9d98bd` extends the same bounded normal
+Fast Blade path until the already observed level-one target reaches zero HP, with
+a hard limit of 16 requests. Before every request the independent observer still
+checks the living fighter, exact target HP and melee range; both clients must
+receive the identical effect and exact committed HP integrity. The final integrity
+must be zero and both clients must observe delayed server removal. The prior natural
+retaliation assertion is retained. No enemy, skill, TP or route is granted, spawned
+or fabricated.
+
+The matching local-data exporter now supplies level-one `BaseExp=50` and Gladiator
+`WorkIndex=1`. The live assertion requires exactly 50 EXP, no level/currency change,
+one five-item result from test-table pool 8/9, one each of items 5016 and 12728,
+and one to three item 4551. It then closes the fighter session and performs a genuine
+new HTTP/lobby/world login. Both aggregate reward state and every received inventory
+slot must exactly match the post-kill state. This proves one current hard-coded
+`testTable` path, not production loot-table selection or general reward behavior.
+
+The first persistence attempt reached all death/reward assertions but correctly
+failed after login: item 12728 reloaded as a second 5016. The retained
+`.e2e-artifacts/sapphire-e2e-eabs_85s/world.log` records duplicate primary key
+`18014398526259201-5242882`. `ItemMgr::getNextUId()` had repeated asynchronous
+`MAX(ItemId)` queries, allowing rapid grants to receive the same ID before the
+first insert became visible. `ItemIdAllocator` now reads the database maximum once,
+then serializes process-local monotonic allocation. A 64-thread native contract
+requires a single seed read and a unique contiguous range. This does not establish
+collision safety across multiple world processes.
+
+A clean seven-case gate at that commit passed in **306.007s**, with zero skips,
+errors or failures and all setup/call/teardown reports present. The combat case took
+70.033s and used 12 distinct paced requests to reduce HP 94 → 0; minimum attempt
+spacing was 3.000s. Both clients observed the first one-damage retaliation and target
+removal. This run received/persisted EXP 0 → 50 and exact loot 8×5, 12728×1,
+5016×1 and 4551×3 in unchanged slots across fresh authentication. Evidence:
+`build-e2e/ci-summary-combat-defeat.json`,
+`.e2e-artifacts/ci/gameplay-ci-slr25cla/live.xml`, environment
+`sapphire-e2e-h25lwnn_`, and `combat-defeat-rewards.json` SHA-256
+`b815d83dbbb9646085726d737b1a1b38d16407b75c8e8eeddd3ac8084325f5c3`.
+The catalog/server/worker hashes are respectively
+`521eed9a08426afce42b3899bc079d37479e7a0b7292e14bc7bf30ba8c94580e`,
+`ea113af804798c70e321292887c3edd5a3ff2b664834646fdb7220ff222fec88`, and
+`d34c0e69407f05f285d1590232775c0b7581dc39255dde23ba1ca33c473953e9`.
+The summary records clean source, exact collection/input identities and verified
+cleanup; the private runtime root is absent. No duplicate-key error occurs in the
+passing world log.
+
+All **242** Python contracts pass with Clang and MSVC workers and in a
+network-isolated Linux container. All six native suites pass with Clang, MSVC and
+GNU 11.4. These checks plus the live fresh-login result cover the discovered
+process-local collision; they do not prove hosted execution, general combat,
+real-client presentation or multi-process allocation.
+
 ## Persisted ordinary-bag move and swap
 
 `62c3391bd3c2e9c144be8051d0923e420fb208fe` adds only a whole-stack move from an
@@ -461,9 +516,10 @@ workload was not repeated without a new stability hypothesis.
    replay is flat; this does not establish capacity or memory stability for all
    code paths. Generator histories/allocator retention also remain distinct from
    server resource behavior.
-2. Extend combat beyond the now-verified three normally timed actions and first
-   retaliation hit: enemy defeat and received combat rewards remain uncovered.
-   Preserve observed resource/range checks and require genuine navigation for any pursuit.
+2. Extend combat beyond the now-verified single level-one enemy defeat and persisted
+   current-test-table rewards: pursuit, player defeat, combos, additional abilities
+   and production loot selection remain uncovered. Preserve observed resource/range
+   checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters; unknown content must still fail.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
