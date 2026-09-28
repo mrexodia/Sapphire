@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <iosfwd>
 
 #include "Operation.h"
 #include "MySqlPreparedStatement.h"
@@ -78,6 +79,9 @@ namespace Sapphire::Db
     std::shared_ptr< Mysql::PreparedStatement > m_stmt;
     uint32_t m_index;
     std::vector< PreparedStatementData > m_statementData;
+    // The connector borrows BLOB streams until execution finishes. Keep them
+    // owned by this operation, including partial-bind/execute failure paths.
+    std::vector< std::unique_ptr< std::stringstream > > m_binaryStreams;
 
     PreparedStatement( PreparedStatement const& right ) = delete;
 

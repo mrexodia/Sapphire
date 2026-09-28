@@ -1,5 +1,4 @@
 #include "PreparedStatement.h"
-#include "DbConnection.h"
 
 #include <string.h>
 #include <sstream>
@@ -18,6 +17,7 @@ Sapphire::Db::PreparedStatement::~PreparedStatement()
 void Sapphire::Db::PreparedStatement::bindParameters()
 {
   assert( m_stmt );
+  m_binaryStreams.clear();
 
   uint8_t i = 1;
   for( ; i < m_statementData.size(); i++ )
@@ -47,12 +47,14 @@ void Sapphire::Db::PreparedStatement::bindParameters()
         break;
       case TYPE_BINARY:
       {
-        std::stringstream* is = new std::stringstream;
-
+        auto stream = std::make_unique< std::stringstream >();
         for( auto entry : m_statementData[ i ].binary )
-          is->rdbuf()->sputc( static_cast< char > ( entry ) );
+          stream->rdbuf()->sputc( static_cast< char > ( entry ) );
 
-        m_stmt->setBlob( i, is );
+        // setBlob borrows, rather than deletes, the supplied stream. Do not use
+        // a local-only stream: the connector reads it later during execute().
+        m_binaryStreams.push_back( std::move( stream ) );
+        m_stmt->setBlob( i, m_binaryStreams.back().get() );
       }
         break;
       case TYPE_NULL:

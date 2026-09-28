@@ -62,6 +62,13 @@ endif()
 add_executable(sapphire_test_client main.cpp Client.cpp)
 target_link_libraries(sapphire_test_client PRIVATE sapphire_test_protocol)
 if(BUILD_TESTING)
+  add_executable(sapphire_database_binding_tests
+    "${SAPPHIRE_ROOT}/tests/database/test_prepared_statement.cpp"
+    "${SAPPHIRE_ROOT}/src/common/Database/PreparedStatement.cpp")
+  target_compile_features(sapphire_database_binding_tests PRIVATE cxx_std_17)
+  target_include_directories(sapphire_database_binding_tests PRIVATE
+    "${SAPPHIRE_ROOT}/tests/database/fakes" "${SAPPHIRE_ROOT}/src/common/Database")
+  add_test(NAME sapphire_database_bindings COMMAND sapphire_database_binding_tests)
   add_executable(sapphire_protocol_tests "${SAPPHIRE_ROOT}/tests/protocol/test_protocol.cpp")
   target_link_libraries(sapphire_protocol_tests PRIVATE sapphire_test_protocol)
   add_test(NAME sapphire_protocol COMMAND sapphire_protocol_tests)
