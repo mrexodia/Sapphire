@@ -1,5 +1,7 @@
 """Deterministic policy, catalog and replay validation; no game/network required."""
 from copy import deepcopy
+import json
+from pathlib import Path
 import pytest
 
 from .support.catalog import (validate_combat_catalog, validate_pursuit_catalog,
@@ -21,6 +23,13 @@ def test_combat_catalog_rejects_unsupported_action_metadata(patch):
     assert validate_combat_catalog(data) == data
     with pytest.raises(WorkerError, match="Fast Blade"):
         validate_combat_catalog({**data, **patch})
+
+
+def test_uldah_opening_catalog_pins_all_source_defined_ring_choices():
+    data = json.loads((Path(__file__).parent / "scene_catalog/opening_uldah.json").read_text())
+    choices = data["scenes"]["1245187:0"]["choices"]
+    assert choices == {"choose_ring_4423": [1], "choose_ring_4424": [2],
+                       "choose_ring_4425": [3], "choose_ring_4426": [4]}
 
 
 def test_pursuit_catalog_binds_natural_enemy_and_displaced_route():
