@@ -62,6 +62,11 @@ endif()
 add_executable(sapphire_test_client main.cpp Client.cpp)
 target_link_libraries(sapphire_test_client PRIVATE sapphire_test_protocol)
 if(BUILD_TESTING)
+  add_executable(sapphire_item_id_tests "${SAPPHIRE_ROOT}/tests/world/test_item_id_allocator.cpp")
+  target_compile_features(sapphire_item_id_tests PRIVATE cxx_std_17)
+  target_include_directories(sapphire_item_id_tests PRIVATE "${SAPPHIRE_ROOT}/src/world")
+  target_link_libraries(sapphire_item_id_tests PRIVATE Threads::Threads)
+  add_test(NAME sapphire_item_ids COMMAND sapphire_item_id_tests)
   add_executable(sapphire_database_binding_tests
     "${SAPPHIRE_ROOT}/tests/database/test_prepared_statement.cpp"
     "${SAPPHIRE_ROOT}/src/common/Database/PreparedStatement.cpp")

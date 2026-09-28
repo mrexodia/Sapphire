@@ -3,19 +3,45 @@ from copy import deepcopy
 import pytest
 
 from .support.catalog import validate_quest_catalog, validate_transition_catalog, validate_combat_catalog
+from .support.combat import combat_reward_delta
 from .support.workload import build_plan, validate_plan
 from .support.worker import WorkerError, reward_values
 
 
-@pytest.mark.parametrize("patch", [{"level": 2}, {"class_job": 2}, {"level": True},
-    {"cost": 0}, {"range": 25}, {"action": 10}, {"cast_ms": 100}, {"target_enemy": 1}])
+@pytest.mark.parametrize("patch", [{"level": 2}, {"class_job": 2}, {"work_index": 2},
+    {"base_exp": 0}, {"level": True}, {"cost": 0}, {"range": 25}, {"action": 10},
+    {"cast_ms": 100}, {"target_enemy": 1}])
 def test_combat_catalog_rejects_unsupported_action_metadata(patch):
     data = {"version": 1, "profile": "sapphire-3.3", "action": 9, "class_job": 1,
-            "level": 1, "category": 3, "cost_type": 5, "cost": 60, "range": -1,
+            "work_index": 1, "level": 1, "base_exp": 50,
+            "category": 3, "cost_type": 5, "cost": 60, "range": -1,
             "cast_ms": 0, "recast_ms": 2500, "recast_group": 58, "effect_type": 1, "target_enemy": True}
     assert validate_combat_catalog(data) == data
     with pytest.raises(WorkerError, match="Fast Blade"):
         validate_combat_catalog({**data, **patch})
+
+
+def test_combat_reward_delta_requires_exact_current_loot_contract():
+    before = {"items": {"4551": 2}, "currencies": {"1": 10}, "exp": 0, "level": 1}
+    after = {"items": {"4551": 5, "8": 5, "5016": 1, "12728": 1},
+             "currencies": {"1": 10}, "exp": 50, "level": 1}
+    assert combat_reward_delta(before, after, 50) == {
+        "items": {"4551": 3, "8": 5, "5016": 1, "12728": 1},
+        "currencies": {}, "exp": 50, "level": 0}
+    alternatives = [
+        ({**after, "exp": 49}, "EXP"),
+        ({**after, "level": 2}, "EXP"),
+        ({**after, "currencies": {"1": 11}}, "currency"),
+        ({**after, "items": {**after["items"], "9": 5}}, "loot"),
+        ({**after, "items": {**after["items"], "5016": 2}}, "loot"),
+        ({**after, "items": {**after["items"], "4551": 6}}, "range"),
+        ({**after, "items": {**after["items"], "4551": 1}}, "removed"),
+    ]
+    for changed, message in alternatives:
+        with pytest.raises(ValueError, match=message):
+            combat_reward_delta(before, changed, 50)
+    with pytest.raises(ValueError, match="positive"):
+        combat_reward_delta(before, after, 0)
 
 
 def catalog():

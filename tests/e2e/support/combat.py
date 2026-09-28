@@ -44,3 +44,25 @@ def committed_damage(state, effect, before):
                     and row["hp_max"] == before["hp_max"]
                     and row["hp"] == max(0, before["hp"] - damage)
                     for row in state["combat"]["integrities"]))
+
+
+def combat_reward_delta(before, after, base_exp):
+    """Validate the server's current fixed BNpc EXP and test-table loot contract."""
+    if type(base_exp) is not int or base_exp <= 0:
+        raise ValueError("combat base EXP must be a positive integer")
+    if after["exp"] != before["exp"] + base_exp or after["level"] != before["level"]:
+        raise ValueError("combat EXP/level reward mismatch")
+    if after["currencies"] != before["currencies"]:
+        raise ValueError("combat unexpectedly changed currency")
+    keys = set(before["items"]) | set(after["items"])
+    delta = {key: after["items"].get(key, 0) - before["items"].get(key, 0) for key in keys}
+    if any(value < 0 for value in delta.values()):
+        raise ValueError("combat loot removed an existing item")
+    delta = {key: value for key, value in delta.items() if value}
+    first_pool = [key for key in ("8", "9") if delta.get(key) == 5]
+    if len(first_pool) != 1 or delta != {
+            first_pool[0]: 5, "5016": 1, "12728": 1, "4551": delta.get("4551")}:
+        raise ValueError("combat loot does not match enabled testTable pools")
+    if delta["4551"] not in {1, 2, 3}:
+        raise ValueError("combat variable-quantity loot is out of range")
+    return {"items": delta, "exp": base_exp, "level": 0, "currencies": {}}

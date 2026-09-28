@@ -180,18 +180,12 @@ Common::ContainerType ItemMgr::getContainerType( uint32_t containerId )
 
 uint64_t ItemMgr::getNextUId()
 {
-  // todo: fix crosstalk bug here, we're possibly creating two items of the same id
-  uint64_t charId;
-
-  auto& db = Common::Service< Db::DbWorkerPool< Db::ZoneDbConnection > >::ref();
-  auto pQR = db.query( "SELECT MAX(ItemId) FROM charaglobalitem" );
-
-  if( !pQR || !pQR->next() )
-    return 0x00500001;
-
-  charId = pQR->getUInt64( 1 ) + 1;
-  if( charId < 0x00500001 )
-    return 0x00500001;
-
-  return charId;
+  return m_itemIdAllocator.allocate( []
+  {
+    auto& db = Common::Service< Db::DbWorkerPool< Db::ZoneDbConnection > >::ref();
+    auto result = db.query( "SELECT MAX(ItemId) FROM charaglobalitem" );
+    if( !result || !result->next() )
+      return uint64_t{ 0 };
+    return result->getUInt64( 1 );
+  } );
 }

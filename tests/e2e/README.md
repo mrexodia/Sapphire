@@ -42,10 +42,12 @@ lobby, world and MariaDB processes with matching game data:
   received deletion, checks every tracked slot for unintended changes, and verifies
   the deletion plus retained quest progress after the final restart.
 
-- A level-one Gladiator waits for naturally regenerated TP, performs three paced
-  Fast Blades against an observed nearby level-one marmot, and an independent bot
-  verifies each matching result and committed HP decrease, plus the first natural
-  retaliation hit. Enemies, skills and resources are not granted or modified.
+- A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
+  Blades until an observed nearby level-one marmot is defeated. An independent bot
+  verifies every matching result/committed HP decrease, the first natural retaliation,
+  zero target HP and delayed removal. The fighter receives exactly 50 EXP and the
+  server's enabled `testTable` loot pools; exact rewards survive a fresh login.
+  Enemies, skills and resources are not granted or modified.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -81,7 +83,7 @@ python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/tes
 On Windows, append `.exe`. With the Visual Studio generator the executable is
 `build-e2e/Debug/sapphire_test_client.exe`. Ninja builds place it directly in
 `build-e2e/`. Both Clang/Ninja and MSVC/Visual Studio builds have passed locally.
-GNU/Linux builds and all five CTest executables pass under Ubuntu 22.04/WSL.
+GNU/Linux builds and all six CTest executables pass under Ubuntu 22.04/WSL.
 Python contracts also pass in a network-isolated Linux container. WSL's current
 loopback fails even a Python-only socket check; no host networking was changed to
 work around that. Hosted CI has not been run in this implementation session.
@@ -94,8 +96,9 @@ bounded parsing, lobby cipher roundtrips, OS-generated tokens, quest flag order,
 deferred inventory transaction publication, XP snapshots, and complete versus
 partial/disconnected navigation paths using synthetic geometry. Combat tests check
 request byte offsets, observed-target/resource/range guards, bounded result histories,
-and that effects alone never invent committed HP. Database binding tests compile
-actual application binding code against a borrowed-stream connector double;
+and that effects alone never invent committed HP. A concurrent allocator test
+requires one database seed observation and unique contiguous IDs across 64 threads.
+Database binding tests compile actual application binding code against a borrowed-stream connector double;
 they check byte preservation, rebinding, partial failures and balanced C++
 allocations. They do not replace live SQL/persistence verification. The Python
 contract tests cover control errors, connection failures, pre-readiness action
@@ -344,24 +347,34 @@ uses state notifications (including ordinary heartbeat replies), received TP and
 estimated range; it neither sleeps a fixed recast interval nor retries actions.
 It is not a server-ready acknowledgement or independent range proof.
 
-The live test makes three requests with distinct request/result IDs and at least
-2.5 seconds between attempts, checking each received group-58/250-centisecond start.
-Before every attack the observer independently confirms range and target HP.
+The live test makes at most 16 requests with distinct request/result IDs and at
+least 2.5 seconds between attempts, checking each received group-58/250-centisecond
+start. Before every attack the observer independently confirms range and target HP.
 Both clients must receive identical damage effects and matching-result HP integrity;
 acknowledgements and effects alone cannot pass. Both must also observe the first
 positive natural marmot retaliation against the initially full-health fighter,
 including its exact committed HP result. Subsequent HP regeneration is not mistaken
-for absence of damage. The fighter then disconnects rather than bypassing the
-in-combat logout restriction.
+for absence of damage. The final committed integrity must report zero target HP,
+and both clients must observe the server's delayed target removal.
+
+The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
+Received rewards must be exactly 50 EXP, no level/currency change, one five-item
+choice from loot pool 8/9, items 5016 and 12728, and one to three item 4551. A fresh
+HTTP/lobby/world login must return the identical full inventory/EXP state. Rapid
+loot initially exposed duplicate process-local item IDs because asynchronous inserts
+made repeated `MAX(ItemId)` queries stale. `ItemIdAllocator` now seeds once and
+serializes monotonic IDs; a 64-thread native contract and the fresh-login assertion
+cover the fix. This does not claim collision safety across multiple world processes.
 
 The artifact manifest hashes the action catalog and staged player-action/population
 files. Bounded event journals include decoded effects, HP integrity and action-start
-recast metadata. `combat-repeated.json` records verified pre/post HP, natural TP,
-local guard, attempt times and retaliation, supplementing rather than replacing
-raw journals. An earlier overlapping-fixture attempt failed retaliation and remains
-retained; it is not counted as passing coverage. This slice does **not** prove enemy
-kills, combat XP/loot, combos, general cooldown scheduling, dynamic pursuit or
-arbitrary abilities.
+recast metadata. `combat-defeat-rewards.json` records every verified pre/post HP,
+natural TP, guard/timing, retaliation, death/removal, received rewards and the exact
+fresh-login snapshot, supplementing rather than replacing raw journals. Earlier
+failed overlap and duplicate-ID runs remain retained and are not counted as passing.
+This slice does **not** prove damage-formula correctness, combos, general cooldown
+scheduling, dynamic pursuit, arbitrary abilities, production loot-table selection
+or real-client combat presentation.
 
 ## Bounded exploration, soak and replay
 

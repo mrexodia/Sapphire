@@ -2,6 +2,7 @@
 
 #include <Common.h>
 #include "ForwardsZone.h"
+#include "ItemIdAllocator.h"
 
 namespace Sapphire::World::Manager
 {
@@ -21,6 +22,9 @@ namespace Sapphire::World::Manager
     static bool isEquipment( uint16_t containerId );
     static uint16_t getCharaEquipSlotCategoryToArmoryId( uint8_t slotId );
     static Common::ContainerType getContainerType( uint32_t containerId );
+
+  private:
+    ItemIdAllocator m_itemIdAllocator;
   };
 
 }

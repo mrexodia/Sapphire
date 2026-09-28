@@ -44,7 +44,8 @@ def profile(tmp_path):
                                  "position": [0, 0, 0], "scale": [1, 1, 1], "rotation": [0, 0, 0],
                                  "destinations": [{"id": 1, "territory": 141, "position": [0, 0, 0]}]}}
     Path(p["transition_catalog"]).write_text(json.dumps(transition))
-    combat = {"version": 1, "profile": "sapphire-3.3", "action": 9, "class_job": 1, "level": 1,
+    combat = {"version": 1, "profile": "sapphire-3.3", "action": 9, "class_job": 1,
+              "work_index": 1, "level": 1, "base_exp": 50,
               "category": 3, "cost_type": 5, "cost": 60, "range": -1, "cast_ms": 0,
               "recast_ms": 2500, "recast_group": 58, "effect_type": 1, "target_enemy": True}
     Path(p["combat_catalog"]).write_text(json.dumps(combat))

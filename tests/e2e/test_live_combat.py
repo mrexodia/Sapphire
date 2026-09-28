@@ -1,4 +1,4 @@
-"""Repeated melee and retaliation; no spawned enemies or granted resources/skills."""
+"""Natural melee, defeat and rewards; no spawned enemies or granted resources/skills."""
 import json
 import math
 import re
@@ -6,9 +6,9 @@ import time
 
 import pytest
 
-from .support.worker import Bot
+from .support.worker import Bot, reward_values
 from .support.catalog import load_combat_catalog
-from .support.combat import committed_damage, damage_value
+from .support.combat import combat_reward_delta, committed_damage, damage_value
 
 pytestmark = pytest.mark.live
 
@@ -38,6 +38,7 @@ def test_observed_fast_blade_damage(environment, live_worker):
     entity = state["entity_id"]
     assert state["actors"][str(entity)]["level"] == catalog["level"]
     assert state["rewards"]["class_job"] == catalog["class_job"]
+    before_rewards = player.reward_snapshot(catalog["work_index"])
     observer.login_via_lobby(witness_fixture["auth"], witness_fixture["name"])
     live_worker.wait_state(observer.name, lambda s: str(entity) in s["actors"], "fighter visible")
 
@@ -57,7 +58,9 @@ def test_observed_fast_blade_damage(environment, live_worker):
     assert fighter_before["hp"] == fighter_before["hp_max"] > 0
     expected_hp = before["hp"]
     attempts, effects, evidence = [], [], []
-    for index in range(3):
+    committed_states = {}
+    while expected_hp > 0:
+        assert len(effects) < 16, "bounded Fast Blade sequence did not defeat the level-one target"
         # No fixed sleep/retry around the action: await received natural TP and
         # the worker's conservative local guard, extended by received ActionStart.
         state = player.wait_fast_blade_ready(int(target))
@@ -70,7 +73,7 @@ def test_observed_fast_blade_damage(environment, live_worker):
                 and math.dist(s["actors"][target]["position"], s["actors"][str(entity)]["position"]) < 3,
             "observer sees target HP and living fighter within melee range")
         attempts.append(time.monotonic())
-        if index:
+        if len(attempts) > 1:
             assert attempts[-1] - attempts[-2] >= 2.5
         effect = player.fast_blade(int(target))
         assert effect["kind"] == 1 and damage_value(effect) > 0
@@ -83,9 +86,10 @@ def test_observed_fast_blade_damage(environment, live_worker):
                 "identical effect and matching committed HP decrease", 10)
             assert observed["phase"] == "ready" and observed["gm_rank"] == 0 and observed["territory"] == 141
             assert observed["scene"] is None
+            committed_states[bot.name] = observed
         started = live_worker.wait_state(player.name,
             lambda s: len([row for row in s["combat"]["starts"]
-                           if row["source"] == entity and row["action"] == 9]) == index + 1,
+                           if row["source"] == entity and row["action"] == 9]) == len(effects),
             "one received Fast Blade start per request", 10)
         starts = [row for row in started["combat"]["starts"] if row["source"] == entity and row["action"] == 9]
         assert all(row["group"] == 58 and row["recast_centiseconds"] == 250 for row in starts)
@@ -93,6 +97,10 @@ def test_observed_fast_blade_damage(environment, live_worker):
         evidence.append({"effect": effect, "before_hp": before["hp"], "after_hp": expected_hp,
                          "received_tp_before": state["actors"][str(entity)]["tp"],
                          "local_guard_remaining_ms": state["combat"]["fast_blade_guard_remaining_ms"]})
+
+    assert len(effects) >= 3
+    for observed in committed_states.values():
+        assert observed["actors"][target]["hp"] == 0
 
     def incoming(s):
         return [row for row in s["combat"]["effects"] if row["source"] == int(target)
@@ -110,12 +118,43 @@ def test_observed_fast_blade_damage(environment, live_worker):
         assert observed["actors"][str(entity)]["hp"] > 0
         assert observed["phase"] == "ready" and observed["territory"] == 141 and observed["gm_rank"] == 0
         assert observed["scene"] is None and observed["event_id"] is None
-    # Disconnect is deliberate: do not bypass the client's in-combat logout restriction.
+
+    def received_kill_rewards(s):
+        current = reward_values(s["rewards"], catalog["work_index"])
+        items = current["items"]
+        first_pool = ((items.get("8", 0) - before_rewards["items"].get("8", 0) == 5)
+                      != (items.get("9", 0) - before_rewards["items"].get("9", 0) == 5))
+        return (current["exp"] == before_rewards["exp"] + catalog["base_exp"] and first_pool
+                and items.get("5016", 0) - before_rewards["items"].get("5016", 0) == 1
+                and items.get("12728", 0) - before_rewards["items"].get("12728", 0) == 1
+                and 1 <= items.get("4551", 0) - before_rewards["items"].get("4551", 0) <= 3)
+
+    rewarded = live_worker.wait_state(player.name, received_kill_rewards,
+                                      "received defeat EXP and delayed loot", 15)
+    after_rewards = reward_values(rewarded["rewards"], catalog["work_index"])
+    after_inventory = rewarded["rewards"]["inventory"]
+    reward_delta = combat_reward_delta(before_rewards, after_rewards, catalog["base_exp"])
+    for bot in (player, observer):
+        live_worker.wait_state(bot.name, lambda s: target not in s["actors"],
+                               "defeated target removed after server fade", 20)
+
+    # A complete fresh login supplies authoritative inventory/EXP snapshots and
+    # proves persistence; the received kill-time deltas are not treated as that proof.
     player.close()
     live_worker.wait_state(observer.name, lambda s: str(entity) not in s["actors"], "fighter disconnect", 30)
+    reloaded = Bot(live_worker, "fighter-reloaded")
+    persisted = reloaded.login_via_lobby(fixture["auth"], fixture["name"])
+    persisted = reloaded.expect_rewards(after_rewards, catalog["work_index"])
+    assert persisted["rewards"]["inventory"] == after_inventory
+    assert persisted["gm_rank"] == 0 and persisted["territory"] == 141
+    reloaded.logout()
     observer.logout()
-    observer.close()
-    (environment.artifacts / "combat-repeated.json").write_text(json.dumps({
+    (environment.artifacts / "combat-defeat-rewards.json").write_text(json.dumps({
         "attacks": evidence, "attempt_monotonic": attempts, "retaliation": retaliation,
-        "fighter_hp_before_combat": fighter_before["hp"], "both_clients_verified": True,
-        "scope": "three Fast Blades and first retaliation; no kill/loot/pursuit claim"}, indent=2), encoding="utf-8")
+        "fighter_hp_before_combat": fighter_before["hp"], "target_hp_after": 0,
+        "target_removed_for_both_clients": True, "rewards_before": before_rewards,
+        "rewards_after_received": after_rewards, "inventory_after_received": after_inventory,
+        "reward_delta": reward_delta, "rewards_after_fresh_login": after_rewards,
+        "inventory_after_fresh_login": after_inventory, "both_clients_verified": True,
+        "scope": "one naturally populated level-one enemy defeat, current testTable loot and EXP; no pursuit or general combat claim"
+    }, indent=2), encoding="utf-8")
