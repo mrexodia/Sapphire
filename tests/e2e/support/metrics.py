@@ -16,8 +16,13 @@ class ProcessMetrics:
         for name, process in self.processes.items():
             try:
                 cpu = process.cpu_times()
-                row["processes"][name] = {"rss_bytes": process.memory_info().rss,
-                                            "cpu_seconds": cpu.user + cpu.system}
+                memory = process.memory_info()
+                values = {"rss_bytes": memory.rss, "cpu_seconds": cpu.user + cpu.system}
+                # Windows private commit is not resident working set or Linux USS.
+                # Omit it on other platforms rather than substitute a different metric.
+                if hasattr(memory, "private"):
+                    values["private_commit_bytes"] = memory.private
+                row["processes"][name] = values
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 row["processes"][name] = {"unavailable": True}
         self.samples.append(row)

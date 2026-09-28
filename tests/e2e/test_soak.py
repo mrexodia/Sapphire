@@ -171,6 +171,99 @@ def test_paced_idle_periods_are_actually_monitored(fault):
     assert len(work.outcomes) == 2  # No second batch sent after the fault.
 
 
+@pytest.mark.parametrize("private", [None, 4096])
+def test_resource_sampler_distinguishes_rss_from_windows_private_commit(monkeypatch, private):
+    from .support import metrics
+    memory = SimpleNamespace(rss=2048, vms=8192)
+    if private is not None:
+        memory.private = private
+    process = SimpleNamespace(cpu_times=lambda: SimpleNamespace(user=2, system=1), memory_info=lambda: memory)
+    monkeypatch.setattr(metrics.psutil, "Process", lambda pid: process)
+    collector = metrics.ProcessMetrics({"world": 123})
+    collector._sample()
+    values = collector.samples[0]["processes"]["world"]
+    assert values["rss_bytes"] == 2048 and values["cpu_seconds"] == 3
+    if private is not None:
+        assert values["private_commit_bytes"] == 4096
+    else:
+        assert "private_commit_bytes" not in values  # Never silently substitute VMS/USS.
+
+
+@pytest.mark.parametrize("error", ["NoSuchProcess", "AccessDenied"])
+def test_resource_sampler_preserves_unavailable_processes(monkeypatch, error):
+    from .support import metrics
+    def unavailable():
+        raise getattr(metrics.psutil, error)(123)
+    process = SimpleNamespace(cpu_times=unavailable)
+    monkeypatch.setattr(metrics.psutil, "Process", lambda pid: process)
+    collector = metrics.ProcessMetrics({"world": 123})
+    collector._sample()
+    assert collector.samples[0]["processes"]["world"] == {"unavailable": True}
+
+
+@pytest.mark.parametrize("fault", [None, "server", "metrics", "stop", "cleanup", "interrupt", "artifact", "gap"])
+def test_empty_server_control_has_separate_evidence_and_always_cleans_up(monkeypatch, tmp_path, fault):
+    from . import run_idle_control as control
+    clock = Clock()
+    flags = {}
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    def alive():
+        if fault == "server" and clock() > 100:
+            raise RuntimeError("server stopped")
+    def close():
+        flags["closed"] = True
+        if fault == "cleanup":
+            raise RuntimeError("cleanup failed")
+    env = SimpleNamespace(artifacts=artifacts, processes={"world": SimpleNamespace(pid=123)},
+                          start=lambda: flags.update(started=True), check_alive=alive, close=close)
+    monkeypatch.setattr(control, "Environment", lambda profile: env)
+    collectors = []
+    class Metrics:
+        def __init__(self, pids):
+            assert pids == {"world": 123}  # No worker or gameplay fixture is created.
+            self.samples = []
+            collectors.append(self)
+        def start(self):
+            values = {"unavailable": True} if fault == "metrics" else {"rss_bytes": 1024}
+            self.samples.append({"monotonic": clock(), "processes": {"world": values}})
+        def stop(self):
+            if fault == "stop":
+                raise RuntimeError("sampler failed")
+            self.start()
+    monkeypatch.setattr(control, "ProcessMetrics", Metrics)
+    def sleep(seconds):
+        clock.sleep(seconds)
+        if fault != "gap":
+            collectors[0].start()  # Synthetic periodic sample, no sampler thread.
+        if fault == "interrupt":
+            raise KeyboardInterrupt()
+    if fault == "artifact":
+        def fail_write(*args, **kwargs):
+            raise OSError("disk full")
+        monkeypatch.setattr(control.Path, "write_text", fail_write)
+        with pytest.raises(OSError, match="disk full"):
+            control.run({}, 10, clock=clock, sleeper=sleep)
+    else:
+        result, path = control.run({}, 10, clock=clock, sleeper=sleep)
+        assert result["status"] == ("observed" if fault is None else "failed")
+        assert "not gameplay coverage" in result["note"]
+        assert (path / "control.json").exists()
+        if fault is None:
+            assert result["finished_monotonic"] - result["started_monotonic"] == 10
+    assert flags == {"started": True, "closed": True}
+
+
+@pytest.mark.parametrize("duration", [True, float("nan"), float("inf"), 9, 901])
+def test_empty_server_control_rejects_invalid_duration_before_provisioning(monkeypatch, duration):
+    from . import run_idle_control as control
+    def unexpected(profile):
+        raise AssertionError("must not provision")
+    monkeypatch.setattr(control, "Environment", unexpected)
+    with pytest.raises(ValueError, match="duration"):
+        control.run({}, duration)
+
+
 def test_population_claim_requires_all_distinct_actors():
     work, clock = synthetic_workload()
     work.entities[1] = work.entities[0]

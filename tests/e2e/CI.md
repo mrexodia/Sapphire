@@ -47,7 +47,7 @@ self-hosted runners (checked through the read-only Actions runners API).
 The workflow pins its external actions, uses a read-only token, disables checkout
 credential persistence, serializes gameplay jobs without cancelling an active run,
 and limits the job to 45 minutes. It rebuilds the checked-out server, all discovered
-native script modules, worker and four framework native tests using the
+native script modules, worker and five framework native tests using the
 `sapphire_gameplay_ci` CMake target. GUI tools and Recast's separate test suite are
 not part of that target. Framework CTest execution has a 60-second per-test timeout.
 

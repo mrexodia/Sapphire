@@ -47,11 +47,11 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 
 ## Verified results
 
-- Clang/Ninja and MSVC/Visual Studio: four CTest executables pass (protocol,
-  rewards, combat, synthetic navigation). Navigation tests reject disconnected and
+- Clang/Ninja and MSVC/Visual Studio: five CTest executables pass (protocol,
+  rewards, combat, synthetic navigation and borrowed database bindings). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
-- GNU 11.4/Ubuntu 22.04: standalone build and the same four CTest executables pass.
-- 96 Python worker/policy/CI/pacing contracts pass with the MSVC worker and in a
+- GNU 11.4/Ubuntu 22.04: standalone build and the same five CTest executables pass.
+- 113 Python worker/policy/CI/pacing/resource-control contracts pass with the MSVC worker and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all seven cases against a fresh out-of-tree
@@ -184,6 +184,21 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
   per-bot versions now suppress cross-bot snapshot polling, and removal clears
   the version entry. Contracts cover unrelated responses/events, matching-event wakeup
   and removal cleanup; the same 960-action plan and all seven live scenarios pass.
+- The 30-minute resource trace motivated an empty-server control and persistence
+  ownership investigation. The original-binary, no-client 600s control
+  (`sapphire-e2e-nfsforp7`) had flat first/last 60-sample median world RSS
+  (343,941,120 / 343,883,776 bytes) and private commit (330,268,672 / 330,117,120).
+  This was a private diagnostic prototype, not gameplay evidence; its runtime
+  was removed. The reproducible controller is now `run_idle_control.py`, with
+  explicit no-gameplay results, unavailable-sample failures and cleanup tests.
+- Normal player autosaves allocate BLOB streams in application
+  `PreparedStatement::bindParameters`; the connector explicitly borrows them
+  through execution (`setBlob(..., false)`). Ownership was not retained by the
+  caller. Commit `0a73d4f8c` adds operation-owned streams, released on rebind or
+  destruction, without changing BLOB bytes. The actual binder, compiled against
+  a non-owning connector double, reports 1648 unbalanced allocations before the
+  fix and zero afterward, including partial-bind failures. This is not a SQL
+  driver implementation test. Live resource/persistence confirmation is pending.
 - One Windows teardown encountered a transient executable-file permission failure.
   Bounded retries were added; persistent failures remain visible and retryable.
 

@@ -73,7 +73,7 @@ python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/tes
 On Windows, append `.exe`. With the Visual Studio generator the executable is
 `build-e2e/Debug/sapphire_test_client.exe`. Ninja builds place it directly in
 `build-e2e/`. Both Clang/Ninja and MSVC/Visual Studio builds have passed locally.
-GNU/Linux builds and all four CTest executables pass under Ubuntu 22.04/WSL.
+GNU/Linux builds and all five CTest executables pass under Ubuntu 22.04/WSL.
 Python contracts also pass in a network-isolated Linux container. WSL's current
 loopback fails even a Python-only socket check; no host networking was changed to
 work around that. Hosted CI has not been run in this implementation session.
@@ -86,7 +86,10 @@ bounded parsing, lobby cipher roundtrips, OS-generated tokens, quest flag order,
 deferred inventory transaction publication, XP snapshots, and complete versus
 partial/disconnected navigation paths using synthetic geometry. Combat tests check
 request byte offsets, observed-target/resource/range guards, bounded result histories,
-and that effects alone never invent committed HP. The Python
+and that effects alone never invent committed HP. Database binding tests compile
+actual application binding code against a borrowed-stream connector double;
+they check byte preservation, rebinding, partial failures and balanced C++
+allocations. They do not replace live SQL/persistence verification. The Python
 contract tests cover control errors, connection failures, pre-readiness action
 rejection, worker death, scene selection, redaction and setup checks. These do
 not replace the live suite.
@@ -374,11 +377,32 @@ stability or leak-freedom. The short paced plan was replayed separately; the ful
 30-minute plan has not yet been replayed.
 
 Resource samples cover API/lobby/world/DB plus worker/runner;
-CPU deltas and peak RSS are reported separately. Action-duration percentiles
+CPU deltas and peak RSS are reported separately. On Windows, samples additionally
+record `private_commit_bytes` (and its peak), distinct from resident working set.
+This field is omitted elsewhere, not substituted with Linux USS or VMS.
+Action-duration percentiles
 include walking and event waits, not pure network RTT or server tick latency.
 State waits use bot-specific event versions; unrelated responses or another bot's
 events do not trigger repeated snapshot requests. This reduces load-generator
 work without weakening the independent observer assertions.
+
+### Empty-server resource control
+
+```sh
+python -m tests.e2e.run_idle_control --profile .e2e-local.json --duration 600
+```
+
+This creates the same isolated server/database environment but no worker,
+character fixture or successful login. Its 10..900-second observation window
+checks process liveness and samples resources. It writes `control.json` and
+`control-resources.jsonl`, separate from workload results, and reports `observed`
+only when the window, measurements and cleanup succeed. Unavailable process
+samples or sampling gaps exceeding five seconds are failures, not zero memory
+or evidence of stability. Cleanup precedes artifact writes, so a
+write failure does not strand servers. This control is **not gameplay coverage**;
+compare its trace with a populated workload, matching actual staged binaries and
+inputs. RSS or private-commit growth alone cannot identify allocation ownership
+or prove a leak. Normal allocator retention and warm-up need to be distinguished.
 
 ## Artifacts and CI
 

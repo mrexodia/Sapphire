@@ -80,6 +80,9 @@ def main(argv=None):
                 if values:
                     result["process_resources"][name] = {"peak_rss_bytes": max(row["rss_bytes"] for row in values),
                         "cpu_seconds_delta": values[-1]["cpu_seconds"] - values[0]["cpu_seconds"]}
+                    private = [row["private_commit_bytes"] for row in values if "private_commit_bytes" in row]
+                    if private:
+                        result["process_resources"][name]["peak_private_commit_bytes"] = max(private)
         if workload:
             (environment.artifacts / "checkpoints.json").write_text(json.dumps(workload.checkpoints, indent=2), encoding="utf-8")
             (environment.artifacts / "rounds.json").write_text(json.dumps(workload.rounds, indent=2), encoding="utf-8")
