@@ -46,7 +46,9 @@ lobby, world and MariaDB processes with matching game data:
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat,
-scene yields and independent real-client/UI compatibility remain unsupported.
+and scene yields remain unsupported. A separate [manual real-client lane](REAL_CLIENT.md)
+now has narrow independent pilot evidence for world entry, movement, bidirectional
+Say and logout—not general UI/quest compatibility or automated rendering checks.
 
 Asset-independent tests are not labeled as gameplay coverage. See the
 [implementation status](../../research/e2e-implementation-status.md) for the

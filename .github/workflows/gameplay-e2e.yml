@@ -79,7 +79,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Python dependencies failed' }
       - name: Controller and CI gate contracts
         run: |
-          python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_soak.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
+          python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_soak.py tests/e2e/test_client_smoke.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
           if ($LASTEXITCODE -ne 0) { throw 'Controller contracts failed' }
       - name: Isolated gameplay and evidence gate
         id: gameplay

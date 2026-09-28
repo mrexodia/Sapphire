@@ -1,7 +1,7 @@
 # E2E implementation checkpoint and requirement audit
 
 **Overall goal: not complete.** Green tests cover a supported subset, not the full
-rollout or real-client compatibility. Branch: `feature/headless-e2e`.
+rollout or general real-client compatibility. Branch: `feature/headless-e2e`.
 
 ## Contract
 
@@ -42,7 +42,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built binaries; hosted execution/runner controls unverified, no registered runners |
-| Independent real-client/golden trace compatibility | No independently captured session | Missing |
+| Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 manual pilot: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent pilot verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
 ## Verified results
@@ -241,14 +241,74 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
    The separate 30-minute paced workload is not part of the seven-case CI gate.
-5. Evaluate the existing `E:/Sapphire/game/ffxiv*.exe` candidates for an isolated
-   real-client run, or obtain a sanitized trace. Executable presence is not
-   compatibility evidence: first verify version, loopback bootstrap and isolated
-   user configuration. Do not alter the user's installed executables/settings.
-   Shared schemas and headless-to-server agreement cannot substitute for this.
+5. Rehearse the newly committed manual real-client coordinator independently of
+   the successful exploratory pilot below, then broaden presentation-sensitive
+   coverage and independently captured trace/layout checks. Do not alter the
+   user's installed executables/settings. A successful narrow pilot is not
+   general compatibility, automated UI coverage or a golden-trace corpus.
 
 The original legacy mesh-loading blocker is resolved without modifying developer
 assets. Due Diligence still lacks a complete corridor, but it no longer blocks the
-first quest: Motivational Speaking is verified. Independent real-client evidence
-still requires an appropriate client run/trace; other missing scenarios remain
-implementation work, not proof that user input is the only next step.
+first quest: Motivational Speaking is verified. Narrow independent real-client
+execution is now evidenced; other missing scenarios remain implementation work,
+not proof that user input is the only next step.
+
+## Independent real-client pilot and separate manual lane
+
+At clean framework revision `132d3f9dbb7faca8c8386581849b010c366538b4`, a private
+exploratory UI driver launched the matching original DX11 client in Windows
+Sandbox. The source executable SHA-256 was
+`d818584c782bbe3cacbc2b306391e6f3246bc3065c517a3324784e49d572ba12` before and after
+execution. The client rendered version `2016.07.05.0000.0001` on its title screen.
+The existing patched/non-original executables were not used or modified.
+
+- Sandbox networking and clipboard/audio/video/printer redirection were disabled;
+  all source/game/runtime mappings were read-only except the private output
+  directory. Both server and client ran on guest loopback. Game settings were in
+  guest `WDAGUtilityAccount` Documents, not the host user's profile.
+- API-issued sessions, normal encrypted lobby/world connections and two fresh
+  non-GM fixture characters were used. Starting placement was setup, not travel.
+  The original client was copied/renamed without patching. Legacy DirectX DLLs
+  and guest-only XAudio/XACT registration were required; no host registration,
+  network configuration or installed game setting was changed.
+- Private evidence: `.e2e-artifacts/client-sandbox-live-v4/output/`, environment
+  `artifacts/sapphire-e2e-me7jeeip`. Its manifest records clean source and fixed
+  server SHA-256 `c10b9f7092ef081a9bf9886a9de98af2c6ed8bdb134f621c8e16f11c758187f1`.
+- `frame-42.png` renders the real fixture in Ul'dah; `reply-42.json` independently
+  records the level-one, GM-rank-zero peer. `reply-45.json` records 2.642017m of
+  movement after ordinary W input, from `[-77.378716,0.798299,-50.928574]` to
+  `[-77.714233,1.296997,-48.355835]`. This is a short displacement, not a route test.
+- `reply-68.json` contains the exact real-client Say `E2E real client verified`
+  received by the witness from the real entity. Manual inspection of
+  `frame-66.png` confirms the real client rendered `E2E independent witness` from
+  the witness. An earlier UI editing attempt sent a truncated string; it was
+  retained and not counted as the exact-message assertion. Immediate screenshots
+  sometimes preceded input rendering; delayed observations resolved this without
+  inventing server success.
+- The real client used ordinary `/logout`. World logs record its
+  StartLogoutCountdown request and subsequent session removal; `reply-84.json`
+  shows its absence while the witness remains ready, and manual inspection of
+  `frame-84.png` confirms the still-running real client returned to its title
+  screen. Process termination happened only afterward during teardown.
+- `finished.json` records whole-runtime removal. The owned Sandbox launcher and
+  client were closed through their discard confirmation and checked exited.
+  Earlier failed preparation runs (missing version metadata/legacy dependencies)
+  were retained, diagnosed and cleaned up; they are not passing compatibility
+  evidence. Private evidence hashes are in `pilot-evidence-hashes.json`.
+
+This is independent execution/presentation evidence, not shared-schema agreement.
+It does **not** establish real-client quests/rewards, cutscenes, creation/opening,
+combat, additional versions, protocol-layout goldens or all requested coverage.
+The server also logged unhandled commands `0330` and `0004` during the pilot;
+these are not silently classified as supported. No proprietary screenshot,
+executable, generated geometry, session or private runtime is committed.
+
+`tests/e2e/REAL_CLIENT.md`, `prepare_client_smoke.py`, `run_client_smoke.py` and
+`support/client_smoke.py` now provide a separate bounded manual lane: offline WSB
+preparation, guest-only launch, normal fixture/authentication, unique received
+peer/movement/Say assertions, screenshot-bound explicit operator review and
+ordinary-logout evidence. VM disposal remains a separate operator duty, never
+inferred from guest process cleanup. Twenty-four asset-independent contracts pass;
+actual private preparation produced a WSB and hashed inputs. **The new coordinator
+has not yet been live-rehearsed**; the earlier pilot must not be relabeled as its
+execution. It is not part of the seven-case headless gameplay CI gate.
