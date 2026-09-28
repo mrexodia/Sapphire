@@ -431,6 +431,18 @@ Workload runs additionally save `plan.json`, per-action `outcomes.json`,
 failure stage, action durations and resource summaries. An unavailable process is
 explicitly marked; the final sample can observe the already-closed worker.
 
+Workload teardown precedes final report aggregation and diagnostic writes, even
+when sampler shutdown raises or is interrupted. `runtime_removed=true` requires
+an actual absence check of the whole private root after cleanup. Sampler,
+cleanup, summary and artifact failures produce a failed result/nonzero CLI exit;
+secondary errors do not overwrite the original failure stage. Final artifacts
+use temporary files and atomic replacement, so a failed write cannot leave a
+partially published canonical `result.json` claiming success. Other diagnostic
+writes are still attempted independently. If even `result.json` cannot be
+published, inspect the failed CLI result; missing output is never success.
+This does not establish recovery from process hard kills, unresponsive OS calls,
+or every failure inside an individual process's teardown.
+
 JUnit output goes to the path selected with `--junitxml`. Never upload the private
 runtime, raw database, game assets, local profiles or unredacted configs.
 

@@ -38,7 +38,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | No reducer | Missing |
-| Deadlines / cancellation / cleanup | Timers, bounded waits, owned-process teardown, redaction; bounded Windows sharing-error retries | Initial paths verified; broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; workload cleanup precedes diagnostics and survives sampler/write exceptions | Initial paths and synthetic diagnostic-fault contracts verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built binaries; hosted execution/runner controls unverified, no registered runners |
@@ -181,6 +181,38 @@ Ignored local evidence: `build-e2e/{contracts,live,quest}.xml`,
 `build-e2e-msvc/contracts.xml`, `build-e2e-linux/container-contracts.xml`, CTest logs,
 private generated catalogs, and `.e2e-artifacts/sapphire-e2e-*/` manifests/journals.
 Existing server binaries are staged and hashed, not silently rebuilt by the runner.
+
+## Workload diagnostic-failure cleanup hardening
+
+Inspection found that `run_workload.py` stopped metrics and wrote resource/action
+artifacts **before** `Environment.close()`. A sampler exception, serialization
+error or full diagnostic volume could therefore bypass owned-server teardown.
+A controlled execution of the prior committed runner reproduced the control-flow
+failure: an injected `resources.jsonl` write error raised before environment
+close; the synthetic runtime remained. The trace is retained privately in
+`build-e2e/workload-cleanup-before.json`. This is a synthetic ownership regression,
+not a claim of an actual server crash or a live disk-full incident.
+
+The runner now has a testable `run()` entry point, validates semantics before
+provisioning, and attempts environment close in a nested `finally` independent of
+sampler shutdown. Actual whole-root absence is checked before final diagnostic
+aggregation. Final writes use temporary files/atomic replacement and are attempted
+independently. Any cleanup, sampler, summary or artifact error fails the run;
+original failures survive secondary errors, and result-write failure remains a
+nonzero CLI result even when no canonical report can be published. Exception
+text and diagnostics use the environment's registered secret redactions.
+
+`test_workload_cleanup.py` supplies 39 asset-independent contracts covering setup,
+worker construction/teardown, sampling, workflow/shutdown, exceptions/interruption,
+fatal exit cleanup, every final write/replacement, complete diagnostic loss,
+serialization/summary failure, retained roots and multiple simultaneous errors.
+The old artifact-failure path demonstrably skipped cleanup; the new contracts
+require cleanup before failing diagnostics and reject a passing partial report.
+All **176** Python contracts pass with the Windows worker and in network-isolated
+Linux. No native code changed. Live rehearsal of the revised orchestration is
+pending at this checkpoint; successful prior workloads are not evidence for the
+new failure ordering. Hard-kill recovery, blocked OS calls and all individual
+process-teardown faults remain outside this verification.
 
 ## Corrections exposed by execution
 
