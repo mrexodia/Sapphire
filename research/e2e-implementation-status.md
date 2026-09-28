@@ -42,7 +42,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built binaries; hosted execution/runner controls unverified, no registered runners |
-| Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 manual pilot: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent pilot verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
+| Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent lane live-verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
 ## Verified results
@@ -241,10 +241,10 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
    The separate 30-minute paced workload is not part of the seven-case CI gate.
-5. Rehearse the newly committed manual real-client coordinator independently of
-   the successful exploratory pilot below, then broaden presentation-sensitive
-   coverage and independently captured trace/layout checks. Do not alter the
-   user's installed executables/settings. A successful narrow pilot is not
+5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
+   coverage and independently captured trace/layout checks. Strengthen fault and
+   cancellation coverage separately from successful-path evidence. Do not alter
+   the user's installed executables/settings. Narrow successful sessions are not
    general compatibility, automated UI coverage or a golden-trace corpus.
 
 The original legacy mesh-loading blocker is resolved without modifying developer
@@ -308,7 +308,42 @@ executable, generated geometry, session or private runtime is committed.
 preparation, guest-only launch, normal fixture/authentication, unique received
 peer/movement/Say assertions, screenshot-bound explicit operator review and
 ordinary-logout evidence. VM disposal remains a separate operator duty, never
-inferred from guest process cleanup. Twenty-four asset-independent contracts pass;
-actual private preparation produced a WSB and hashed inputs. **The new coordinator
-has not yet been live-rehearsed**; the earlier pilot must not be relabeled as its
-execution. It is not part of the seven-case headless gameplay CI gate.
+inferred from guest process cleanup. It is not part of the seven-case headless
+gameplay CI gate.
+
+The committed coordinator was then separately live-rehearsed at clean revision
+`958c123ad17ba4ab1974e8fbb63b5a7e53e5c6d1`, without changing its implementation:
+
+- Private run `.e2e-artifacts/client-smoke-v1`, environment
+  `output/artifacts/sapphire-e2e-mu7_jjtb`; result run ID
+  `4628ab0b61254269b010efa796fd3513`, `status=passed`, `runtime_removed=true`.
+- Only a separate private OS-key/mouse/capture helper was added to the guest
+  bootstrap for interactive operation; it neither sent game packets nor changed
+  scenario outcomes. Its hash and the modified bootstrap hash were recorded.
+  All **51** staged-input hashes and the WSB hash were independently rechecked.
+- The same original executable entered the fixture world; the independent
+  witness recorded **2.638316m** displacement and the exact expected real-client
+  Say. Both witness heartbeat counters advanced from 108 at spawn to 209 at
+  real-client logout. This is not a sustained-work measurement or RTT benchmark.
+- Interactive assistant inspection of `output/review.png` verified the exact
+  fixture name in the rendered world and `E2E independent witness` in the chat
+  log, before explicit approval. The runner itself performed no image recognition.
+  The approved screenshot SHA-256 is
+  `68a52a672634eeaf6b4511b6b9a890a1a92af488ff36ee2f77a2d8e80bc0d6c8`.
+- The real entity's ordinary StartLogoutCountdown, subsequent session removal,
+  observer despawn and live process were verified. Separate inspection of
+  `output/logout.png` confirmed the matching-version title screen. Teardown
+  followed, not a forced disconnect substituted for the logout journey.
+- The guest reported actual whole-runtime removal. The owned Sandbox was then
+  closed with discard confirmation; its launcher/client exited and no Sandbox
+  UI processes remained. `output/disposal.txt` and `independent-audit.json`
+  preserve that separate check rather than changing the coordinator's
+  `sandbox_disposal=operator_required` claim.
+- **137** Python contracts pass with the Windows worker, including **24** new
+  real-client policy contracts. The new 24 also pass in network-isolated Linux.
+  These test policy/isolation/review logic, not graphical-client execution.
+
+The new rehearsal still used pre-connection character fixtures, skipped the
+first-run creation UI, and retained an unhandled `0330` command in server logs.
+It is not proof of normal character creation/opening, all client packets,
+headless/real-client quest agreement, cancellation safety or hosted execution.

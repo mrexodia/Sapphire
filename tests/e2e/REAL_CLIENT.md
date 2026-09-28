@@ -111,8 +111,14 @@ this committed coordinator. Its outputs are retained under
 `.e2e-artifacts/client-sandbox-live-v4/output/`; they are **not public fixtures**.
 The pilot's exact observations and limitations are recorded in
 `research/e2e-implementation-status.md`. Do not relabel that pilot as an execution
-of a later implementation. The new coordinator's execution status is tracked
-there separately.
+of a later implementation. The committed coordinator was separately rehearsed
+successfully at clean `958c123ad`, with private evidence in
+`.e2e-artifacts/client-smoke-v1/output/`: 2.638316m observed movement, exact Say,
+explicit review of rendered fixture/reply, ordinary logout and whole-runtime
+cleanup. Interactive assistant inspection also confirmed the title screen;
+the owned Sandbox was discarded and its launcher/client checked exited. These
+were operator-driven UI checks, not an image-recognition or autonomous UI test.
+The status document records staged identities, review hash and disposal evidence.
 
 `test_client_smoke.py` is asset-independent policy coverage only. It tests
 identity/ambiguity, fixture-state guards, movement bounds, finite positions,
