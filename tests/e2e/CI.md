@@ -112,6 +112,13 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this eight-scenario headless suite only.
 
+Latest local evidence: clean revision `326114b5e` passed the expanded eight-case
+strict gate in 343.613 seconds with no skips/errors/failures, exact collection and
+staged-input identities, and removed private runtime. Evidence is
+`build-e2e/ci-summary-creation.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-b511jzk6`. This remains a local rehearsal, not a
+hosted protected-runner execution.
+
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
 rebuilt binaries passed all seven live cases in 245.450 seconds with no skips,
 verified collection/staged-input identities and removed private runtime. This

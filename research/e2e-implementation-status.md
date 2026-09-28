@@ -33,7 +33,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge and discard; ordinary Say; 130-to-141 crossing/persistence; paced Fast Blades through one enemy defeat with independent retaliation/death/removal plus persisted EXP/loot | Representative subset verified; item use, overflow merges, equipment/currency operations, pursuit, player defeat, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
-| Deterministic authored regression suite | Eight allowlisted live cases, native tests and Python contracts | Existing seven-case clean suite and new creation case verified separately; combined clean gate pending |
+| Deterministic authored regression suite | Eight allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
@@ -54,22 +54,22 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - 245 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
-- The provisioned CI entry point passes all seven cases against a fresh out-of-tree
-  server/script/client build. Post-commit clean-checkout rehearsal at `c9f8969b2`:
-  245.450s, zero skips, collection/input hashes/normal cleanup all verified
-  (`gameplay-ci-41fem4dt` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-clean.json`). `--require-clean` passed and `source_dirty`
+- The provisioned CI entry point passes all eight cases. The latest clean-checkout
+  rehearsal at `326114b5e` took 343.613s with zero skips/errors/failures and verified
+  exact collection, staged-input identities and normal cleanup
+  (`gameplay-ci-b511jzk6` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-creation.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
   protected-environment approval and VM disposal responsibilities. Local rehearsal
   does not prove hosted approval, cancellation cleanup or independent compatibility.
-- Seven live cases pass together in 255.94s (`sapphire-e2e-qpyhw78e`) after
-  bot-specific state-wait notification filtering: rejected
-  credentials, login/idle/logout, observed movement/Say/position persistence,
-  single quest, chained quests plus inventory persistence, zoning persistence,
-  and combat damage. Both tested territories use compatible server-side meshes.
+- Eight live cases pass together: rejected credentials, login/idle/logout, observed
+  movement/Say/position persistence, single quest, chained quests plus inventory
+  persistence, zoning persistence, combat defeat/rewards and normal lobby creation
+  plus the first Ul'dah opening branch. Both public tested territories use compatible
+  server-side meshes; the private opening territory does not make a navigation claim.
 - The initial single-action combat slice uses a fresh level-one Gladiator and the unchanged Central Thanalan
   population. The action catalog validates normally learned Fast Blade (9),
   requiring 60 naturally regenerated TP. Both player and observer receive the
@@ -468,16 +468,21 @@ remain identical after a world-process restart.
 Logout/relogin synchronization does not use a fixed sleep. For this case the worker
 waits for the server's post-ack transport close, which occurs after the server has
 removed and unloaded the old session, before allowing the next login/restart. Other
-scenarios retain their existing faster logout behavior. The targeted dirty-checkpoint
-run passed in **47.92s** with normal teardown and no retained runtime:
-`.e2e-artifacts/creation-live/sapphire-e2e-q2wlefd1`. Its
-`character-creation-opening.json` SHA-256 is
-`2a684d4a7d356cfaa2dc6fa4413df381021050fa1f65f7c2167a2c513657e8cd`;
-the worker SHA-256 is
-`600586442c6a74ac88c309e23012921e819898fe8f9286f472b7e693d651829b`.
-All 245 Python contracts pass with Clang/MSVC workers and in network-isolated
-Linux; all six native suites pass with Clang, MSVC and GNU 11.4. This is not yet a
-combined clean eight-case gate.
+scenarios retain their existing faster logout behavior. The initial targeted dirty-checkpoint run passed in **47.92s** with normal teardown.
+The subsequent clean strict eight-case gate at `326114b5e` passed in **343.613s**,
+zero skips/errors/failures, with exact collection/input identity and cleanup checks.
+Evidence: `build-e2e/ci-summary-creation.json`,
+`.e2e-artifacts/ci/gameplay-ci-b511jzk6/live.xml`, environment
+`sapphire-e2e-ouyqrg87`. The creation case took 21.357s within the already-started
+environment; its `character-creation-opening.json` SHA-256 is
+`d03f96be84330e5df54c55c514b213e0476b0a9940ccbe53f99ef6b2dd568f17`.
+The worker SHA-256 is
+`600586442c6a74ac88c309e23012921e819898fe8f9286f472b7e693d651829b`
+and server SHA-256 is
+`233b53537476d69c0dc62e01f30fc1baf2a96298b4a25175e8a036191c25c7d2`;
+the private runtime root is absent. All 245 Python contracts pass with Clang/MSVC
+workers and in network-isolated Linux; all six native suites pass with Clang, MSVC
+and GNU 11.4.
 
 This evidence is deliberately narrow: it covers one canonical Gladiator, one ring
 choice and the initial/continuation opening scenes. It does not establish account
