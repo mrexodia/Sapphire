@@ -63,7 +63,9 @@ def profile(tmp_path):
                "enemy": {"layout_id": 3749193, "base_id": 302, "level": 14, "position": [0, 0, 0]},
                "navigation": {"mesh": str(Path(p["navigation"]) / "w1f2/w1f2.nav")},
                "route": [[1, 0, 0], [2.5, 0, 0], [4, 0, 0], [5.5, 0, 0], [7, 0, 0], [8, 0, 0]],
-               "route_length": 7}
+               "route_length": 7,
+               "leash_route": [[1 + index * 1.5, 0, 0] for index in range(31)],
+               "leash_route_length": 45}
     Path(p["pursuit_catalog"]).write_text(json.dumps(pursuit))
     return p
 

@@ -1,6 +1,7 @@
 """Natural-enemy player defeat without grants, relocation or injected damage."""
 import json
 import math
+import time
 
 import pytest
 
@@ -60,6 +61,52 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     assert opening_effect["target"] == target and damage_value(opening_effect) > 0
 
     enemy_start = state["actors"][str(target)]["position"]
+
+    # Drive beyond the source implementation's 40m spawn-distance retreat threshold.
+    leash_peak = None
+    leash_peak_distance = 0
+    deadline = time.monotonic() + 30
+    for point in pursuit["leash_route"]:
+        remaining = deadline - time.monotonic()
+        assert remaining > 0, "leash route exceeded its monotonic deadline"
+        current = fighter.walk_to(point, 6.0, remaining)
+        enemy_position = current["actors"].get(str(target), {}).get("position", enemy_start)
+        distance_from_spawn = math.dist(enemy_position, pursuit["enemy"]["position"])
+        if distance_from_spawn > leash_peak_distance:
+            leash_peak, leash_peak_distance = current, distance_from_spawn
+    # Let pathing catch up after the fighter reaches the endpoint. Position
+    # replication is coarser than the FSM tick; a received >35m pursuit followed
+    # by return to spawn proves the source-defined retreat transition.
+    if leash_peak_distance <= 35:
+        leash_peak = live_worker.wait_state(fighter.name,
+            lambda s: s["actors"].get(str(entity), {}).get("hp", 0) > 0
+                      and math.dist(s["actors"].get(str(target), {}).get("position", enemy_start),
+                                    pursuit["enemy"]["position"]) > 35,
+            "enemy approaches source-defined leash threshold", 30)
+        leash_peak_distance = math.dist(leash_peak["actors"][str(target)]["position"],
+                                        pursuit["enemy"]["position"])
+    live_worker.wait_state(observer.name,
+        lambda s: str(entity) in s["actors"]
+                  and math.dist(s["actors"][str(entity)]["position"], pursuit["leash_route"][-1]) < 0.15,
+        "observer sees fighter complete leash route", 30)
+    reset = live_worker.wait_state(fighter.name,
+        lambda s: s["actors"].get(str(entity), {}).get("hp", 0) > 0
+                  and str(target) in s["actors"]
+                  and math.dist(s["actors"][str(target)]["position"], pursuit["enemy"]["position"]) < 2,
+        "enemy retreats to spawn while fighter survives", 45)
+    fighter.walk_route(list(reversed(pursuit["leash_route"])), 6.0, 30)
+    live_worker.wait_state(observer.name,
+        lambda s: str(entity) in s["actors"]
+                  and math.dist(s["actors"][str(entity)]["position"], pursuit["leash_route"][0]) < 0.15,
+        "observer sees fighter return to reset enemy", 30)
+    live_worker.wait_state(fighter.name,
+        lambda s: str(target) in s["actors"]
+                  and math.dist(s["actors"][str(target)]["position"], s["predicted_position"]) < 3,
+        "returned fighter reaches reset enemy", 30)
+    fighter.wait_fast_blade_ready(target)
+    second_opening_effect = fighter.fast_blade(target)
+    assert second_opening_effect["target"] == target and damage_value(second_opening_effect) > 0
+
     fighter.walk_route(pursuit["route"], 6.0, 30)
     live_worker.wait_state(observer.name,
         lambda s: str(entity) in s["actors"]
@@ -82,7 +129,7 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
                 if effect["target"] == entity and effect["kind"] == 1 and damage_value(effect) > 0]
     starts = [start for start in defeated["combat"]["starts"]
               if start["source"] == entity and start["action"] == 9]
-    assert incoming and len(starts) == 1
+    assert incoming and len(starts) == 2
     sources = {effect["source"] for effect in incoming}
     assert len(sources) == 1
     source = next(iter(sources))
@@ -146,6 +193,13 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
         "population_layout": int(layout_id), "enemy_base_id": 302, "enemy_level": 14,
         "fighter_hp_before": before["hp"], "opening_effect": opening_effect,
         "pursuit_route_length": pursuit["route_length"], "enemy_position_before_pursuit": enemy_start,
+        "leash_route_length": pursuit["leash_route_length"],
+        "enemy_position_at_leash_peak": leash_peak["actors"][str(target)]["position"],
+        "received_leash_peak_distance": leash_peak_distance,
+        "enemy_position_after_reset": reset["actors"][str(target)]["position"],
+        "enemy_hp_after_reset": reset["actors"][str(target)]["hp"],
+        "fighter_hp_after_reset": reset["actors"][str(entity)]["hp"],
+        "second_opening_effect": second_opening_effect,
         "enemy_position_after_pursuit": enemy_pursued_position, "pursuit_observer_verified": True,
         "incoming_effects": incoming, "incoming_integrities": incoming_integrities,
         "fighter_hp_after": 0, "enemy_hp_after": enemy["hp"],
@@ -153,5 +207,5 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
         "return_observer_hp": return_seen["actors"][str(entity)]["hp"],
         "persisted_position": persisted["observed_position"], "persisted_hp": persisted_self["hp"],
         "both_defeat_clients_verified": True, "return_observer_verified": True,
-        "scope": "one natural level-14 enemy pursues and defeats a normally moving level-one player, followed by a source-bound homepoint return and restart persistence; no raise or general combat claim"
+        "scope": "one natural level-14 enemy pursues a normally moving level-one player, retreats to spawn after the 40m leash, is re-engaged and defeats the player, followed by a source-bound homepoint return and restart persistence; no health-reset, raise or general combat claim"
     }, indent=2), encoding="utf-8")

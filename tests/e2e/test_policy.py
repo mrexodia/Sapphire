@@ -33,14 +33,16 @@ def test_uldah_opening_catalog_pins_all_source_defined_ring_choices():
 
 
 def test_pursuit_catalog_binds_natural_enemy_and_displaced_route():
+    leash_route = [[1 + index * 1.5, 0, 0] for index in range(31)]
     data = {"version": 1, "profile": "sapphire-3.3", "territory": 141,
             "enemy": {"layout_id": 3749193, "base_id": 302, "level": 14, "position": [0, 0, 0]},
             "route": [[1, 0, 0], [2.5, 0, 0], [4, 0, 0], [5.5, 0, 0], [7, 0, 0], [8, 0, 0]],
-            "route_length": 7}
+            "route_length": 7, "leash_route": leash_route, "leash_route_length": 45}
     assert validate_pursuit_catalog(data) == data
     for changed in ({**data, "territory": 130},
                     {**data, "enemy": {**data["enemy"], "layout_id": 1}},
-                    {**data, "route": [[1, 0, 0], [3, 0, 0]], "route_length": 2}):
+                    {**data, "route": [[1, 0, 0], [3, 0, 0]], "route_length": 2},
+                    {**data, "leash_route": leash_route[:5], "leash_route_length": 6}):
         with pytest.raises(WorkerError):
             validate_pursuit_catalog(changed)
 

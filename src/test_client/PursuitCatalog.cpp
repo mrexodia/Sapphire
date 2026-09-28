@@ -34,30 +34,38 @@ int main(int argc, char** argv)
     auto start = origin; start[0] += 1.0f;
     Sapphire::Common::Navi::NaviProvider finder("w1f2");
     if(!finder.init(argv[1])) throw std::runtime_error("Central Thanalan tile-cache navmesh unavailable");
-    std::vector<Sapphire::Testing::Point> best;
-    double bestLength = std::numeric_limits<double>::infinity();
-    for(const auto delta : std::array<Sapphire::Testing::Point, 4>{{{10,0,0},{-10,0,0},{0,0,10},{0,0,-10}}})
+    auto chooseRoute = [&](float requested, float minimumDisplacement, float maximumLength)
     {
-      auto end = start;
-      for(size_t axis = 0; axis < 3; ++axis) end[axis] += delta[axis];
-      try
+      std::vector<Sapphire::Testing::Point> best;
+      double bestLength = std::numeric_limits<double>::infinity();
+      for(const auto delta : std::array<Sapphire::Testing::Point, 4>{{{requested,0,0},{-requested,0,0},
+                                                                      {0,0,requested},{0,0,-requested}}})
       {
-        auto route = Sapphire::Testing::navigationRoute(*finder.getNavMesh(), start, end);
-        const auto displacement = std::hypot(route.back()[0]-origin[0], route.back()[2]-origin[2]);
-        double length = 0;
-        for(size_t i = 1; i < route.size(); ++i)
-          length += std::sqrt(std::pow(route[i][0]-route[i-1][0],2) +
-                             std::pow(route[i][1]-route[i-1][1],2) +
-                             std::pow(route[i][2]-route[i-1][2],2));
-        if(displacement >= 8 && length <= 20 && length < bestLength)
-        { best = std::move(route); bestLength = length; }
+        auto end = start;
+        for(size_t axis = 0; axis < 3; ++axis) end[axis] += delta[axis];
+        try
+        {
+          auto route = Sapphire::Testing::navigationRoute(*finder.getNavMesh(), start, end);
+          const auto displacement = std::hypot(route.back()[0]-origin[0], route.back()[2]-origin[2]);
+          double length = 0;
+          for(size_t i = 1; i < route.size(); ++i)
+            length += std::sqrt(std::pow(route[i][0]-route[i-1][0],2) +
+                               std::pow(route[i][1]-route[i-1][1],2) +
+                               std::pow(route[i][2]-route[i-1][2],2));
+          if(displacement >= minimumDisplacement && length <= maximumLength && length < bestLength)
+          { best = std::move(route); bestLength = length; }
+        }
+        catch(const std::exception&) { }
       }
-      catch(const std::exception&) { }
-    }
-    if(best.empty()) throw std::runtime_error("no complete bounded pursuit route");
+      if(best.empty()) throw std::runtime_error("no complete bounded pursuit/leash route");
+      return std::make_pair(best, bestLength);
+    };
+    auto [best, bestLength] = chooseRoute(10, 8, 20);
+    auto [leash, leashLength] = chooseRoute(50, 45, 70);
     nlohmann::json output{{"version",1},{"profile","sapphire-3.3"},{"territory",141},
       {"enemy",{{"layout_id",layout},{"base_id",302},{"level",14},{"position",origin}}},
       {"route",best},{"route_length",bestLength},
+      {"leash_route",leash},{"leash_route_length",leashLength},
       {"navigation",{{"mesh",std::filesystem::absolute(std::filesystem::path(argv[1])/"w1f2"/"w1f2.nav").generic_string()},
                      {"format","TSET-v1"},{"polyref_bits",sizeof(dtPolyRef)*8}}}};
     std::ofstream file(argv[3]);

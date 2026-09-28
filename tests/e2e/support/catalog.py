@@ -86,6 +86,13 @@ def validate_pursuit_catalog(data):
         raise WorkerError("pursuit route must start beside the bound enemy")
     if math.hypot(route[-1][0] - enemy["position"][0], route[-1][2] - enemy["position"][2]) < 8:
         raise WorkerError("pursuit route endpoint is not meaningfully displaced")
+    leash = validated_route({"route": data.get("leash_route") or [],
+                             "route_length": data.get("leash_route_length")})
+    if math.dist(leash[0], position) > 3:
+        raise WorkerError("leash route must start beside the bound enemy")
+    displacement = math.hypot(leash[-1][0] - position[0], leash[-1][2] - position[2])
+    if displacement < 45 or data["leash_route_length"] > 70:
+        raise WorkerError("leash route does not cross the bounded retreat distance")
     return data
 
 
