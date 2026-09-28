@@ -91,8 +91,8 @@ separate evidence that its binaries came from the checkout.
   identity. This checks availability and consistency, **not** game correctness or
   independent real-client compatibility. Static prerequisite validation never
   modifies quest progress; the live chain must complete its first quest normally.
-- The entry point collects the five whole live modules and requires exactly the
-  eight expected cases. Added/removed cases require explicit review of `CASES`.
+- The entry point collects the six whole live modules and requires exactly the
+  nine expected cases. Added/removed cases require explicit review of `CASES`.
   Inherited pytest selection options and automatic third-party plugins are
   disabled. No tests, skipped cases, missing/duplicate phase reports, unexpected
   tests, failing setup/call/teardown, nonzero pytest exit, live child processes, or
@@ -110,7 +110,7 @@ separate evidence that its binaries came from the checkout.
   upload glob to include these directories, catalogs, assets or runtime trees.
 - Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. A passed summary covers this eight-scenario headless suite only.
+  local run. A passed summary covers this nine-scenario headless suite only.
 
 Latest local evidence: clean revision `326114b5e` passed the expanded eight-case
 strict gate in 343.613 seconds with no skips/errors/failures, exact collection and

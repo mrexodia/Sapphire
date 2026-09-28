@@ -56,6 +56,11 @@ lobby, world and MariaDB processes with matching game data:
   zero target HP and delayed removal. The fighter receives exactly 50 EXP and the
   server's enabled `testTable` loot pools; exact rewards survive a fresh login.
   Enemies, skills and resources are not granted or modified.
+- A separate fresh level-one Gladiator uses one ordinary Fast Blade against an
+  observed natural level-14 enemy, then performs no further actions. Both the
+  fighter and a stationary observer receive every retaliation effect and its exact
+  pre/post committed HP, including natural regeneration between hits, through zero
+  player HP and defeated-player despawn. This does not cover respawn or pursuit.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -133,7 +138,8 @@ not replace the live suite.
 
 ```sh
 python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
-  tests/e2e/test_live_zoning.py tests/e2e/test_live_combat.py tests/e2e/test_live_creation.py \
+  tests/e2e/test_live_zoning.py tests/e2e/test_live_combat.py \
+  tests/e2e/test_live_player_defeat.py tests/e2e/test_live_creation.py \
   --e2e-profile .e2e-local.json -v --junitxml=build-e2e/live.xml
 ```
 
@@ -366,8 +372,9 @@ This is explicit non-overlapping player fixture setup, not a tested journey,
 curated route, enemy relocation or general navigation assertion. It requires actual `NAVI` initialization in the
 world log, then observes a living level-one marmot within two units and natural
 TP regeneration before requesting the action. The worker refuses targets beyond
-three units from its position estimate, wrong classes/kinds/levels, dead actors and
-insufficient received TP. A conservative 2.5-second request guard is extended from
+three units from its position estimate, wrong classes/kinds, dead actors and
+insufficient received TP; Fast Blade is no longer artificially restricted to
+level-one targets. A conservative 2.5-second request guard is extended from
 the received action-start recast; this is not a general cooldown scheduler. Snapshot
 `combat.fast_blade_guard_remaining_ms` exposes that **local** guard, rounded up so
 positive sub-millisecond waits never appear ready. `Bot.wait_fast_blade_ready()`
@@ -393,6 +400,15 @@ loot initially exposed duplicate process-local item IDs because asynchronous ins
 made repeated `MAX(ItemId)` queries stale. `ItemIdAllocator` now seeds once and
 serializes monotonic IDs; a 64-thread native contract and the fresh-login assertion
 cover the fix. This does not claim collision safety across multiple world processes.
+
+`test_live_player_defeat.py` uses unchanged natural population layout 3749193
+(base 302, level 14). One received/range-checked Fast Blade establishes ordinary
+hostility; no later player action is sent. For every retaliation, the worker records
+the target's received HP immediately before and after the matching integrity packet,
+so intervening natural regeneration cannot be mistaken for damage. Both clients
+require the identical effect sequence and exact committed decrease through zero HP,
+then the observer requires ordinary defeated-player despawn. The scenario does not
+claim automatic aggro, respawn/homepoint behavior, pursuit or general combat.
 
 The artifact manifest hashes the action catalog and staged player-action/population
 files. Bounded event journals include decoded effects, HP integrity and action-start

@@ -42,7 +42,9 @@ int main()
     rejects([&] { fastBladeRequest(7, 1, 9, {0,0,0}, actors, rewards); });
     rejects([&] { fastBladeRequest(7, 65536, 8, {0,0,0}, actors, rewards); });
     rejects([&] { fastBladeRequest(7, 1, 8, {std::numeric_limits<float>::quiet_NaN(),0,0}, actors, rewards); });
-    for(const auto& patch : {Json{{"hp", 0}}, Json{{"kind", 1}}, Json{{"level", 2}}})
+    auto higherLevel = actors; higherLevel["8"]["level"] = 14;
+    require(!fastBladeRequest(7, 1, 8, {0,0,0}, higherLevel, rewards).empty());
+    for(const auto& patch : {Json{{"hp", 0}}, Json{{"kind", 1}}})
     {
       auto invalid = actors; invalid["8"].update(patch);
       rejects([&] { fastBladeRequest(7, 1, 8, {0,0,0}, invalid, rewards); });
@@ -61,7 +63,9 @@ int main()
     WS::FFXIVIpcActionIntegrity integrity{};
     integrity.Target = 8; integrity.ResultId = 42; integrity.Hp = 13; integrity.HpMax = 20; integrity.Tp = 40;
     require(state.receive(integrity._ServerIpcType, 8, packet(integrity)));
+    state.annotateLatestIntegrity(20);
     require(state.state()["integrities"].back()["hp"] == 13);
+    require(state.state()["integrities"].back()["previous_hp"] == 20);
     require(state.state()["integrities"].back()["tp"] == 40);
     integrity.Hp = 21;
     rejects([&] { state.receive(integrity._ServerIpcType, 8, packet(integrity)); });

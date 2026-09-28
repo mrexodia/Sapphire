@@ -18,7 +18,7 @@ def fast_blade_ready(state, target):
         return False
     if own["hp"] <= 0:
         raise ValueError("fighter was defeated while waiting for combat readiness")
-    if enemy["kind"] != 2 or enemy["level"] != 1 or enemy["hp"] <= 0:
+    if enemy["kind"] != 2 or enemy["hp"] <= 0:
         return False
     # Estimated request range only. Independent observer positions must establish
     # actual range in a scenario; this helper never certifies movement/arrival.

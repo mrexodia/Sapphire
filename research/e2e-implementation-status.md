@@ -30,10 +30,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge and discard; ordinary Say; 130-to-141 crossing/persistence; paced Fast Blades through one enemy defeat with independent retaliation/death/removal plus persisted EXP/loot | Representative subset verified; item use, overflow merges, equipment/currency operations, pursuit, player defeat, combos and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge and discard; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot and one independently observed player defeat | Representative subset verified; item use, overflow merges, equipment/currency operations, pursuit, respawn, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
-| Deterministic authored regression suite | Eight allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
+| Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Existing eight-case clean suite and new player-defeat case verified separately; combined clean gate pending |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
@@ -80,7 +80,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   first extension below covered three paced strikes and the first retaliation hit.
   The later defeat/reward extension now covers one complete level-one defeat and
   persisted current-test-table loot/EXP. Combos, general cooldown scheduling,
-  player defeat, dynamic pursuit and production loot selection remain uncovered.
+  dynamic pursuit and production loot selection remain uncovered. A later increment
+  below covers one player defeat, but not respawn/homepoint behavior.
   Initial position is fixture setup.
   The decoded `sapphire-e2e-wd3lpulz` journal records nine damage, NPC HP 94 → 85 on both clients,
   and source TP 40 after the action. A conservative local recast guard follows the
@@ -352,6 +353,42 @@ GNU 11.4. These checks plus the live fresh-login result cover the discovered
 process-local collision; they do not prove hosted execution, general combat,
 real-client presentation or multi-process allocation.
 
+## Independently observed player defeat
+
+`test_live_player_defeat.py` starts fresh rank-zero level-one Gladiator and witness
+fixtures near unchanged Central Thanalan population layout 3749193 (base 302,
+level 14). The fighter waits for the exact living observed target, natural TP and
+estimated melee range, then sends one ordinary Fast Blade. It sends no further
+combat action. The enemy remains alive and naturally retaliates until the fighter
+reaches zero HP; the stationary witness independently receives the same complete
+effect sequence, exact matching committed HP updates and defeated-player despawn.
+No enemy is spawned, moved, damaged through a handler or granted an action.
+
+Fast Blade remains a narrowly fixed semantic operation: observed living BNpc,
+received living non-GM Gladiator state, TP, range, action 9 and bounded request IDs.
+The artificial level-one target restriction was removed so an ordinary learned
+ability can address this observed level-14 enemy; this is not an arbitrary action
+or packet API. Each received HP integrity now records the immediately preceding
+received actor HP. This lets the scenario prove every matching damage decrease even
+when normal regeneration occurs between attacks, rather than incorrectly deriving
+a pre-hit value from the previous attack's post-hit value. Native and Python policy
+contracts cover level-14 acceptance while preserving kind/death/range/resource guards.
+
+The targeted dirty-checkpoint run passed in **111.56s** and removed its private
+runtime. Evidence: `.e2e-artifacts/player-defeat-live/sapphire-e2e-l2kr1naa`, raw
+worker journal and `combat-player-defeat.json` SHA-256
+`ea850f8db5bbd0ca3357123d444daaebfa2a72da5b52d21bd324b5919d77244f`.
+The worker SHA-256 was
+`383c8854a0048c33b77ba7e058ceb9055be473262442edc7d6894817faf1f37a` and server
+SHA-256 was
+`233b53537476d69c0dc62e01f30fc1baf2a96298b4a25175e8a036191c25c7d2`.
+This increment does not yet have a combined clean nine-case gate.
+
+This proves one player defeat after one initiating strike. It does not prove
+natural proximity aggro, arbitrary enemy levels/abilities, pursuit, party combat,
+respawn/homepoint return, death penalties, persistence while dead or real-client
+death presentation.
+
 ## Persisted ordinary-bag move and swap
 
 `62c3391bd3c2e9c144be8051d0923e420fb208fe` adds only a whole-stack move from an
@@ -605,15 +642,15 @@ workload was not repeated without a new stability hypothesis.
    replay is flat; this does not establish capacity or memory stability for all
    code paths. Generator histories/allocator retention also remain distinct from
    server resource behavior.
-2. Extend combat beyond the now-verified single level-one enemy defeat and persisted
-   current-test-table rewards: pursuit, player defeat, combos, additional abilities
+2. Extend combat beyond the now-verified enemy and player defeat slices and persisted
+   current-test-table rewards: pursuit, respawn, combos, additional abilities
    and production loot selection remain uncovered. Preserve observed resource/range
    checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond
    the first Ul'dah opening branch; unknown content must still fail.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   The separate 30-minute paced workload is not part of the eight-case CI gate.
+   The separate 30-minute paced workload is not part of the nine-case CI gate.
 5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
    coverage and independently captured trace/layout checks. Strengthen fault and
    cancellation coverage separately from successful-path evidence. Do not alter

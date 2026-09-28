@@ -10,6 +10,7 @@ namespace Sapphire::Testing
   public:
     CombatState();
     bool receive(uint16_t opcode, uint32_t source, const Bytes& ipcData);
+    void annotateLatestIntegrity(uint32_t previousHp);
     const nlohmann::json& state() const { return m_state; }
   private:
     nlohmann::json m_state;
@@ -17,8 +18,8 @@ namespace Sapphire::Testing
   // Local conservative pacing guard, not a received server-ready acknowledgement.
   uint32_t fastBladeGuardRemainingMs(std::chrono::steady_clock::time_point ready,
                                     std::chrono::steady_clock::time_point now);
-  // Deliberately narrow initial combat profile: living Gladiator, Fast Blade,
-  // observed nearby level-one battle NPC. No arbitrary ability/raw-packet API.
+  // Deliberately narrow combat profile: living Gladiator, Fast Blade and an
+  // observed nearby battle NPC. No arbitrary ability/raw-packet API.
   Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position,
                          const nlohmann::json& actors, const nlohmann::json& rewards);

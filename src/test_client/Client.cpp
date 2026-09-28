@@ -376,8 +376,11 @@ namespace Sapphire::Testing
       Json detail{{"opcode", h.type}};
       if(h.type == WS::FFXIVIpcActionIntegrity::_ServerIpcType)
       {
+        const auto& latest = m_combat.state()["integrities"].back();
+        const auto key = std::to_string(latest["target"].get<uint32_t>());
+        if(m_state["actors"].contains(key))
+          m_combat.annotateLatestIntegrity(m_state["actors"][key]["hp"].get<uint32_t>());
         const auto& integrity = m_combat.state()["integrities"].back();
-        const auto key = std::to_string(integrity["target"].get<uint32_t>());
         if(m_state["actors"].contains(key))
           for(const auto* field : {"hp", "hp_max", "mp", "tp"}) m_state["actors"][key][field] = integrity[field];
         detail["integrity"] = integrity;

@@ -56,10 +56,13 @@ def test_profile_death_and_estimated_range_guards():
     state["actors"]["8"]["position"][2] = float("nan")
     with pytest.raises(ValueError, match="position"):
         fast_blade_ready(state, 8)
-    for patch in ({"kind": 1}, {"level": 2}, {"hp": 0}):
+    for patch in ({"kind": 1}, {"hp": 0}):
         state = ready_state()
         state["actors"]["8"].update(patch)
         assert not fast_blade_ready(state, 8)
+    state = ready_state()
+    state["actors"]["8"]["level"] = 14
+    assert fast_blade_ready(state, 8)
     state = ready_state()
     state["actors"]["7"]["hp"] = 0
     with pytest.raises(ValueError, match="defeated"):

@@ -54,6 +54,11 @@ namespace Sapphire::Testing
     else return false;
     return true;
   }
+  void CombatState::annotateLatestIntegrity(uint32_t previousHp)
+  {
+    if(m_state["integrities"].empty()) throw ProtocolError("no combat integrity to annotate");
+    m_state["integrities"].back()["previous_hp"] = previousHp;
+  }
   uint32_t fastBladeGuardRemainingMs(std::chrono::steady_clock::time_point ready,
                                     std::chrono::steady_clock::time_point now)
   {
@@ -68,9 +73,8 @@ namespace Sapphire::Testing
     const auto key = std::to_string(target), self = std::to_string(entity);
     if(!request || request > 65535 || target == entity || rewards.at("class_job") != 1 ||
        !actors.contains(self) || actors.at(self).at("hp") == 0 ||
-       !actors.contains(key) || actors.at(key).at("kind") != 2 ||
-       actors.at(key).at("level") != 1 || actors.at(key).at("hp") == 0)
-      throw ProtocolError("Fast Blade requires a living Gladiator and observed level-one battle NPC");
+       !actors.contains(key) || actors.at(key).at("kind") != 2 || actors.at(key).at("hp") == 0)
+      throw ProtocolError("Fast Blade requires a living Gladiator and observed battle NPC");
     if(actors.at(self).at("tp").get<uint16_t>() < 60)
       throw ProtocolError("Fast Blade requires at least 60 received TP");
     auto destination = actors.at(key).at("position").get<std::array<float, 3>>();
