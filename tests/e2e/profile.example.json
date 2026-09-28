@@ -1,0 +1,7 @@
+{
+  "binaries": "C:/CodeBlocks/Sapphire/bin",
+  "game_data": "C:/path/to/matching/game/sqpack",
+  "mariadb_bin": "C:/path/to/mariadb/bin",
+  "worker": "C:/CodeBlocks/Sapphire/build-e2e/sapphire_test_client.exe",
+  "artifacts": "C:/CodeBlocks/Sapphire/.e2e-artifacts"
+}

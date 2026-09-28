@@ -1,0 +1,13 @@
+{
+  "profile": "sapphire-3.3",
+  "version": 1,
+  "quest_id": 65685,
+  "status": "source-derived; live quest journey not yet verified",
+  "source": "src/scripts/quest/subquest/uldah/SubWil000.cpp",
+  "scenes": {
+    "65685:0": {"choices": {"accept": [1], "cancel": [0]}},
+    "65685:1": {"choices": {"hand_over": [1], "cancel": [0]}},
+    "65685:99": {"choices": {"acknowledge": [0]}},
+    "65685:100": {"choices": {"complete_without_optional_item": [1, 0]}}
+  }
+}
