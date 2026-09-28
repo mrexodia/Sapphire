@@ -1,0 +1,139 @@
+"""Synthetic inventory contracts: acknowledgements are never mutation evidence."""
+from copy import deepcopy
+from types import SimpleNamespace
+
+import pytest
+
+from .support.worker import Bot
+from .test_live_quest import move_reward_and_verify_reconnect
+
+
+def test_move_request_waits_for_exact_ack_without_predicting_inventory():
+    before = {"0:1": {"storage": 0, "slot": 1, "id": 4555, "count": 3}}
+    states = [{"rewards": {"inventory": deepcopy(before), "operation_batches": [row]}}
+              for row in ({"context": 123, "operation": 8, "error": 0},
+                          {"context": 456, "operation": 7, "error": 0},
+                          {"context": 456, "operation": 8, "error": 1},
+                          {"context": 456, "operation": 8, "error": 0})]
+
+    class Worker:
+        def request(self, method, bot, **args):
+            assert method == "request_item_move" and bot == "subject"
+            assert args == {"storage": 0, "slot": 1, "destination_storage": 3,
+                            "destination_slot": 24, "expected_item": 4555}
+            return {"context": 456}
+
+        def wait_state(self, bot, predicate, description, timeout):
+            assert timeout == 17 and "not inventory mutation" in description
+            assert [predicate(s) for s in states] == [False, False, False, True]
+            return states[-1]
+
+    receipt = Bot(Worker(), "subject").request_item_move(0, 1, 3, 24, 4555, timeout=17)
+    assert receipt == {"context": 456, "operation": 8, "acknowledged": True, "inventory_change_verified": False}
+    assert all(state["rewards"]["inventory"] == before for state in states)
+
+
+class MoveFixture:
+    """Exercise the actual scenario verifier with deliberately wrong fresh snapshots."""
+    def __init__(self):
+        self.before = {"0:0": {"storage": 0, "slot": 0, "id": 4551, "count": 2},
+                       "0:1": {"storage": 0, "slot": 1, "id": 4555, "count": 3},
+                       "1000:0": {"storage": 1000, "slot": 0, "id": 1601, "count": 1}}
+        self.after = deepcopy(self.before)
+        item = self.after.pop("0:1")
+        item.update(storage=3, slot=24)
+        self.after["3:24"] = item
+        self.expected = {"synthetic_rewards": True}
+        self.reconnected = False
+        self.present = True
+        self.identity = 7
+        self.position = [1, 0, 2]
+        self.calls = []
+        self.name = "subject"
+
+    def expect_rewards(self, expected, work_index):
+        assert expected == self.expected and work_index == 1
+        self.calls.append("rewards")
+        return {"entity_id": 7, "rewards": {"inventory": deepcopy(self.after if self.reconnected else self.before),
+                                            "containers": {"3": True}}}
+
+    def request_item_move(self, *args, **kwargs):
+        self.calls.append("move_request")
+        assert args == (0, 1, 3, 24) and kwargs == {"expected_item": 4555}
+        return {"context": 99, "operation": 8, "acknowledged": True, "inventory_change_verified": False}
+
+    def logout(self):
+        self.calls.append("logout")
+        self.present = False
+
+    def close(self):
+        self.calls.append("remove")
+
+    def api(self, method, payload):
+        self.calls.append("http_login")
+        assert method == "login" and payload == {"username": "synthetic-user", "pass": "synthetic-password"}
+        return {"sId": "synthetic-session"}
+
+    def login_via_lobby(self, auth, name):
+        self.calls.append("lobby_login")
+        assert auth == {"sId": "synthetic-session"} and name == "Fixture Name"
+        self.reconnected = self.present = True
+        return {"entity_id": self.identity, "observed_position": self.position}
+
+    def wait_state(self, bot, predicate, description, timeout=30):
+        assert bot == "observer"
+        state = {"actors": {"7": {"position": [1, 0, 2]}} if self.present else {}}
+        assert predicate(state)
+        self.calls.append("observer")
+        return state
+
+    def expect_quest_complete(self, quest):
+        self.calls.append(quest)
+
+    def verify(self):
+        fixture = {"username": "synthetic-user", "password": "synthetic-password", "name": "Fixture Name"}
+        return move_reward_and_verify_reconnect(self, self, self, SimpleNamespace(name="observer"),
+                                               fixture, self.expected, 1, [65686, 65687])
+
+
+def test_scenario_requires_fresh_login_and_exact_slot_placement():
+    fixture = MoveFixture()
+    original = deepcopy(fixture.before)
+    expected, evidence = fixture.verify()
+    assert expected == fixture.after == evidence["after_reconnect"]
+    assert evidence["before"] == fixture.before == original
+    assert evidence["receipt"]["inventory_change_verified"] is False
+    assert fixture.calls == ["rewards", "observer", "move_request", "logout", "observer", "remove",
+                             "http_login", "lobby_login", "observer", "rewards", 65686, 65687]
+
+
+@pytest.mark.parametrize("fault", ["ack_only", "duplicate", "wrong_count", "wrong_slot", "other_item_lost", "equipment_changed"])
+def test_acknowledgement_or_totals_alone_cannot_satisfy_move_verifier(fault):
+    fixture = MoveFixture()
+    if fault == "ack_only":
+        fixture.after = deepcopy(fixture.before)
+    elif fault == "duplicate":
+        fixture.after["0:1"] = deepcopy(fixture.before["0:1"])
+    elif fault == "wrong_count":
+        fixture.after["3:24"]["count"] = 2
+    elif fault == "wrong_slot":
+        item = fixture.after.pop("3:24")
+        item["slot"] = 23
+        fixture.after["3:23"] = item  # Same bag totals, wrong placement.
+    elif fault == "other_item_lost":
+        del fixture.after["0:0"]
+    else:
+        fixture.after["1000:0"]["id"] = 999
+    with pytest.raises(AssertionError):
+        fixture.verify()
+
+
+@pytest.mark.parametrize("fault", ["identity", "position"])
+def test_reconnect_must_preserve_identity_and_observed_position(fault):
+    fixture = MoveFixture()
+    if fault == "identity":
+        fixture.identity = 8
+    else:
+        fixture.position = [20, 0, 2]
+    with pytest.raises(AssertionError):
+        fixture.verify()

@@ -294,7 +294,21 @@ namespace Sapphire::Testing
     event("packet", {{"channel", name}, {"opcode", h.type}, {"source", segment.header.source_actor}});
     constexpr size_t off = sizeof(Wire::FFXIVARR_IPC_HEADER);
     if(segment.header.source_actor == m_entity && m_rewards.receive(h.type, segment.data))
-      event("rewards_changed");
+    {
+      Json detail{{"opcode", h.type}};
+      if(h.type == WS::FFXIVIpcItemOperationBatch::_ServerIpcType)
+        detail["batch"] = m_rewards.state()["operation_batches"].back();
+      else if(h.type == WS::FFXIVIpcItemSize::_ServerIpcType)
+      {
+        const auto p = readObject<WS::FFXIVIpcItemSize>(segment.data, off);
+        Json items = Json::object();
+        for(const auto& entry : m_rewards.state()["inventory"].items())
+          if(entry.value()["storage"] == p.storageId) items[entry.key()] = entry.value();
+        detail["snapshot"] = {{"context", p.contextId}, {"storage", p.storageId},
+                              {"size", p.size}, {"items", items}};
+      }
+      event("rewards_changed", detail);
+    }
     if(m_combat.receive(h.type, segment.header.source_actor, segment.data))
     {
       Json detail{{"opcode", h.type}};
@@ -565,6 +579,19 @@ namespace Sapphire::Testing
       if(m_inventoryContext == 0xffffffff) throw ProtocolError("inventory context budget exhausted");
       auto payload = discardItemRequest(m_rewards.state(), m_entity, ++m_inventoryContext,
                                        args.at("storage"), args.at("slot"), args.at("expected_item"));
+      sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
+      return {{"context", m_inventoryContext}};
+    }
+    if(method == "request_item_move")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      for(const auto* key : {"storage", "slot", "expected_item", "destination_storage", "destination_slot"})
+        if(!args.at(key).is_number_unsigned() || args.at(key) > uint64_t{0xffffffff})
+          throw ProtocolError("inventory arguments must be unsigned 32-bit integers");
+      if(m_inventoryContext == 0xffffffff) throw ProtocolError("inventory context budget exhausted");
+      auto payload = moveItemRequest(m_rewards.state(), m_entity, ++m_inventoryContext,
+                                    args.at("storage"), args.at("slot"), args.at("expected_item"),
+                                    args.at("destination_storage"), args.at("destination_slot"));
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};
     }

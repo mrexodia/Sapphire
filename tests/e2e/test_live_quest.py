@@ -86,6 +86,44 @@ def complete_follow_up(environment, worker, player, observer, fixture, previous,
     return quest, expected
 
 
+def move_reward_and_verify_reconnect(environment, worker, player, observer, fixture, expected, work_index, quests):
+    state = player.expect_rewards(expected, work_index)
+    before = deepcopy(state["rewards"]["inventory"])
+    stacks = [(key, item) for key, item in before.items() if item["id"] == 4555 and item["storage"] in range(4)]
+    assert len(stacks) == 1 and stacks[0][1]["count"] == 3
+    source, item = stacks[0]
+    destination = "3:24"
+    assert source != destination and destination not in before
+    assert state["rewards"]["containers"]["3"] is True
+    actor = str(state["entity_id"])
+    observed = worker.wait_state(observer.name, lambda s: actor in s["actors"], "inventory subject visible before move")
+    position = observed["actors"][actor]["position"]
+    expected_inventory = deepcopy(before)
+    moved = expected_inventory.pop(source)
+    moved.update(storage=3, slot=24)
+    expected_inventory[destination] = moved
+    receipt = player.request_item_move(item["storage"], item["slot"], 3, 24, expected_item=4555)
+    assert receipt["acknowledged"] and receipt["inventory_change_verified"] is False
+    # The current server sends only a pre-operation acknowledgement. Do not apply
+    # this expected map to the worker or count that acknowledgement as a move.
+    player.logout()
+    worker.wait_state(observer.name, lambda s: actor not in s["actors"], "move session removed", 30)
+    player.close()
+    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    state = player.login_via_lobby(auth, fixture["name"])
+    assert str(state["entity_id"]) == actor and math.dist(state["observed_position"], position) < 0.15
+    worker.wait_state(observer.name,
+        lambda s: actor in s["actors"] and math.dist(s["actors"][actor]["position"], position) < 0.15,
+        "moved-item character reconnect observed")
+    state = player.expect_rewards(expected, work_index)
+    assert state["rewards"]["inventory"] == expected_inventory
+    for quest in quests:
+        player.expect_quest_complete(quest)
+    return expected_inventory, {"source": source, "destination": destination, "item": 4555, "count": 3,
+        "receipt": receipt, "before": before, "after_reconnect": deepcopy(state["rewards"]["inventory"]),
+        "scope": "earned whole stack to empty ordinary bag; no swap/split/merge/equipment claim"}
+
+
 def discard_reward_and_verify_restart(environment, worker, player, fixture, expected, work_index, quests):
     state = worker.snapshot(player.name)
     inventory = deepcopy(state["rewards"]["inventory"])
@@ -180,10 +218,14 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
         expected["currencies"]["1"] = expected["currencies"].get("1", 0) + catalog["gil"]
     player.expect_rewards(expected, catalog["work_index"])
     completed_quests = [quest]
+    moved_inventory, move_evidence = None, None
     if follow_up:
         next_quest, expected = complete_follow_up(environment, live_worker, player, observer,
                                                 player_fixture, catalog, expected)
         completed_quests.append(next_quest)
+        moved_inventory, move_evidence = move_reward_and_verify_reconnect(
+            environment, live_worker, player, observer, player_fixture, expected,
+            catalog["work_index"], completed_quests)
 
     player.logout()
     live_worker.wait_state(observer.name, lambda s: actor not in s["actors"], "quester session cleanup", timeout=30)
@@ -200,6 +242,9 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
     state = live_worker.snapshot(reloaded.name)
     assert all(str(completed_quest & 0xffff) not in state["quests"] for completed_quest in completed_quests)
     if follow_up:
+        assert state["rewards"]["inventory"] == moved_inventory
+        move_evidence["after_restart"] = deepcopy(state["rewards"]["inventory"])
+        (environment.artifacts / "inventory-move.json").write_text(json.dumps(move_evidence, indent=2), encoding="utf-8")
         reloaded = discard_reward_and_verify_restart(environment, live_worker, reloaded, player_fixture,
                                                     expected, catalog["work_index"], completed_quests)
     reloaded.logout()

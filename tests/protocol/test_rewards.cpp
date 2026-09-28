@@ -55,6 +55,68 @@ int main()
     batch.contextId = 60; batch.errorType = 0; receive(state, batch);
     check(state.state()["inventory"]["1:2"]["count"] == 2, "created reward uses destination fields");
 
+    // Independently authored wire offsets: whole stack to an EMPTY ordinary bag
+    // slot, not a shared-struct round trip or a move prediction.
+    auto move = moveItemRequest(state.state(), 0x12345678, 0x01020304, 1, 2, 4551, 3, 24);
+    Bytes moveExpected(48, 0);
+    moveExpected[0] = 4; moveExpected[1] = 3; moveExpected[2] = 2; moveExpected[3] = 1;
+    moveExpected[4] = 8;
+    for(auto offset : {8, 28})
+    { moveExpected[offset] = 0x78; moveExpected[offset+1] = 0x56; moveExpected[offset+2] = 0x34; moveExpected[offset+3] = 0x12; }
+    moveExpected[12] = 1; moveExpected[16] = 2; moveExpected[20] = 2;
+    moveExpected[24] = 0xc7; moveExpected[25] = 0x11;
+    moveExpected[32] = 3; moveExpected[36] = 24;
+    check(move == moveExpected, "move request must match exact bounded empty-destination wire fixture");
+    check(state.state()["inventory"].contains("1:2") && !state.state()["inventory"].contains("3:24"),
+          "request serialization never moves inventory");
+    for(auto bad : {std::array<uint32_t, 5>{4, 2, 4551, 3, 24}, {1, 25, 4551, 3, 24},
+                   {1, 2, 4551, 4, 24}, {1, 2, 4551, 3, 25}, {1, 2, 4551, 1, 2},
+                   {1, 2, 0, 3, 24}, {1, 2, 4555, 3, 24}, {0, 0, 4551, 3, 24},
+                   {1, 2, 4551, 2000, 0}})
+    {
+      rejected = false;
+      try { moveItemRequest(state.state(), 1, 1, bad[0], bad[1], bad[2], bad[3], bad[4]); }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "invalid/non-bag/mismatched/self move rejected");
+    }
+    for(int fault = 0; fault < 4; ++fault)
+    {
+      auto invalid = state.state();
+      if(fault == 0) invalid["inventory_ready"] = false;
+      if(fault == 1) invalid["inventory"]["3:24"] = invalid["inventory"]["1:2"];
+      if(fault == 2) invalid["containers"].erase("3");
+      if(fault == 3) invalid["inventory"]["1:2"]["count"] = 0;
+      rejected = false;
+      try { moveItemRequest(invalid, 1, 1, 1, 2, 4551, 3, 24); }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "unready/occupied/unobserved/empty move rejected");
+    }
+    auto inventoryBeforeAck = state.state()["inventory"];
+    batch.contextId = 0x01020304; batch.operationType = 8; batch.errorType = 0; receive(state, batch);
+    check(state.state()["inventory"] == inventoryBeforeAck, "move acknowledgement is NOT mutation proof");
+    check(state.state()["operation_batches"].back() == nlohmann::json{{"context", 0x01020304}, {"operation", 8}, {"error", 0}},
+          "move acknowledgement retains exact context/type/error");
+    batch.contextId++; batch.errorType = 1; rejected = false;
+    try { receive(state, batch); } catch(const ProtocolError&) { rejected = true; }
+    check(rejected && state.state()["inventory"] == inventoryBeforeAck, "failed move cannot change observed state");
+    check(state.state()["operation_batches"].back()["error"] == 1, "failed acknowledgement remains diagnostic evidence");
+    batch.errorType = 0; batch.operationType = 0;
+    for(int i = 0; i < 200; ++i) { batch.contextId++; receive(state, batch); }
+    check(state.state()["operation_batches"].size() == 128, "batch history is bounded");
+
+    // Only complete fresh server snapshots establish the moved placement.
+    RewardsState fresh;
+    initial.contextId = 70; initial.item.storageId = 3; initial.item.containerIndex = 24;
+    initial.item.catalogId = 4551; initial.item.stack = 2; receive(fresh, initial);
+    check(fresh.state()["inventory"].empty(), "destination needs snapshot completion");
+    size.contextId = 70; size.storageId = 3; size.size = 1; receive(fresh, size);
+    check(!fresh.state()["inventory_ready"], "one bag does not establish all inventory");
+    for(auto storage : {0, 1, 2, 2000})
+    { size.contextId++; size.storageId = storage; size.size = 0; receive(fresh, size); }
+    check(fresh.state()["inventory_ready"] && fresh.state()["inventory"].size() == 1 &&
+          fresh.state()["inventory"]["3:24"]["count"] == 2 && !fresh.state()["inventory"].contains("1:2"),
+          "received fresh snapshots establish source absence and exact destination stack");
+
     auto discard = discardItemRequest(state.state(), 0x12345678, 0x01020304, 1, 2, 4551);
     check(discard.size() == 48 && discard[0] == 4 && discard[3] == 1 && discard[4] == 7,
           "discard context/type wire fixture");

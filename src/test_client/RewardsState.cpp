@@ -7,6 +7,7 @@ namespace Sapphire::Testing
   namespace WS = Wire::WorldPackets::Server;
   RewardsState::RewardsState() : m_state{
     {"inventory", Json::object()}, {"containers", Json::object()}, {"inventory_ready", false},
+    {"operation_batches", Json::array()},
     {"exp_by_index", Json::array()}, {"level_by_index", Json::array()}, {"exp_by_class", Json::object()},
     {"class_job", nullptr}, {"level", nullptr}} {}
 
@@ -79,6 +80,11 @@ namespace Sapphire::Testing
     else if(opcode == WS::FFXIVIpcItemOperationBatch::_ServerIpcType)
     {
       auto p = readObject<WS::FFXIVIpcItemOperationBatch>(data, off);
+      auto& history = m_state["operation_batches"];
+      history.push_back({{"context", p.contextId}, {"operation", p.operationType}, {"error", p.errorType}});
+      if(history.size() > 128) history.erase(history.begin());
+      // A batch without staged mutations is only an acknowledgement (moves use
+      // this path in the current server). Never derive changes from a request.
       if(p.errorType) { m_updates.erase(p.contextId); throw ProtocolError("server rejected inventory operation"); }
       auto it = m_updates.find(p.contextId);
       if(it != m_updates.end()) { apply(it->second); m_updates.erase(it); }

@@ -16,6 +16,7 @@ def test_capabilities(worker):
     assert "general_navigation" in caps["unsupported"]
     assert "general_combat" in caps["unsupported"]
     assert "fast_blade" in caps["methods"]
+    assert "request_item_move" in caps["methods"]
 
 
 def test_unknown_bot_and_invalid_method(worker):
@@ -58,6 +59,12 @@ def test_action_before_readiness_is_rejected(worker):
                 worker.request("walk_to", "test", position=[0, 0, 0])
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("fast_blade", "test", target=123)
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("request_item_move", "test", storage=0, slot=0,
+                               expected_item=4555, destination_storage=3, destination_slot=24)
+            move = next(row for row in worker._actions if row["method"] == "request_item_move")
+            assert move["args"] == {"storage": 0, "slot": 0, "expected_item": 4555,
+                                    "destination_storage": 3, "destination_slot": 24}
             worker.request("close", "test")
             assert worker.snapshot("test")["phase"] == "closed"
         finally:

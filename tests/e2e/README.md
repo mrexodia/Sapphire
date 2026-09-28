@@ -34,7 +34,9 @@ lobby, world and MariaDB processes with matching game data:
   crosses from Ul'dah to Central Thanalan, observes departure and arrival from
   separate bots, checks destination chat/keepalives and reloads the new territory
   and position after world restart.
-- After verifying those rewards, the chain test discards the earned ether stack
+- The chain test moves the earned ether stack to an observed empty ordinary bag
+  slot, verifies exact placement through a fresh login and again after world
+  restart, preserving all other tracked slots and rewards. It then discards that stack
   through the normal item-operation packet. It waits for a committed received
   deletion, checks every tracked slot for unintended changes, and verifies the
   deletion plus retained quest progress after a second restart.
@@ -187,7 +189,8 @@ bot.close()    # Removes the bot from the worker.
 
 Additional actions: `wait_world_ready`, `walk_route`, `interact`, `choose_dialogue`,
 `wait_event_finished`, `expect_quest_active`, `expect_quest_complete`,
-`reward_snapshot`, `expect_rewards`, `discard_item`, `cross_exit`, `say`, and `expect_say`.
+`reward_snapshot`, `expect_rewards`, `request_item_move`, `discard_item`, `cross_exit`,
+`say`, `expect_say`, `wait_fast_blade_ready`, and `fast_blade`.
 Use `worker.wait_state(...)` for bounded predicates against received state. Event
 notifications wake waits; snapshots also cover observations received before the
 wait was registered. No automatic gameplay retry is performed after a timeout.
@@ -205,8 +208,33 @@ returns are supported; scene yield/resume is not supported. There is no default
 `discard_item(storage, slot, expected_item)` supports whole stacks in ordinary
 bags only. It requires a matching observed item identity; it cannot discard
 currency/equipment or select an arbitrary inventory operation. A request-level
-acknowledgement alone is not deletion evidence. Move/split/swap and item-use
-workflows are not implemented.
+acknowledgement alone is not deletion evidence.
+
+`request_item_move(storage, slot, destination_storage, destination_slot, expected_item)`
+requests a whole-stack move to an observed **empty** ordinary bag slot. Both bags
+must have complete received snapshots; same-slot moves, occupied destinations,
+non-bag storage, invalid indexes and item mismatches fail before sending. The
+caller cannot select a count or arbitrary operation. The receipt says
+`acknowledged=true, inventory_change_verified=false`: the current server queues
+that acknowledgement **before attempting the move**, and publishes no slot delta.
+Neither that receipt nor successful request serialization changes the worker's
+inventory. `rewards.operation_batches` retains at most 128 received context/type/
+error records; these are acknowledgements, not universal commit records.
+
+The chain regression earns its three ethers normally, requests the move to bag 3,
+slot 24, logs out and authenticates again. Complete received snapshots must then
+show the source absent, that exact destination holding all three ethers, and every
+other tracked slot unchanged—not merely equal bag totals. The nearby observer
+checks identity/position/despawn/reappearance, not private inventory contents.
+The same placement and unchanged rewards/quest completions are checked after an
+orderly world restart. `inventory-move.json` records those observations. The
+existing discard test subsequently deletes the **moved** stack and verifies that
+deletion across another restart. No database mutation, grant, optimistic slot
+update, forced resync or fabricated server response supplies gameplay evidence.
+
+This covers an ordinary empty-destination whole-stack move, not split/merge/swap,
+equipment/currency moves, item use, immediate move publication, crash consistency
+or independent real-client inventory presentation.
 
 `close` cancels pending connection/movement timers and closes sockets; `remove`
 also releases the bot. End-of-input shuts down all worker-owned connections.
