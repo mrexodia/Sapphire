@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, discard, ordinary Say, 130-to-141 crossing/persistence, and three paced Fast Blades plus independently observed retaliation | Representative subset verified; general combat and inventory move/split/swap/use not covered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted empty-slot whole-stack move, discard, ordinary Say, 130-to-141 crossing/persistence, and three paced Fast Blades plus independently observed retaliation | Representative subset verified; inventory split/merge/swap/use and general combat not covered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing; no general quest-range/discovery adapter | Exit subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
@@ -92,12 +92,16 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   leaves progress/rewards unchanged; choosing item ID 4555 grants three ethers and
   50 additional XP, not the alternative potions. Both completions and cumulative
   rewards survive restart. Evidence: `build-e2e/quest-chain.xml` and its manifest.
-- Extended chain plus inventory discard passes in 117.23s
-  (`build-e2e/quest-inventory.xml`). The chosen ether reward is first verified after
-  restart, then discarded through a bounded normal request. The test observes a
-  committed deletion, unchanged other tracked slots, observer-confirmed logout,
-  and deletion/remaining rewards/quest completion after another restart.
-  Clang, MSVC and GNU builds pass the new byte-layout and transaction tests.
+- The extended chain now moves the earned ether stack to an observed empty ordinary
+  bag slot through a bounded normal request, verifies the exact placement and every
+  other tracked slot after fresh authentication and again after world restart, then
+  discards the moved stack. The operation-8 acknowledgement is explicitly retained
+  as non-mutation evidence because the current server publishes it before attempting
+  the move and sends no slot delta. Only complete subsequent snapshots establish the
+  source absence and destination contents. The test then observes a committed
+  deletion, unchanged other slots, observer-confirmed logout, and deletion/remaining
+  rewards/quest completion after another restart. Split/merge/swap/use are not
+  covered. Clang, MSVC and GNU pass the byte-layout/state tests.
 - `test_live_zoning.py` crosses exit 2377056 from territory 130 to 141 after a
   41-point/18.64m walk. A source observer stays outside the trigger and observes
   departure; a destination observer sees arrival and chat. Both channels remain
@@ -245,6 +249,45 @@ starts. The manifest/source cleanliness, input identities and whole-runtime
 removal were also audited. This is a local headless CI rehearsal, not hosted
 runner execution or independent real-client combat compatibility.
 
+## Persisted ordinary-bag item move
+
+`62c3391bd3c2e9c144be8051d0923e420fb208fe` adds only a whole-stack move from an
+observed ordinary-bag source to an observed empty ordinary-bag destination. The
+worker validates complete source/destination bag snapshots, identity, count,
+indexes and an empty destination before serializing the normal operation-8 packet.
+The caller cannot choose an arbitrary operation or count. The independently
+authored byte fixture checks exact wire offsets. Invalid, occupied, self, non-bag,
+unobserved and mismatched moves fail before sending.
+
+The current server acknowledges a move before processing it and sends no
+subsequent slot mutation. `operation_batches` therefore stores a bounded exact
+context/type/error history without predicting inventory. The live chain logs out
+and performs a genuine new HTTP/lobby/world login; complete received snapshots
+must show the source absent, all three earned ethers at bag 3 slot 24 and every
+other tracked slot unchanged. It repeats that exact-map assertion after an orderly
+world restart, then deletes the moved stack through the existing committed discard
+path. The observer independently verifies despawn/reappearance and position, not
+private inventory.
+
+All **215** Python contracts pass with Clang and MSVC workers and in the
+network-isolated Linux container. All five native suites pass with Clang, MSVC
+and GNU. A dirty-development chain run passed after the final journal changes and
+was retained only as implementation evidence. The subsequent clean strict gate at
+`62c3391bd` passed all seven cases in **269.054s**, zero skips/errors/failures,
+with verified inputs and cleanup: `build-e2e/ci-summary-inventory-move.json`,
+`.e2e-artifacts/ci/gameplay-ci-0uvahxfn/live.xml`, environment
+`artifacts/sapphire-e2e-17c4r8ja`. The manifest is clean at the full revision and
+the whole private runtime is absent. Raw events retain the exact operation-8
+acknowledgement; `inventory-move.json` retains identical expected reconnect/restart
+maps and has SHA-256
+`ae457e344ee1bfdf852d1ea3b19b069726bda01dc5fc4c78632992c679191e65`.
+The staged worker SHA-256 is
+`ccd71dcd2b1e986ea5a00b77511b82ab60800e1e6efd5c3d3d33552c586df837`;
+the server remains unchanged at
+`c10b9f7092ef081a9bf9886a9de98af2c6ed8bdb134f621c8e16f11c758187f1`.
+This is headless server evidence, not immediate move publication, crash
+consistency, split/merge/swap/item-use coverage or real-client inventory UI proof.
+
 ## Workload diagnostic-failure cleanup hardening
 
 Inspection found that `run_workload.py` stopped metrics and wrote resource/action
@@ -354,7 +397,8 @@ workload was not repeated without a new stability hypothesis.
 
 ## Next actions / boundaries
 
-1. Broaden supported-state policy coverage and add longer/higher-population
+1. Broaden supported-state policy coverage, including inventory operations beyond
+   the verified empty-destination whole-stack move, and add longer/higher-population
    controls. The observed autosave retention is fixed and the matching 30-minute
    replay is flat; this does not establish capacity or memory stability for all
    code paths. Generator histories/allocator retention also remain distinct from
