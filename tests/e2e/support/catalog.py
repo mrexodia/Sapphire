@@ -91,11 +91,14 @@ def validate_shop_catalog(data):
         raise WorkerError("unsupported shop catalog profile/territory")
     if data.get("start_actor") != 1001289 or data.get("sale") != {"item": 4551, "quantity": 1, "gil": 28}:
         raise WorkerError("unsupported shop sale binding")
+    if data.get("purchase") != {"shop_id": 262468, "index": 0, "item": 5890,
+                               "quantity": 1, "gil": 8}:
+        raise WorkerError("unsupported shop purchase binding")
     shop = data.get("shop", {})
     if (set(shop) != {"layout_id", "base_id", "event_id", "position"}
             or any(type(shop.get(key)) is not int or shop[key] <= 0
                    for key in ("layout_id", "base_id", "event_id"))
-            or shop["event_id"] >> 16 != 4):
+            or shop["event_id"] >> 16 != 4 or shop["event_id"] != data["purchase"]["shop_id"]):
         raise WorkerError("invalid gil-shop actor binding")
     route = validated_route(data)
     if math.dist(route[-1], shop["position"]) > 2:

@@ -278,6 +278,13 @@ class Bot:
         self.worker.request("sell_shop_item", self.name, **scene_arguments(scene), storage=storage, slot=slot,
                             expected_item=expected_item, expected_count=expected_count)
 
+    def buy_shop_item(self, event_id, timeout=10):
+        state = self.worker.wait_state(self.name,
+            lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
+                      and s["scene"]["scene_id"] == 40,
+            "refreshed gil-shop scene before purchase", timeout)
+        self.worker.request("buy_shop_item", self.name, **scene_arguments(state["scene"]))
+
     def exit_gil_shop(self, event_id, timeout=10):
         state = self.worker.wait_state(self.name,
             lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id

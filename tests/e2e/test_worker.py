@@ -22,6 +22,7 @@ def test_capabilities(worker):
     assert "request_item_merge" in caps["methods"]
     assert "start_uldah_opening" in caps["methods"]
     assert "sell_shop_item" in caps["methods"]
+    assert "buy_shop_item" in caps["methods"]
     assert "return_homepoint" in caps["methods"]
 
 
@@ -77,6 +78,8 @@ def test_action_before_readiness_is_rejected(worker):
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("sell_shop_item", "test", token=1, event_id=0x40005,
                                storage=0, slot=0, expected_item=4551, expected_count=1)
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("buy_shop_item", "test", token=1, event_id=262468)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("return_homepoint", "test")
             with pytest.raises(WorkerError, match="world-ready"):

@@ -300,6 +300,21 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     sold_inventory["2000:0"] = {"storage": 2000, "slot": 0, "id": 1,
                                 "count": catalog["sale"]["gil"]}
     assert state["rewards"]["inventory"] == sold_inventory
+
+    player.buy_shop_item(catalog["shop"]["event_id"])
+    purchased_rewards = deepcopy(after_rewards)
+    purchased_rewards["items"][str(catalog["purchase"]["item"])] = 1
+    purchased_rewards["currencies"]["1"] -= catalog["purchase"]["gil"]
+    state = player.expect_rewards(purchased_rewards, work_index)
+    purchased_inventory = deepcopy(state["rewards"]["inventory"])
+    expected_existing = deepcopy(sold_inventory)
+    expected_existing["2000:0"]["count"] = purchased_rewards["currencies"]["1"]
+    added = set(purchased_inventory) - set(expected_existing)
+    assert len(added) == 1
+    added_key = next(iter(added))
+    assert purchased_inventory[added_key]["id"] == catalog["purchase"]["item"]
+    assert purchased_inventory[added_key]["count"] == catalog["purchase"]["quantity"]
+    assert {key: value for key, value in purchased_inventory.items() if key != added_key} == expected_existing
     player.exit_gil_shop(catalog["shop"]["event_id"])
     for quest in quests:
         player.expect_quest_complete(quest)
@@ -312,17 +327,18 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
     reloaded = Bot(worker, "shop-reloaded")
     state = reloaded.login_via_lobby(auth, fixture["name"])
-    state = reloaded.expect_rewards(after_rewards, work_index)
-    assert state["rewards"]["inventory"] == sold_inventory
+    state = reloaded.expect_rewards(purchased_rewards, work_index)
+    assert state["rewards"]["inventory"] == purchased_inventory
     for quest in quests:
         reloaded.expect_quest_complete(quest)
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
         "inventory_after_split_restart": split_inventory,
-        "rewards_after_sale_restart": after_rewards, "inventory_after_sale_restart": sold_inventory,
-        "arrival_observed": True,
-        "scope": "one normally earned potion split to a single-item stack and sold through one source-bound gil shop"
+        "rewards_after_sale": after_rewards, "inventory_after_sale": sold_inventory,
+        "purchase": catalog["purchase"], "rewards_after_purchase_restart": purchased_rewards,
+        "inventory_after_purchase_restart": purchased_inventory, "arrival_observed": True,
+        "scope": "one normally earned potion sold, then one source-listed affordable item bought, through one source-bound gil shop"
     }, indent=2), encoding="utf-8")
     return reloaded
 

@@ -37,10 +37,12 @@ def test_respawn_catalog_binds_canonical_uldah_homepoint():
 def test_shop_catalog_binds_route_actor_and_exact_sale():
     data = {"version": 1, "profile": "sapphire-3.3", "territory": 130,
             "start_actor": 1001289, "route": [[0, 0, 0], [1, 0, 0]], "route_length": 1,
-            "shop": {"layout_id": 3, "base_id": 4, "event_id": 0x40005, "position": [1, 0, 0]},
-            "sale": {"item": 4551, "quantity": 1, "gil": 28}}
+            "shop": {"layout_id": 3, "base_id": 4, "event_id": 262468, "position": [1, 0, 0]},
+            "sale": {"item": 4551, "quantity": 1, "gil": 28},
+            "purchase": {"shop_id": 262468, "index": 0, "item": 5890, "quantity": 1, "gil": 8}}
     assert validate_shop_catalog(data) == data
     for changed in ({**data, "territory": 141}, {**data, "sale": {"item": 4551, "quantity": 2, "gil": 56}},
+                    {**data, "purchase": {**data["purchase"], "item": 1}},
                     {**data, "shop": {**data["shop"], "event_id": 0x10005}},
                     {**data, "route": [[0, 0, 0], [3, 0, 0]], "route_length": 3}):
         with pytest.raises(WorkerError):

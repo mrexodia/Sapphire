@@ -650,6 +650,40 @@ namespace Sapphire::Testing
       m_state["scene"] = nullptr;
       return Json::object();
     }
+    if(method == "buy_shop_item")
+    {
+      constexpr uint32_t shop = 262468, item = 5890, gil = 28;
+      unsigned stage = 0;
+      try
+      {
+        const auto& scene = m_state["scene"];
+        const auto& rewards = m_rewards.state();
+        stage = 1;
+        if(!scene.is_object() || !args.contains("token") || !args.contains("event_id") ||
+           !scene.contains("token") || !scene.contains("event_id") || !scene.contains("scene_id") ||
+           scene["token"] != args["token"] || scene["event_id"] != args["event_id"] ||
+           scene["event_id"] != shop || scene["scene_id"] != 40)
+          throw ProtocolError("shop purchase requires the matching received supported scene 40");
+        stage = 2;
+        const auto& inventory = rewards.at("inventory");
+        if(!inventory.is_object() || !inventory.contains("2000:0") ||
+           inventory.at("2000:0").at("id") != 1 || inventory.at("2000:0").at("count") != gil)
+          throw ProtocolError("shop purchase requires the exact received sale proceeds");
+        stage = 3;
+        for(const auto& entry : inventory)
+          if(entry.at("id") == item)
+            throw ProtocolError("supported purchase item must be absent before purchase");
+        stage = 4;
+        sendZone(WC::FFXIVIpcReturnEventScene255::_ServerIpcType, shopPurchaseReturn(shop));
+        m_state["scene"] = nullptr;
+        return Json::object();
+      }
+      catch(const ProtocolError&) { throw; }
+      catch(const std::exception&)
+      {
+        throw ProtocolError("malformed received shop purchase state at validation stage " + std::to_string(stage));
+      }
+    }
     if(method == "fast_blade")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");

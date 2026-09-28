@@ -5,6 +5,7 @@
 #include <Inventory/Item.h>
 #include <Common.h>
 #include <Service.h>
+#include <limits>
 
 using namespace Sapphire;
 using namespace Sapphire::World::Manager;
@@ -60,13 +61,35 @@ uint32_t ShopMgr::getShopItemPrices( uint32_t shopId, uint8_t index )
 
 bool ShopMgr::purchaseGilShopItem( Entity::Player& player, uint32_t shopId, uint16_t itemId, uint32_t quantity )
 {
+  if( quantity == 0 )
+    return false;
+
   auto& exdData = Common::Service< Data::ExdData >::ref();
+  auto shop = exdData.getRow< Excel::Shop >( shopId );
+  bool listed = false;
+  if( shop )
+  {
+    for( auto shopItemId : shop->data().Item )
+    {
+      auto shopItem = exdData.getRow< Excel::ShopItem >( shopItemId );
+      if( shopItem && shopItem->data().ItemId == itemId )
+      {
+        listed = true;
+        break;
+      }
+    }
+  }
+  if( !listed )
+    return false;
 
   auto item = exdData.getRow< Excel::Item >( itemId );
   if( !item )
     return false;
 
-  auto price = item->data().Price * quantity;
+  const uint64_t total = static_cast< uint64_t >( item->data().Price ) * quantity;
+  if( total > std::numeric_limits< uint32_t >::max() )
+    return false;
+  const auto price = static_cast< uint32_t >( total );
 
   if( player.getCurrency( Common::CurrencyType::Gil ) < price )
     return false;
@@ -92,7 +115,7 @@ bool ShopMgr::sellGilShopItem( Entity::Player& player, uint16_t container, uint8
   auto inventoryItem = player.getItemAt( container, fromSlot );
 
   // todo: adding stack remove
-  if( quantity > 1 )
+  if( quantity != 1 || !inventoryItem || inventoryItem->getId() != itemId )
     return false;
 
   player.discardItem( ( Common::InventoryType )container, fromSlot );

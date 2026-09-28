@@ -77,10 +77,28 @@ int main(int argc, char** argv)
     }
     if(best.empty() || !std::isfinite(bestLength) || bestLength > 500)
       throw std::runtime_error("no complete bounded route to a gil shop");
+    auto shop = data.getRow<Excel::Shop>(selected.event);
+    if(!shop) throw std::runtime_error("selected gil shop has no source item list");
+    uint32_t purchaseItem = 0, purchasePrice = std::numeric_limits<uint32_t>::max(), purchaseIndex = 0;
+    for(uint32_t index = 0; index < 40; ++index)
+    {
+      const auto shopItemId = shop->data().Item[index];
+      auto shopItem = data.getRow<Excel::ShopItem>(shopItemId);
+      if(!shopItem) continue;
+      auto item = data.getRow<Excel::Item>(shopItem->data().ItemId);
+      if(!item || !item->data().Price || item->data().Price > reward->data().Price) continue;
+      if(item->data().Price < purchasePrice)
+      {
+        purchaseItem = shopItem->data().ItemId; purchasePrice = item->data().Price; purchaseIndex = index;
+      }
+    }
+    if(!purchaseItem) throw std::runtime_error("selected gil shop has no affordable source item");
     nlohmann::json output{{"version", 1}, {"profile", "sapphire-3.3"}, {"territory", 130},
       {"start_actor", 1001289}, {"shop", {{"layout_id", selected.layout}, {"base_id", selected.base},
         {"event_id", selected.event}, {"position", {selected.position.x, selected.position.y, selected.position.z}}}},
       {"sale", {{"item", 4551}, {"quantity", 1}, {"gil", reward->data().Price}}},
+      {"purchase", {{"shop_id", selected.event}, {"index", purchaseIndex}, {"item", purchaseItem},
+                    {"quantity", 1}, {"gil", purchasePrice}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};
