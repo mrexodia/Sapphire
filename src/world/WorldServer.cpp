@@ -569,7 +569,6 @@ void WorldServer::updateSessions( uint32_t currTime )
       player.addOnlineStatus( Common::OnlineStatus::Offline );
 
       Logger::info( "[{0}] Session removal", session->getId() );
-      session->close();
       sessionRemovalQueue.push( session->getId() );
     }
   }
@@ -579,7 +578,13 @@ void WorldServer::updateSessions( uint32_t currTime )
     auto removalId = sessionRemovalQueue.front();
     sessionRemovalQueue.pop();
     if( auto session = getSession( removalId ) )
+    {
+      // Make the old ticket unavailable before closing its transports. Otherwise
+      // a fast ordinary re-login can attach to the session between disconnect()
+      // and the deferred map erase, then be destroyed with the old session.
       removeSession( *session->getPlayer() );
+      session->close();
+    }
   }
 }
 

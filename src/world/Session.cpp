@@ -71,13 +71,8 @@ bool Sapphire::World::Session::loadPlayer()
 
 void Sapphire::World::Session::close()
 {
-  if( m_pZoneConnection )
-    m_pZoneConnection->disconnect();
-
-  if( m_pChatConnection )
-    m_pChatConnection->disconnect();
-
-  // remove the session from the player
+  // Persist and invalidate the player before transport close becomes externally
+  // observable. A client that reconnects on close must not race the old unload.
   if( m_pPlayer )
   {
     auto& playerMgr = Common::Service< World::Manager::PlayerMgr >::ref();
@@ -88,6 +83,12 @@ void Sapphire::World::Session::close()
     partyMgr.onMemberDisconnect( *m_pPlayer );
     m_pPlayer->unload();
   }
+
+  if( m_pZoneConnection )
+    m_pZoneConnection->disconnect();
+
+  if( m_pChatConnection )
+    m_pChatConnection->disconnect();
 }
 
 uint32_t Sapphire::World::Session::getId() const
