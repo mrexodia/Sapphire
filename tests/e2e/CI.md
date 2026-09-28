@@ -110,7 +110,7 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this seven-scenario headless suite only.
 
-Local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
+Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
 rebuilt binaries passed all seven live cases in 245.450 seconds with no skips,
 verified collection/staged-input identities and removed private runtime. This
 post-commit rehearsal used `c9f8969b2` with `--require-clean`; `source_dirty` is
@@ -119,3 +119,11 @@ allowlisted summary is `build-e2e/ci-summary-clean.json`. The 69 controller/poli
 contracts pass on Windows and in the network-isolated Linux container. Workflow
 syntax passes `actionlint` v1.7.7. This does not establish a GitHub-hosted /
 protected-runner execution.
+
+After the autosave BLOB-ownership fix, rebuilt `bin` server/script binaries also
+passed the same strict gate at clean `fe411dbb9`: seven cases in 243.475 seconds,
+zero skips, identity and cleanup checks passed (`build-e2e/ci-summary-binding.json`,
+private `gameplay-ci-w0wbxl46`). Five native suites now pass on Clang/MSVC/GNU;
+113 Python contracts pass on Windows and isolated Linux. Neither the empty-server
+resource control nor the separate 30-minute workload is counted as a gameplay
+case in this gate.

@@ -371,10 +371,18 @@ Separately, the paced command above passed at clean revision `063ea281b`:
 966 liveness checkpoints (`sapphire-e2e-q0klh2yf`). Each bot participated for at
 least 1803.078s; both received keepalive channels advanced throughout. This is
 30-minute low-rate town-workflow coverage, not an overnight or capacity claim.
-World first/last five-minute median RSS rose from 370,196,480 to 400,510,976 bytes;
-that growth remains uncharacterized, so this result does **not** establish memory
-stability or leak-freedom. The short paced plan was replayed separately; the full
-30-minute plan has not yet been replayed.
+World first/last five-minute median RSS originally rose from 370,196,480 to
+400,510,976 bytes. The subsequent investigation found unowned BLOB streams in
+normal autosaves and added operation-scoped ownership (`0a73d4f8c`).
+
+The **full, byte-identical 30-minute plan** then replayed successfully at clean
+revision `fe411dbb9` (`sapphire-e2e-c1p7inqh`): 488 actions, 1805.218s of activity,
+969 liveness checkpoints and verified cleanup. World first/last five-minute
+median RSS was 370,262,016 / 370,253,824 bytes; private commit was
+356,487,168 / 356,458,496. The earlier increasing trend did not recur. An
+empty-server control, a populated original-binary control and a native allocation
+regression test support the ownership diagnosis. This finite matched-plan
+comparison is not proof of leak-freedom for every path or a capacity benchmark.
 
 Resource samples cover API/lobby/world/DB plus worker/runner;
 CPU deltas and peak RSS are reported separately. On Windows, samples additionally

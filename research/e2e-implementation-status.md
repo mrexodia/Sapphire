@@ -35,7 +35,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
-| Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness checks; process RSS/CPU and action timings | Eight bots / 488 actions over 1805s verified; sixteen-bot five-minute smoke/replay also verified; not capacity, leak-freedom or overnight evidence |
+| Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | No reducer | Missing |
 | Deadlines / cancellation / cleanup | Timers, bounded waits, owned-process teardown, redaction; bounded Windows sharing-error retries | Initial paths verified; broader stress/signal testing remains |
@@ -145,13 +145,30 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   Action p95 was 2.5s (not RTT); world/worker/runner peak RSS was respectively
   403,779,584 / 9,887,744 / 35,311,616 bytes. This is low-rate supported-town-workflow
   evidence, not capacity, broad gameplay, overnight stability or leak-freedom.
-  **Memory growth remains uncharacterized:** world median RSS increased from
+  **Original memory-growth observation (investigated below):** world median RSS increased from
   370,196,480 bytes in the first five active minutes to 400,510,976 in the last
   five; worker medians rose from 8,429,568 to 9,740,288 and runner from 28,356,608
   to 34,574,336. Sampling/checkpoint histories contribute to runner retention;
   the run does not distinguish other retention, warm-up, allocator or leak causes.
-  The full 30-minute plan has not itself been replayed; replay was checked on the
-  separate short paced plan.
+- Full 30-minute replay after the BLOB-ownership fix passed at clean revision
+  `fe411dbb9` (`sapphire-e2e-c1p7inqh`): 488 successful actions, 61 rounds,
+  1805.218s activity, 969 eight-bot liveness checkpoints. Each bot participated
+  for at least 1802.875s, maximum checkpoint gap was 3.062s and both channels
+  advanced by 600–601 replies per bot. The original/replay plan files are byte
+  identical, SHA-256 `490e97e5b6f09b988bedceeaebb46195f936704b830be022e5b5fb4d7c6401ef`.
+  World first/last five-minute median RSS was 370,262,016 / 370,253,824 bytes;
+  private commit was 356,487,168 / 356,458,496. The previous increasing trend
+  did not recur; these are bounded observations, not universal leak-freedom.
+  World peak RSS was 370,331,648 bytes; action p95 was 2.594s (not RTT).
+  All actions, identities, round spacing, counter progression and runtime cleanup
+  were checked against the actual artifacts, not just the result summary.
+- Rebuilt server/script binaries with the ownership fix also passed all seven
+  live cases in 243.475s, including persisted quest/reward/inventory state.
+  `build-e2e/ci-summary-binding.json` and private `gameplay-ci-w0wbxl46` verify
+  clean `fe411dbb9`, exact collection, all setup/call/teardown phases, zero skips,
+  staged-input identities and cleanup. The committed empty-server controller's
+  separate ten-second smoke (`sapphire-e2e-uc4xuzgt`) produced 11 complete samples,
+  no worker and verified cleanup; that smoke is not ten-minute or gameplay evidence.
 - One-second action budget fails explicitly after one attempted action, records
   workflow failure/outcomes and cleans up (`sapphire-e2e-6lr093zy`). Replaying that
   plan preserves the one-second limit and reproduces the failure
@@ -198,15 +215,25 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
   destruction, without changing BLOB bytes. The actual binder, compiled against
   a non-owning connector double, reports 1648 unbalanced allocations before the
   fix and zero afterward, including partial-bind failures. This is not a SQL
-  driver implementation test. Live resource/persistence confirmation is pending.
+  driver implementation test. A populated 600s original-binary control
+  (`sapphire-e2e-xmjztal6`) reproduced growth: first/last 60-second median RSS
+  rose 9,127,936 bytes and private commit 9,203,712. Its staged server hash matched
+  the original 30-minute run; its framework source was explicitly dirty while
+  the diagnostic fields were being added, not a clean-build claim. The rebuilt
+  server's full 30-minute replay and seven-case persistence suite then passed
+  with flat world memory (details above). The controls, ownership semantics and
+  allocation regression support this specific fix, not a diagnosis of every
+  potential resource issue.
 - One Windows teardown encountered a transient executable-file permission failure.
   Bounded retries were added; persistent failures remain visible and retryable.
 
 ## Next actions / boundaries
 
-1. Broaden the supported-state policy coverage and characterize resource growth
-   from the eight-bot 30-minute run. Add longer/higher-population controls; bounded
-   low-rate liveness evidence does not prove capacity or memory stability.
+1. Broaden supported-state policy coverage and add longer/higher-population
+   controls. The observed autosave retention is fixed and the matching 30-minute
+   replay is flat; this does not establish capacity or memory stability for all
+   code paths. Generator histories/allocator retention also remain distinct from
+   server resource behavior.
 2. Extend the initial combat slice with normally timed repeated actions, enemy
    defeat, received combat rewards and retaliation assertions. Preserve observed
    resource/range checks and require genuine navigation for any pursuit.
