@@ -13,7 +13,7 @@ from .support.catalog import load_quest_catalog
 from .support.environment import Environment
 from .support.metrics import ProcessMetrics
 from .support.worker import Worker
-from .support.workload import Workload, build_plan, validate_plan
+from .support.workload import Workload, build_plan, resolve_plan, validate_plan
 
 
 def main(argv=None):
@@ -25,6 +25,8 @@ def main(argv=None):
     parser.add_argument("--steps", type=int, default=12)
     parser.add_argument("--duration", type=float, help="workflow action budget, excluding setup/teardown (default 120s, or replayed limit)")
     parser.add_argument("--ramp-interval", type=float, help="population ramp delay (default 0.25s, or replayed limit)")
+    parser.add_argument("--round-interval", type=float, help="minimum time between full soak round starts, 0..60s")
+    parser.add_argument("--min-active-seconds", type=float, help="required first-to-last activity span, excluding setup/teardown")
     parser.add_argument("--plan", help="Recorded plan.json to replay (no raw packets or sessions)")
     args = parser.parse_args(argv)
     profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
@@ -35,12 +37,11 @@ def main(argv=None):
         plan = validate_plan(json.loads(Path(args.plan).read_text(encoding="utf-8")), catalog)
     else:
         plan = build_plan(catalog, args.mode, args.seed, args.bots, args.steps)
-    limits = plan.get("limits", {"duration": 120, "ramp_interval": 0.25})
-    args.duration = args.duration if args.duration is not None else limits["duration"]
-    args.ramp_interval = args.ramp_interval if args.ramp_interval is not None else limits["ramp_interval"]
-    plan["limits"] = {"duration": args.duration, "ramp_interval": args.ramp_interval}
-    if not math.isfinite(args.duration) or not 1 <= args.duration <= 3600 or not 0 <= args.ramp_interval <= 10:
-        parser.error("duration must be 1..3600s and ramp interval 0..10s")
+    try:
+        plan = resolve_plan(plan, catalog, duration=args.duration, ramp_interval=args.ramp_interval,
+                            round_interval=args.round_interval, min_active_seconds=args.min_active_seconds)
+    except ValueError as error:
+        parser.error(str(error))
     environment = Environment(profile)
     result = {"status": "failed", "mode": args.mode, "plan_mode": plan["mode"], "bots": plan["bots"], "limits": plan["limits"]}
     stage = "setup"
@@ -50,7 +51,7 @@ def main(argv=None):
         (environment.artifacts / "plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
         environment.start()
         with Worker(environment.worker, environment.artifacts / "workload") as worker:
-            workload = Workload(environment, worker, catalog, plan, args.duration, args.ramp_interval)
+            workload = Workload(environment, worker, catalog, plan)
             metrics = ProcessMetrics({**{name: p.pid for name, p in environment.processes.items()},
                                       "worker": worker.process.pid, "runner": os.getpid()})
             metrics.start()
@@ -62,6 +63,9 @@ def main(argv=None):
             workload.shutdown()
             environment.check_alive()
             result["status"] = "passed"
+    except KeyboardInterrupt:
+        result["error"] = "workload interrupted"
+        result["failure_stage"] = stage
     except Exception as error:
         result["error"] = str(error)
         result["failure_stage"] = stage
@@ -77,6 +81,8 @@ def main(argv=None):
                     result["process_resources"][name] = {"peak_rss_bytes": max(row["rss_bytes"] for row in values),
                         "cpu_seconds_delta": values[-1]["cpu_seconds"] - values[0]["cpu_seconds"]}
         if workload:
+            (environment.artifacts / "checkpoints.json").write_text(json.dumps(workload.checkpoints, indent=2), encoding="utf-8")
+            (environment.artifacts / "rounds.json").write_text(json.dumps(workload.rounds, indent=2), encoding="utf-8")
             outcomes = workload.outcomes
             (environment.artifacts / "outcomes.json").write_text(json.dumps(outcomes, indent=2), encoding="utf-8")
             elapsed = sorted(outcome["duration_seconds"] for outcome in outcomes)

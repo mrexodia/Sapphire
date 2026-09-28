@@ -51,7 +51,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same four CTest executables pass.
-- 69 Python worker/policy/CI-gate contracts pass with the MSVC worker and in a
+- 96 Python worker/policy/CI/pacing contracts pass with the MSVC worker and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all seven cases against a fresh out-of-tree
@@ -124,6 +124,16 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   Replay world peak RSS was 377,630,720 bytes. Action p95 was 2.719s, not RTT.
   Both private runtimes were removed. Five-minute runs still do not establish
   long-duration stability, large-population capacity or broader gameplay policy.
+- Version-2 plans add an explicit round-start interval and minimum successful
+  action span, with no post-work idle padding. Pacing requires complete soak
+  rounds and walk/Say coverage for every bot. Two-second idle checkpoints verify
+  all roles, ring visibility and both received heartbeat counters; a 15-second
+  stale channel or monitoring gap fails. Synthetic-clock contracts cover gaps,
+  resets, missing actors, unexpected scenes, deadlines and slow-round behavior.
+  Four-bot/16-action paced smoke passed (`sapphire-e2e-6akqm2ey`), with 17.25s of
+  actual activity for a 15s minimum; fresh replay preserved pacing and passed
+  (`sapphire-e2e-tnobg4b0`). The old v1 exploration plan also replayed successfully
+  (`sapphire-e2e-u7p2e6ex`). Longer sustained evidence is still pending.
 - One-second action budget fails explicitly after one attempted action, records
   workflow failure/outcomes and cleans up (`sapphire-e2e-6lr093zy`). Replaying that
   plan preserves the one-second limit and reproduces the failure

@@ -68,7 +68,7 @@ cmake -S . -B build-e2e-ci -G Ninja -DCMAKE_BUILD_TYPE=Debug \
   -DRECASTNAVIGATION_DEMO=OFF -DRECASTNAVIGATION_EXAMPLES=OFF
 cmake --build build-e2e-ci --target sapphire_gameplay_ci
 ctest --test-dir build-e2e-ci --output-on-failure --timeout 60 --no-tests=error -R '^sapphire_'
-python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
+python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_soak.py \
   --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
 python -m tests.e2e.run_ci --profile .e2e-local.json \
   --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe \

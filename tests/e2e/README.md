@@ -66,7 +66,7 @@ python -m pip install -r tests/e2e/requirements.txt
 For a single-config generator:
 
 ```sh
-python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
+python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_soak.py \
   --e2e-worker build-e2e/sapphire_test_client --junitxml=build-e2e/contracts.xml
 ```
 
@@ -321,10 +321,41 @@ python -m tests.e2e.run_workload --profile .e2e-local.json \
   Exhausting the budget is a failure, not a silently successful short run.
 - Every round checks readiness, non-GM status, territory, no unexpected scene,
   and server liveness. Movement and Say assertions come from another bot.
-- Replay preserves semantic decisions and route identity, not packet timing,
-  credentials or ephemeral actor IDs. Recorded duration/ramp limits are reused
-  unless explicitly overridden. It cannot guarantee server scheduling or reduce
-  failing traces automatically.
+- New plans are version 2. Replay preserves semantic decisions and route identity,
+  not packet timing, credentials or ephemeral actor IDs. Version-1 plans still
+  replay unpaced; pacing requires v2 so older executors cannot silently ignore it.
+  Recorded duration/ramp/pacing/minimum-span limits are reused unless explicitly
+  overridden. Unknown fields and no-op walks are rejected. Soak plans start with
+  one walk and one Say per bot, then use seeded choices. Scheduling is not
+  deterministic and failing traces are not automatically minimized.
+
+### Sustained, paced workloads
+
+A timeout is an upper bound, not proof of a long run. Use an explicit pacing floor
+and a required **first-to-last successful action span**:
+
+```sh
+python -m tests.e2e.run_workload --profile .e2e-local.json --mode soak \
+  --seed 2026 --bots 8 --steps 488 --round-interval 30 \
+  --min-active-seconds 1800 --duration 2100
+```
+
+This schedules 61 full-population rounds across at least 30 minutes. All bots
+perform genuine supported actions in every round; setup, ramp and teardown do
+not count, and no sleep is appended after the final action to pad the result.
+Pacing is deliberate workload think-time, not a substitute for received-state
+assertions. Every bot must have walk/Say coverage. Slow rounds shift subsequent
+starts rather than causing catch-up bursts. The action budget remains capped at
+1000 and the overall workflow budget at 3600 seconds.
+
+During paced idle periods, two-second checkpoints verify process liveness, every
+bot's identity/readiness/non-GM/territory/scene state, and ring-observer visibility.
+Each bot's zone and chat heartbeat counters must advance within 15 seconds;
+resets, stale channels and monitoring gaps fail explicitly. `checkpoints.json`
+and `rounds.json` retain this evidence, including on failure. These monitoring
+limits are part of the v2 executor profile, not user-tunable ways to hide stalls.
+A passed paced workload still covers only walk/Say/keepalive traffic in one area,
+not broad gameplay or a server-capacity benchmark.
 
 Verified locally: two-bot exploration/replay, four-bot/120-action soak, and a
 sixteen-bot/960-action soak plus fresh replay of the same plan (about five minutes
@@ -349,7 +380,7 @@ Each live run writes `.e2e-artifacts/sapphire-e2e-*/`:
 - Per-test `worker-stderr.log`: bounded worker diagnostics.
 
 Workload runs additionally save `plan.json`, per-action `outcomes.json`,
-`resources.jsonl` (one-second process samples), and `result.json` with status,
+`rounds.json`, liveness `checkpoints.json`, `resources.jsonl` (one-second process samples), and `result.json` with status,
 failure stage, action durations and resource summaries. An unavailable process is
 explicitly marked; the final sample can observe the already-closed worker.
 
