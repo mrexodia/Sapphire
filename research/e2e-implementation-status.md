@@ -27,12 +27,12 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking, Gil for Gold and committed Ul'dah opening choices | Three live verified adapters; Due Diligence remains source-derived |
 | Interact / choose dialogue / unknown-scene failure | Exact received event/scene/token; no default choice or raw-packet control; contract tests | Verified for supported one/two-result returns |
 | Quest state / accept and cancel / completion | `test_live_quest.py`: Motivational Speaking (65686), cancel unchanged, accept sequence 255, completion | Verified |
-| Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
+| Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale delta and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded sale |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge and discard; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot and one independently observed player defeat | Representative subset verified; item use, overflow merges, equipment/currency operations, pursuit, respawn, combos and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard and one exact gil-shop sale; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot and one independently observed player defeat | Representative subset verified; item use, purchases, overflow merges, equipment/currency-container moves, pursuit, respawn, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
-| Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
+| Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus one source-bound scene-40 gil-shop sale return | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
@@ -51,14 +51,14 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same six CTest executables pass.
-- 245 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 246 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `4755fc94b` took 432.516s with zero skips/errors/failures and verified
+  rehearsal at `b30883295` took 540.585s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-zd2rsqts` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-player-defeat.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-hgdmh_8k` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-shop.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -67,7 +67,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   does not prove hosted approval, cancellation cleanup or independent compatibility.
 - Nine live cases pass together: rejected credentials, login/idle/logout, observed
   movement/Say/position persistence, single quest, chained quests plus inventory
-  persistence, zoning persistence, enemy defeat/rewards, player defeat and normal
+  persistence and one persisted gil-shop sale, zoning persistence, enemy defeat/rewards, player defeat and normal
   lobby creation plus the first Ul'dah opening branch. Both public tested territories use compatible
   server-side meshes; the private opening territory does not make a navigation claim.
 - The initial single-action combat slice uses a fresh level-one Gladiator and the unchanged Central Thanalan
@@ -638,6 +638,44 @@ workload was not repeated without a new stability hypothesis.
 - One Windows teardown encountered a transient executable-file permission failure.
   Bounded retries were added; persistent failures remain visible and retryable.
 
+## Source-bound gil-shop sale and nonzero currency
+
+A full-build read-only generator now binds one narrow economy path to matching 3.3
+EXD and Detour data. From the normally reached Gil for Gold recipient (base
+1001289), it selected a complete 641-point, approximately 302.30m route to gil-shop
+base 1009247/layout 4757046/event 262468. Item 4551's source price is 28 gil. The
+catalog and Python validator reject other territory/profile/sale bindings,
+non-gil-shop events, incomplete/discontinuous routes and out-of-range endpoints.
+The private catalog SHA-256 in the clean gate is
+`9101a9fcef218be95197df46552fa2adb8a8837868c938abf75d8bb2c6469cd8`.
+
+The C++ worker accepts the sale only while holding the matching received scene-40
+token/event, with a complete received inventory containing exactly one potion in
+the requested ordinary-bag slot. It emits the fixed scene-255 result layout used by
+the existing gil-shop script; native fixtures pin the relevant byte offsets and
+reject wrong event families/storage/slots. The live chain earns the potions
+normally, splits one, proves that split after restart/fresh authentication, walks
+the generated route, and has an independent client verify arrival. It then requires
+an exact one-potion decrease and 0→28 gil increase both immediately and after
+normal logout, world restart and fresh authentication. The operation-10 receipt is
+retained only as acknowledgement evidence. `gil-shop-sale.json` SHA-256 is
+`ec60867949bf30471ee4c85696e1a4aebd93bd8d7640baf5172f830f063de1fc`.
+
+The first live attempt exposed two server defects rather than prompting weaker
+assertions. `addCurrency()` created a missing currency item with the generic
+factory's default stack of one before adding the sale value; it now materializes
+zero first. Reloading the first persisted nonzero currency also exposed that
+`ItemMgr` was registered after player loading; it is now registered before any
+inventory can allocate an item ID. The clean nine-case gate at `b30883295` includes
+the resulting restart and took 540.585s; the chained case took 236.861s. Worker and
+server hashes are respectively
+`4d559f543a322dafe284f4cad35b9a29162676106f3e887ff995f7cdf7b3859d` and
+`923851751f5bb9503a355058dec9e7a6e39cc5052e54ee3efccb67b4e8193e23`.
+
+This is one headless sale, not general shops, buying, arbitrary item/quantity sale,
+currency-container movement, real-client shop presentation, transaction isolation,
+multi-process allocation safety, crash consistency or leak-freedom.
+
 ## Next actions / boundaries
 
 1. Broaden supported-state policy coverage, including item use, overflow merges and
@@ -664,12 +702,11 @@ workload was not repeated without a new stability hypothesis.
 The original legacy mesh-loading blocker is resolved without modifying developer
 assets. Matching 3.3 quest data confirms Due Diligence (65685) would award 103 gil,
 but the same catalog generator still rejects its start-to-finish path as an
-incomplete navigation corridor. It must not be used to claim the missing nonzero
-currency reward through fabricated movement or fixture relocation. A future shop
-sale could also exercise gil, but only after binding an observed shop actor, an
-explicit multi-result scene adapter, a genuine route and exact item/currency
-persistence checks; no guessed shop return is currently evidence. Due Diligence no
-longer blocks the first quest: Motivational Speaking is verified. Narrow independent real-client
+incomplete navigation corridor. It is not used through fabricated movement or
+fixture relocation and its quest-currency reward remains unverified. Nonzero
+currency is instead covered narrowly by the source-bound shop sale above; this is
+not evidence for Due Diligence, purchases or general economy correctness. Due
+Diligence no longer blocks the first quest: Motivational Speaking is verified. Narrow independent real-client
 execution is now evidenced; other missing scenarios remain implementation work,
 not proof that user input is the only next step.
 

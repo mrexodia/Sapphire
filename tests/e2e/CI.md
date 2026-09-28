@@ -20,12 +20,13 @@ self-hosted runners (checked through the read-only Actions runners API).
    unrestricted asset-bearing runner to a public repository accepting PR code.
 2. Provision legally available matching game data, including its adjacent
    `ffxivgame.ver` (`2016.07.05.0000.0001`). Keep it outside the checkout. Provision
-   private compatible w1t1/w1f2 meshes and all four catalogs described in
+   private compatible w1t1/w1f2 meshes and all five catalogs described in
    [README.md](README.md). The route and server w1t1 meshes must hash identically.
    Legacy MSET files are rejected. Do not modify installed game assets to pass.
 3. Put a local JSON profile outside the checkout with `game_data`, `mariadb_bin`,
-   `navigation`, `quest_catalog`, `follow_up_catalog`, `transition_catalog`, and
-   `combat_catalog`. Normal local profiles also specify `binaries` and `worker`;
+   `navigation`, `quest_catalog`, `follow_up_catalog`, `transition_catalog`,
+   `combat_catalog`, and `shop_catalog`. Normal local profiles also specify
+   `binaries` and `worker`;
    the workflow overrides these with its newly built out-of-tree outputs. No DB
    credentials or connection strings belong in this profile. Fixtures create a
    fresh private DB and accounts, not a connection to an existing service.
@@ -87,7 +88,7 @@ separate evidence that its binaries came from the checkout.
 ## Gates and evidence
 
 - Preflight verifies files, archive-version marker, script availability, quest
-  chain/action/transition metadata, tile-cache headers and route/server mesh
+  chain/action/transition/shop metadata, tile-cache headers and route/server mesh
   identity. This checks availability and consistency, **not** game correctness or
   independent real-client compatibility. Static prerequisite validation never
   modifies quest progress; the live chain must complete its first quest normally.
@@ -112,11 +113,12 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `4755fc94b` passed the expanded nine-case
-strict gate in 432.516 seconds with no skips/errors/failures, exact collection and
-staged-input identities, and removed private runtime. Evidence is
-`build-e2e/ci-summary-player-defeat.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-zd2rsqts`. This remains a local rehearsal, not a
+Latest local evidence: clean revision `b30883295` passed the nine-case strict
+gate in 540.585 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and removed private runtime. The chained case took 236.861s and
+included the source-bound persisted gil-shop sale. Evidence is
+`build-e2e/ci-summary-shop.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-hgdmh_8k`. This remains a local rehearsal, not a
 hosted protected-runner execution.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its

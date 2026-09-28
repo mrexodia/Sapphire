@@ -134,7 +134,9 @@ not replace the live suite.
    Set `navigation` to a private compatible server mesh root for the tested maps.
 6. For combat, generate the action catalog below, set `combat_catalog`, and supply
    the compatible Central Thanalan mesh in `navigation`.
-7. Run:
+7. For the chained inventory/economy path, generate the source-bound shop catalog
+   below and set `shop_catalog`.
+8. Run:
 
 ```sh
 python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
@@ -279,16 +281,26 @@ empty slot. A world restart/fresh authentication must show both exact stacks and
 every other slot unchanged. The one-item stack is then merged back; another restart
 must restore the exact pre-split map. `inventory-split-merge.json` separates both
 acknowledgements from those snapshots. The discard test subsequently deletes the
-merged ether stack and verifies that deletion across the final restart. The server
-split implementation creates the new persistent item directly at the requested
-slot; it no longer aliases an `addItem()` auto-slot into a second destination.
+merged ether stack and verifies that deletion across the next restart. One remaining two-potion stack is then split,
+verified after another restart, and the character walks a source-derived route to
+an observed gil-shop actor. An independent client verifies arrival. The worker
+opens only the matching received shop scenes, sells the observed one-item ordinary-
+bag stack, and requires the exact item decrease and 28-gil increase immediately
+and after fresh authentication plus a world restart. `gil-shop-sale.json` records
+those snapshots; the operation-10 acknowledgement remains explicitly separate
+from mutation evidence. The server split implementation creates the new persistent
+item directly at the requested slot; it no longer aliases an `addItem()` auto-slot
+into a second destination. The first zero-to-nonzero currency credit was also fixed
+not to inherit the generic item factory's default quantity of one, and the item
+manager is initialized before persisted currencies can be materialized at startup.
 No database mutation, grant, optimistic slot update, forced resync or fabricated
 server response supplies gameplay evidence.
 
 This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
-swap, one partial split and one no-overflow same-item merge—not equipment/currency
-moves, overflow merges, item use, immediate operation publication, crash consistency
-or independent real-client inventory presentation.
+swap, one partial split, one no-overflow same-item merge, discard, and one exact
+single-item sale—not equipment or currency-container moves, purchases, overflow
+merges, item use, arbitrary shops/items, immediate operation publication, crash
+consistency or independent real-client inventory presentation.
 
 `close` cancels pending connection/movement timers and closes sockets; `remove`
 also releases the bot. End-of-input shuts down all worker-owned connections.
@@ -325,6 +337,26 @@ loading it requires the prerequisite to have been observed complete. Generated r
 asset-derived material; keep them under ignored directories, not public artifacts.
 Due Diligence (default quest ID 65685 if omitted) still fails the complete-corridor
 requirement; it is not counted as coverage.
+
+## Source-bound gil-shop sale
+
+The full-build shop tool extracts the sale value for the normally earned potion,
+finds ordinary gil-shop event handlers in territory 130, and selects a complete
+bounded Detour corridor from the verified Gil for Gold recipient. It has no
+straight-line fallback and refuses missing actors, missing prices, partial routes,
+steps over two metres, or routes over 500 metres.
+
+```sh
+cmake --build build --target sapphire_test_shop_catalog --config Debug
+bin/sapphire_test_shop_catalog <game/sqpack> .e2e-assets/uldah-v2/navi build-e2e/shop.json
+```
+
+Use `.exe` on Windows and set `shop_catalog` to the absolute output path. The
+verified private catalog binds potion 4551 to one sale for 28 gil, ENpc base
+1009247/layout 4757046/event 262468, and a 641-point route of approximately
+302.30m. Python validates the exact supported sale, event family, route continuity,
+and endpoint range. This does not establish buying, arbitrary sale quantities,
+other shops/items, currency-container manipulation, or real-client shop UI.
 
 ## Curated exit crossing
 

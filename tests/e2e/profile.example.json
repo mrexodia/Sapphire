@@ -3,5 +3,11 @@
   "game_data": "C:/path/to/matching/game/sqpack",
   "mariadb_bin": "C:/path/to/mariadb/bin",
   "worker": "C:/CodeBlocks/Sapphire/build-e2e/sapphire_test_client.exe",
+  "navigation": "C:/path/to/private/navigation-root",
+  "quest_catalog": "C:/path/to/motivational-speaking.json",
+  "follow_up_catalog": "C:/path/to/gil-for-gold.json",
+  "transition_catalog": "C:/path/to/transition.json",
+  "combat_catalog": "C:/path/to/combat-catalog.json",
+  "shop_catalog": "C:/path/to/shop.json",
   "artifacts": "C:/CodeBlocks/Sapphire/.e2e-artifacts"
 }
