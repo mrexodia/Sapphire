@@ -64,15 +64,16 @@ lobby, world and MariaDB processes with matching game data:
   zero target HP and delayed removal. The fighter receives exactly 50 EXP and the
   server's enabled `testTable` loot pools; exact rewards survive a fresh login.
   Enemies, skills and resources are not granted or modified.
-- A separate fresh level-one Gladiator uses one ordinary Fast Blade against an
-  observed natural level-14 enemy, then performs no further combat actions while
-  walking a bounded source route. Both clients observe the enemy's natural pursuit;
-  the fighter and stationary observer receive every retaliation effect and its exact
-  pre/post committed HP, including natural regeneration between hits, through zero
-  player HP. The defeated fighter then sends the ordinary bounded return command,
-  transitions to its source-bound Ul'dah homepoint at full HP, is observed there by
-  a third client, and preserves that live position/HP after restart. This does not
-  cover raises, death penalties or general pursuit/leash behavior.
+- A separate fresh level-one Gladiator uses ordinary Fast Blade against an observed
+  natural level-14 enemy and runs a complete ~50.69m source-navmesh route. Both
+  clients observe pursuit beyond 35m and the enemy's natural retreat to its bound
+  spawn while the fighter survives. The fighter returns normally, re-engages once,
+  and walks the existing ten-metre route without further attacks; fighter and
+  stationary observer receive every retaliation effect and exact committed HP
+  through zero. The defeated fighter then sends the bounded return command, reaches
+  its source-bound Ul'dah homepoint at full HP, is observed there by a third client,
+  and preserves that position/HP after restart. This proves one leash/position reset,
+  not a health reset, general aggro policy, raises or death penalties.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -454,10 +455,13 @@ cover the fix. This does not claim collision safety across multiple world proces
 
 `test_live_player_defeat.py` uses unchanged natural population layout 3749193
 (base 302, level 14). One received/range-checked Fast Blade establishes ordinary
-hostility; no later player combat action is sent. The fighter then follows a
-source-generated ten-metre navmesh route while the stationary witness verifies its
-arrival. Both clients must observe the hostile enemy move at least two metres from
-its natural spawn toward the route endpoint before the defeat may pass. For every
+hostility. The fighter follows a source-generated ~50.69m navmesh route; the
+stationary witness verifies arrival, the received enemy position exceeds 35m from
+spawn, and the enemy must naturally return within two metres of its bound spawn
+while the fighter remains alive. The fighter walks the reverse route, re-engages
+once and follows the source-generated ten-metre route. Both clients must then
+observe the hostile enemy move at least two metres toward that endpoint before the
+defeat may pass. For every
 retaliation, the worker records the target's received HP immediately before and after the matching integrity
 packet, so intervening natural regeneration cannot be mistaken for damage. Both
 clients require the identical effect sequence and exact committed decrease through
@@ -466,8 +470,9 @@ canonical homepoint 9 to send `REVIVE/Return`; it does not expose arbitrary revi
 or teleport arguments. The fighter must transition to the generated homepoint-9
 pop range in Ul'dah with full HP, disappear from the old observer, appear alive to a
 pre-positioned destination observer, and reload the same position/full HP after
-logout and world restart. The scenario does not claim automatic aggro, raises,
-death penalties, general pursuit/leash behavior or general combat.
+logout and world restart. The scenario proves one position leash/reset, but the
+observed enemy did not restore full HP. It does not claim automatic aggro, raises,
+death penalties, general pursuit/leash policy or general combat.
 
 Generate the private binding from matching game data:
 
@@ -489,10 +494,11 @@ cmake --build build --target sapphire_test_pursuit_catalog --config Debug
 bin/sapphire_test_pursuit_catalog <mesh-root> data/bnpcs/w1f2/w1f2.json build-e2e/pursuit.json
 ```
 
-The validator fixes natural layout 3749193/base 302/level 14, requires a complete
-continuous route starting beside it and ending at least eight metres away, and
-preflight requires the route mesh to match the staged server mesh. This proves one
-observed pursuit response, not general pathfinding, leash behavior or aggro policy.
+The validator fixes natural layout 3749193/base 302/level 14, requires complete
+continuous ten-metre pursuit and 45..70m leash routes starting beside it, and
+preflight requires their mesh to match the staged server mesh. This proves one
+observed pursuit/retreat/reset response, not general pathfinding, health reset or
+aggro/leash policy.
 
 The artifact manifest hashes the action catalog and staged player-action/population
 files. Bounded event journals include decoded effects, HP integrity and action-start
@@ -501,7 +507,7 @@ natural TP, guard/timing, retaliation, death/removal, received rewards and the e
 fresh-login snapshot, supplementing rather than replacing raw journals. Earlier
 failed overlap and duplicate-ID runs remain retained and are not counted as passing.
 This slice does **not** prove damage-formula correctness, combos, general cooldown
-scheduling, dynamic pursuit, arbitrary abilities, production loot-table selection
+scheduling, general aggro/leash policy, arbitrary abilities, production loot-table selection
 or real-client combat presentation.
 
 ## Bounded exploration, soak and replay

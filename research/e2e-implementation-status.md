@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed starter main-hand unequip/re-equip round trip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; one independently observed player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general pursuit/leash behavior, raises, combos and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed starter main-hand unequip/re-equip round trip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; one independently observed pursuit/leash/reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general aggro/leash policy, raises, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -55,10 +55,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `3cc5a112a` took 560.217s with zero skips/errors/failures and verified
+  rehearsal at `5fb4c6750` took 608.636s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-vmwmq3k7` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-equipment-roundtrip.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-s7ir0kzg` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-leash-reset.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -68,7 +68,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - Nine live cases pass together: rejected credentials, login/idle/logout, observed
   movement/Say/position persistence, single quest, chained quests plus inventory
   persistence and one persisted gil-shop sale/purchase pair, zoning persistence, enemy defeat/rewards,
-  player defeat with independently observed pursuit plus source-bound homepoint return, and normal lobby creation plus the
+  player defeat with independently observed pursuit/leash/reset plus source-bound homepoint return, and normal lobby creation plus the
   first Ul'dah opening branch. Both public tested territories use compatible
   server-side meshes; the private opening territory does not make a navigation claim.
 - The initial single-action combat slice uses a fresh level-one Gladiator and the unchanged Central Thanalan
@@ -81,7 +81,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   first extension below covered three paced strikes and the first retaliation hit.
   The later defeat/reward extension now covers one complete level-one defeat and
   persisted current-test-table loot/EXP. Combos, general cooldown scheduling,
-  dynamic pursuit and production loot selection remain uncovered. Later increments
+  general aggro/leash policy and production loot selection remain uncovered. Later increments
   below cover one player defeat and homepoint return, but not raises or death penalties.
   Initial position is fixture setup.
   The decoded `sapphire-e2e-wd3lpulz` journal records nine damage, NPC HP 94 → 85 on both clients,
@@ -453,6 +453,26 @@ The clean gate at `482204b56` passed in **524.777s**; the extended case took
 This proves one natural hostile pursuit response, not general pathfinding, automatic
 proximity aggro, leash/reset behavior or arbitrary enemies.
 
+The `5fb4c6750` extension adds a complete 110-point, ~50.69m route from the same
+spawn, constrained by the matching w1f2 mesh to 45..70m displacement/path length.
+After one ordinary Fast Blade, the fighter walks that route while an observer proves
+arrival. Received enemy movement exceeds 35m from spawn; the enemy then naturally
+returns within two metres of its source position while the fighter remains alive.
+The fighter normally walks back, re-engages once and the prior independently
+observed defeat/return/restart flow continues. The enemy retained 228/237 HP after
+return, so this is explicitly a position leash/reset, not evidence of a health reset.
+
+The clean gate passed in **608.636s** and the extended case took **119.001s**.
+Pursuit catalog SHA-256 is
+`1d809116cb6ec2fe00ef5e2cad0137400951216f6aa69179646e11dda569be42`;
+`combat-player-defeat.json` SHA-256 is
+`0250dc0c893692ff47dbeb311ea6dedef3f0f1e165f4c19963ac28274ee56a35`.
+The four preceding targeted attempts remain privately under
+`.e2e-artifacts/leash-live{,2,3,4}` and respectively show an unsupported worker
+method, coarse peak observation, variable pursuit lag, and the disproven full-health
+assumption; none is success evidence. This remains one source-bound enemy/route,
+not general pathfinding, automatic proximity aggro or universal leash policy.
+
 ## Persisted ordinary-bag move and swap
 
 `62c3391bd3c2e9c144be8051d0923e420fb208fe` adds only a whole-stack move from an
@@ -810,7 +830,7 @@ leak-freedom.
    code paths. Generator histories/allocator retention also remain distinct from
    server resource behavior.
 2. Extend combat beyond the now-verified enemy/player defeat, homepoint return and persisted
-   current-test-table rewards: broader pursuit/leash behavior, raises, combos, additional abilities
+   current-test-table rewards: broader aggro/leash policy, health reset, raises, combos, additional abilities
    and production loot selection remain uncovered. Preserve observed resource/range
    checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond

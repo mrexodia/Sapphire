@@ -114,14 +114,13 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `3cc5a112a` passed the nine-case strict
-gate in 560.217 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and removed private runtime. The creation case took 58.947s and
-covered one persisted starter main-hand unequip/re-equip round trip, all three
-Ul'dah starting classes and all four source-defined ring choices; pursuit/homepoint
-return and the persisted sale/purchase remained covered. Evidence is
-`build-e2e/ci-summary-equipment-roundtrip.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-vmwmq3k7`. This remains a local rehearsal, not a
+Latest local evidence: clean revision `5fb4c6750` passed the nine-case strict
+gate in 608.636 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and removed private runtime. The player-defeat case took 119.001s
+and covered one source-bound pursuit/leash/reset/re-engagement cycle before defeat
+and homepoint return; the equipment round trip, opening branches and persisted
+sale/purchase remained covered. Evidence is `build-e2e/ci-summary-leash-reset.json`
+with private diagnostics under `.e2e-artifacts/ci/gameplay-ci-s7ir0kzg`. This remains a local rehearsal, not a
 hosted protected-runner execution.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
