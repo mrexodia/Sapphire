@@ -1,5 +1,6 @@
 #include "SapphireApi.h"
 #include <Crypt/base64.h>
+#include <Crypt/Random.h>
 #include "Session.h"
 #include "PlayerMinimal.h"
 #include <time.h>
@@ -27,23 +28,14 @@ bool SapphireApi::login( const std::string& username, const std::string& pass, s
   // user found, proceed
   uint32_t accountId = pQR->getUInt( 1 );
 
-  // session id string generation
-  srand( ( uint32_t ) time( NULL ) + 42 );
-
+  // Preserve the 62-character wire format, without process-global/time-seeded RNG state.
+  // Independent logins must not replace another account's live session.
   std::string sessionId;
-  for( int32_t i = 0; i < 64 / 4; ++i )
+  do
   {
-    short number = 0x1111 + rand() % 0xFFFF;
-    char part[ 5 ];
-    sprintf( part, "%04hx", number );
-
-    if( i == 15 )
-    {
-      part[ 2 ] = 0;
-      part[ 3 ] = 0;
-    }
-    sessionId += std::string( part );
+    sessionId = Common::Util::randomHexToken( 31 );
   }
+  while( m_sessionMap.find( sessionId ) != m_sessionMap.end() );
 
   // create session for the new sessionid and store to sessionlist
   auto pSession = std::make_shared< Session >();

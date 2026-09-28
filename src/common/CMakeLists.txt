@@ -8,6 +8,10 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
 
 find_package( Threads REQUIRED )
 
+if( WIN32 )
+  target_link_libraries( common PRIVATE bcrypt )
+endif()
+
 target_link_libraries( common PUBLIC
   xivdat
   mysqlConnector
