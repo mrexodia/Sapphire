@@ -662,8 +662,14 @@ workload was not repeated without a new stability hypothesis.
    general compatibility, automated UI coverage or a golden-trace corpus.
 
 The original legacy mesh-loading blocker is resolved without modifying developer
-assets. Due Diligence still lacks a complete corridor, but it no longer blocks the
-first quest: Motivational Speaking is verified. Narrow independent real-client
+assets. Matching 3.3 quest data confirms Due Diligence (65685) would award 103 gil,
+but the same catalog generator still rejects its start-to-finish path as an
+incomplete navigation corridor. It must not be used to claim the missing nonzero
+currency reward through fabricated movement or fixture relocation. A future shop
+sale could also exercise gil, but only after binding an observed shop actor, an
+explicit multi-result scene adapter, a genuine route and exact item/currency
+persistence checks; no guessed shop return is currently evidence. Due Diligence no
+longer blocks the first quest: Motivational Speaking is verified. Narrow independent real-client
 execution is now evidenced; other missing scenarios remain implementation work,
 not proof that user input is the only next step.
 
