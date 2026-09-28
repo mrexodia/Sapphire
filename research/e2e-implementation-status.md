@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move and occupied-slot swap, discard, ordinary Say, 130-to-141 crossing/persistence, and paced Fast Blades through one enemy defeat with independent retaliation/death/removal plus persisted EXP/loot | Representative subset verified; inventory split/merge/use, pursuit, player defeat, combos and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge and discard; ordinary Say; 130-to-141 crossing/persistence; paced Fast Blades through one enemy defeat with independent retaliation/death/removal plus persisted EXP/loot | Representative subset verified; item use, overflow merges, equipment/currency operations, pursuit, player defeat, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing; no general quest-range/discovery adapter | Exit subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
@@ -103,7 +103,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   the operations and sends no slot deltas. Only complete subsequent snapshots
   establish either result. The test then observes a committed deletion of the
   relocated ether, unchanged other slots, logout, and deletion/remaining rewards/
-  quest completion after the final restart. Split/merge/use are not covered. Clang,
+  quest completion after the final restart. A later increment below adds one
+  persisted partial split and no-overflow merge; item use remains uncovered. Clang,
   MSVC and GNU pass the byte-layout/state tests.
 - `test_live_zoning.py` crosses exit 2377056 from territory 130 to 141 after a
   41-point/18.64m walk. A source observer stays outside the trigger and observes
@@ -401,6 +402,50 @@ the server remains unchanged at
 This is headless server evidence, not immediate operation publication, crash
 consistency, split/merge/item-use coverage or real-client inventory UI proof.
 
+## Persisted ordinary-bag split and merge
+
+`e50900ab80f3f31375050a09f16cd6ab4e64ed7f` adds only a partial split from an
+observed three-item ordinary-bag stack into an observed empty ordinary-bag slot,
+then a same-item no-overflow merge back into the original stack. The caller must
+supply exact observed source/destination counts; zero, whole-stack, self, non-bag,
+occupied, unobserved and mismatched operations fail before sending. Independently
+authored byte fixtures check operation-10/12 fields. Their acknowledgements remain
+explicitly non-mutation evidence.
+
+Source inspection confirmed the deferred split concern: `Player::splitItem()` used
+`addItem(..., canMerge=false)`, which populated its own first free slot, then assigned
+the same item pointer to the requested destination as well. The server now creates
+the persistent item without auto-placement, rejects a split count greater than or
+equal to the source count, decrements the source and places the new item only at the
+requested destination. This is a public server bug fix exercised through ordinary
+client packets, not an E2E-only handler or fixture mutation.
+
+The live chain earns the three ethers normally and first preserves the existing
+move/swap checks. It splits the stack 3→2+1 into bag 3 slot 23, logs out, restarts
+the world and freshly authenticates. The complete received map must contain exactly
+those two stacks while preserving the potion/equipment slots and quest/reward totals.
+It then merges 1+2, repeats the restart/authentication, and requires the exact
+pre-split map before ordinary discard. `inventory-split-merge.json` records both
+acknowledgements and both authoritative restart snapshots; SHA-256
+`4807cb2c235d2f0c2b5ff50f59469ee6b42b689264463055621c879eb28b9966`.
+
+All **244** Python contracts pass with Clang and MSVC workers and in a
+network-isolated Linux container; all six native suites pass with Clang, MSVC and
+GNU 11.4. The clean strict seven-case gate passed in **332.037s**, zero skips/errors/
+failures, exact collection/inputs and verified cleanup. Evidence:
+`build-e2e/ci-summary-split-merge.json`,
+`.e2e-artifacts/ci/gameplay-ci-dqvq1hju/live.xml`, environment
+`sapphire-e2e-17x3u3kb`. The chain case took 124.551s. The clean summary records
+revision `e50900ab8`, worker SHA-256
+`37c6ae4ff27fe8d27b22f1d601de7112165e3d83f37faabf11aa421ec0051f2f`
+and server SHA-256
+`233b53537476d69c0dc62e01f30fc1baf2a96298b4a25175e8a036191c25c7d2`;
+the private runtime root is absent.
+
+This proves one partial split and one no-overflow merge for ordinary bags. It does
+not prove overflow behavior, immediate delta publication, crash consistency,
+equipment/currency operations, item use or real-client inventory presentation.
+
 ## Workload diagnostic-failure cleanup hardening
 
 Inspection found that `run_workload.py` stopped metrics and wrote resource/action
@@ -510,8 +555,8 @@ workload was not repeated without a new stability hypothesis.
 
 ## Next actions / boundaries
 
-1. Broaden supported-state policy coverage, including inventory operations beyond
-   the verified whole-stack move/occupied-slot swap, and add longer/higher-population
+1. Broaden supported-state policy coverage, including item use, overflow merges and
+   inventory operations beyond the verified ordinary-bag move/swap/split/merge, and add longer/higher-population
    controls. The observed autosave retention is fixed and the matching 30-minute
    replay is flat; this does not establish capacity or memory stability for all
    code paths. Generator histories/allocator retention also remain distinct from
