@@ -76,8 +76,20 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         assert state["created_via_lobby"] is False and state["territory"] == 182 and state["gm_rank"] == 0
         state = reloaded.expect_rewards(expected, work_index)
         inventory = deepcopy(state["rewards"]["inventory"])
+        inventory_after_fresh = deepcopy(inventory)
+        reequipped = None
         if expected_inventory is not None:
             assert inventory == expected_inventory
+            source = inventory[unequipped["to"]]
+            storage, slot = map(int, unequipped["to"].split(":"))
+            receipt = reloaded.request_item_reequip_starter(storage, slot, source["id"])
+            assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
+            moved = inventory.pop(unequipped["to"])
+            moved.update(storage=1000, slot=0)
+            inventory["1000:0"] = moved
+            del expected["items"][str(source["id"])]
+            reequipped = {"item": source["id"], "from": unequipped["to"], "to": "1000:0",
+                          "acknowledgement_is_not_mutation_proof": True}
         assert len([item for item in inventory.values() if item["id"] == item_id and item["count"] == 1]) == 1
 
         # OpeningSequence=1 must select scene 40 after fresh authentication, not replay scene 0.
@@ -93,7 +105,8 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         records.append({"account": account, "choice": choice, "item": item_id, "class_job": class_job,
                         "work_index": work_index,
                         "before": before, "expected": expected, "inventory": inventory,
-                        "unequipped": unequipped})
+                        "inventory_after_fresh": inventory_after_fresh,
+                        "unequipped": unequipped, "reequipped": reequipped})
 
     environment.restart_world()
     evidence = []
@@ -121,10 +134,11 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                          "scene_after_fresh_login": 40, "scene_after_restart": 40,
                          "rewards_before": record["before"],
                          "rewards_after_restart": record["expected"],
+                         "inventory_after_fresh": record["inventory_after_fresh"],
                          "inventory_after_restart": record["inventory"],
-                         "unequipped": record["unequipped"]})
+                         "unequipped": record["unequipped"], "reequipped": record["reequipped"]})
 
     (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
-        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all source-defined ring choices, one persisted observed main-hand unequip, first opening branch and continuation; not account signup UI, appearance breadth or complete opening quest"
+        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all source-defined ring choices, one persisted observed starter main-hand unequip/re-equip round trip, first opening branch and continuation; not account signup UI, appearance breadth or complete opening quest"
     }, indent=2), encoding="utf-8")

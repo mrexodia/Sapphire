@@ -45,6 +45,33 @@ namespace Sapphire::Testing
     p.DstStorageId = destinationStorage; p.DstContainerIndex = static_cast<int16_t>(destinationSlot);
     return objectBytes(p);
   }
+  Bytes reequipGladiatorStarterRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
+                                       uint32_t storage, uint32_t slot, uint32_t expectedItem)
+  {
+    constexpr uint32_t gearStorage = 1000;
+    constexpr uint32_t starterSword = 1601;
+    constexpr uint32_t mainHand = Common::GearSetSlot::MainHand;
+    if(storage > 3 || slot >= 25 || expectedItem != starterSword ||
+       !rewards.at("inventory_ready").get<bool>())
+      throw ProtocolError("re-equip supports only the observed Gladiator starter sword");
+    const auto key = std::to_string(storage) + ":" + std::to_string(slot);
+    const auto destination = std::to_string(gearStorage) + ":" + std::to_string(mainHand);
+    const auto& inventory = rewards.at("inventory");
+    if(!inventory.contains(key) || inventory.at(key).at("id") != expectedItem ||
+       inventory.at(key).at("count") != 1 || inventory.contains(destination))
+      throw ProtocolError("re-equip source/destination does not match observed inventory");
+    for(auto container : {storage, gearStorage})
+      if(!rewards.at("containers").contains(std::to_string(container)) ||
+         rewards.at("containers").at(std::to_string(container)) != true)
+        throw ProtocolError("re-equip requires complete bag and equipment snapshots");
+    Wire::WorldPackets::Client::FFXIVIpcClientInventoryItemOperation p{};
+    p.ContextId = context; p.OperationType = Common::ITEM_OPERATION_TYPE_MOVEITEM;
+    p.SrcActorId = p.DstActorId = entity;
+    p.SrcStorageId = storage; p.SrcContainerIndex = static_cast<int16_t>(slot);
+    p.SrcStack = 1; p.SrcCatalogId = starterSword;
+    p.DstStorageId = gearStorage; p.DstContainerIndex = mainHand;
+    return objectBytes(p);
+  }
   Bytes moveItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                         uint32_t storage, uint32_t slot, uint32_t expectedItem,
                         uint32_t destinationStorage, uint32_t destinationSlot)

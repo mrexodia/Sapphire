@@ -93,6 +93,33 @@ int main()
       catch(const ProtocolError&) { rejected = true; }
       check(rejected, "invalid/unobserved/mismatched unequip rejected");
     }
+    auto reequipState = gearState;
+    auto starter = reequipState["inventory"]["1000:0"];
+    reequipState["inventory"].erase("1000:0");
+    starter["storage"] = 3; starter["slot"] = 24;
+    reequipState["inventory"]["3:24"] = starter;
+    auto reequip = reequipGladiatorStarterRequest(reequipState, 0x12345678, 0x01020309, 3, 24, 1601);
+    Bytes reequipExpected = moveExpected;
+    reequipExpected[0] = 9;
+    reequipExpected[12] = 3; reequipExpected[16] = 24; reequipExpected[20] = 1;
+    reequipExpected[24] = 0x41; reequipExpected[25] = 0x06;
+    reequipExpected[32] = 0xe8; reequipExpected[33] = 0x03;
+    reequipExpected[36] = 0;
+    check(reequip == reequipExpected, "starter re-equip must match exact bag-to-main-hand wire fixture");
+    for(int fault = 0; fault < 7; ++fault)
+    {
+      auto invalid = reequipState;
+      if(fault == 0) invalid["inventory_ready"] = false;
+      if(fault == 1) invalid["containers"].erase("1000");
+      if(fault == 2) invalid["inventory"].erase("3:24");
+      if(fault == 3) invalid["inventory"]["3:24"]["count"] = 2;
+      if(fault == 4) invalid["inventory"]["1000:0"] = starter;
+      rejected = false;
+      try { reequipGladiatorStarterRequest(invalid, 1, 1, fault == 5 ? 4 : 3, 24,
+                                           fault == 6 ? 1602 : 1601); }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "invalid/unobserved/mismatched starter re-equip rejected");
+    }
     for(auto bad : {std::array<uint32_t, 5>{4, 2, 4551, 3, 24}, {1, 25, 4551, 3, 24},
                    {1, 2, 4551, 4, 24}, {1, 2, 4551, 3, 25}, {1, 2, 4551, 1, 2},
                    {1, 2, 0, 3, 24}, {1, 2, 4555, 3, 24}, {0, 0, 4551, 3, 24},
