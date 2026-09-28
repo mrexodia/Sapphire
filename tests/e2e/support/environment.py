@@ -171,8 +171,9 @@ class Environment:
             try:
                 result = subprocess.run([str(x) for x in args], cwd=self.runtime,
                                         stdout=stream, stderr=subprocess.STDOUT, timeout=timeout)
-            except subprocess.TimeoutExpired as error:
-                raise SetupError(f"{name} timed out; inspect isolated logs") from error
+            except subprocess.TimeoutExpired:
+                # TimeoutExpired renders argv, which can contain initial DB credentials.
+                raise SetupError(f"{name} timed out; inspect isolated logs") from None
         if result.returncode:
             raise SetupError(f"{name} exited {result.returncode}; inspect isolated logs")
 
@@ -218,9 +219,8 @@ class Environment:
             if os.name != "nt":
                 client = self.mariadb / "mariadb"
                 # Password generated internally from hex; no user-supplied SQL fragments.
-                subprocess.run([str(client), "--no-defaults", "--host=127.0.0.1", f"--port={self.db_port}",
-                                "--user=root", "--execute", f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{self.db_password}'"],
-                               check=True, capture_output=True, timeout=10)
+                self._run("db-password", [client, "--no-defaults", "--host=127.0.0.1", f"--port={self.db_port}",
+                          "--user=root", "--execute", f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{self.db_password}'"], timeout=10)
             for mode in ("initialize", "migrate", "check"):
                 self._run(f"db-{mode}", [self.runtime / ("dbm" + self.suffix), "--mode", mode, "--force", "yes"])
             for name, executable, port in (("api", "api", self.api_port), ("lobby", "lobby", self.lobby_port),

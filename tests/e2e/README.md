@@ -48,7 +48,7 @@ python -m pip install -r tests/e2e/requirements.txt
 For a single-config generator:
 
 ```sh
-python -m pytest tests/e2e/test_worker.py \
+python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py \
   --e2e-worker build-e2e/sapphire_test_client --junitxml=build-e2e/contracts.xml
 ```
 
@@ -202,6 +202,43 @@ asset-derived material; keep them under ignored directories, not public artifact
 Due Diligence (default quest ID 65685 if omitted) still fails the complete-corridor
 requirement; it is not counted as coverage.
 
+## Bounded exploration, soak and replay
+
+These modes use the same isolated environment and observed-state API. A validated
+local `quest_catalog` is required even though policies do not complete quests:
+movement stays on the first nine points of that known route.
+
+```sh
+python -m tests.e2e.run_workload --profile .e2e-local.json \
+  --mode explore --seed 42 --bots 2 --steps 12 --duration 120
+python -m tests.e2e.run_workload --profile .e2e-local.json \
+  --mode soak --seed 7 --bots 4 --steps 120 --duration 300
+python -m tests.e2e.run_workload --profile .e2e-local.json \
+  --mode replay --plan .e2e-artifacts/<run>/plan.json
+```
+
+- Exploration chooses seeded, allowlisted walk/Say/heartbeat/reconnect actions.
+  Reconnect observes despawn, performs new HTTP/lobby login, and checks identity
+  and persisted position. Unknown actions/parameters are rejected.
+- Soak ramps 2..32 bots and executes distinct actors concurrently in bounded
+  rounds. Supported actions are walk/Say/heartbeat; reconnect is serial-only.
+- Plans allow at most 1000 total actions and a 1..3600s **action** time budget.
+  Setup and teardown have their own bounds and are excluded from that budget.
+  Exhausting the budget is a failure, not a silently successful short run.
+- Every round checks readiness, non-GM status, territory, no unexpected scene,
+  and server liveness. Movement and Say assertions come from another bot.
+- Replay preserves semantic decisions and route identity, not packet timing,
+  credentials or ephemeral actor IDs. Recorded duration/ramp limits are reused
+  unless explicitly overridden. It cannot guarantee server scheduling or reduce
+  failing traces automatically.
+
+Verified locally: two-bot exploration and replay; four-bot/120-action soak; a
+one-second-budget run fails with a retained diagnostic plan and cleans up. These
+are smoke-scale results, **not** large-population capacity or long-duration
+stability evidence. Resource samples cover API/lobby/world/DB plus worker/runner;
+CPU deltas and peak RSS are reported separately. Action-duration percentiles
+include walking and event waits, not pure network RTT or server tick latency.
+
 ## Artifacts and CI
 
 Each live run writes `.e2e-artifacts/sapphire-e2e-*/`:
@@ -212,6 +249,11 @@ Each live run writes `.e2e-artifacts/sapphire-e2e-*/`:
 - Per-test `actions.jsonl`: the last 2048 semantic actions, omitting authentication
   arguments; safe movement/interaction/scene arguments are retained.
 - Per-test `worker-stderr.log`: bounded worker diagnostics.
+
+Workload runs additionally save `plan.json`, per-action `outcomes.json`,
+`resources.jsonl` (one-second process samples), and `result.json` with status,
+failure stage, action durations and resource summaries. An unavailable process is
+explicitly marked; the final sample can observe the already-closed worker.
 
 JUnit output goes to the path selected with `--junitxml`. Never upload the private
 runtime, raw database, game assets, local profiles or unredacted configs.

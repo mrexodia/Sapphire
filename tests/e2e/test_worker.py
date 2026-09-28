@@ -108,6 +108,20 @@ def test_artifacts_are_redacted_and_runtime_removed(tmp_path):
     env.close()  # Cleanup is idempotent.
 
 
+def test_subprocess_timeout_does_not_render_credentials(tmp_path, monkeypatch):
+    import subprocess
+    from .support import environment
+    env = object.__new__(Environment)
+    env.runtime = tmp_path
+    def fail(args, **kwargs):
+        raise subprocess.TimeoutExpired(args, 1)
+    monkeypatch.setattr(environment.subprocess, "run", fail)
+    with pytest.raises(SetupError, match="timed out") as error:
+        env._run("private-setup", ["tool", "--password=fixture-secret"], timeout=1)
+    assert "fixture-secret" not in str(error.value)
+    assert error.value.__suppress_context__
+
+
 def test_ports_are_distinct():
     assert len(set(allocate_ports(4))) == 4
 

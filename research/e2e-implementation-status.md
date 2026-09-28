@@ -34,7 +34,9 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Range/discovery/territory event triggers | No general adapter yet | Missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Four live scenarios, native tests and Python contracts | Initial suite verified |
-| Seeded exploration / bounded soak / replay / resource metrics | Follow-on policy work | In progress; not established by quest tests |
+| Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
+| Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit duration; process RSS/CPU and action timings | Four bots / 120 actions verified; not large-scale or long-running evidence |
+| Semantic replay | Versioned allowlisted plans, route hash, logical bot roles, recorded time/ramp limits | Passing exploration plan replayed; scheduling is not deterministic |
 | Failure minimization | No reducer | Missing |
 | Deadlines / cancellation / cleanup | Timers, bounded waits, owned-process teardown, redaction; bounded Windows sharing-error retries | Initial paths verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
@@ -49,7 +51,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, synthetic navigation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same three CTest executables pass.
-- Python worker contracts pass on Windows and in a network-isolated Linux
+- 27 Python worker/policy contracts pass on Windows and in a network-isolated Linux
   container. This WSL instance refuses even Python-only loopback connections;
   the failing WSL socket check was not skipped or rewritten to make it pass.
 - Four live scenarios pass together in 96.16s: rejected credentials, login/idle/
@@ -58,6 +60,16 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - Current navigation generated separately in `.e2e-assets/uldah-v2`; repeat output
   refused, original OBJ and legacy mesh hashes unchanged. The 65686 route has
   322 points and length approximately 152.375m, with nearby walkable NPC approaches.
+- Seed 42/two bots/12 actions: exploration and fresh-environment semantic replay
+  passed (`sapphire-e2e-qmrbsx71`, latest replay `sapphire-e2e-79q32vbf`).
+- Seed 7/four bots/120 actions: soak passed in 112.125s including setup/teardown
+  (`sapphire-e2e-3uru8s6x`). All 120 actions passed; world peak RSS 321,454,080 bytes,
+  worker peak RSS 7,892,992 bytes. These are diagnostic observations, not a capacity
+  benchmark or regression threshold. Per-process samples and action timings exist.
+- One-second action budget fails explicitly after one attempted action, records
+  workflow failure/outcomes and cleans up (`sapphire-e2e-6lr093zy`). Replaying that
+  plan preserves the one-second limit and reproduces the failure
+  (`sapphire-e2e-drdjdnn4`). No private runtime directories remained afterward.
 - `test_live_quest.py` never seeds quest flags or grants rewards. Initial character
   position/opening state are fixture setup before the first connection, not claims
   of a creation/opening/travel journey.
@@ -77,12 +89,16 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
   not only source-based updates. Both are staged until successful batch commit.
 - Restart exposed MSB-first quest-completion masks, unlike LSB-first condition
   flags. A manually specified quest-150 bit fixture guards the corrected decoder.
+- Concurrent soak resource samples exposed snapshot ping-pong: unrelated request
+  responses woke state waits. Predicate-based condition waiting fixes this; a
+  regression test sends unrelated notifications without causing extra snapshots.
 - One Windows teardown encountered a transient executable-file permission failure.
   Bounded retries were added; persistent failures remain visible and retryable.
 
 ## Next actions / boundaries
 
-1. Finish bounded supported-action policies, replay and metrics with live evidence.
+1. Broaden the supported-state policy coverage and run longer/higher-population
+   workloads; short passing runs do not prove stability or capacity.
 2. Add more implemented quests, normal zoning, inventory actions and combat; add
    the corresponding received-state and independent-observer assertions.
 3. Extend explicit trigger/scene adapters; unknown content must still fail.
