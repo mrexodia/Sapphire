@@ -32,6 +32,7 @@ class Worker:
         self._failure = None
         self._closed = False
         self._version = 0
+        self._versions = {}
         self.process = subprocess.Popen(
             [str(executable.resolve())], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, bufsize=0,
@@ -66,6 +67,7 @@ class Worker:
                         message["received_monotonic"] = time.monotonic()
                         self._events.append(message)
                         self._version += 1
+                        self._versions[message["bot"]] = self._version
                     else:
                         raise WorkerError("unexpected worker message type")
                     self._cv.notify_all()
@@ -126,6 +128,10 @@ class Worker:
             self._pending.remove(identifier)
         if not response["ok"]:
             raise WorkerError(f"{method}: {response['error']['kind']}: {response['error']['message']}")
+        if method == "remove":
+            with self._cv:
+                self._versions.pop(bot, None)
+                self._cv.notify_all()
         return response["result"]
 
     def snapshot(self, bot):
@@ -135,7 +141,7 @@ class Worker:
         deadline = time.monotonic() + timeout
         while True:
             with self._cv:
-                version = self._version
+                version = self._versions.get(bot, 0)
             state = self.snapshot(bot)
             if state["phase"] == "failed":
                 raise WorkerError(f"{bot}: {state.get('error', 'bot failed')}")
@@ -145,7 +151,7 @@ class Worker:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise WorkerError(f"{bot}: timeout waiting for {description}; state={state}")
-                changed = self._cv.wait_for(lambda: self._version != version or self._failure, remaining)
+                changed = self._cv.wait_for(lambda: self._versions.get(bot, 0) != version or self._failure, remaining)
                 if self._failure:
                     raise WorkerError(self._failure)
                 if not changed:

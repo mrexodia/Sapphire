@@ -42,6 +42,7 @@ def test_failed_connect_is_observed_not_ready(worker):
         with pytest.raises(WorkerError, match="connection failed"):
             worker.wait_state("test", lambda s: s["phase"] == "ready", "ready", timeout=5)
     worker.request("remove", "test")
+    assert "test" not in worker._versions
 
 
 def test_action_before_readiness_is_rejected(worker):
@@ -169,7 +170,8 @@ def test_scene_response_preserves_observed_identity():
     assert stub.calls == [(("choose_scene", "test"), {"event_id": 1, "scene_id": 2, "token": 3, "results": [1]})]
 
 
-def test_unrelated_responses_do_not_cause_snapshot_polling():
+@pytest.mark.parametrize("notification", ["response", "other_bot_event"])
+def test_unrelated_notifications_do_not_cause_snapshot_polling(notification):
     import threading
     from concurrent.futures import ThreadPoolExecutor
     from .support.worker import Worker
@@ -181,6 +183,7 @@ def test_unrelated_responses_do_not_cause_snapshot_polling():
     instance = object.__new__(Worker)
     instance._cv = Condition()
     instance._version, instance._failure = 0, None
+    instance._versions = {}
     calls = []
     def snapshot(bot):
         calls.append(bot)
@@ -192,11 +195,35 @@ def test_unrelated_responses_do_not_cause_snapshot_polling():
         for _ in range(5):
             waiting.clear()
             with instance._cv:
-                instance._cv.notify_all()  # An unrelated response, not a game-state event.
+                if notification == "other_bot_event":
+                    instance._version += 1
+                    instance._versions["other"] = instance._version
+                instance._cv.notify_all()
             assert waiting.wait(1)
         with pytest.raises(WorkerError, match="timeout"):
             future.result(timeout=2)
     assert calls == ["idle"]
+
+
+def test_matching_bot_event_wakes_state_wait():
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+    from .support.worker import Worker
+    waiting = threading.Event()
+    class Condition(threading.Condition):
+        def wait(self, timeout=None):
+            waiting.set()
+            return super().wait(timeout)
+    instance = object.__new__(Worker)
+    instance._cv, instance._versions, instance._failure = Condition(), {}, None
+    instance.snapshot = lambda bot: {"phase": "ready", "changed": bool(instance._versions.get(bot))}
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(instance.wait_state, "watched", lambda s: s["changed"], "matching event", 2)
+        assert waiting.wait(1)
+        with instance._cv:
+            instance._versions["watched"] = 1
+            instance._cv.notify_all()
+        assert future.result(timeout=1)["changed"]
 
 
 def test_transient_cleanup_failure_is_retried(tmp_path, monkeypatch):

@@ -35,7 +35,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
-| Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit duration; process RSS/CPU and action timings | Four bots / 120 actions verified; not large-scale or long-running evidence |
+| Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit duration; process RSS/CPU and action timings | Sixteen bots / 960 actions and fresh replay verified; not capacity or long-running evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical bot roles, recorded time/ramp limits | Passing exploration plan replayed; scheduling is not deterministic |
 | Failure minimization | No reducer | Missing |
 | Deadlines / cancellation / cleanup | Timers, bounded waits, owned-process teardown, redaction; bounded Windows sharing-error retries | Initial paths verified; broader stress/signal testing remains |
@@ -51,10 +51,11 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same four CTest executables pass.
-- 42 Python worker/policy contracts pass with the MSVC worker and in a
+- 44 Python worker/policy contracts pass with the MSVC worker and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
-- Seven live cases pass together in 242.89s (`sapphire-e2e-wd3lpulz`): rejected
+- Seven live cases pass together in 255.94s (`sapphire-e2e-qpyhw78e`) after
+  bot-specific state-wait notification filtering: rejected
   credentials, login/idle/logout, observed movement/Say/position persistence,
   single quest, chained quests plus inventory persistence, zoning persistence,
   and combat damage. Both tested territories use compatible server-side meshes.
@@ -66,7 +67,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   The fighter disconnects; it does not bypass in-combat logout restrictions.
   This does not establish kills, combat XP/loot, combos, retaliation assertions,
   cooldown scheduling or dynamic pursuit. Initial position is fixture setup.
-  The final decoded journal records nine damage, NPC HP 94 → 85 on both clients,
+  The decoded `sapphire-e2e-wd3lpulz` journal records nine damage, NPC HP 94 → 85 on both clients,
   and source TP 40 after the action. A conservative local recast guard follows the
   received 250-centisecond action-start value. Private runtime cleanup succeeded.
 - Current navigation generated separately in `.e2e-assets/uldah-v2`; repeat output
@@ -101,6 +102,17 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   (`sapphire-e2e-3uru8s6x`). All 120 actions passed; world peak RSS 321,454,080 bytes,
   worker peak RSS 7,892,992 bytes. These are diagnostic observations, not a capacity
   benchmark or regression threshold. Per-process samples and action timings exist.
+- Seed 19/sixteen bots/960 actions: soak passed in 302.406s including setup and
+  teardown (`sapphire-e2e-zosbd7a9`). Fresh replay of the identical plan passed in
+  295.563s (`sapphire-e2e-blztvwpo`); both independently verify 16 active bots and
+  contain 960 successful outcomes. Both plan files have SHA-256
+  `5378dc8c4004185ba220d0d79fcc4807a44d353ec47a00801310d6799ce5fc24`.
+  After bot-specific wait filtering, recorded runner CPU delta was 131.141s versus
+  157.047s in the first run; worker delta was 46.391s versus 56.266s. These are
+  observations from two runs, not a controlled benchmark or guaranteed speedup.
+  Replay world peak RSS was 377,630,720 bytes. Action p95 was 2.719s, not RTT.
+  Both private runtimes were removed. Five-minute runs still do not establish
+  long-duration stability, large-population capacity or broader gameplay policy.
 - One-second action budget fails explicitly after one attempted action, records
   workflow failure/outcomes and cleans up (`sapphire-e2e-6lr093zy`). Replaying that
   plan preserves the one-second limit and reproduces the failure
@@ -128,8 +140,11 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
   zero TP. The client now receives HP/MP/TP updates and waits for natural TP
   regeneration; no resource grant or fixture modification masks the condition.
 - Concurrent soak resource samples exposed snapshot ping-pong: unrelated request
-  responses woke state waits. Predicate-based condition waiting fixes this; a
-  regression test sends unrelated notifications without causing extra snapshots.
+  responses woke state waits. Predicate-based condition waiting fixes this.
+  The sixteen-bot run motivated filtering unrelated **bot events** as well:
+  per-bot versions now suppress cross-bot snapshot polling, and removal clears
+  the version entry. Contracts cover unrelated responses/events, matching-event wakeup
+  and removal cleanup; the same 960-action plan and all seven live scenarios pass.
 - One Windows teardown encountered a transient executable-file permission failure.
   Bounded retries were added; persistent failures remain visible and retryable.
 

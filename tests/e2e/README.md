@@ -326,12 +326,16 @@ python -m tests.e2e.run_workload --profile .e2e-local.json \
   unless explicitly overridden. It cannot guarantee server scheduling or reduce
   failing traces automatically.
 
-Verified locally: two-bot exploration and replay; four-bot/120-action soak; a
-one-second-budget run fails with a retained diagnostic plan and cleans up. These
-are smoke-scale results, **not** large-population capacity or long-duration
-stability evidence. Resource samples cover API/lobby/world/DB plus worker/runner;
+Verified locally: two-bot exploration/replay, four-bot/120-action soak, and a
+sixteen-bot/960-action soak plus fresh replay of the same plan (about five minutes
+each including setup/teardown). A one-second-budget run fails with a retained
+diagnostic plan and cleans up. These are bounded smoke results, **not**
+large-population capacity or long-duration stability evidence. Resource samples cover API/lobby/world/DB plus worker/runner;
 CPU deltas and peak RSS are reported separately. Action-duration percentiles
 include walking and event waits, not pure network RTT or server tick latency.
+State waits use bot-specific event versions; unrelated responses or another bot's
+events do not trigger repeated snapshot requests. This reduces load-generator
+work without weakening the independent observer assertions.
 
 ## Artifacts and CI
 
