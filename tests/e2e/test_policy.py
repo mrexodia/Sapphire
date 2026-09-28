@@ -2,8 +2,8 @@
 from copy import deepcopy
 import pytest
 
-from .support.catalog import (validate_combat_catalog, validate_quest_catalog,
-                              validate_respawn_catalog, validate_shop_catalog,
+from .support.catalog import (validate_combat_catalog, validate_pursuit_catalog,
+                              validate_quest_catalog, validate_respawn_catalog, validate_shop_catalog,
                               validate_transition_catalog)
 from .support.combat import combat_reward_delta
 from .support.workload import build_plan, validate_plan
@@ -21,6 +21,19 @@ def test_combat_catalog_rejects_unsupported_action_metadata(patch):
     assert validate_combat_catalog(data) == data
     with pytest.raises(WorkerError, match="Fast Blade"):
         validate_combat_catalog({**data, **patch})
+
+
+def test_pursuit_catalog_binds_natural_enemy_and_displaced_route():
+    data = {"version": 1, "profile": "sapphire-3.3", "territory": 141,
+            "enemy": {"layout_id": 3749193, "base_id": 302, "level": 14, "position": [0, 0, 0]},
+            "route": [[1, 0, 0], [2.5, 0, 0], [4, 0, 0], [5.5, 0, 0], [7, 0, 0], [8, 0, 0]],
+            "route_length": 7}
+    assert validate_pursuit_catalog(data) == data
+    for changed in ({**data, "territory": 130},
+                    {**data, "enemy": {**data["enemy"], "layout_id": 1}},
+                    {**data, "route": [[1, 0, 0], [3, 0, 0]], "route_length": 2}):
+        with pytest.raises(WorkerError):
+            validate_pursuit_catalog(changed)
 
 
 def test_respawn_catalog_binds_canonical_uldah_homepoint():

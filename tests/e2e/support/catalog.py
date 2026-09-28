@@ -70,6 +70,25 @@ def validate_transition_catalog(data):
     return data
 
 
+def validate_pursuit_catalog(data):
+    if data.get("profile") != "sapphire-3.3" or data.get("version") != 1 or data.get("territory") != 141:
+        raise WorkerError("unsupported pursuit catalog profile/territory")
+    enemy = data.get("enemy", {})
+    if {key: enemy.get(key) for key in ("layout_id", "base_id", "level")} != {
+            "layout_id": 3749193, "base_id": 302, "level": 14}:
+        raise WorkerError("unsupported pursuit population binding")
+    position = enemy.get("position")
+    if (not isinstance(position, list) or len(position) != 3
+            or not all(type(value) in (int, float) and math.isfinite(value) for value in position)):
+        raise WorkerError("invalid pursuit enemy position")
+    route = validated_route(data)
+    if math.dist(route[0], position) > 3:
+        raise WorkerError("pursuit route must start beside the bound enemy")
+    if math.hypot(route[-1][0] - enemy["position"][0], route[-1][2] - enemy["position"][2]) < 8:
+        raise WorkerError("pursuit route endpoint is not meaningfully displaced")
+    return data
+
+
 def validate_respawn_catalog(data):
     if (data.get("profile") != "sapphire-3.3" or data.get("version") != 1
             or data.get("homepoint") != 9 or data.get("territory") != 130):
@@ -115,6 +134,10 @@ def validate_combat_catalog(data):
     if any(type(data.get(key)) is not type(value) or data[key] != value for key, value in expected.items()):
         raise WorkerError("combat catalog does not match the supported level-one Fast Blade profile")
     return data
+
+
+def load_pursuit_catalog(path):
+    return validate_pursuit_catalog(json.loads(Path(path).read_text(encoding="utf-8")))
 
 
 def load_respawn_catalog(path):

@@ -59,6 +59,12 @@ def profile(tmp_path):
     respawn = {"version": 1, "profile": "sapphire-3.3", "homepoint": 9, "territory": 130,
                "pop_range": {"id": 1, "position": [0, 0, 0], "rotation": [0, 0, 0]}}
     Path(p["respawn_catalog"]).write_text(json.dumps(respawn))
+    pursuit = {"version": 1, "profile": "sapphire-3.3", "territory": 141,
+               "enemy": {"layout_id": 3749193, "base_id": 302, "level": 14, "position": [0, 0, 0]},
+               "navigation": {"mesh": str(Path(p["navigation"]) / "w1f2/w1f2.nav")},
+               "route": [[1, 0, 0], [2.5, 0, 0], [4, 0, 0], [5.5, 0, 0], [7, 0, 0], [8, 0, 0]],
+               "route_length": 7}
+    Path(p["pursuit_catalog"]).write_text(json.dumps(pursuit))
     return p
 
 

@@ -16,8 +16,8 @@ import sys
 import tempfile
 import traceback
 
-from .support.catalog import (load_combat_catalog, load_quest_catalog, load_respawn_catalog,
-                              load_shop_catalog, load_transition_catalog)
+from .support.catalog import (load_combat_catalog, load_pursuit_catalog, load_quest_catalog,
+                              load_respawn_catalog, load_shop_catalog, load_transition_catalog)
 from .support.environment import REPO, sha256
 
 VERSION = "2016.07.05.0000.0001"
@@ -34,7 +34,7 @@ CASES = (
 )
 SUITES = tuple(dict.fromkeys(case.split("::", 1)[0] for case in CASES))
 CATALOGS = ("quest_catalog", "follow_up_catalog", "transition_catalog", "combat_catalog", "shop_catalog",
-            "respawn_catalog")
+            "respawn_catalog", "pursuit_catalog")
 PATH_KEYS = ("binaries", "worker", "game_data", "mariadb_bin", "navigation", *CATALOGS)
 
 
@@ -83,9 +83,12 @@ def preflight(profile, *, suffix=None):
     load_combat_catalog(paths["combat_catalog"])
     shop = load_shop_catalog(paths["shop_catalog"])
     load_respawn_catalog(paths["respawn_catalog"])
+    pursuit = load_pursuit_catalog(paths["pursuit_catalog"])
     for catalog in (first, second, transition, shop):
         if sha256(Path(catalog["navigation"]["mesh"])) != meshes["w1t1"]:
             raise PreflightError("route/server mesh mismatch")
+    if sha256(Path(pursuit["navigation"]["mesh"])) != meshes["w1f2"]:
+        raise PreflightError("pursuit/server mesh mismatch")
     identities = {"worker": sha256(paths["worker"]),
                   "binaries": {name: sha256(paths["binaries"] / (name + suffix))
                                for name in ("api", "lobby", "server", "dbm")},

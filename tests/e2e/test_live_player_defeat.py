@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from .support.catalog import load_respawn_catalog
+from .support.catalog import load_pursuit_catalog, load_respawn_catalog
 from .support.worker import Bot
 from .support.combat import damage_value
 
@@ -13,8 +13,10 @@ pytestmark = pytest.mark.live
 
 def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     path = environment.profile.get("respawn_catalog")
-    assert path, "player defeat requires a source-bound homepoint catalog"
+    pursuit_path = environment.profile.get("pursuit_catalog")
+    assert path and pursuit_path, "player defeat requires source-bound homepoint and pursuit catalogs"
     respawn = load_respawn_catalog(path)
+    pursuit = load_pursuit_catalog(pursuit_path)
     population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
     candidates = []
     for group in population.values():
@@ -22,8 +24,10 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
             base, pop = row["baseInfo"], row["popInfo"]
             if base["baseId"] == 302 and base["level"] == 14 and pop["nonpop"] == 0:
                 candidates.append((layout_id, base))
-    assert candidates, "matching unchanged Central Thanalan level-14 population missing"
+    candidates = [candidate for candidate in candidates if int(candidate[0]) == pursuit["enemy"]["layout_id"]]
+    assert len(candidates) == 1, "matching source-bound Central Thanalan population missing"
     layout_id, spawn = candidates[0]
+    assert spawn["position"] == pursuit["enemy"]["position"]
     fighter_position = list(spawn["position"])
     fighter_position[0] += 1.0
     observer_position = list(spawn["position"])
@@ -55,6 +59,22 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     opening_effect = fighter.fast_blade(target)
     assert opening_effect["target"] == target and damage_value(opening_effect) > 0
 
+    enemy_start = state["actors"][str(target)]["position"]
+    fighter.walk_route(pursuit["route"], 6.0, 30)
+    live_worker.wait_state(observer.name,
+        lambda s: str(entity) in s["actors"]
+                  and math.dist(s["actors"][str(entity)]["position"], pursuit["route"][-1]) < 0.15,
+        "independent observer sees fighter complete pursuit route", 30)
+    pursued = live_worker.wait_state(fighter.name,
+        lambda s: math.dist(s["actors"].get(str(target), {}).get("position", enemy_start), enemy_start) >= 2,
+        "hostile natural enemy pursuit", 30)
+    pursued_observer = live_worker.wait_state(observer.name,
+        lambda s: math.dist(s["actors"].get(str(target), {}).get("position", enemy_start), enemy_start) >= 2,
+        "observer sees hostile natural enemy pursuit", 30)
+    enemy_pursued_position = pursued["actors"][str(target)]["position"]
+    assert math.dist(enemy_pursued_position, pursued_observer["actors"][str(target)]["position"]) < 0.15
+    assert math.dist(enemy_pursued_position, pursuit["route"][-1]) < math.dist(enemy_start, pursuit["route"][-1])
+
     defeated = live_worker.wait_state(fighter.name,
         lambda s: s["actors"].get(str(entity), {}).get("hp") == 0,
         "natural hostile-enemy player defeat", 90)
@@ -68,7 +88,7 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     source = next(iter(sources))
     enemy = defeated["actors"][str(source)]
     assert enemy["base_id"] == 302 and enemy["level"] == 14 and 0 < enemy["hp"] < enemy["hp_max"]
-    assert math.dist(enemy["position"], defeated["observed_position"]) < 4
+    assert math.dist(enemy["position"], pursuit["route"][-1]) < 4
 
     observed = live_worker.wait_state(observer.name,
         lambda s: s["actors"].get(str(entity), {}).get("hp") == 0,
@@ -125,11 +145,13 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     (environment.artifacts / "combat-player-defeat.json").write_text(json.dumps({
         "population_layout": int(layout_id), "enemy_base_id": 302, "enemy_level": 14,
         "fighter_hp_before": before["hp"], "opening_effect": opening_effect,
+        "pursuit_route_length": pursuit["route_length"], "enemy_position_before_pursuit": enemy_start,
+        "enemy_position_after_pursuit": enemy_pursued_position, "pursuit_observer_verified": True,
         "incoming_effects": incoming, "incoming_integrities": incoming_integrities,
         "fighter_hp_after": 0, "enemy_hp_after": enemy["hp"],
         "homepoint": respawn, "returned_position": returned_position, "returned_hp": returned_hp,
         "return_observer_hp": return_seen["actors"][str(entity)]["hp"],
         "persisted_position": persisted["observed_position"], "persisted_hp": persisted_self["hp"],
         "both_defeat_clients_verified": True, "return_observer_verified": True,
-        "scope": "one natural level-14 enemy defeat followed by an ordinary source-bound homepoint return and restart persistence; no raise, pursuit or general combat claim"
+        "scope": "one natural level-14 enemy pursues and defeats a normally moving level-one player, followed by a source-bound homepoint return and restart persistence; no raise or general combat claim"
     }, indent=2), encoding="utf-8")
