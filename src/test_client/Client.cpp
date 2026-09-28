@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "InventoryActions.h"
+#include "TransitionActions.h"
 #include <Network/CommonActorControl.h>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
 #include <Network/PacketDef/Lobby/ServerLobbyDef.h>
@@ -298,6 +299,7 @@ namespace Sapphire::Testing
     {
       const auto p = readObject<WS::FFXIVIpcInitZone>(segment.data, off);
       m_haveZone = true; m_selfSpawn = false;
+      m_movement.cancel(); m_moving = false;
       m_state["territory"] = p.TerritoryType;
       m_state["actors"] = Json::object();
       m_state["observed_position"] = p.Pos;
@@ -483,6 +485,18 @@ namespace Sapphire::Testing
       p.handlerId = scene.at("event_id"); p.sceneId = scene.at("scene_id"); p.numOfResults = static_cast<uint8_t>(results.size());
       std::copy(results.begin(), results.end(), p.results);
       sendZone(p._ServerIpcType, objectBytes(p)); m_state["scene"] = nullptr;
+      return Json::object();
+    }
+    if(method == "cross_exit")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      auto payload = exitRangeRequest(m_state.at("territory"), m_predicted, args.at("exit"));
+      sendZone(WC::FFXIVIpcZoneJump::_ServerIpcType, payload);
+      phase("zoning");
+      m_deadline.expires_from_now(std::chrono::seconds(30));
+      m_deadline.async_wait([self = shared_from_this()](auto ec) {
+        if(!ec) self->fail("territory transition deadline exceeded");
+      });
       return Json::object();
     }
     if(method == "discard_item")

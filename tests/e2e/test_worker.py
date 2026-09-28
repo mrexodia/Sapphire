@@ -122,6 +122,19 @@ def test_subprocess_timeout_does_not_render_credentials(tmp_path, monkeypatch):
     assert error.value.__suppress_context__
 
 
+@pytest.mark.parametrize("territory", [182, 0, "141", True])
+def test_fixture_rejects_unsupported_or_private_territory(territory):
+    env = object.__new__(Environment)
+    with pytest.raises(SetupError, match="unsupported public"):
+        env.fresh_character([0, 0, 0], territory=territory)
+
+
+def test_nondefault_fixture_requires_explicit_position():
+    env = object.__new__(Environment)
+    with pytest.raises(SetupError, match="explicit position"):
+        env.fresh_character(territory=141)
+
+
 def test_ports_are_distinct():
     assert len(set(allocate_ports(4))) == 4
 

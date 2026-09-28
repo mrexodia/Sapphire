@@ -99,6 +99,8 @@ class Worker:
                 self._pending.add(identifier)
                 if method not in {"snapshot", "capabilities"}:
                     safe_args = args if method in {"walk_to", "interact", "choose_scene", "say", "discard_item"} else {}
+                    if method == "cross_exit":
+                        safe_args = {"exit_id": args["exit"]["id"], "territory": args["exit"]["territory"]}
                     self._actions.append({"id": identifier, "method": method, "bot": bot,
                                           "args": safe_args, "monotonic": time.monotonic()})
             try:
@@ -222,6 +224,12 @@ class Bot:
         if catalog.get("profile") != "sapphire-3.3":
             raise UnsupportedScene("scene catalog profile mismatch")
         self.worker.request("choose_scene", self.name, **scene_arguments(scene), results=results)
+
+    def cross_exit(self, transition, timeout=30):
+        self.worker.request("cross_exit", self.name, exit=transition)
+        return self.worker.wait_state(self.name,
+            lambda s: s["phase"] == "ready" and s["territory"] == transition["target_territory"]
+                      and not s["between_areas"], "destination territory ready", timeout)
 
     def discard_item(self, storage, slot, expected_item, timeout=10):
         self.worker.request("discard_item", self.name, storage=storage, slot=slot, expected_item=expected_item)

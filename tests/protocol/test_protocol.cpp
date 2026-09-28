@@ -1,4 +1,5 @@
 #include "Protocol.h"
+#include "TransitionActions.h"
 #include <Crypt/Random.h>
 #include <set>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
@@ -84,6 +85,18 @@ int main()
     require(questCompletionFlag(completion.data(), completion.size(), 150), "quest flag MSB order");
     require(!questCompletionFlag(completion.data(), completion.size(), 145), "quest flag must not use condition-bit order");
     rejects([&] { questCompletionFlag(completion.data(), completion.size(), completion.size() * 8); });
+
+    nlohmann::json exit{{"id", 0x01020304}, {"territory", 130}, {"enabled", true},
+      {"shape", 1}, {"exit_type", 1}, {"position", {1, 2, 3}}, {"scale", {4, 6, 8}}, {"rotation", {0, 1.57, 0}}};
+    const Bytes expectedExit{4,3,2,1, 0,0,0x80,0x3f, 0,0,0,0x40, 0,0,0x40,0x40, 0,0,0,0};
+    require(exitRangeRequest(130, {1,2,3}, exit) == expectedExit, "exit request independent byte fixture");
+    rejects([&] { exitRangeRequest(131, {1,2,3}, exit); });
+    rejects([&] { exitRangeRequest(130, {4,2,3}, exit); });
+    rejects([&] { exitRangeRequest(130, {1,6,3}, exit); });
+    auto disabledExit = exit; disabledExit["enabled"] = false;
+    rejects([&] { exitRangeRequest(130, {1,2,3}, disabledExit); });
+    auto tiltedExit = exit; tiltedExit["rotation"][0] = 0.1;
+    rejects([&] { exitRangeRequest(130, {1,2,3}, tiltedExit); });
 
     LobbyCipher sender, receiver;
     auto hello = sender.initialize(42, "SapphireE2E");

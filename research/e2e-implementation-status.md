@@ -23,17 +23,17 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Normal character creation/opening journey | Pre-connection account/character fixture provisioning and public Ul'dah start | Not covered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
-| Compatible navigation assets | `BuildNavigation.cpp` reuses exporter; separate TSET output, originals unchanged; `NavigationRoute.cpp` requires complete corridors and sampled surfaces | Verified for Motivational Speaking; Due Diligence disconnected |
+| Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
 | Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking and Gil for Gold choices | Two live verified adapters; Due Diligence remains source-derived |
 | Interact / choose dialogue / unknown-scene failure | Exact received event/scene/token; no default choice or raw-packet control; contract tests | Verified for supported one/two-result returns |
 | Quest state / accept and cancel / completion | `test_live_quest.py`: Motivational Speaking (65686), cancel unchanged, accept sequence 255, completion | Verified |
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Ordinary Say observed by another bot; two-quest chain, optional reward, active-quest reconnect, earned-stack discard and persistence verified | Quest/social/basic-inventory subset verified; zoning and combat missing; move/split/swap/use not covered |
-| Range/discovery/territory event triggers | No general adapter yet | Missing |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, discard, ordinary Say, and independently observed 130-to-141 crossing/persistence | Quest/social/basic-inventory/zoning subset verified; combat missing; move/split/swap/use not covered |
+| Range/discovery/territory event triggers | Curated physical ExitRange crossing; no general quest-range/discovery adapter | Exit subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
-| Deterministic authored regression suite | Four live scenarios, native tests and Python contracts | Initial suite verified |
+| Deterministic authored regression suite | Six live cases, native tests and Python contracts | Supported suite verified |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit duration; process RSS/CPU and action timings | Four bots / 120 actions verified; not large-scale or long-running evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical bot roles, recorded time/ramp limits | Passing exploration plan replayed; scheduling is not deterministic |
@@ -51,12 +51,13 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, synthetic navigation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same three CTest executables pass.
-- 28 Python worker/policy contracts pass locally with the MSVC worker. The earlier
-  27-test set also passed in a network-isolated Linux container. This WSL instance refuses even Python-only loopback connections;
-  the failing WSL socket check was not skipped or rewritten to make it pass.
-- Four live scenarios pass together in 96.16s: rejected credentials, login/idle/
-  logout, observed movement/Say/position persistence, and full quest/rewards/
-  completion persistence.
+- 34 Python worker/policy contracts pass with the MSVC worker and in a
+  network-isolated Linux container. This WSL instance refuses even Python-only
+  loopback connections; that check was not skipped or rewritten to make it pass.
+- Six live cases pass together in 222.92s (`sapphire-e2e-caf54nsd`): rejected
+  credentials, login/idle/logout, observed movement/Say/position persistence,
+  single quest, chained quests plus inventory persistence, and zoning persistence.
+  Both tested territories use compatible server-side meshes in this run.
 - Current navigation generated separately in `.e2e-assets/uldah-v2`; repeat output
   refused, original OBJ and legacy mesh hashes unchanged. The 65686 route has
   322 points and length approximately 152.375m, with nearby walkable NPC approaches.
@@ -72,6 +73,17 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   committed deletion, unchanged other tracked slots, observer-confirmed logout,
   and deletion/remaining rewards/quest completion after another restart.
   Clang, MSVC and GNU builds pass the new byte-layout and transaction tests.
+- `test_live_zoning.py` crosses exit 2377056 from territory 130 to 141 after a
+  41-point/18.64m walk. A source observer stays outside the trigger and observes
+  departure; a destination observer sees arrival and chat. Both channels remain
+  alive; territory/position/rewards survive restart. Latest isolated run: 58.51s,
+  `build-e2e/zoning.xml`. The full-suite run preceded the refinement that leaves
+  the source observer stationary outside the trigger.
+- `.e2e-assets/runtime-nav-v1/navi` contains separately generated w1t1/w1f2 tiles.
+  Live logs explicitly show both territories initialized with `NAVI`, not merely
+  configured file paths. Server mesh hashes are in the manifest. Original collision
+  assets were unchanged. Both quest routes were also checked against all seven
+  source exit boxes using full-scale bounds; neither intersects an exit volume.
 - Seed 42/two bots/12 actions: exploration and fresh-environment semantic replay
   passed (`sapphire-e2e-qmrbsx71`, latest replay `sapphire-e2e-79q32vbf`).
 - Seed 7/four bots/120 actions: soak passed in 112.125s including setup/teardown
@@ -111,12 +123,16 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
 
 1. Broaden the supported-state policy coverage and run longer/higher-population
    workloads; short passing runs do not prove stability or capacity.
-2. Add more implemented quests, normal zoning, inventory actions and combat; add
-   the corresponding received-state and independent-observer assertions.
+2. Add normal combat with received NPC/HP/action observations and an independent
+   observer. Central Thanalan now has a compatible server mesh; its NPC behavior
+   must not be tested with navigation silently unavailable.
 3. Extend explicit trigger/scene adapters; unknown content must still fail.
 4. Validate provisioned gameplay CI and longer/higher-population stability runs.
-5. Obtain an appropriate locally run real client or a maintainer-supplied sanitized
-   trace. Shared schemas and headless-to-server agreement cannot substitute for it.
+5. Evaluate the existing `E:/Sapphire/game/ffxiv*.exe` candidates for an isolated
+   real-client run, or obtain a sanitized trace. Executable presence is not
+   compatibility evidence: first verify version, loopback bootstrap and isolated
+   user configuration. Do not alter the user's installed executables/settings.
+   Shared schemas and headless-to-server agreement cannot substitute for this.
 
 The original legacy mesh-loading blocker is resolved without modifying developer
 assets. Due Diligence still lacks a complete corridor, but it no longer blocks the

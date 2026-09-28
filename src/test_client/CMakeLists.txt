@@ -18,6 +18,7 @@ add_library(sapphire_test_protocol STATIC
   Protocol.cpp
   RewardsState.cpp
   InventoryActions.cpp
+  TransitionActions.cpp
   "${SAPPHIRE_ROOT}/src/common/Crypt/blowfish.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/md5.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/Random.cpp")
@@ -41,6 +42,8 @@ if(WIN32)
 endif()
 target_link_libraries(sapphire_test_protocol PUBLIC Threads::Threads)
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  add_executable(sapphire_test_transitions TransitionCatalog.cpp NavigationRoute.cpp)
+  target_link_libraries(sapphire_test_transitions PRIVATE common)
   add_executable(sapphire_test_catalog Catalog.cpp NavigationRoute.cpp)
   target_link_libraries(sapphire_test_catalog PRIVATE common)
   set(NAV_EXPORT "${SAPPHIRE_ROOT}/src/tools/nav_export")

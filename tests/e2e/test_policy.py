@@ -2,7 +2,7 @@
 from copy import deepcopy
 import pytest
 
-from .support.catalog import validate_quest_catalog
+from .support.catalog import validate_quest_catalog, validate_transition_catalog
 from .support.workload import build_plan, validate_plan
 from .support.worker import WorkerError, reward_values
 
@@ -37,6 +37,25 @@ def test_follow_up_requires_observed_prerequisite():
     with pytest.raises(WorkerError, match="not been observed"):
         validate_quest_catalog(data, completed_quests={65685})
     assert validate_quest_catalog(data, completed_quests={65686})["quest"] == 65687
+
+
+def test_transition_requires_physical_crossing_and_resolved_destination():
+    data = {"profile": "sapphire-3.3", "version": 1, "territory": 130,
+            "route": [[i * 0.5, 0, 0] for i in range(13)], "route_length": 6,
+            "transition": {"id": 1, "territory": 130, "enabled": True, "shape": 1, "exit_type": 1,
+                "position": [6, 0, 0], "scale": [4, 4, 4], "rotation": [0, 0, 0],
+                "target_pop": 2, "target_territory": 141,
+                "destinations": [{"id": 2, "territory": 141, "position": [1, 2, 3]}]}}
+    assert validate_transition_catalog(data) == data
+    bad = deepcopy(data); bad["transition"]["destinations"] = []
+    with pytest.raises(WorkerError, match="exactly one"):
+        validate_transition_catalog(bad)
+    bad = deepcopy(data); bad["transition"]["position"] = [9, 0, 0]
+    with pytest.raises(WorkerError, match="inside"):
+        validate_transition_catalog(bad)
+    bad = deepcopy(data); bad["route"] = [[5, 0, 0], [6, 0, 0]]; bad["route_length"] = 1
+    with pytest.raises(WorkerError, match="outside"):
+        validate_transition_catalog(bad)
 
 
 def test_seed_reproduces_decisions_not_server_timing():

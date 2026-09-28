@@ -30,6 +30,10 @@ lobby, world and MariaDB processes with matching game data:
   quest active, walks another 86.8m, cancels/acknowledges a hand-over, then chooses
   three ethers rather than the alternative potions. Both completions and cumulative
   rewards survive world restart.
+- A three-client zoning test walks a verified approach into an actual exit volume,
+  crosses from Ul'dah to Central Thanalan, observes departure and arrival from
+  separate bots, checks destination chat/keepalives and reloads the new territory
+  and position after world restart.
 - After verifying those rewards, the chain test discards the earned ether stack
   through the normal item-operation packet. It waits for a committed received
   deletion, checks every tracked slot for unintended changes, and verifies the
@@ -92,14 +96,16 @@ not replace the live suite.
    paths as `quest_catalog` (65686) and `follow_up_catalog` (65687) in the profile.
    Requested quest tests fail if their catalog is absent. Use `-k single` to select
    only the first quest.
-5. Run:
+5. For zoning, generate the transition catalog below and set `transition_catalog`.
+   Set `navigation` to a private compatible server mesh root for the tested maps.
+6. Run:
 
 ```sh
-python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
+python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py tests/e2e/test_live_zoning.py \
   --e2e-profile .e2e-local.json -v --junitxml=build-e2e/live.xml
 ```
 
-Omit `test_live_quest.py` for the smaller login/movement/social smoke slice.
+Select only `test_live.py` for the smaller login/movement/social smoke slice.
 
 Missing required assets, missing binaries or setup errors **fail** an explicitly
 requested live run. Without `--e2e-profile`, live tests are explicitly skipped.
@@ -115,7 +121,7 @@ The runner:
 - Generates test-specific configs with `DefaultGMRank=0`,
   `AllowNoSessionConnect=false` and script hot swap disabled.
 - Provisions fresh account/character fixtures, then uses the normal HTTP login.
-- Places fixtures in public Ul'dah (130), with opening progression initialized,
+- By default places fixtures in public Ul'dah (130), with opening progression initialized,
   **before their first world connection**. This is fixture setup, not coverage of
   character creation, the opening quest, or travel into Ul'dah. Opening territory
   182 is private and is not appropriate for two-player replication assertions.
@@ -165,7 +171,7 @@ bot.close()    # Removes the bot from the worker.
 
 Additional actions: `wait_world_ready`, `walk_route`, `interact`, `choose_dialogue`,
 `wait_event_finished`, `expect_quest_active`, `expect_quest_complete`,
-`reward_snapshot`, `expect_rewards`, `discard_item`, `say`, and `expect_say`.
+`reward_snapshot`, `expect_rewards`, `discard_item`, `cross_exit`, `say`, and `expect_say`.
 Use `worker.wait_state(...)` for bounded predicates against received state. Event
 notifications wake waits; snapshots also cover observations received before the
 wait was registered. No automatic gameplay retry is performed after a timeout.
@@ -221,6 +227,35 @@ loading it requires the prerequisite to have been observed complete. Generated r
 asset-derived material; keep them under ignored directories, not public artifacts.
 Due Diligence (default quest ID 65685 if omitted) still fails the complete-corridor
 requirement; it is not counted as coverage.
+
+## Curated exit crossing
+
+The full-build metadata tool reads the same LGB exit/pop-range data used by
+Sapphire. Required layers must parse. Unsupported optional planner layers are
+explicitly listed in the output, matching the server's fallback to its three
+required layers. The curated profile supports enabled ordinary box exits from
+territory 130, not arbitrary teleports, housing, tilted volumes or general triggers.
+
+```sh
+cmake --build build --target sapphire_test_transitions sapphire_test_navbuild --config Debug
+bin/sapphire_test_transitions <game/sqpack> .e2e-assets/uldah-v1/navi build-e2e/transition.json 2377056
+bin/sapphire_test_navbuild bin/navi/w1f2/w1f2.obj .e2e-assets/central-v1 w1f2
+```
+
+Use `.exe` on Windows. Set `transition_catalog` to the generated JSON. The verified
+approach has 41 points over 18.64m. Its start is outside the exit volume; its end
+is on the navmesh inside a conservative inner volume. Box centers are projected
+onto actual ground, not treated as foot height. The worker also checks its current
+territory, idle state and physical position before sending the ordinary ZoneJump.
+Readiness still requires received initialization/self-spawn/cleared BetweenAreas.
+
+Create a **new private** server navigation root containing the generated
+`w1t1/w1t1.nav` and `w1f2/w1f2.nav`, and set `navigation` to that root. Do not overwrite
+`bin/navi`. The runner hashes those meshes; the latest live world logs confirm both
+territories initialize with `NAVI`. Other maps are not thereby validated. A
+manifest path/hash alone is not evidence that a server successfully loaded a mesh.
+Destination observers start at the catalog pop point in a whitelisted public
+territory before their first connection; the traveler crosses only through packets.
 
 ## Bounded exploration, soak and replay
 

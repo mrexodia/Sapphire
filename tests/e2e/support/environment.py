@@ -81,6 +81,7 @@ class Environment:
         self.game_data = Path(profile["game_data"]).resolve()
         self.mariadb = Path(profile["mariadb_bin"]).resolve()
         self.worker = Path(profile["worker"]).resolve()
+        self.navigation = Path(profile.get("navigation", self.binaries / "navi")).resolve()
         self.suffix = ".exe" if os.name == "nt" else ""
         required = [self.worker, self.game_data,
                     self.mariadb / ("mariadbd" + self.suffix),
@@ -89,6 +90,8 @@ class Environment:
         missing = [str(path) for path in required if not path.exists()]
         if missing:
             raise SetupError("missing required assets/binaries: " + ", ".join(missing))
+        if profile.get("navigation") and not self.navigation.is_dir():
+            raise SetupError("configured navigation root must exist")
         self.root = Path(tempfile.mkdtemp(prefix="sapphire-e2e-"))
         self.runtime = self.root / "runtime"
         self.runtime.mkdir()
@@ -136,7 +139,7 @@ class Environment:
             "Scripts": {"Path": "./compiledscripts/", "CachePath": "./cache/", "HotSwap": "false"},
             "Network": {"ListenIp": "127.0.0.1", "ListenPort": self.zone_port, "DisconnectTimeout": 20},
             "General": {"SkipOpening": "true", "MotD": "Sapphire isolated E2E"},
-            "Navigation": {"MeshPath": (self.binaries / "navi").as_posix()},
+            "Navigation": {"MeshPath": self.navigation.as_posix()},
             "Map": {"EagerENpcEObjCache": "false"},
         })
         write_config(config / "lobby.ini", {
@@ -149,15 +152,18 @@ class Environment:
         revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
         dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO, text=True))
         manifest = {"revision": revision, "dirty": dirty, "profile": "sapphire-3.3",
-                    "fixture_version": 1, "database": self.db_name, "runtime": str(self.runtime),
-                    "game_data": str(self.game_data), "navmesh": str(self.binaries / "navi"),
+                    "fixture_version": 2, "database": self.db_name, "runtime": str(self.runtime),
+                    "game_data": str(self.game_data), "navmesh": str(self.navigation),
                     "ports": {"database": self.db_port, "api": self.api_port,
                               "lobby": self.lobby_port, "world": self.zone_port},
                     "binaries": {name: sha256(self.runtime / (name + self.suffix))
                                  for name in ("api", "lobby", "server", "dbm")},
                     "worker_sha256": sha256(self.worker),
                     "scripts": {p.name: sha256(p) for p in (self.runtime / "compiledscripts").glob("*") if p.is_file()}}
-        for key in ("quest_catalog", "follow_up_catalog"):
+        if self.profile.get("navigation"):
+            manifest["server_navigation"] = {p.relative_to(self.navigation).as_posix(): sha256(p)
+                                             for p in sorted(self.navigation.rglob("*.nav"))}
+        for key in ("quest_catalog", "follow_up_catalog", "transition_catalog"):
             if self.profile.get(key):
                 path = Path(self.profile[key]).resolve()
                 manifest[key] = {"path": str(path), "sha256": sha256(path)}
@@ -252,7 +258,11 @@ class Environment:
             self.redactions.add(result["sId"])
         return result
 
-    def fresh_character(self, position=None):
+    def fresh_character(self, position=None, territory=130):
+        if type(territory) is not int or territory not in {130, 131, 140, 141}:
+            raise SetupError("unsupported public fixture territory")
+        if territory != 130 and position is None:
+            raise SetupError("nondefault fixture territory requires an explicit position")
         if position is not None and (len(position) != 3 or not all(math.isfinite(v) and abs(v) < 1000 for v in position)):
             raise SetupError("invalid fixture start position")
         username = "e2e_" + uuid.uuid4().hex
@@ -275,7 +285,7 @@ class Environment:
         coordinates = ""
         if position is not None:
             coordinates = ", " + ", ".join(f"{column}={float(value):.9g}" for column, value in zip(("PosX", "PosY", "PosZ"), position))
-        sql = ("UPDATE charainfo SET TerritoryType=130, TerritoryId=0, "
+        sql = (f"UPDATE charainfo SET TerritoryType={territory}, TerritoryId=0, "
                f"IsNewGame=0, OpeningSequence=2{coordinates} WHERE Name='{name}';")
         self._run("fixture-seed", [self.mariadb / ("mariadb" + self.suffix),
                   f"--defaults-extra-file={self.runtime / 'config' / 'mysql-client.ini'}",
