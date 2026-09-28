@@ -37,7 +37,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
-| Failure minimization | No reducer | Missing |
+| Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
 | Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults and a controlled live diagnostic-write failure verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
@@ -188,6 +188,52 @@ Ignored local evidence: `build-e2e/{contracts,live,quest}.xml`,
 `build-e2e-msvc/contracts.xml`, `build-e2e-linux/container-contracts.xml`, CTest logs,
 private generated catalogs, and `.e2e-artifacts/sapphire-e2e-*/` manifests/journals.
 Existing server binaries are staged and hashed, not silently rebuilt by the runner.
+
+## Failed-plan minimization
+
+`7ea74c4b79` adds `run_minimize.py` and `support/minimize.py`. The reducer first
+reruns the full baseline in a fresh disposable environment; it does not trust a
+historical result. It accepts a candidate only when the run fails in the workflow
+stage, cleanup and outcome publication succeeded, and the same semantic action
+has the same normalized assertion. Normalization removes only the ephemeral state
+dump after `; state=`. Passes, different action/assertion failures, setup/cleanup/
+artifact failures, missing outcomes and retained runtimes are rejected.
+
+Exploration candidates remove ordered actions; soak candidates remove complete
+actor rounds. Every candidate passes the ordinary plan validator before execution.
+The execution budget (1..100, including baseline), candidate hashes, original
+indexes, signatures, artifact roots, accepted decisions, budget exhaustion and
+one-minimal status are recorded. Output overwrite is refused. Paced/minimum-span
+plans are rejected rather than weakening their sustained-work evidence. A reduced
+plan is only a semantic reproduction aid—not root-cause proof or scheduling/packet
+determinism.
+
+All **239** Python contracts pass with Clang and MSVC workers and in the
+network-isolated Linux container, including 15 reducer contracts. The workflow
+YAML parses with the new contract selection; no native or gameplay code changed.
+A clean live reduction at `7ea74c4b79` expanded the already-established one-second
+walk-timeout reproduction from two to eight valid actions, then ran five isolated
+candidates. It rejected a different heartbeat timeout, rejected a passing
+candidate, accepted only the exact walk assertion and produced the original
+semantic two-action reproduction:
+
+- Input canonical plan SHA-256
+  `b53adb26c57683d7c5c5b194e9fd011ea56877bf9457850eaeb5bed6e1aff9fd`;
+  minimized canonical SHA-256
+  `0edbffe8f98fd74a420cd713180fcd139a2f2fcb917995ad9420be106f13b969`.
+- Eight actions became two; original indexes 0/1 were retained, indexes 2..7
+  removed; five executions, budget not exhausted, structurally one-minimal because
+  the validated plan requires at least two actions for two bots.
+- Baseline and both accepted candidates failed on exactly
+  `population-0: timeout waiting for waypoint sent` for walk bot0/waypoint5.
+- All five manifests record clean full revision `7ea74c4b79`; every result records
+  `runtime_removed=true`, all whole private runtime roots are absent, and the one
+  passing/different-failure candidates were not misclassified.
+- Evidence: `.e2e-artifacts/minimizer-live-{input,output,output-report}.json`,
+  candidate roots `sapphire-e2e-wsk6hafx`, `2qgq_k26`, `eqll6136`, `jwej02mu`,
+  `5po9v23t`, and `build-e2e/minimizer-live.log`. Combined candidate elapsed time
+  was 154.484s. These are deterministic-deadline reducer mechanics, not broad
+  failure-minimization quality or a new server defect.
 
 ## Repeated combat and first retaliation
 
