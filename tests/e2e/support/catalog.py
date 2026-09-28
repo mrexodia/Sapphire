@@ -5,13 +5,16 @@ from pathlib import Path
 from .worker import WorkerError
 
 
-def validate_quest_catalog(data):
+def validate_quest_catalog(data, completed_quests=()):
     if data.get("profile") != "sapphire-3.3" or data.get("version") != 1:
         raise WorkerError("unsupported quest catalog version/profile")
-    if data.get("quest") not in {65685, 65686}:
+    if data.get("quest") not in {65685, 65686, 65687}:
         raise WorkerError("quest has no implemented scenario/scene adapter")
-    if data.get("level") != 1 or any(data.get("previous_quests", [1])):
+    previous = data.get("previous_quests")
+    if data.get("level") != 1 or not isinstance(previous, list) or len(previous) != 3:
         raise WorkerError("quest fixture prerequisites are unsupported")
+    if any(type(quest) is not int or (quest and quest not in completed_quests) for quest in previous):
+        raise WorkerError("quest prerequisites have not been observed complete")
     route = data.get("route", [])
     if not 2 <= len(route) <= 2048:
         raise WorkerError("quest requires a complete bounded navigation route")
@@ -36,5 +39,5 @@ def validate_quest_catalog(data):
     return data
 
 
-def load_quest_catalog(path):
-    return validate_quest_catalog(json.loads(Path(path).read_text(encoding="utf-8")))
+def load_quest_catalog(path, completed_quests=()):
+    return validate_quest_catalog(json.loads(Path(path).read_text(encoding="utf-8")), completed_quests)

@@ -157,13 +157,14 @@ class Environment:
                                  for name in ("api", "lobby", "server", "dbm")},
                     "worker_sha256": sha256(self.worker),
                     "scripts": {p.name: sha256(p) for p in (self.runtime / "compiledscripts").glob("*") if p.is_file()}}
-        if self.profile.get("quest_catalog"):
-            path = Path(self.profile["quest_catalog"]).resolve()
-            manifest["quest_catalog"] = {"path": str(path), "sha256": sha256(path)}
-            catalog = json.loads(path.read_text(encoding="utf-8"))
-            if catalog.get("navigation", {}).get("mesh"):
-                mesh = Path(catalog["navigation"]["mesh"])
-                manifest["quest_navigation"] = {"path": str(mesh), "sha256": sha256(mesh)}
+        for key in ("quest_catalog", "follow_up_catalog"):
+            if self.profile.get(key):
+                path = Path(self.profile[key]).resolve()
+                manifest[key] = {"path": str(path), "sha256": sha256(path)}
+                catalog = json.loads(path.read_text(encoding="utf-8"))
+                if catalog.get("navigation", {}).get("mesh"):
+                    mesh = Path(catalog["navigation"]["mesh"])
+                    manifest[key + "_navigation"] = {"path": str(mesh), "sha256": sha256(mesh)}
         (self.artifacts / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     def _run(self, name, args, timeout=120):

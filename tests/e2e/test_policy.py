@@ -28,6 +28,17 @@ def test_catalog_requires_complete_local_route():
         validate_quest_catalog(bad)
 
 
+def test_follow_up_requires_observed_prerequisite():
+    data = catalog()
+    data["quest"] = 65687
+    data["previous_quests"] = [65686, 0, 0]
+    with pytest.raises(WorkerError, match="not been observed"):
+        validate_quest_catalog(data)
+    with pytest.raises(WorkerError, match="not been observed"):
+        validate_quest_catalog(data, completed_quests={65685})
+    assert validate_quest_catalog(data, completed_quests={65686})["quest"] == 65687
+
+
 def test_seed_reproduces_decisions_not_server_timing():
     a = build_plan(catalog(), "explore", 42, 2, 50)
     assert a == build_plan(catalog(), "explore", 42, 2, 50)

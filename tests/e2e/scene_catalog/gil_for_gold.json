@@ -1,0 +1,12 @@
+{
+  "profile": "sapphire-3.3",
+  "version": 1,
+  "quest_id": 65687,
+  "source": "src/scripts/quest/subquest/uldah/SubWil002.cpp",
+  "scenes": {
+    "65687:0": {"choices": {"accept": [1], "cancel": [0]}},
+    "65687:1": {"choices": {"hand_over": [1], "cancel": [0]}},
+    "65687:99": {"choices": {"acknowledge": [0]}},
+    "65687:100": {"choices": {"complete_with_ether": [1, 4555]}}
+  }
+}

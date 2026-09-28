@@ -24,13 +24,13 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | `BuildNavigation.cpp` reuses exporter; separate TSET output, originals unchanged; `NavigationRoute.cpp` requires complete corridors and sampled surfaces | Verified for Motivational Speaking; Due Diligence disconnected |
-| Versioned route/scene data | Private generated catalog v1; checked-in explicit `motivational_speaking.json` scene choices | One live verified adapter; Due Diligence remains source-derived |
+| Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking and Gil for Gold choices | Two live verified adapters; Due Diligence remains source-derived |
 | Interact / choose dialogue / unknown-scene failure | Exact received event/scene/token; no default choice or raw-packet control; contract tests | Verified for supported one/two-result returns |
 | Quest state / accept and cancel / completion | `test_live_quest.py`: Motivational Speaking (65686), cancel unchanged, accept sequence 255, completion | Verified |
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Ordinary Say observed by another bot; quest-created inventory observed | Social subset verified; additional quests, zoning, item actions and combat missing |
+| More quests / zoning / inventory operations / combat / social | Ordinary Say observed by another bot; two-quest chain, optional reward and active-quest reconnect verified | Quest/social subset verified; zoning, item actions and combat missing |
 | Range/discovery/territory event triggers | No general adapter yet | Missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Four live scenarios, native tests and Python contracts | Initial suite verified |
@@ -51,8 +51,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, synthetic navigation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same three CTest executables pass.
-- 27 Python worker/policy contracts pass on Windows and in a network-isolated Linux
-  container. This WSL instance refuses even Python-only loopback connections;
+- 27 Python worker/policy contracts passed on Windows and in a network-isolated Linux
+  container; an additional prerequisite-validation test has since passed locally. This WSL instance refuses even Python-only loopback connections;
   the failing WSL socket check was not skipped or rewritten to make it pass.
 - Four live scenarios pass together in 96.16s: rejected credentials, login/idle/
   logout, observed movement/Say/position persistence, and full quest/rewards/
@@ -60,6 +60,12 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - Current navigation generated separately in `.e2e-assets/uldah-v2`; repeat output
   refused, original OBJ and legacy mesh hashes unchanged. The 65686 route has
   322 points and length approximately 152.375m, with nearby walkable NPC approaches.
+- The added Gil for Gold chain variant passes in 102.52s, including the first
+  quest as its real prerequisite. Its 186-point route joins the preceding endpoint
+  without teleporting. Active quest 151 survives reconnect; hand-over cancellation
+  leaves progress/rewards unchanged; choosing item ID 4555 grants three ethers and
+  50 additional XP, not the alternative potions. Both completions and cumulative
+  rewards survive restart. Evidence: `build-e2e/quest-chain.xml` and its manifest.
 - Seed 42/two bots/12 actions: exploration and fresh-environment semantic replay
   passed (`sapphire-e2e-qmrbsx71`, latest replay `sapphire-e2e-79q32vbf`).
 - Seed 7/four bots/120 actions: soak passed in 112.125s including setup/teardown

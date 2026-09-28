@@ -25,6 +25,11 @@ lobby, world and MariaDB processes with matching game data:
   potions are verified. A nearby bot independently observes arrival.
 - Quest completion, tracked bag item counts/currencies and XP survive world restart and
   a fresh HTTP/lobby login. Completion-list bit order has a regression fixture.
+- **Gil for Gold (65687)** follows the first quest without seeded completion or a
+  position reset. The chain checks its observed prerequisite, reconnects with the
+  quest active, walks another 86.8m, cancels/acknowledges a hand-over, then chooses
+  three ethers rather than the alternative potions. Both completions and cumulative
+  rewards survive world restart.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation, combat,
@@ -79,8 +84,10 @@ not replace the live suite.
 3. Copy `tests/e2e/profile.example.json` to `.e2e-local.json` and edit its paths.
    Profiles must point to binaries you trust. The root `.gitignore` excludes local
    `.e2e-*.json` profiles and `.e2e-artifacts/`.
-4. For quest coverage, generate the private route catalog below and add its absolute
-   path as `quest_catalog` in the local profile. The quest test fails if it is absent.
+4. For quest coverage, generate the private route catalogs below and add absolute
+   paths as `quest_catalog` (65686) and `follow_up_catalog` (65687) in the profile.
+   Requested quest tests fail if their catalog is absent. Use `-k single` to select
+   only the first quest.
 5. Run:
 
 ```sh
@@ -182,6 +189,7 @@ cmake -S . -B build -DSAPPHIRE_BUILD_TEST_CLIENT=ON
 cmake --build build --target sapphire_test_navbuild sapphire_test_catalog --config Debug
 bin/sapphire_test_navbuild bin/navi/w1t1/w1t1.obj .e2e-assets/uldah-v1 w1t1
 bin/sapphire_test_catalog <game/sqpack> .e2e-assets/uldah-v1/navi build-e2e/quest.json 65686
+bin/sapphire_test_catalog <game/sqpack> .e2e-assets/uldah-v1/navi build-e2e/follow-up.json 65687
 ```
 
 Add `.exe` on Windows. The builder reuses the existing exporter, requires a new
@@ -196,8 +204,10 @@ rejects truncation/off-mesh links and samples polygon surfaces at approximately
 missing meshes fail, with no straight-line fallback. The Python scenario rechecks
 route bounds/length/endpoints. The verified 65686 route contains 322 waypoints.
 
-Set `quest_catalog` to the generated JSON path. Manifests record its hash and the
-navigation mesh hash. Generated routes, collision geometry and meshes are private
+Set `quest_catalog` and `follow_up_catalog` to the corresponding generated JSON
+paths. Manifests record both catalog hashes and their navigation mesh hashes.
+The follow-up starts at the previous route's endpoint and has 186 waypoints;
+loading it requires the prerequisite to have been observed complete. Generated routes, collision geometry and meshes are private
 asset-derived material; keep them under ignored directories, not public artifacts.
 Due Diligence (default quest ID 65685 if omitted) still fails the complete-corridor
 requirement; it is not counted as coverage.
