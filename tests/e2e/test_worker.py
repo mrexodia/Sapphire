@@ -21,6 +21,7 @@ def test_capabilities(worker):
     assert "request_item_split" in caps["methods"]
     assert "request_item_merge" in caps["methods"]
     assert "start_uldah_opening" in caps["methods"]
+    assert "sell_shop_item" in caps["methods"]
 
 
 def test_unknown_bot_and_invalid_method(worker):
@@ -72,6 +73,9 @@ def test_action_before_readiness_is_rejected(worker):
                 worker.request("fast_blade", "test", target=123)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("start_uldah_opening", "test")
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("sell_shop_item", "test", token=1, event_id=0x40005,
+                               storage=0, slot=0, expected_item=4551, expected_count=1)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("request_item_move", "test", storage=0, slot=0,
                                expected_item=4555, destination_storage=3, destination_slot=24)

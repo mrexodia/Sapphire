@@ -2,7 +2,8 @@
 from copy import deepcopy
 import pytest
 
-from .support.catalog import validate_quest_catalog, validate_transition_catalog, validate_combat_catalog
+from .support.catalog import (validate_combat_catalog, validate_quest_catalog,
+                              validate_shop_catalog, validate_transition_catalog)
 from .support.combat import combat_reward_delta
 from .support.workload import build_plan, validate_plan
 from .support.worker import WorkerError, reward_values
@@ -19,6 +20,19 @@ def test_combat_catalog_rejects_unsupported_action_metadata(patch):
     assert validate_combat_catalog(data) == data
     with pytest.raises(WorkerError, match="Fast Blade"):
         validate_combat_catalog({**data, **patch})
+
+
+def test_shop_catalog_binds_route_actor_and_exact_sale():
+    data = {"version": 1, "profile": "sapphire-3.3", "territory": 130,
+            "start_actor": 1001289, "route": [[0, 0, 0], [1, 0, 0]], "route_length": 1,
+            "shop": {"layout_id": 3, "base_id": 4, "event_id": 0x40005, "position": [1, 0, 0]},
+            "sale": {"item": 4551, "quantity": 1, "gil": 28}}
+    assert validate_shop_catalog(data) == data
+    for changed in ({**data, "territory": 141}, {**data, "sale": {"item": 4551, "quantity": 2, "gil": 56}},
+                    {**data, "shop": {**data["shop"], "event_id": 0x10005}},
+                    {**data, "route": [[0, 0, 0], [3, 0, 0]], "route_length": 3}):
+        with pytest.raises(WorkerError):
+            validate_shop_catalog(changed)
 
 
 def test_combat_reward_delta_requires_exact_current_loot_contract():

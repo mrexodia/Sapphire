@@ -16,7 +16,7 @@ import sys
 import tempfile
 import traceback
 
-from .support.catalog import load_combat_catalog, load_quest_catalog, load_transition_catalog
+from .support.catalog import load_combat_catalog, load_quest_catalog, load_shop_catalog, load_transition_catalog
 from .support.environment import REPO, sha256
 
 VERSION = "2016.07.05.0000.0001"
@@ -32,7 +32,7 @@ CASES = (
     "tests/e2e/test_live_creation.py::test_lobby_character_creation_and_opening_persistence",
 )
 SUITES = tuple(dict.fromkeys(case.split("::", 1)[0] for case in CASES))
-CATALOGS = ("quest_catalog", "follow_up_catalog", "transition_catalog", "combat_catalog")
+CATALOGS = ("quest_catalog", "follow_up_catalog", "transition_catalog", "combat_catalog", "shop_catalog")
 PATH_KEYS = ("binaries", "worker", "game_data", "mariadb_bin", "navigation", *CATALOGS)
 
 
@@ -79,7 +79,8 @@ def preflight(profile, *, suffix=None):
     if transition["transition"]["target_territory"] != 141:
         raise PreflightError("unsupported CI destination")
     load_combat_catalog(paths["combat_catalog"])
-    for catalog in (first, second, transition):
+    shop = load_shop_catalog(paths["shop_catalog"])
+    for catalog in (first, second, transition, shop):
         if sha256(Path(catalog["navigation"]["mesh"])) != meshes["w1t1"]:
             raise PreflightError("route/server mesh mismatch")
     identities = {"worker": sha256(paths["worker"]),

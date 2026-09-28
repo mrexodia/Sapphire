@@ -1,4 +1,5 @@
 #include "Protocol.h"
+#include "ShopActions.h"
 #include "TransitionActions.h"
 #include <Crypt/Random.h>
 #include <set>
@@ -97,6 +98,15 @@ int main()
     rejects([&] { exitRangeRequest(130, {1,2,3}, disabledExit); });
     auto tiltedExit = exit; tiltedExit["rotation"][0] = 0.1;
     rejects([&] { exitRangeRequest(130, {1,2,3}, tiltedExit); });
+
+    auto sale = shopSaleReturn(0x00040005, 3, 24, 4551);
+    require(sale.size() == 1028 && sale[0] == 5 && sale[2] == 4 && sale[4] == 40 && sale[7] == 255,
+            "shop sale return header fixture");
+    require(sale[12] == 2 && sale[16] == 3 && sale[20] == 24 && sale[28] == 1 &&
+            sale[32] == 0xC7 && sale[33] == 0x11, "shop sale result offsets fixture");
+    rejects([&] { shopSaleReturn(0x00010005, 3, 24, 4551); });
+    rejects([&] { shopSaleReturn(0x00040005, 4, 24, 4551); });
+    rejects([&] { shopSaleReturn(0x00040005, 3, 25, 4551); });
 
     LobbyCipher sender, receiver;
     auto hello = sender.initialize(42, "SapphireE2E");

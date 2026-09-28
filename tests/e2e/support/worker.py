@@ -241,6 +241,36 @@ class Bot:
     def start_uldah_opening(self):
         self.worker.request("start_uldah_opening", self.name)
 
+    def open_gil_shop(self, layout_id, event_id, timeout=10):
+        if type(event_id) is not int or event_id >> 16 != 4:
+            raise WorkerError("unsupported gil-shop event binding")
+        self.interact(layout_id, event_id)
+        state = self.worker.wait_state(self.name,
+            lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
+                      and s["scene"]["scene_id"] == 0,
+            "matching gil-shop entry scene", timeout)
+        self.worker.request("choose_scene", self.name, **scene_arguments(state["scene"]), results=[0])
+        return self.worker.wait_state(self.name,
+            lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
+                      and s["scene"]["scene_id"] == 40,
+            "matching gil-shop inventory scene", timeout)
+
+    def sell_shop_item(self, storage, slot, expected_item, expected_count=1):
+        state = self.worker.snapshot(self.name)
+        scene = state["scene"]
+        if scene is None:
+            raise WorkerError("shop sale requires a received scene")
+        self.worker.request("sell_shop_item", self.name, **scene_arguments(scene), storage=storage, slot=slot,
+                            expected_item=expected_item, expected_count=expected_count)
+
+    def exit_gil_shop(self, event_id, timeout=10):
+        state = self.worker.wait_state(self.name,
+            lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
+                      and s["scene"]["scene_id"] == 40,
+            "refreshed gil-shop scene", timeout)
+        self.worker.request("choose_scene", self.name, **scene_arguments(state["scene"]), results=[0])
+        return self.wait_event_finished(timeout)
+
     def choose_dialogue(self, catalog, choice, timeout=10):
         state = self.worker.wait_state(self.name, lambda s: s["scene"] is not None, "scene", timeout)
         scene = state["scene"]

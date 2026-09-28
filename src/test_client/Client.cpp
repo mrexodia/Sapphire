@@ -1,5 +1,6 @@
 #include "Client.h"
 #include "InventoryActions.h"
+#include "ShopActions.h"
 #include "TransitionActions.h"
 #include <Network/CommonActorControl.h>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
@@ -617,6 +618,30 @@ namespace Sapphire::Testing
       p.handlerId = scene.at("event_id"); p.sceneId = scene.at("scene_id"); p.numOfResults = static_cast<uint8_t>(results.size());
       std::copy(results.begin(), results.end(), p.results);
       sendZone(p._ServerIpcType, objectBytes(p)); m_state["scene"] = nullptr;
+      return Json::object();
+    }
+    if(method == "sell_shop_item")
+    {
+      const auto& scene = m_state["scene"];
+      if(scene.is_null() || scene.at("token") != args.at("token") ||
+         scene.at("event_id") != args.at("event_id") || scene.at("scene_id") != 40 ||
+         (scene.at("event_id").get<uint32_t>() >> 16) != 4)
+        throw ProtocolError("shop sale requires the matching received gil-shop scene 40");
+      const auto storage = args.at("storage").get<uint16_t>();
+      const auto slot = args.at("slot").get<uint16_t>();
+      const auto item = args.at("expected_item").get<uint32_t>();
+      const auto count = args.at("expected_count").get<uint32_t>();
+      if(storage > 3 || slot >= 25 || item > 0xffff || count != 1)
+        throw ProtocolError("shop sale supports one observed single-item ordinary-bag stack");
+      const auto key = std::to_string(storage) + ":" + std::to_string(slot);
+      const auto& inventory = m_rewards.state()["inventory"];
+      if(!inventory.contains(key) || inventory.at(key).at("storage") != storage ||
+         inventory.at(key).at("slot") != slot || inventory.at(key).at("id") != item ||
+         inventory.at(key).at("count") != count)
+        throw ProtocolError("shop sale source does not match the complete received inventory");
+      sendZone(WC::FFXIVIpcReturnEventScene255::_ServerIpcType,
+               shopSaleReturn(scene.at("event_id"), storage, slot, static_cast<uint16_t>(item)));
+      m_state["scene"] = nullptr;
       return Json::object();
     }
     if(method == "fast_blade")

@@ -49,6 +49,12 @@ def profile(tmp_path):
               "category": 3, "cost_type": 5, "cost": 60, "range": -1, "cast_ms": 0,
               "recast_ms": 2500, "recast_group": 58, "effect_type": 1, "target_enemy": True}
     Path(p["combat_catalog"]).write_text(json.dumps(combat))
+    shop = {"version": 1, "profile": "sapphire-3.3", "territory": 130,
+            "start_actor": 1001289, "navigation": nav,
+            "route": [[0, 0, 0], [1, 0, 0]], "route_length": 1,
+            "shop": {"layout_id": 3, "base_id": 4, "event_id": 0x40005, "position": [1, 0, 0]},
+            "sale": {"item": 4551, "quantity": 1, "gil": 28}}
+    Path(p["shop_catalog"]).write_text(json.dumps(shop))
     return p
 
 

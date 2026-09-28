@@ -70,6 +70,23 @@ def validate_transition_catalog(data):
     return data
 
 
+def validate_shop_catalog(data):
+    if data.get("profile") != "sapphire-3.3" or data.get("version") != 1 or data.get("territory") != 130:
+        raise WorkerError("unsupported shop catalog profile/territory")
+    if data.get("start_actor") != 1001289 or data.get("sale") != {"item": 4551, "quantity": 1, "gil": 28}:
+        raise WorkerError("unsupported shop sale binding")
+    shop = data.get("shop", {})
+    if (set(shop) != {"layout_id", "base_id", "event_id", "position"}
+            or any(type(shop.get(key)) is not int or shop[key] <= 0
+                   for key in ("layout_id", "base_id", "event_id"))
+            or shop["event_id"] >> 16 != 4):
+        raise WorkerError("invalid gil-shop actor binding")
+    route = validated_route(data)
+    if math.dist(route[-1], shop["position"]) > 2:
+        raise WorkerError("shop route must end within interaction range")
+    return data
+
+
 def validate_combat_catalog(data):
     expected = {"version": 1, "profile": "sapphire-3.3", "action": 9, "class_job": 1,
                 "work_index": 1, "level": 1, "base_exp": 50,
@@ -79,6 +96,10 @@ def validate_combat_catalog(data):
     if any(type(data.get(key)) is not type(value) or data[key] != value for key, value in expected.items()):
         raise WorkerError("combat catalog does not match the supported level-one Fast Blade profile")
     return data
+
+
+def load_shop_catalog(path):
+    return validate_shop_catalog(json.loads(Path(path).read_text(encoding="utf-8")))
 
 
 def load_combat_catalog(path):

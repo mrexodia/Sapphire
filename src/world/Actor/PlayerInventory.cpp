@@ -311,7 +311,9 @@ void Player::addCurrency( CurrencyType type, uint32_t amount )
 
   if( !currItem )
   {
-    currItem = createItem( currencyTypeToItem( type ) );
+    // A newly materialized currency slot represents zero before the requested
+    // credit; the generic item factory otherwise defaults its quantity to one.
+    currItem = createItem( currencyTypeToItem( type ), 0 );
     m_storageMap[ Currency ]->setItem( slot, currItem );
   }
 

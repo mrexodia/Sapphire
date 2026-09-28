@@ -259,6 +259,11 @@ void WorldServer::init( int32_t argc, char *argv[ ] )
   Common::Service< Common::Random::RNGMgr >::set( pRNGMgr );
   logInitStep( "RNGMgr set" );
 
+  // Inventory loading can materialize persisted currencies and therefore needs
+  // the item allocator before players are loaded.
+  auto pItemMgr = std::make_shared< Manager::ItemMgr >();
+  Common::Service< Manager::ItemMgr >::set( pItemMgr );
+
   auto pPlayerMgr = std::make_shared< Manager::PlayerMgr >();
   Logger::info( "Loading all players" );
   if( !pPlayerMgr->loadPlayers() )
@@ -421,7 +426,6 @@ void WorldServer::init( int32_t argc, char *argv[ ] )
   auto pShopMgr = std::make_shared< Manager::ShopMgr >();
   auto pInventoryMgr = std::make_shared< Manager::InventoryMgr >();
   auto pEventMgr = std::make_shared< Manager::EventMgr >();
-  auto pItemMgr = std::make_shared< Manager::ItemMgr >();
   auto pQuestMgr = std::make_shared< Manager::QuestMgr >();
   auto pPartyMgr = std::make_shared< Manager::PartyMgr >();
   auto pFriendMgr = std::make_shared< Manager::FriendListMgr >();
@@ -434,7 +438,6 @@ void WorldServer::init( int32_t argc, char *argv[ ] )
   Common::Service< Manager::ShopMgr >::set( pShopMgr );
   Common::Service< Manager::InventoryMgr >::set( pInventoryMgr );
   Common::Service< Manager::EventMgr >::set( pEventMgr );
-  Common::Service< Manager::ItemMgr >::set( pItemMgr );
   Common::Service< Manager::QuestMgr >::set( pQuestMgr );
   Common::Service< Manager::PartyMgr >::set( pPartyMgr );
   Common::Service< Manager::FriendListMgr >::set( pFriendMgr );

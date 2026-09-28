@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 
 import pytest
-from .support.catalog import load_quest_catalog
+from .support.catalog import load_quest_catalog, load_shop_catalog
 from .support.worker import Bot
 
 pytestmark = pytest.mark.live
@@ -249,6 +249,84 @@ def discard_reward_and_verify_restart(environment, worker, player, fixture, expe
     return reloaded
 
 
+def sell_reward_and_verify_restart(environment, worker, player, fixture, work_index, quests):
+    path = environment.profile.get("shop_catalog")
+    assert path, "shop sale requires a source-bound private route catalog"
+    catalog = load_shop_catalog(path)
+    state = worker.snapshot(player.name)
+    assert state["territory"] == 130 and math.dist(state["observed_position"], catalog["route"][0]) < 0.15
+    before_rewards = player.reward_snapshot(work_index)
+    before_inventory = deepcopy(state["rewards"]["inventory"])
+    stacks = [(key, item) for key, item in before_inventory.items()
+              if item["id"] == catalog["sale"]["item"] and item["storage"] in range(4)]
+    assert len(stacks) == 1 and stacks[0][1]["count"] == 2
+    source, item = stacks[0]
+    empty = next((f"{storage}:{slot}" for storage in reversed(range(4)) for slot in reversed(range(25))
+                  if f"{storage}:{slot}" not in before_inventory), None)
+    assert empty is not None
+    destination_storage, destination_slot = map(int, empty.split(":"))
+    split_inventory = deepcopy(before_inventory)
+    split_inventory[source]["count"] = 1
+    split_inventory[empty] = {"storage": destination_storage, "slot": destination_slot,
+                              "id": catalog["sale"]["item"], "count": 1}
+    receipt = player.request_item_split(item["storage"], item["slot"], destination_storage,
+        destination_slot, catalog["sale"]["item"], 2, 1)
+    assert receipt["acknowledged"] and receipt["inventory_change_verified"] is False
+    player.logout()
+    player.close()
+    environment.restart_world()
+    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    state = player.login_via_lobby(auth, fixture["name"])
+    state = player.expect_rewards(before_rewards, work_index)
+    assert state["rewards"]["inventory"] == split_inventory
+
+    observer_fixture = environment.fresh_character(catalog["route"][-1])
+    observer = Bot(worker, "shop-observer")
+    observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
+    actor = str(state["entity_id"])
+    player.walk_route(catalog["route"], 6.0, 180)
+    worker.wait_state(observer.name,
+        lambda s: actor in s["actors"] and math.dist(s["actors"][actor]["position"], catalog["route"][-1]) < 0.15,
+        "shop arrival observed by independent client", 30)
+    assert math.dist(catalog["route"][-1], catalog["shop"]["position"]) <= 2
+    player.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
+    player.sell_shop_item(destination_storage, destination_slot, catalog["sale"]["item"])
+    after_rewards = deepcopy(before_rewards)
+    after_rewards["items"][str(catalog["sale"]["item"])] -= 1
+    after_rewards["currencies"]["1"] = after_rewards["currencies"].get("1", 0) + catalog["sale"]["gil"]
+    state = player.expect_rewards(after_rewards, work_index)
+    sold_inventory = deepcopy(split_inventory)
+    del sold_inventory[empty]
+    sold_inventory["2000:0"] = {"storage": 2000, "slot": 0, "id": 1,
+                                "count": catalog["sale"]["gil"]}
+    assert state["rewards"]["inventory"] == sold_inventory
+    player.exit_gil_shop(catalog["shop"]["event_id"])
+    for quest in quests:
+        player.expect_quest_complete(quest)
+    player.logout()
+    worker.wait_state(observer.name, lambda s: actor not in s["actors"], "shopper session cleanup", 30)
+    player.close()
+    observer.logout()
+    observer.close()
+    environment.restart_world()
+    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    reloaded = Bot(worker, "shop-reloaded")
+    state = reloaded.login_via_lobby(auth, fixture["name"])
+    state = reloaded.expect_rewards(after_rewards, work_index)
+    assert state["rewards"]["inventory"] == sold_inventory
+    for quest in quests:
+        reloaded.expect_quest_complete(quest)
+    (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
+        "shop": catalog["shop"], "route_length": catalog["route_length"],
+        "split_receipt": receipt, "rewards_before": before_rewards,
+        "inventory_after_split_restart": split_inventory,
+        "rewards_after_sale_restart": after_rewards, "inventory_after_sale_restart": sold_inventory,
+        "arrival_observed": True,
+        "scope": "one normally earned potion split to a single-item stack and sold through one source-bound gil shop"
+    }, indent=2), encoding="utf-8")
+    return reloaded
+
+
 @pytest.mark.parametrize("follow_up", [False, True], ids=["single", "chain"])
 def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, follow_up):
     if follow_up:
@@ -346,5 +424,7 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
         assert live_worker.snapshot(reloaded.name)["rewards"]["inventory"] == merged_inventory
         reloaded = discard_reward_and_verify_restart(environment, live_worker, reloaded, player_fixture,
                                                     expected, catalog["work_index"], completed_quests)
+        reloaded = sell_reward_and_verify_restart(environment, live_worker, reloaded, player_fixture,
+                                                  catalog["work_index"], completed_quests)
     reloaded.logout()
     reloaded.close()

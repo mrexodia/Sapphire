@@ -165,7 +165,7 @@ class Environment:
                                              for p in sorted(self.navigation.rglob("*.nav"))}
         manifest["combat_data"] = {name: sha256(self.runtime / "data" / name) for name in
             ("actions/player.json", "bnpcs/w1f2/w1f2.json", "bnpcs/w1f2/w1f2_paths.json")}
-        for key in ("quest_catalog", "follow_up_catalog", "transition_catalog", "combat_catalog"):
+        for key in ("quest_catalog", "follow_up_catalog", "transition_catalog", "combat_catalog", "shop_catalog"):
             if self.profile.get(key):
                 path = Path(self.profile[key]).resolve()
                 manifest[key] = {"path": str(path), "sha256": sha256(path)}
