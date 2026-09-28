@@ -66,6 +66,7 @@ namespace Sapphire::Testing
     LobbyCipher m_cipher;
     asio::steady_timer m_deadline, m_heartbeat, m_movement;
     uint32_t m_entity = 0;
+    uint32_t m_inventoryContext = 0x40000000;
     std::string m_worldHost;
     uint16_t m_worldPort = 0;
     bool m_zoneAck = false, m_chatAck = false, m_haveZone = false, m_selfSpawn = false;

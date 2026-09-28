@@ -43,7 +43,7 @@ int main()
         Json result = Json::object();
         if(method == "capabilities")
           result = {{"control_version", 1}, {"profile", "sapphire-3.3"}, {"scope", "loopback-only"},
-            {"methods", {"login", "snapshot", "walk_to", "interact", "choose_scene", "say", "logout", "close", "remove"}},
+            {"methods", {"login", "snapshot", "walk_to", "interact", "choose_scene", "say", "discard_item", "logout", "close", "remove"}},
             {"unsupported", {"compressed_frames", "scene_yield", "general_navigation", "combat"}}};
         else
         {

@@ -1,4 +1,5 @@
 #include "RewardsState.h"
+#include "InventoryActions.h"
 #include <Network/PacketDef/Zone/ServerZoneDef.h>
 #include <Network/CommonActorControl.h>
 #include <iostream>
@@ -53,6 +54,34 @@ int main()
     check(!state.state()["inventory"].contains("1:2"), "create waits for commit");
     batch.contextId = 60; batch.errorType = 0; receive(state, batch);
     check(state.state()["inventory"]["1:2"]["count"] == 2, "created reward uses destination fields");
+
+    auto discard = discardItemRequest(state.state(), 0x12345678, 0x01020304, 1, 2, 4551);
+    check(discard.size() == 48 && discard[0] == 4 && discard[3] == 1 && discard[4] == 7,
+          "discard context/type wire fixture");
+    check(discard[8] == 0x78 && discard[11] == 0x12 && discard[12] == 1 && discard[16] == 2 &&
+          discard[20] == 2 && discard[24] == 0xc7 && discard[25] == 0x11 && discard[28] == 0,
+          "discard uses observed identity, bag, slot and full stack");
+    check(state.state()["inventory"].contains("1:2"), "sending discard is not an observation");
+    for(auto bad : {std::array<uint32_t, 3>{2000, 0, 4551}, {1, 25, 4551}, {1, 2, 4555}, {0, 0, 4551}})
+    {
+      rejected = false;
+      try { discardItemRequest(state.state(), 1, 1, bad[0], bad[1], bad[2]); }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "discard must reject unobserved/mismatched/non-bag items");
+    }
+    batch.contextId = 0x40000001; receive(state, batch);
+    check(state.state()["inventory"].contains("1:2"), "request acknowledgement does not prove deletion");
+    WS::FFXIVIpcItemOperation removed{};
+    removed.contextId = 61; removed.operationType = Sapphire::Common::ITEM_OPERATION_TYPE_DELETEITEM;
+    removed.srcStorageId = 1; removed.srcContainerIndex = 2; removed.srcCatalogId = 4551; removed.srcStack = 2;
+    receive(state, removed);
+    check(state.state()["inventory"].contains("1:2"), "delete waits for transaction commit");
+    batch.contextId = 61; batch.errorType = 1; rejected = false;
+    try { receive(state, batch); } catch(const ProtocolError&) { rejected = true; }
+    check(rejected && state.state()["inventory"].contains("1:2"), "rejected delete retains inventory");
+    removed.contextId = 62; receive(state, removed);
+    batch.contextId = 62; batch.errorType = 0; receive(state, batch);
+    check(!state.state()["inventory"].contains("1:2"), "delete removes the stack despite nonzero source count");
 
     WS::FFXIVIpcPlayerStatus player{};
     player.ClassJob = 1; player.Exp[0] = 12; player.Lv[0] = 1; receive(state, player);

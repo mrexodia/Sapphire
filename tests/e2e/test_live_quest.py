@@ -86,6 +86,40 @@ def complete_follow_up(environment, worker, player, observer, fixture, previous,
     return quest, expected
 
 
+def discard_reward_and_verify_restart(environment, worker, player, fixture, expected, work_index, quests):
+    state = worker.snapshot(player.name)
+    inventory = deepcopy(state["rewards"]["inventory"])
+    stacks = [(key, item) for key, item in inventory.items() if item["id"] == 4555 and item["storage"] in range(4)]
+    assert len(stacks) == 1 and stacks[0][1]["count"] == 3
+    key, item = stacks[0]
+    actor = str(state["entity_id"])
+    # Fresh independent observer for this lifecycle slice, not a player-state edit.
+    observer_fixture = environment.fresh_character(state["observed_position"])
+    observer = Bot(worker, "inventory-observer")
+    observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
+    worker.wait_state(observer.name, lambda s: actor in s["actors"], "inventory subject visible")
+    state = player.discard_item(item["storage"], item["slot"], expected_item=4555)
+    del inventory[key]
+    assert state["rewards"]["inventory"] == inventory
+    remaining = deepcopy(expected)
+    del remaining["items"]["4555"]
+    player.expect_rewards(remaining, work_index)
+    player.logout()
+    worker.wait_state(observer.name, lambda s: actor not in s["actors"], "inventory session cleanup", 30)
+    player.close()
+    observer.logout()
+    observer.close()
+    environment.restart_world()
+    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    reloaded = Bot(worker, "inventory-reloaded")
+    reloaded.login_via_lobby(auth, fixture["name"])
+    state = reloaded.expect_rewards(remaining, work_index)
+    assert state["rewards"]["inventory"] == inventory
+    for quest in quests:
+        reloaded.expect_quest_complete(quest)
+    return reloaded
+
+
 @pytest.mark.parametrize("follow_up", [False, True], ids=["single", "chain"])
 def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, follow_up):
     if follow_up:
@@ -165,5 +199,8 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
     reloaded.expect_rewards(expected, catalog["work_index"])
     state = live_worker.snapshot(reloaded.name)
     assert all(str(completed_quest & 0xffff) not in state["quests"] for completed_quest in completed_quests)
+    if follow_up:
+        reloaded = discard_reward_and_verify_restart(environment, live_worker, reloaded, player_fixture,
+                                                    expected, catalog["work_index"], completed_quests)
     reloaded.logout()
     reloaded.close()

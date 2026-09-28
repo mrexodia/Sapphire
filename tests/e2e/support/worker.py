@@ -98,7 +98,7 @@ class Worker:
             with self._cv:
                 self._pending.add(identifier)
                 if method not in {"snapshot", "capabilities"}:
-                    safe_args = args if method in {"walk_to", "interact", "choose_scene", "say"} else {}
+                    safe_args = args if method in {"walk_to", "interact", "choose_scene", "say", "discard_item"} else {}
                     self._actions.append({"id": identifier, "method": method, "bot": bot,
                                           "args": safe_args, "monotonic": time.monotonic()})
             try:
@@ -222,6 +222,13 @@ class Bot:
         if catalog.get("profile") != "sapphire-3.3":
             raise UnsupportedScene("scene catalog profile mismatch")
         self.worker.request("choose_scene", self.name, **scene_arguments(scene), results=results)
+
+    def discard_item(self, storage, slot, expected_item, timeout=10):
+        self.worker.request("discard_item", self.name, storage=storage, slot=slot, expected_item=expected_item)
+        key = f"{storage}:{slot}"
+        return self.worker.wait_state(self.name,
+            lambda s: s["rewards"]["inventory_ready"] and key not in s["rewards"]["inventory"],
+            "discarded stack absent in received inventory", timeout)
 
     def say(self, message):
         self.worker.request("say", self.name, message=message)

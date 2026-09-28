@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Ordinary Say observed by another bot; two-quest chain, optional reward and active-quest reconnect verified | Quest/social subset verified; zoning, item actions and combat missing |
+| More quests / zoning / inventory operations / combat / social | Ordinary Say observed by another bot; two-quest chain, optional reward, active-quest reconnect, earned-stack discard and persistence verified | Quest/social/basic-inventory subset verified; zoning and combat missing; move/split/swap/use not covered |
 | Range/discovery/territory event triggers | No general adapter yet | Missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Four live scenarios, native tests and Python contracts | Initial suite verified |
@@ -51,8 +51,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, synthetic navigation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same three CTest executables pass.
-- 27 Python worker/policy contracts passed on Windows and in a network-isolated Linux
-  container; an additional prerequisite-validation test has since passed locally. This WSL instance refuses even Python-only loopback connections;
+- 28 Python worker/policy contracts pass locally with the MSVC worker. The earlier
+  27-test set also passed in a network-isolated Linux container. This WSL instance refuses even Python-only loopback connections;
   the failing WSL socket check was not skipped or rewritten to make it pass.
 - Four live scenarios pass together in 96.16s: rejected credentials, login/idle/
   logout, observed movement/Say/position persistence, and full quest/rewards/
@@ -66,6 +66,12 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   leaves progress/rewards unchanged; choosing item ID 4555 grants three ethers and
   50 additional XP, not the alternative potions. Both completions and cumulative
   rewards survive restart. Evidence: `build-e2e/quest-chain.xml` and its manifest.
+- Extended chain plus inventory discard passes in 117.23s
+  (`build-e2e/quest-inventory.xml`). The chosen ether reward is first verified after
+  restart, then discarded through a bounded normal request. The test observes a
+  committed deletion, unchanged other tracked slots, observer-confirmed logout,
+  and deletion/remaining rewards/quest completion after another restart.
+  Clang, MSVC and GNU builds pass the new byte-layout and transaction tests.
 - Seed 42/two bots/12 actions: exploration and fresh-environment semantic replay
   passed (`sapphire-e2e-qmrbsx71`, latest replay `sapphire-e2e-79q32vbf`).
 - Seed 7/four bots/120 actions: soak passed in 112.125s including setup/teardown

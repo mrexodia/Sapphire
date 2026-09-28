@@ -1,4 +1,5 @@
 #include "Client.h"
+#include "InventoryActions.h"
 #include <Network/CommonActorControl.h>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
 #include <Network/PacketDef/Lobby/ServerLobbyDef.h>
@@ -483,6 +484,18 @@ namespace Sapphire::Testing
       std::copy(results.begin(), results.end(), p.results);
       sendZone(p._ServerIpcType, objectBytes(p)); m_state["scene"] = nullptr;
       return Json::object();
+    }
+    if(method == "discard_item")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      for(const auto* key : {"storage", "slot", "expected_item"})
+        if(!args.at(key).is_number_unsigned() || args.at(key) > uint64_t{0xffffffff})
+          throw ProtocolError("inventory arguments must be unsigned 32-bit integers");
+      if(m_inventoryContext == 0xffffffff) throw ProtocolError("inventory context budget exhausted");
+      auto payload = discardItemRequest(m_rewards.state(), m_entity, ++m_inventoryContext,
+                                       args.at("storage"), args.at("slot"), args.at("expected_item"));
+      sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
+      return {{"context", m_inventoryContext}};
     }
     if(method == "say")
     {

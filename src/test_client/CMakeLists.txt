@@ -17,6 +17,7 @@ find_package(Threads REQUIRED)
 add_library(sapphire_test_protocol STATIC
   Protocol.cpp
   RewardsState.cpp
+  InventoryActions.cpp
   "${SAPPHIRE_ROOT}/src/common/Crypt/blowfish.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/md5.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/Random.cpp")

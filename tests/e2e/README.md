@@ -30,6 +30,10 @@ lobby, world and MariaDB processes with matching game data:
   quest active, walks another 86.8m, cancels/acknowledges a hand-over, then chooses
   three ethers rather than the alternative potions. Both completions and cumulative
   rewards survive world restart.
+- After verifying those rewards, the chain test discards the earned ether stack
+  through the normal item-operation packet. It waits for a committed received
+  deletion, checks every tracked slot for unintended changes, and verifies the
+  deletion plus retained quest progress after a second restart.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation, combat,
@@ -161,7 +165,7 @@ bot.close()    # Removes the bot from the worker.
 
 Additional actions: `wait_world_ready`, `walk_route`, `interact`, `choose_dialogue`,
 `wait_event_finished`, `expect_quest_active`, `expect_quest_complete`,
-`reward_snapshot`, `expect_rewards`, `say`, and `expect_say`.
+`reward_snapshot`, `expect_rewards`, `discard_item`, `say`, and `expect_say`.
 Use `worker.wait_state(...)` for bounded predicates against received state. Event
 notifications wake waits; snapshots also cover observations received before the
 wait was registered. No automatic gameplay retry is performed after a timeout.
@@ -175,6 +179,12 @@ event ID, scene ID and unique scene token back to the worker. Unknown choices or
 scenes raise `UnsupportedScene`; stale tokens are rejected. One/two-result scene
 returns are supported; scene yield/resume is not supported. There is no default
 "always accept" behavior and no unrestricted raw-packet command.
+
+`discard_item(storage, slot, expected_item)` supports whole stacks in ordinary
+bags only. It requires a matching observed item identity; it cannot discard
+currency/equipment or select an arbitrary inventory operation. A request-level
+acknowledgement alone is not deletion evidence. Move/split/swap and item-use
+workflows are not implemented.
 
 `close` cancels pending connection/movement timers and closes sockets; `remove`
 also releases the bot. End-of-input shuts down all worker-owned connections.

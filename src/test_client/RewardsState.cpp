@@ -72,6 +72,8 @@ namespace Sapphire::Testing
         stage(m_updates, p.contextId, p.srcStorageId, p.srcContainerIndex, p.srcCatalogId, p.srcStack);
       else if(p.operationType == Common::ITEM_OPERATION_TYPE_CREATEITEM && p.dstContainerIndex >= 0)
         stage(m_updates, p.contextId, p.dstStorageId, p.dstContainerIndex, p.dstCatalogId, p.dstStack);
+      else if(p.operationType == Common::ITEM_OPERATION_TYPE_DELETEITEM && p.srcContainerIndex >= 0)
+        stage(m_updates, p.contextId, p.srcStorageId, p.srcContainerIndex, 0, 0);
       else throw ProtocolError("unsupported inventory operation");
     }
     else if(opcode == WS::FFXIVIpcItemOperationBatch::_ServerIpcType)
