@@ -98,7 +98,7 @@ class Worker:
             with self._cv:
                 self._pending.add(identifier)
                 if method not in {"snapshot", "capabilities"}:
-                    safe_args = args if method in {"walk_to", "interact", "choose_scene", "say", "discard_item"} else {}
+                    safe_args = args if method in {"walk_to", "interact", "choose_scene", "say", "discard_item", "fast_blade"} else {}
                     if method == "cross_exit":
                         safe_args = {"exit_id": args["exit"]["id"], "territory": args["exit"]["territory"]}
                     self._actions.append({"id": identifier, "method": method, "bot": bot,
@@ -224,6 +224,15 @@ class Bot:
         if catalog.get("profile") != "sapphire-3.3":
             raise UnsupportedScene("scene catalog profile mismatch")
         self.worker.request("choose_scene", self.name, **scene_arguments(scene), results=results)
+
+    def fast_blade(self, target, timeout=10):
+        request = self.worker.request("fast_blade", self.name, target=target)["request"]
+        state = self.worker.wait_state(self.name,
+            lambda s: any(e["source"] == s["entity_id"] and e["target"] == target and e["action"] == 9
+                          and e["request"] == request for e in s["combat"]["effects"]),
+            "received Fast Blade result", timeout)
+        return next(e for e in state["combat"]["effects"] if e["source"] == state["entity_id"]
+                    and e["target"] == target and e["action"] == 9 and e["request"] == request)
 
     def cross_exit(self, transition, timeout=30):
         self.worker.request("cross_exit", self.name, exit=transition)

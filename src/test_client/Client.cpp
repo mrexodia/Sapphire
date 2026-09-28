@@ -295,10 +295,41 @@ namespace Sapphire::Testing
     constexpr size_t off = sizeof(Wire::FFXIVARR_IPC_HEADER);
     if(segment.header.source_actor == m_entity && m_rewards.receive(h.type, segment.data))
       event("rewards_changed");
+    if(m_combat.receive(h.type, segment.header.source_actor, segment.data))
+    {
+      Json detail{{"opcode", h.type}};
+      if(h.type == WS::FFXIVIpcActionIntegrity::_ServerIpcType)
+      {
+        const auto& integrity = m_combat.state()["integrities"].back();
+        const auto key = std::to_string(integrity["target"].get<uint32_t>());
+        if(m_state["actors"].contains(key))
+          for(const auto* field : {"hp", "hp_max", "mp", "tp"}) m_state["actors"][key][field] = integrity[field];
+        detail["integrity"] = integrity;
+      }
+      else if(h.type == WS::FFXIVIpcActorControlSelf::_ServerIpcType)
+      {
+        detail["start"] = m_combat.state()["starts"].back();
+        if(detail["start"]["source"] == m_entity && detail["start"]["action"] == 9)
+        {
+          const auto recast = detail["start"]["recast_centiseconds"].get<uint32_t>();
+          if(recast != 250) throw ProtocolError("unsupported Fast Blade recast");
+          m_fastBladeReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(recast * 10);
+        }
+      }
+      else
+      {
+        const size_t count = h.type == WS::FFXIVIpcActionResult1::_ServerIpcType ? 1 :
+          readObject<WS::FFXIVIpcActionResult>(segment.data, sizeof(Wire::FFXIVARR_IPC_HEADER)).TargetCount;
+        const auto& effects = m_combat.state()["effects"];
+        detail["effects"] = Json(effects.end() - count, effects.end());
+      }
+      event("combat_changed", detail);
+    }
     if(h.type == WS::FFXIVIpcInitZone::_ServerIpcType)
     {
       const auto p = readObject<WS::FFXIVIpcInitZone>(segment.data, off);
       m_haveZone = true; m_selfSpawn = false;
+      m_combat = CombatState{};
       m_movement.cancel(); m_moving = false;
       m_state["territory"] = p.TerritoryType;
       m_state["actors"] = Json::object();
@@ -314,7 +345,8 @@ namespace Sapphire::Testing
     {
       const auto p = readObject<WS::FFXIVIpcPlayerSpawn>(segment.data, off);
       const auto actor = segment.header.source_actor;
-      Json state{{"position", p.Pos}, {"gm_rank", p.GMRank}, {"level", p.Lv}, {"hp", p.Hp}};
+      Json state{{"position", p.Pos}, {"gm_rank", p.GMRank}, {"level", p.Lv}, {"hp", p.Hp},
+        {"hp_max", p.HpMax}, {"tp", p.Tp}, {"mp", p.Mp}, {"kind", p.ObjKind}, {"layout_id", p.LayoutId}, {"base_id", p.NpcId}, {"name_id", p.NameId}};
       m_state["actors"][std::to_string(actor)] = state;
       event("spawn", {{"actor", actor}, {"state", state}});
       if(actor == m_entity)
@@ -338,6 +370,14 @@ namespace Sapphire::Testing
       event("conditions", {{"between_areas", loading}});
       if(!loading && m_haveZone && m_selfSpawn && m_chatAck && m_state["phase"] == "loading")
       { m_deadline.cancel(); phase("ready"); }
+    }
+    else if(h.type == WS::FFXIVIpcResting::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcResting>(segment.data, off);
+      auto key = std::to_string(segment.header.source_actor);
+      if(m_state["actors"].contains(key))
+        m_state["actors"][key].update(Json{{"hp", p.Hp}, {"tp", p.Tp}, {"mp", p.Mp}});
+      event("hp_changed", {{"actor", segment.header.source_actor}, {"hp", p.Hp}, {"mp", p.Mp}, {"tp", p.Tp}});
     }
     else if(h.type == WS::FFXIVIpcActorMove::_ServerIpcType)
     {
@@ -441,7 +481,7 @@ namespace Sapphire::Testing
     if(method == "snapshot")
     {
       auto state = m_state; state["seq"] = m_seq; state["moving"] = m_moving;
-      state["rewards"] = m_rewards.state(); return state;
+      state["rewards"] = m_rewards.state(); state["combat"] = m_combat.state(); return state;
     }
     if(method == "close") { close(); phase("closed"); return Json::object(); }
     if(m_state["phase"] != "ready") throw ProtocolError("action requires a world-ready bot");
@@ -486,6 +526,20 @@ namespace Sapphire::Testing
       std::copy(results.begin(), results.end(), p.results);
       sendZone(p._ServerIpcType, objectBytes(p)); m_state["scene"] = nullptr;
       return Json::object();
+    }
+    if(method == "fast_blade")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      if(!args.at("target").is_number_unsigned() || args.at("target") > uint64_t{0xffffffff})
+        throw ProtocolError("combat target must be an observed 32-bit actor id");
+      if(std::chrono::steady_clock::now() < m_fastBladeReady) throw ProtocolError("Fast Blade recast pending");
+      if(m_actionRequest >= 65535) throw ProtocolError("combat request budget exhausted");
+      auto payload = fastBladeRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
+                                      m_state["actors"], m_rewards.state());
+      sendZone(WC::FFXIVIpcActionRequest::_ServerIpcType, payload);
+      // Conservative request pacing; the received ActionStart moves this deadline forward.
+      m_fastBladeReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(2500);
+      return {{"request", m_actionRequest}};
     }
     if(method == "cross_exit")
     {

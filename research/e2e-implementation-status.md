@@ -1,7 +1,7 @@
 # E2E implementation checkpoint and requirement audit
 
-**Overall goal: not complete.** Green tests cover a supported subset, not all six
-rollout stages or real-client compatibility. Branch: `feature/headless-e2e`.
+**Overall goal: not complete.** Green tests cover a supported subset, not the full
+rollout or real-client compatibility. Branch: `feature/headless-e2e`.
 
 ## Contract
 
@@ -30,10 +30,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, discard, ordinary Say, and independently observed 130-to-141 crossing/persistence | Quest/social/basic-inventory/zoning subset verified; combat missing; move/split/swap/use not covered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, discard, ordinary Say, 130-to-141 crossing/persistence, and independently observed Fast Blade damage | Representative subset verified; general combat and inventory move/split/swap/use not covered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing; no general quest-range/discovery adapter | Exit subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
-| Deterministic authored regression suite | Six live cases, native tests and Python contracts | Supported suite verified |
+| Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit duration; process RSS/CPU and action timings | Four bots / 120 actions verified; not large-scale or long-running evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical bot roles, recorded time/ramp limits | Passing exploration plan replayed; scheduling is not deterministic |
@@ -47,17 +47,28 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 
 ## Verified results
 
-- Clang/Ninja and MSVC/Visual Studio: three CTest executables pass (protocol,
-  rewards, synthetic navigation). Navigation tests reject disconnected and
+- Clang/Ninja and MSVC/Visual Studio: four CTest executables pass (protocol,
+  rewards, combat, synthetic navigation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
-- GNU 11.4/Ubuntu 22.04: standalone build and the same three CTest executables pass.
-- 34 Python worker/policy contracts pass with the MSVC worker and in a
+- GNU 11.4/Ubuntu 22.04: standalone build and the same four CTest executables pass.
+- 42 Python worker/policy contracts pass with the MSVC worker and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
-- Six live cases pass together in 222.92s (`sapphire-e2e-caf54nsd`): rejected
+- Seven live cases pass together in 242.89s (`sapphire-e2e-wd3lpulz`): rejected
   credentials, login/idle/logout, observed movement/Say/position persistence,
-  single quest, chained quests plus inventory persistence, and zoning persistence.
-  Both tested territories use compatible server-side meshes in this run.
+  single quest, chained quests plus inventory persistence, zoning persistence,
+  and combat damage. Both tested territories use compatible server-side meshes.
+- Combat uses a fresh level-one Gladiator and the unchanged Central Thanalan
+  population. The action catalog validates normally learned Fast Blade (9),
+  requiring 60 naturally regenerated TP. Both player and observer receive the
+  same damage effect and matching-result committed HP decrease on a nearby
+  level-one marmot. Request acknowledgement/effect alone is insufficient.
+  The fighter disconnects; it does not bypass in-combat logout restrictions.
+  This does not establish kills, combat XP/loot, combos, retaliation assertions,
+  cooldown scheduling or dynamic pursuit. Initial position is fixture setup.
+  The final decoded journal records nine damage, NPC HP 94 → 85 on both clients,
+  and source TP 40 after the action. A conservative local recast guard follows the
+  received 250-centisecond action-start value. Private runtime cleanup succeeded.
 - Current navigation generated separately in `.e2e-assets/uldah-v2`; repeat output
   refused, original OBJ and legacy mesh hashes unchanged. The 65686 route has
   322 points and length approximately 152.375m, with nearby walkable NPC approaches.
@@ -77,8 +88,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   41-point/18.64m walk. A source observer stays outside the trigger and observes
   departure; a destination observer sees arrival and chat. Both channels remain
   alive; territory/position/rewards survive restart. Latest isolated run: 58.51s,
-  `build-e2e/zoning.xml`. The full-suite run preceded the refinement that leaves
-  the source observer stationary outside the trigger.
+  `build-e2e/zoning.xml`. The current seven-case run also includes the refinement
+  that leaves the source observer stationary outside the trigger.
 - `.e2e-assets/runtime-nav-v1/navi` contains separately generated w1t1/w1f2 tiles.
   Live logs explicitly show both territories initialized with `NAVI`, not merely
   configured file paths. Server mesh hashes are in the manifest. Original collision
@@ -113,6 +124,9 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
   not only source-based updates. Both are staged until successful batch commit.
 - Restart exposed MSB-first quest-completion masks, unlike LSB-first condition
   flags. A manually specified quest-150 bit fixture guards the corrected decoder.
+- The first combat attempt observed no action start/result: fresh fixtures had
+  zero TP. The client now receives HP/MP/TP updates and waits for natural TP
+  regeneration; no resource grant or fixture modification masks the condition.
 - Concurrent soak resource samples exposed snapshot ping-pong: unrelated request
   responses woke state waits. Predicate-based condition waiting fixes this; a
   regression test sends unrelated notifications without causing extra snapshots.
@@ -123,9 +137,9 @@ Existing server binaries are staged and hashed, not silently rebuilt by the runn
 
 1. Broaden the supported-state policy coverage and run longer/higher-population
    workloads; short passing runs do not prove stability or capacity.
-2. Add normal combat with received NPC/HP/action observations and an independent
-   observer. Central Thanalan now has a compatible server mesh; its NPC behavior
-   must not be tested with navigation silently unavailable.
+2. Extend the initial combat slice with normally timed repeated actions, enemy
+   defeat, received combat rewards and retaliation assertions. Preserve observed
+   resource/range checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters; unknown content must still fail.
 4. Validate provisioned gameplay CI and longer/higher-population stability runs.
 5. Evaluate the existing `E:/Sapphire/game/ffxiv*.exe` candidates for an isolated

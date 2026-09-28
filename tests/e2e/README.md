@@ -39,8 +39,13 @@ lobby, world and MariaDB processes with matching game data:
   deletion, checks every tracked slot for unintended changes, and verifies the
   deletion plus retained quest progress after a second restart.
 
+- A level-one Gladiator waits for naturally regenerated TP, uses Fast Blade against
+  an observed nearby level-one marmot, and an independent bot verifies the matching
+  action result and exact committed HP decrease. Enemies and skills are not granted
+  or modified by fixtures.
+
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
-are not connected by the available regenerated mesh. General navigation, combat,
+are not connected by the available regenerated mesh. General navigation/combat,
 scene yields and independent real-client/UI compatibility remain unsupported.
 
 Asset-independent tests are not labeled as gameplay coverage. See the
@@ -68,7 +73,7 @@ python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py \
 On Windows, append `.exe`. With the Visual Studio generator the executable is
 `build-e2e/Debug/sapphire_test_client.exe`. Ninja builds place it directly in
 `build-e2e/`. Both Clang/Ninja and MSVC/Visual Studio builds have passed locally.
-GNU/Linux builds and all three CTest executables pass under Ubuntu 22.04/WSL.
+GNU/Linux builds and all four CTest executables pass under Ubuntu 22.04/WSL.
 Python contracts also pass in a network-isolated Linux container. WSL's current
 loopback fails even a Python-only socket check; no host networking was changed to
 work around that. Hosted CI has not been run in this implementation session.
@@ -79,7 +84,9 @@ To include the worker in the normal Sapphire build, configure with
 CTest verifies explicit header/layout fixtures, split/coalesced TCP frames,
 bounded parsing, lobby cipher roundtrips, OS-generated tokens, quest flag order,
 deferred inventory transaction publication, XP snapshots, and complete versus
-partial/disconnected navigation paths using synthetic geometry. The Python
+partial/disconnected navigation paths using synthetic geometry. Combat tests check
+request byte offsets, observed-target/resource/range guards, bounded result histories,
+and that effects alone never invent committed HP. The Python
 contract tests cover control errors, connection failures, pre-readiness action
 rejection, worker death, scene selection, redaction and setup checks. These do
 not replace the live suite.
@@ -98,10 +105,13 @@ not replace the live suite.
    only the first quest.
 5. For zoning, generate the transition catalog below and set `transition_catalog`.
    Set `navigation` to a private compatible server mesh root for the tested maps.
-6. Run:
+6. For combat, generate the action catalog below, set `combat_catalog`, and supply
+   the compatible Central Thanalan mesh in `navigation`.
+7. Run:
 
 ```sh
-python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py tests/e2e/test_live_zoning.py \
+python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
+  tests/e2e/test_live_zoning.py tests/e2e/test_live_combat.py \
   --e2e-profile .e2e-local.json -v --junitxml=build-e2e/live.xml
 ```
 
@@ -256,6 +266,35 @@ territories initialize with `NAVI`. Other maps are not thereby validated. A
 manifest path/hash alone is not evidence that a server successfully loaded a mesh.
 Destination observers start at the catalog pop point in a whitelisted public
 territory before their first connection; the traveler crosses only through packets.
+
+## Initial combat regression
+
+```sh
+cmake --build build --target sapphire_test_combat_catalog --config Debug
+bin/sapphire_test_combat_catalog <game/sqpack> build-e2e/combat-catalog.json
+```
+
+Use `.exe` on Windows and set `combat_catalog` to the absolute output path. The
+validator requires the supported level-one Gladiator/Fast Blade metadata (60 TP,
+2.5-second recast, class-default melee range). This is not independent client evidence.
+
+`test_live_combat.py` places fresh characters at a location from the unchanged
+staged Central Thanalan population before their first connection. This is fixture
+setup, not a tested journey there. It requires actual `NAVI` initialization in the
+world log, then observes a living level-one marmot within two units and natural
+TP regeneration before requesting the action. The worker refuses targets beyond
+three units from its position estimate, wrong classes/kinds/levels, dead actors and
+insufficient received TP. A conservative 2.5-second request guard is extended from
+the received action-start recast; this is not a general cooldown scheduler. The live
+test independently confirms melee range using the observer's received positions.
+Both clients must receive the same damage effects and matching-result HP integrity;
+request acknowledgements and visual effects alone cannot pass. The fighter then
+disconnects rather than bypassing in-combat logout restrictions.
+
+The artifact manifest hashes the action catalog and staged player-action/population
+files. Bounded event journals include decoded effects, HP integrity and action-start
+recast metadata. This slice does **not** prove enemy kills, combat XP/loot, combos,
+retaliation assertions, cooldown scheduling, dynamic pursuit or arbitrary abilities.
 
 ## Bounded exploration, soak and replay
 

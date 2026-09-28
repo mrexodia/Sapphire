@@ -70,6 +70,20 @@ def validate_transition_catalog(data):
     return data
 
 
+def validate_combat_catalog(data):
+    expected = {"version": 1, "profile": "sapphire-3.3", "action": 9, "class_job": 1,
+                "level": 1, "category": 3, "cost_type": 5, "cost": 60, "range": -1,
+                "cast_ms": 0, "recast_ms": 2500, "recast_group": 58,
+                "effect_type": 1, "target_enemy": True}
+    if any(type(data.get(key)) is not type(value) or data[key] != value for key, value in expected.items()):
+        raise WorkerError("combat catalog does not match the supported level-one Fast Blade profile")
+    return data
+
+
+def load_combat_catalog(path):
+    return validate_combat_catalog(json.loads(Path(path).read_text(encoding="utf-8")))
+
+
 def load_transition_catalog(path):
     return validate_transition_catalog(json.loads(Path(path).read_text(encoding="utf-8")))
 

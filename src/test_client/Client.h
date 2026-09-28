@@ -1,9 +1,11 @@
 #pragma once
 #include "Protocol.h"
 #include "RewardsState.h"
+#include "CombatState.h"
 #include <asio.hpp>
 #include <nlohmann/json.hpp>
 #include <deque>
+#include <chrono>
 #include <functional>
 #include <memory>
 
@@ -61,6 +63,9 @@ namespace Sapphire::Testing
     uint64_t m_seq = 0;
     Json m_state;
     RewardsState m_rewards;
+    CombatState m_combat;
+    uint32_t m_actionRequest = 0;
+    std::chrono::steady_clock::time_point m_fastBladeReady{};
     Json m_login;
     std::shared_ptr<Channel> m_lobby, m_zone, m_chat;
     LobbyCipher m_cipher;

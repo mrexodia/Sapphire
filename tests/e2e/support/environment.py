@@ -163,7 +163,9 @@ class Environment:
         if self.profile.get("navigation"):
             manifest["server_navigation"] = {p.relative_to(self.navigation).as_posix(): sha256(p)
                                              for p in sorted(self.navigation.rglob("*.nav"))}
-        for key in ("quest_catalog", "follow_up_catalog", "transition_catalog"):
+        manifest["combat_data"] = {name: sha256(self.runtime / "data" / name) for name in
+            ("actions/player.json", "bnpcs/w1f2/w1f2.json", "bnpcs/w1f2/w1f2_paths.json")}
+        for key in ("quest_catalog", "follow_up_catalog", "transition_catalog", "combat_catalog"):
             if self.profile.get(key):
                 path = Path(self.profile[key]).resolve()
                 manifest[key] = {"path": str(path), "sha256": sha256(path)}

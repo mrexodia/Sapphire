@@ -14,6 +14,8 @@ def test_capabilities(worker):
     assert caps["profile"] == "sapphire-3.3"
     assert caps["scope"] == "loopback-only"
     assert "general_navigation" in caps["unsupported"]
+    assert "general_combat" in caps["unsupported"]
+    assert "fast_blade" in caps["methods"]
 
 
 def test_unknown_bot_and_invalid_method(worker):
@@ -53,6 +55,8 @@ def test_action_before_readiness_is_rejected(worker):
         try:
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("walk_to", "test", position=[0, 0, 0])
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("fast_blade", "test", target=123)
             worker.request("close", "test")
             assert worker.snapshot("test")["phase"] == "closed"
         finally:

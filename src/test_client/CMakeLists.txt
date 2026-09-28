@@ -19,6 +19,7 @@ add_library(sapphire_test_protocol STATIC
   RewardsState.cpp
   InventoryActions.cpp
   TransitionActions.cpp
+  CombatState.cpp
   "${SAPPHIRE_ROOT}/src/common/Crypt/blowfish.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/md5.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/Random.cpp")
@@ -42,6 +43,8 @@ if(WIN32)
 endif()
 target_link_libraries(sapphire_test_protocol PUBLIC Threads::Threads)
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  add_executable(sapphire_test_combat_catalog CombatCatalog.cpp)
+  target_link_libraries(sapphire_test_combat_catalog PRIVATE common)
   add_executable(sapphire_test_transitions TransitionCatalog.cpp NavigationRoute.cpp)
   target_link_libraries(sapphire_test_transitions PRIVATE common)
   add_executable(sapphire_test_catalog Catalog.cpp NavigationRoute.cpp)
@@ -65,6 +68,9 @@ if(BUILD_TESTING)
   add_executable(sapphire_reward_tests "${SAPPHIRE_ROOT}/tests/protocol/test_rewards.cpp")
   target_link_libraries(sapphire_reward_tests PRIVATE sapphire_test_protocol)
   add_test(NAME sapphire_rewards COMMAND sapphire_reward_tests)
+  add_executable(sapphire_combat_tests "${SAPPHIRE_ROOT}/tests/protocol/test_combat.cpp")
+  target_link_libraries(sapphire_combat_tests PRIVATE sapphire_test_protocol)
+  add_test(NAME sapphire_combat COMMAND sapphire_combat_tests)
   add_executable(sapphire_navigation_tests NavigationRoute.cpp "${SAPPHIRE_ROOT}/tests/protocol/test_navigation.cpp")
   target_compile_features(sapphire_navigation_tests PRIVATE cxx_std_17)
   target_include_directories(sapphire_navigation_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
