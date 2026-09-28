@@ -222,9 +222,28 @@ All **205** Python contracts pass with Clang and MSVC workers and in
 network-isolated Linux, including 29 new combat-policy contracts. All five native
 suites pass with Clang, MSVC and GNU, including fractional-millisecond guard
 rounding. The strict seven-case CI collection still includes the same combat test
-name with stronger assertions; a clean full-suite rehearsal is pending at this
-checkpoint. Bounded journals and `combat-repeated.json` retain the action,
-pre/post HP, TP, guard, timing and retaliation evidence.
+name with stronger assertions. Bounded journals and `combat-repeated.json` retain
+the action, pre/post HP, TP, guard, timing and retaliation evidence.
+
+A subsequent **clean full-suite rehearsal** at
+`ac74b5cb977e33ff6269d92ae963db7858ed1317` passed all seven live cases in **248.767s**,
+with zero skips/errors/failures and complete setup/call/teardown phases. Evidence:
+`build-e2e/ci-summary-repeated-combat.json` and
+`.e2e-artifacts/ci/gameplay-ci-znhtwobv/live.xml`; environment
+`artifacts/sapphire-e2e-j1qk7ksu` under that private CI directory.
+The staged worker SHA-256 is
+`bac5d45af6c2a576a1f8fba65a300c7737c45385e2544830757c971dcca8b0a9`; the world server
+remains the previously fixed, unchanged
+`c10b9f7092ef081a9bf9886a9de98af2c6ed8bdb134f621c8e16f11c758187f1`.
+
+The clean run received three eight-damage strikes (NPC HP 94 → 86 → 78 → 70),
+100 natural TP before each request, and 3.047/3.031s attempt spacing. The first
+retaliation dealt one damage (fighter HP 94 → 93). Each source/target/action/
+request/result/effect identity and exact HP integrity was independently checked
+in **both raw event journals**, along with all three group-58/250-centisecond
+starts. The manifest/source cleanliness, input identities and whole-runtime
+removal were also audited. This is a local headless CI rehearsal, not hosted
+runner execution or independent real-client combat compatibility.
 
 ## Workload diagnostic-failure cleanup hardening
 
