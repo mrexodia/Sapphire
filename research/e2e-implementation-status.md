@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: empty account, lobby name reservation/finalization, refreshed list/select, private territory 182, explicit source-defined Ul'dah scenes 0/1, ring and scene-40 continuation after fresh authentication and restart | First opening branch verified; complete opening quest and travel to public Ul'dah remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts, lobby name reservation/finalization, refreshed list/select, private territory 182, explicit source-defined Ul'dah scenes 0/1, all ring choices/items and scene-40 continuation after fresh authentication and restart | All ring branches within the first opening branch verified; appearance/classes, complete opening quest and travel to public Ul'dah remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -51,14 +51,14 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same six CTest executables pass.
-- 248 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 249 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `482204b56` took 524.777s with zero skips/errors/failures and verified
+  rehearsal at `907a58bd0` took 562.855s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-usy4rlkp` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-pursuit.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-ekb2o2rs` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-opening-rings.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -585,11 +585,20 @@ the private runtime root is absent. All 245 Python contracts pass with Clang/MSV
 workers and in network-isolated Linux; all six native suites pass with Clang, MSVC
 and GNU 11.4.
 
-This evidence is deliberately narrow: it covers one canonical Gladiator, one ring
-choice and the initial/continuation opening scenes. It does not establish account
-signup UI, all appearance/class combinations, name rejection/deletion, the complete
-opening quest, travel into public Ul'dah, real-client cutscene presentation or
-broader protocol compatibility.
+The later `907a58bd0` extension runs four isolated empty-account journeys in the
+same case and pins all source-defined results 1..4 to exact items 4423..4426. Each
+character independently proves scenes 0→1, its sole selected ring after fresh
+HTTP/lobby authentication, scene 40, and identical inventory/continuation after one
+shared world restart. A policy contract fixes the complete choice map. The clean
+nine-case gate passed in **562.855s**; creation took **58.616s** and
+`character-creation-opening.json` SHA-256 is
+`108435b5f1766e675b30d7d796e287920b0e98d02c6630bcf5b7190be8c63bbf`.
+
+This evidence remains deliberately narrow: it covers four canonical Gladiators,
+all ring choices and the initial/continuation opening scenes. It does not establish
+account signup UI, appearance/class combinations, name rejection/deletion, the
+complete opening quest, travel into public Ul'dah, real-client cutscene presentation
+or broader protocol compatibility.
 
 ## Workload diagnostic-failure cleanup hardening
 

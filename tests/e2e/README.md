@@ -12,9 +12,9 @@ lobby, world and MariaDB processes with matching game data:
 - Invalid credentials are rejected.
 - Genuine HTTP login, encrypted lobby negotiation, character selection and world
   handoff succeed with non-GM accounts. A separate case starts with an account that
-  has no characters, reserves a name and finalizes one canonical Gladiator through
-  lobby operations, refreshes the character list, and enters its normal private
-  opening territory.
+  has no characters, reserves a name and finalizes canonical Gladiators through
+  lobby operations, refreshes each isolated account's character list, and enters
+  the normal private opening territory.
 - Readiness requires zone initialization, self-spawn **and the server clearing
   BetweenAreas after the normal FINISH_LOADING command**. A connected socket or
   self-spawn alone is insufficient.
@@ -45,11 +45,12 @@ lobby, world and MariaDB processes with matching game data:
   received deletion, checks every tracked slot for unintended changes, and verifies
   the deletion plus retained quest progress after the final restart.
 
-- The newly created Gladiator starts Ul'dah event 1245187 through its source-defined
-  enter-territory operation, chooses one explicit ring branch, receives chained
-  scenes 0 then 1, and persists item 4423 plus the scene-40 continuation through
-  fresh authentication and a world restart. This covers only the first opening
-  branch, not the complete opening quest or travel into public Ul'dah.
+- Four newly created Gladiators start Ul'dah event 1245187 through its source-defined
+  enter-territory operation and exercise all explicit ring results 1..4. Each
+  receives scenes 0 then 1, exactly one corresponding item 4423..4426, and the
+  scene-40 continuation through fresh authentication and a shared world restart.
+  This covers only the ring choice and first opening branch, not appearance/class
+  creation combinations, the complete opening quest or travel into public Ul'dah.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot
   verifies every matching result/committed HP decrease, the first natural retaliation,
