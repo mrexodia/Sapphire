@@ -55,10 +55,11 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all seven cases against a fresh out-of-tree
-  server/script/client build. Latest input-bound rehearsal: 243.468s, zero skips,
-  collection/input hashes/normal cleanup all verified (`gameplay-ci-khdbpmya` under
-  `.e2e-artifacts/ci`, summary `build-e2e/ci-summary-bound-inputs.json`). These runs
-  used a dirty implementation checkout, explicitly recorded in their summaries.
+  server/script/client build. Post-commit clean-checkout rehearsal at `c9f8969b2`:
+  245.450s, zero skips, collection/input hashes/normal cleanup all verified
+  (`gameplay-ci-41fem4dt` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-clean.json`). `--require-clean` passed and `source_dirty`
+  is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,

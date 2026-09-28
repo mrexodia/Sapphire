@@ -111,10 +111,11 @@ separate evidence that its binaries came from the checkout.
   local run. A passed summary covers this seven-scenario headless suite only.
 
 Local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
-rebuilt binaries passed all seven live cases in 243.468 seconds with no skips,
-verified collection/staged-input identities and removed private runtime. Private
-evidence is under `.e2e-artifacts/ci/gameplay-ci-khdbpmya`; its allowlisted summary
-is `build-e2e/ci-summary-bound-inputs.json`. The 69 controller/policy/CI contracts
-pass on Windows and in the network-isolated Linux container. Workflow syntax
-passes `actionlint` v1.7.7. This rehearsal was on a dirty implementation
-checkout and does not establish a GitHub-hosted/protected-runner execution.
+rebuilt binaries passed all seven live cases in 245.450 seconds with no skips,
+verified collection/staged-input identities and removed private runtime. This
+post-commit rehearsal used `c9f8969b2` with `--require-clean`; `source_dirty` is
+false. Private evidence is under `.e2e-artifacts/ci/gameplay-ci-41fem4dt`; its
+allowlisted summary is `build-e2e/ci-summary-clean.json`. The 69 controller/policy/CI
+contracts pass on Windows and in the network-isolated Linux container. Workflow
+syntax passes `actionlint` v1.7.7. This does not establish a GitHub-hosted /
+protected-runner execution.
