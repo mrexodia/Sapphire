@@ -1,12 +1,13 @@
 """Deterministic policy, catalog and replay validation; no game/network required."""
 from copy import deepcopy
 import json
+import math
 from pathlib import Path
 import pytest
 
-from .support.catalog import (validate_combat_catalog, validate_pursuit_catalog,
-                              validate_quest_catalog, validate_respawn_catalog, validate_shop_catalog,
-                              validate_transition_catalog)
+from .support.catalog import (validate_combat_catalog, validate_opening_quest_catalog,
+                              validate_pursuit_catalog, validate_quest_catalog, validate_respawn_catalog,
+                              validate_shop_catalog, validate_transition_catalog)
 from .support.combat import combat_reward_delta
 from .support.workload import build_plan, validate_plan
 from .support.worker import WorkerError, reward_values
@@ -30,6 +31,30 @@ def test_uldah_opening_catalog_pins_all_source_defined_ring_choices():
     choices = data["scenes"]["1245187:0"]["choices"]
     assert choices == {"choose_ring_4423": [1], "choose_ring_4424": [2],
                        "choose_ring_4425": [3], "choose_ring_4426": [4]}
+    assert data["scenes"]["66130:0"]["choices"] == {"accept_coming_to_uldah": [1]}
+    assert data["scenes"]["66130:1"]["choices"] == {"continue_coming_to_uldah": [0]}
+    assert data["scenes"]["66130:2"]["choices"] == {"continue_coming_to_uldah": [0]}
+    assert data["scenes"]["1245187:30"]["choices"] == {"finish": [0]}
+
+
+def test_opening_quest_catalog_fails_closed_without_completion_corridor():
+    route = [[42 - index * 0.9, 4 + index * 0.01, -157.6 + index * 0.56] for index in range(11)]
+    route[-1] = [33.375702, 4.1, -151.994003]
+    length = sum(math.dist(a, b) for a, b in zip(route, route[1:]))
+    data = {"version": 1, "profile": "sapphire-3.3", "territory": 182, "quest": 66130,
+            "giver": {"layout_id": 3969639, "base_id": 1003987,
+                      "position": [33.375702, 4.1, -151.994003]},
+            "recipient": {"layout_id": 3969632, "base_id": 1003988,
+                          "position": [21.077101, 7.45, -78.8134]},
+            "reward": {"exp": 50, "gil": 103},
+            "approach_route": route, "approach_route_length": length,
+            "completion_route_supported": False,
+            "completion_route_blocker": "incomplete navigation corridor"}
+    assert validate_opening_quest_catalog(data) == data
+    for changed in ({**data, "quest": 1}, {**data, "completion_route_supported": True},
+                    {**data, "approach_route": route[:2], "approach_route_length": 1}):
+        with pytest.raises(WorkerError):
+            validate_opening_quest_catalog(changed)
 
 
 def test_pursuit_catalog_binds_natural_enemy_and_displaced_route():

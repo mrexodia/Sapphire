@@ -11,9 +11,9 @@
 
 int main(int argc, char** argv)
 {
-  if(argc != 2 && argc != 4 && argc != 5)
+  if(argc != 2 && argc != 3 && argc != 4 && argc != 5)
   {
-    std::cerr << "Usage: sapphire_test_catalog <matching game/sqpack> [<mesh root> <output.json> [quest-id]]\n";
+    std::cerr << "Usage: sapphire_test_catalog <matching game/sqpack> [quest-id | <mesh root> <output.json> [quest-id]]\n";
     return 2;
   }
   try
@@ -21,7 +21,8 @@ int main(int argc, char** argv)
     Sapphire::Logger::init("log/e2e-catalog");
     Sapphire::Data::ExdData data;
     if(!data.init(argv[1])) throw std::runtime_error("cannot initialize game data");
-    const uint32_t questId = argc == 5 ? static_cast<uint32_t>(std::stoul(argv[4])) : 65685;
+    const uint32_t questId = argc == 5 ? static_cast<uint32_t>(std::stoul(argv[4]))
+                                        : (argc == 3 ? static_cast<uint32_t>(std::stoul(argv[2])) : 65685);
     auto quest = data.getRow<Excel::Quest>(questId);
     if(!quest) throw std::runtime_error("quest missing from game data");
     const auto& q = quest->data();

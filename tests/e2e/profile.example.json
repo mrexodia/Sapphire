@@ -11,5 +11,6 @@
   "shop_catalog": "C:/path/to/shop.json",
   "respawn_catalog": "C:/path/to/respawn.json",
   "pursuit_catalog": "C:/path/to/pursuit.json",
+  "opening_quest_catalog": "C:/path/to/coming-to-uldah.json",
   "artifacts": "C:/CodeBlocks/Sapphire/.e2e-artifacts"
 }

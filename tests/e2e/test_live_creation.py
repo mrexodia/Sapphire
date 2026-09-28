@@ -1,10 +1,12 @@
 """Normal lobby character creation and all source-defined Ul'dah opening ring branches."""
 from copy import deepcopy
 import json
+import math
 from pathlib import Path
 
 import pytest
 
+from .support.catalog import load_opening_quest_catalog
 from .support.worker import Bot
 
 pytestmark = pytest.mark.live
@@ -13,6 +15,9 @@ pytestmark = pytest.mark.live
 def test_lobby_character_creation_and_opening_persistence(environment, live_worker):
     catalog = json.loads((Path(__file__).parent / "scene_catalog/opening_uldah.json").read_text())
     assert catalog["profile"] == "sapphire-3.3" and catalog["event_id"] == 1245187
+    opening_path = environment.profile.get("opening_quest_catalog")
+    assert opening_path, "creation journey requires a source-bound opening quest catalog"
+    opening = load_opening_quest_catalog(opening_path)
     branches = [("choose_ring_4423", 4423, 1), ("choose_ring_4424", 4424, 2),
                 ("choose_ring_4425", 4425, 7), ("choose_ring_4426", 4426, 1)]
     records = []
@@ -100,13 +105,27 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         assert scene["scene"]["scene_id"] == 40
         reloaded.choose_dialogue(catalog, "finish")
         reloaded.wait_event_finished()
+        opening_position = None
+        opening_quest_active = False
+        if index == 0:
+            reloaded.walk_route(opening["approach_route"], 2.0, 30)
+            reloaded.interact(opening["giver"]["layout_id"], opening["quest"])
+            reloaded.choose_dialogue(catalog, "accept_coming_to_uldah")
+            reloaded.choose_dialogue(catalog, "continue_coming_to_uldah")
+            reloaded.choose_dialogue(catalog, "continue_coming_to_uldah")
+            reloaded.wait_event_finished()
+            reloaded.expect_quest_active(opening["quest"], 255)
+            opening_position = opening["approach_route"][-1]
+            opening_quest_active = True
         reloaded.logout(wait_server_close=True)
         reloaded.close()
         records.append({"account": account, "choice": choice, "item": item_id, "class_job": class_job,
                         "work_index": work_index,
                         "before": before, "expected": expected, "inventory": inventory,
                         "inventory_after_fresh": inventory_after_fresh,
-                        "unequipped": unequipped, "reequipped": reequipped})
+                        "unequipped": unequipped, "reequipped": reequipped,
+                        "opening_position": opening_position,
+                        "opening_quest_active": opening_quest_active})
 
     environment.restart_world()
     evidence = []
@@ -118,12 +137,21 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         assert state["territory"] == 182 and state["gm_rank"] == 0
         state = restarted.expect_rewards(record["expected"], record["work_index"])
         assert state["rewards"]["inventory"] == record["inventory"]
+        if record["opening_quest_active"]:
+            restarted.expect_quest_active(opening["quest"], 255)
+            assert math.dist(state["observed_position"], record["opening_position"]) < 0.15
         restarted.start_uldah_opening()
         scene = live_worker.wait_state(restarted.name,
             lambda s: s["scene"] is not None and s["scene"]["event_id"] == 1245187,
             "restarted Ul'dah opening continuation")
         assert scene["scene"]["scene_id"] == 40
         restarted.choose_dialogue(catalog, "finish")
+        if record["opening_quest_active"]:
+            scene = live_worker.wait_state(restarted.name,
+                lambda s: s["scene"] is not None and s["scene"]["event_id"] == 1245187,
+                "OpeningSequence=2 chained scene")
+            assert scene["scene"]["scene_id"] == 30
+            restarted.choose_dialogue(catalog, "finish")
         restarted.wait_event_finished()
         restarted.logout()
         restarted.close()
@@ -136,9 +164,13 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                          "rewards_after_restart": record["expected"],
                          "inventory_after_fresh": record["inventory_after_fresh"],
                          "inventory_after_restart": record["inventory"],
-                         "unequipped": record["unequipped"], "reequipped": record["reequipped"]})
+                         "unequipped": record["unequipped"], "reequipped": record["reequipped"],
+                         "coming_to_uldah_active_sequence": 255 if record["opening_quest_active"] else None,
+                         "opening_position_after_restart": record["opening_position"],
+                         "scene_after_opening_sequence_2": 30 if record["opening_quest_active"] else None})
 
     (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
-        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all source-defined ring choices, one persisted observed starter main-hand unequip/re-equip round trip, first opening branch and continuation; not account signup UI, appearance breadth or complete opening quest"
+        "coming_to_uldah_completion_blocker": opening["completion_route_blocker"],
+        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices, one starter equipment round trip, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
     }, indent=2), encoding="utf-8")

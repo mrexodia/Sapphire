@@ -10,6 +10,10 @@
       "choose_ring_4426": [4]
     }},
     "1245187:1": {"choices": {"finish": [0]}},
-    "1245187:40": {"choices": {"finish": [0]}}
+    "1245187:40": {"choices": {"finish": [0]}},
+    "1245187:30": {"choices": {"finish": [0]}},
+    "66130:0": {"choices": {"accept_coming_to_uldah": [1]}},
+    "66130:1": {"choices": {"continue_coming_to_uldah": [0]}},
+    "66130:2": {"choices": {"continue_coming_to_uldah": [0]}}
   }
 }

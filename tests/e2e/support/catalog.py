@@ -96,6 +96,31 @@ def validate_pursuit_catalog(data):
     return data
 
 
+def validate_opening_quest_catalog(data):
+    if ({key: data.get(key) for key in ("version", "profile", "territory", "quest")} !=
+            {"version": 1, "profile": "sapphire-3.3", "territory": 182, "quest": 66130}):
+        raise WorkerError("unsupported opening quest catalog binding")
+    expected = (("giver", 3969639, 1003987, [33.375702, 4.1, -151.994003]),
+                ("recipient", 3969632, 1003988, [21.077101, 7.45, -78.8134]))
+    for role, layout_id, base_id, position in expected:
+        actor = data.get(role, {})
+        if actor.get("layout_id") != layout_id or actor.get("base_id") != base_id \
+                or not isinstance(actor.get("position"), list) \
+                or len(actor["position"]) != 3 or math.dist(actor["position"], position) > 0.001:
+            raise WorkerError(f"invalid Coming to Ul'dah {role} binding")
+    if data.get("reward") != {"exp": 50, "gil": 103}:
+        raise WorkerError("Coming to Ul'dah source reward mismatch")
+    route = validated_route({"route": data.get("approach_route") or [],
+                             "route_length": data.get("approach_route_length")})
+    if math.dist(route[0], [42.0, 4.0, -157.6]) > 1 or math.dist(route[-1], data["giver"]["position"]) > 2:
+        raise WorkerError("opening quest approach does not bind source start and giver")
+    if data.get("completion_route_supported") is not False \
+            or data.get("completion_route_blocker") != "incomplete navigation corridor" \
+            or "completion_route" in data:
+        raise WorkerError("opening quest completion must fail closed without a corridor")
+    return data
+
+
 def validate_respawn_catalog(data):
     if (data.get("profile") != "sapphire-3.3" or data.get("version") != 1
             or data.get("homepoint") != 9 or data.get("territory") != 130):
@@ -141,6 +166,10 @@ def validate_combat_catalog(data):
     if any(type(data.get(key)) is not type(value) or data[key] != value for key, value in expected.items()):
         raise WorkerError("combat catalog does not match the supported level-one Fast Blade profile")
     return data
+
+
+def load_opening_quest_catalog(path):
+    return validate_opening_quest_catalog(json.loads(Path(path).read_text(encoding="utf-8")))
 
 
 def load_pursuit_catalog(path):

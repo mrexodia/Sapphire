@@ -67,6 +67,21 @@ def profile(tmp_path):
                "leash_route": [[1 + index * 1.5, 0, 0] for index in range(31)],
                "leash_route_length": 45}
     Path(p["pursuit_catalog"]).write_text(json.dumps(pursuit))
+    opening_route = [[42 - index * 0.9, 4 + index * 0.01, -157.6 + index * 0.56]
+                     for index in range(11)]
+    opening_route[-1] = [33.375702, 4.1, -151.994003]
+    import math
+    opening = {"version": 1, "profile": "sapphire-3.3", "territory": 182, "quest": 66130,
+               "giver": {"layout_id": 3969639, "base_id": 1003987,
+                         "position": [33.375702, 4.1, -151.994003]},
+               "recipient": {"layout_id": 3969632, "base_id": 1003988,
+                             "position": [21.077101, 7.45, -78.8134]},
+               "reward": {"exp": 50, "gil": 103},
+               "approach_route": opening_route,
+               "approach_route_length": sum(math.dist(a, b) for a, b in zip(opening_route, opening_route[1:])),
+               "completion_route_supported": False,
+               "completion_route_blocker": "incomplete navigation corridor", "navigation": nav}
+    Path(p["opening_quest_catalog"]).write_text(json.dumps(opening))
     return p
 
 
