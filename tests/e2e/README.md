@@ -50,12 +50,14 @@ lobby, world and MariaDB processes with matching game data:
   enter-territory operation and exercise all explicit ring results 1..4. Each
   receives scenes 0 then 1, exactly one corresponding item 4423..4426, and the
   scene-40 continuation through fresh authentication and a shared world restart.
-  Before the first journey, the client also moves the observed starter sword from
-  main hand to an observed empty ordinary-bag slot; only fresh authentication and
-  restart snapshots prove the exact persisted mutation. This covers only one
-  unequip, the three Ul'dah starting classes, ring choice and first opening branch,
-  not re-equipping, appearance breadth, other cities/classes, the complete opening
-  quest or travel into public Ul'dah.
+  Before the first journey, the client moves the observed starter sword from main
+  hand to an observed empty ordinary-bag slot. Fresh authentication proves that
+  unequip, then a bounded source-specific operation moves the same sword back to
+  the observed-empty main hand; restart proves the exact final equipment state.
+  Receipts are never treated as mutation proof. This covers only one starter-
+  weapon round trip, the three Ul'dah starting classes, ring choice and first
+  opening branch, not broader equipment, appearance breadth, other cities/classes,
+  the complete opening quest or travel into public Ul'dah.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot
   verifies every matching result/committed HP decrease, the first natural retaliation,

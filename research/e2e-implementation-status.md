@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed main-hand unequip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; one independently observed player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, re-equipping/broader equipment and currency-container moves, general pursuit/leash behavior, raises, combos and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed starter main-hand unequip/re-equip round trip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; one independently observed player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general pursuit/leash behavior, raises, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -55,10 +55,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `30f8a21f3` took 581.964s with zero skips/errors/failures and verified
+  rehearsal at `3cc5a112a` took 560.217s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-8xe58h5r` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-equipment-unequip.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-vmwmq3k7` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-equipment-roundtrip.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -615,10 +615,29 @@ artifact SHA-256 is
 and worker SHA-256 is
 `d9357ec002694d802c9481ec31e13efa444161b697f1da56c87a2f09774e048c`.
 
+At `3cc5a112a`, the subsequent fresh session sends a separately bounded reverse
+operation only for observed item 1601 in an ordinary bag and an observed-empty main
+hand. Its receipt is also non-proof; after logout, the restart snapshot proves exact
+bag-source absence and restoration of `1000:0`, while retaining the ring. Native
+fixtures reject other items, quantities, containers and an occupied destination.
+The first targeted attempt is retained at
+`.e2e-artifacts/creation-reequip-live/sapphire-e2e-lt1qud09`: it exposed a genuine
+fast-reconnect race in which a new connection attached during the old session's
+close-to-map-erase window. `0fe7d4cfe` now removes the old session map entry and
+persists/invalidates its player before transport close becomes observable. The next
+targeted run and clean gate logged `Session not registered, creating` on immediate
+reconnect and passed. The clean gate took **560.217s**, creation **58.947s**;
+artifact SHA-256 is
+`cf00367024b64a2726e35c445e8979130c3bf2fb968477edacf3b3e9f00e6f52`,
+worker SHA-256 is
+`954a26161dc8ecfe6995289fee7bebfca2dea47f2c9fed721cb41df8577809a8`,
+and server SHA-256 is
+`ab48e771c1d467f8d1dc243e838ce1fdd6260e01e0974611ffbc4b9ad637c5e8`.
+
 This evidence remains deliberately narrow: it covers the three Ul'dah starting
-classes, one canonical appearance payload, all ring choices, one main-hand unequip
-and the initial/continuation opening scenes. It does not establish re-equipping,
-other equipment operations, account signup UI, appearance breadth, other
+classes, one canonical appearance payload, all ring choices, one starter main-hand
+unequip/re-equip round trip and the initial/continuation opening scenes. It does not
+establish other equipment operations, account signup UI, appearance breadth, other
 cities/classes, name rejection/deletion, the complete opening quest, travel into
 public Ul'dah, real-client cutscene presentation or broader protocol compatibility.
 
