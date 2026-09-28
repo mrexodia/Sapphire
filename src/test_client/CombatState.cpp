@@ -54,6 +54,14 @@ namespace Sapphire::Testing
     else return false;
     return true;
   }
+  uint32_t fastBladeGuardRemainingMs(std::chrono::steady_clock::time_point ready,
+                                    std::chrono::steady_clock::time_point now)
+  {
+    if(ready <= now) return 0;
+    // Round UP: truncating a positive fractional millisecond could expose zero
+    // while the command-side steady-clock guard still correctly rejects a request.
+    return static_cast<uint32_t>(std::chrono::ceil<std::chrono::milliseconds>(ready - now).count());
+  }
   Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position, const Json& actors, const Json& rewards)
   {

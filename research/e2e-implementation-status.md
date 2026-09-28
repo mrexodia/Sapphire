@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP | Unit verified; live item/XP rewards verified; nonzero currency reward still unverified |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, discard, ordinary Say, 130-to-141 crossing/persistence, and independently observed Fast Blade damage | Representative subset verified; general combat and inventory move/split/swap/use not covered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, discard, ordinary Say, 130-to-141 crossing/persistence, and three paced Fast Blades plus independently observed retaliation | Representative subset verified; general combat and inventory move/split/swap/use not covered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing; no general quest-range/discovery adapter | Exit subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
 | Deterministic authored regression suite | Seven live cases, native tests and Python contracts | Supported suite verified |
@@ -70,14 +70,16 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   credentials, login/idle/logout, observed movement/Say/position persistence,
   single quest, chained quests plus inventory persistence, zoning persistence,
   and combat damage. Both tested territories use compatible server-side meshes.
-- Combat uses a fresh level-one Gladiator and the unchanged Central Thanalan
+- The initial single-action combat slice uses a fresh level-one Gladiator and the unchanged Central Thanalan
   population. The action catalog validates normally learned Fast Blade (9),
   requiring 60 naturally regenerated TP. Both player and observer receive the
   same damage effect and matching-result committed HP decrease on a nearby
   level-one marmot. Request acknowledgement/effect alone is insufficient.
   The fighter disconnects; it does not bypass in-combat logout restrictions.
-  This does not establish kills, combat XP/loot, combos, retaliation assertions,
-  cooldown scheduling or dynamic pursuit. Initial position is fixture setup.
+  That original slice did not establish repeated actions or retaliation; the
+  extension below now covers three paced strikes and the first retaliation hit.
+  Kills, combat XP/loot, combos, general cooldown scheduling and dynamic pursuit
+  remain uncovered. Initial position is fixture setup.
   The decoded `sapphire-e2e-wd3lpulz` journal records nine damage, NPC HP 94 → 85 on both clients,
   and source TP 40 after the action. A conservative local recast guard follows the
   received 250-centisecond action-start value. Private runtime cleanup succeeded.
@@ -181,6 +183,48 @@ Ignored local evidence: `build-e2e/{contracts,live,quest}.xml`,
 `build-e2e-msvc/contracts.xml`, `build-e2e-linux/container-contracts.xml`, CTest logs,
 private generated catalogs, and `.e2e-artifacts/sapphire-e2e-*/` manifests/journals.
 Existing server binaries are staged and hashed, not silently rebuilt by the runner.
+
+## Repeated combat and first retaliation
+
+The combat regression now uses the same ordinary Fast Blade operation three
+times, preserving natural received TP and independent observer range/HP checks.
+A new snapshot field exposes the existing **local** conservative recast guard,
+rounded upward; it is not a server-ready acknowledgement. Python waits on state
+notifications (including normal heartbeats), rather than sleeping a fixed recast
+interval or retrying rejected actions. Each attack requires its own request/result
+identity, received group-58/250-centisecond start and identical effects plus exact
+committed HP decrease on both clients. Both also require the first positive
+natural action-7 retaliation and its exact committed HP against the fighter's
+independently captured initial full health. Later regeneration is not treated as
+absence of damage. No server gameplay code or population/resources were changed.
+
+The first attempt, `.e2e-artifacts/sapphire-e2e-kb7o_831`, passed the three outgoing
+hits but **failed** waiting for retaliation. Both player and NPC had the same
+fixture spawn coordinates. Source inspection showed the horizontal facing check
+normalizes the target direction, which is degenerate for coincident positions.
+The test now starts only the players one metre laterally from that unchanged
+public NPC spawn. This is explicit non-overlapping fixture placement—not a
+fabricated walked route, enemy relocation or navigation assertion. The failing
+run is retained and not relabeled as success.
+
+The revised live case passed in **56.67s** at a dirty development checkpoint:
+`.e2e-artifacts/sapphire-e2e-tyv6x5ff`, `build-e2e/repeated-combat-offset.xml`.
+Normal requests 1/2/3 dealt 9/8/12 damage, with received NPC HP
+94 → 85 → 77 → 65; the last was a critical effect. Attempt spacing was
+3.062/3.047 seconds; received TP before each request was 100 and the local guard
+was zero. Both clients verified the first natural retaliation: two damage,
+fighter HP 94 → 92. The fighter remained alive and explicitly disconnected;
+the observer then logged out. Whole-runtime removal was checked. This verifies
+the extended slice, not damage-formula correctness, kills/XP/loot, general
+cooldowns, pursuit or real-client combat presentation.
+
+All **205** Python contracts pass with Clang and MSVC workers and in
+network-isolated Linux, including 29 new combat-policy contracts. All five native
+suites pass with Clang, MSVC and GNU, including fractional-millisecond guard
+rounding. The strict seven-case CI collection still includes the same combat test
+name with stronger assertions; a clean full-suite rehearsal is pending at this
+checkpoint. Bounded journals and `combat-repeated.json` retain the action,
+pre/post HP, TP, guard, timing and retaliation evidence.
 
 ## Workload diagnostic-failure cleanup hardening
 
@@ -296,9 +340,9 @@ workload was not repeated without a new stability hypothesis.
    replay is flat; this does not establish capacity or memory stability for all
    code paths. Generator histories/allocator retention also remain distinct from
    server resource behavior.
-2. Extend the initial combat slice with normally timed repeated actions, enemy
-   defeat, received combat rewards and retaliation assertions. Preserve observed
-   resource/range checks and require genuine navigation for any pursuit.
+2. Extend combat beyond the now-verified three normally timed actions and first
+   retaliation hit: enemy defeat and received combat rewards remain uncovered.
+   Preserve observed resource/range checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters; unknown content must still fail.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.

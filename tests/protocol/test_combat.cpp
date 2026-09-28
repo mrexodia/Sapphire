@@ -20,6 +20,14 @@ int main()
 {
   try
   {
+    using Clock = std::chrono::steady_clock;
+    const auto now = Clock::time_point{} + std::chrono::seconds(10);
+    require(fastBladeGuardRemainingMs(now, now) == 0);
+    require(fastBladeGuardRemainingMs(now - std::chrono::seconds(1), now) == 0);
+    require(fastBladeGuardRemainingMs(now + std::chrono::microseconds(1), now) == 1);
+    require(fastBladeGuardRemainingMs(now + std::chrono::microseconds(1001), now) == 2);
+    require(fastBladeGuardRemainingMs(now + std::chrono::milliseconds(2500), now) == 2500);
+    require(fastBladeGuardRemainingMs(now + std::chrono::milliseconds(2500), now + std::chrono::milliseconds(2499)) == 1);
     Json actors{{"7", {{"hp", 100}, {"tp", 1000}}}, {"8", {{"hp", 20}, {"kind", 2}, {"level", 1}, {"position", {0, 0, 2}}}}};
     Json rewards{{"class_job", 1}};
     auto body = fastBladeRequest(7, 1, 8, {0,0,0}, actors, rewards);

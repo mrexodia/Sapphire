@@ -481,7 +481,10 @@ namespace Sapphire::Testing
     if(method == "snapshot")
     {
       auto state = m_state; state["seq"] = m_seq; state["moving"] = m_moving;
-      state["rewards"] = m_rewards.state(); state["combat"] = m_combat.state(); return state;
+      state["rewards"] = m_rewards.state(); state["combat"] = m_combat.state();
+      state["combat"]["fast_blade_guard_remaining_ms"] =
+        fastBladeGuardRemainingMs(m_fastBladeReady, std::chrono::steady_clock::now());
+      return state;
     }
     if(method == "close") { close(); phase("closed"); return Json::object(); }
     if(m_state["phase"] != "ready") throw ProtocolError("action requires a world-ready bot");

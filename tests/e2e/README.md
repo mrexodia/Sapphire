@@ -39,10 +39,10 @@ lobby, world and MariaDB processes with matching game data:
   deletion, checks every tracked slot for unintended changes, and verifies the
   deletion plus retained quest progress after a second restart.
 
-- A level-one Gladiator waits for naturally regenerated TP, uses Fast Blade against
-  an observed nearby level-one marmot, and an independent bot verifies the matching
-  action result and exact committed HP decrease. Enemies and skills are not granted
-  or modified by fixtures.
+- A level-one Gladiator waits for naturally regenerated TP, performs three paced
+  Fast Blades against an observed nearby level-one marmot, and an independent bot
+  verifies each matching result and committed HP decrease, plus the first natural
+  retaliation hit. Enemies, skills and resources are not granted or modified.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -284,23 +284,39 @@ Use `.exe` on Windows and set `combat_catalog` to the absolute output path. The
 validator requires the supported level-one Gladiator/Fast Blade metadata (60 TP,
 2.5-second recast, class-default melee range). This is not independent client evidence.
 
-`test_live_combat.py` places fresh characters at a location from the unchanged
-staged Central Thanalan population before their first connection. This is fixture
-setup, not a tested journey there. It requires actual `NAVI` initialization in the
+`test_live_combat.py` places fresh characters one metre laterally from a spawn in
+the unchanged staged Central Thanalan population before their first connection.
+This is explicit non-overlapping player fixture setup, not a tested journey,
+curated route, enemy relocation or general navigation assertion. It requires actual `NAVI` initialization in the
 world log, then observes a living level-one marmot within two units and natural
 TP regeneration before requesting the action. The worker refuses targets beyond
 three units from its position estimate, wrong classes/kinds/levels, dead actors and
 insufficient received TP. A conservative 2.5-second request guard is extended from
-the received action-start recast; this is not a general cooldown scheduler. The live
-test independently confirms melee range using the observer's received positions.
-Both clients must receive the same damage effects and matching-result HP integrity;
-request acknowledgements and visual effects alone cannot pass. The fighter then
-disconnects rather than bypassing in-combat logout restrictions.
+the received action-start recast; this is not a general cooldown scheduler. Snapshot
+`combat.fast_blade_guard_remaining_ms` exposes that **local** guard, rounded up so
+positive sub-millisecond waits never appear ready. `Bot.wait_fast_blade_ready()`
+uses state notifications (including ordinary heartbeat replies), received TP and
+estimated range; it neither sleeps a fixed recast interval nor retries actions.
+It is not a server-ready acknowledgement or independent range proof.
+
+The live test makes three requests with distinct request/result IDs and at least
+2.5 seconds between attempts, checking each received group-58/250-centisecond start.
+Before every attack the observer independently confirms range and target HP.
+Both clients must receive identical damage effects and matching-result HP integrity;
+acknowledgements and effects alone cannot pass. Both must also observe the first
+positive natural marmot retaliation against the initially full-health fighter,
+including its exact committed HP result. Subsequent HP regeneration is not mistaken
+for absence of damage. The fighter then disconnects rather than bypassing the
+in-combat logout restriction.
 
 The artifact manifest hashes the action catalog and staged player-action/population
 files. Bounded event journals include decoded effects, HP integrity and action-start
-recast metadata. This slice does **not** prove enemy kills, combat XP/loot, combos,
-retaliation assertions, cooldown scheduling, dynamic pursuit or arbitrary abilities.
+recast metadata. `combat-repeated.json` records verified pre/post HP, natural TP,
+local guard, attempt times and retaliation, supplementing rather than replacing
+raw journals. An earlier overlapping-fixture attempt failed retaliation and remains
+retained; it is not counted as passing coverage. This slice does **not** prove enemy
+kills, combat XP/loot, combos, general cooldown scheduling, dynamic pursuit or
+arbitrary abilities.
 
 ## Bounded exploration, soak and replay
 

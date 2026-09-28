@@ -1,12 +1,14 @@
-"""One normal learned melee action; no spawned/modified enemies or granted skills."""
+"""Repeated melee and retaliation; no spawned enemies or granted resources/skills."""
 import json
 import math
 import re
+import time
 
 import pytest
 
 from .support.worker import Bot
 from .support.catalog import load_combat_catalog
+from .support.combat import committed_damage, damage_value
 
 pytestmark = pytest.mark.live
 
@@ -24,7 +26,11 @@ def test_observed_fast_blade_damage(environment, live_worker):
     # NPCs must really have compatible navigation, not silently run without it.
     logs = "\n".join(p.read_text(errors="replace") for p in environment.runtime.glob("world*.log"))
     assert re.search(r"141\s+\d+\s+1\s+w1f2\s+PUBLIC\s+NAVI\s+Central Thanalan", logs)
-    position = spawn["baseInfo"]["position"]
+    position = list(spawn["baseInfo"]["position"])
+    # Do not overlap the enemy's exact spawn: face() has no horizontal direction
+    # for coincident actors. This one-metre lateral PLAYER placement is fixture
+    # setup, not a walked route, enemy relocation or navigation assertion.
+    position[0] += 1.0
     fixture = environment.fresh_character(position, 141)
     witness_fixture = environment.fresh_character(position, 141)
     player, observer = Bot(live_worker, "fighter"), Bot(live_worker, "combat-observer")
@@ -47,29 +53,69 @@ def test_observed_fast_blade_damage(environment, live_worker):
         lambda s: bool(candidates(s)) and s["actors"][str(entity)]["tp"] >= 60,
         "nearby level-one marmot and naturally regenerated TP", 30)
     target, before = candidates(state)[0]
-    live_worker.wait_state(observer.name,
-        lambda s: target in s["actors"] and str(entity) in s["actors"]
-            and s["actors"][target]["hp"] == before["hp"]
-            and math.dist(s["actors"][target]["position"], s["actors"][str(entity)]["position"]) < 3,
-        "observer sees healthy target within fighter's melee range")
-    effect = player.fast_blade(int(target))
-    damage = sum(e["value"] for e in effect["effects"] if e["type"] in (3, 5) and e["flag"] == 0)
-    assert damage > 0, f"expected positive damage, received {effect}"
+    fighter_before = state["actors"][str(entity)]
+    assert fighter_before["hp"] == fighter_before["hp_max"] > 0
+    expected_hp = before["hp"]
+    attempts, effects, evidence = [], [], []
+    for index in range(3):
+        # No fixed sleep/retry around the action: await received natural TP and
+        # the worker's conservative local guard, extended by received ActionStart.
+        state = player.wait_fast_blade_ready(int(target))
+        before = state["actors"][target]
+        assert before["hp"] == expected_hp > 0
+        live_worker.wait_state(observer.name,
+            lambda s: target in s["actors"] and str(entity) in s["actors"]
+                and s["actors"][target]["hp"] == before["hp"]
+                and s["actors"][str(entity)]["hp"] > 0
+                and math.dist(s["actors"][target]["position"], s["actors"][str(entity)]["position"]) < 3,
+            "observer sees target HP and living fighter within melee range")
+        attempts.append(time.monotonic())
+        if index:
+            assert attempts[-1] - attempts[-2] >= 2.5
+        effect = player.fast_blade(int(target))
+        assert effect["kind"] == 1 and damage_value(effect) > 0
+        assert effect["request"] not in {old["request"] for old in effects}
+        assert effect["result"] not in {old["result"] for old in effects}
+        effects.append(effect)
+        for bot in (player, observer):
+            observed = live_worker.wait_state(bot.name,
+                lambda s: committed_damage(s, effect, before),
+                "identical effect and matching committed HP decrease", 10)
+            assert observed["phase"] == "ready" and observed["gm_rank"] == 0 and observed["territory"] == 141
+            assert observed["scene"] is None
+        started = live_worker.wait_state(player.name,
+            lambda s: len([row for row in s["combat"]["starts"]
+                           if row["source"] == entity and row["action"] == 9]) == index + 1,
+            "one received Fast Blade start per request", 10)
+        starts = [row for row in started["combat"]["starts"] if row["source"] == entity and row["action"] == 9]
+        assert all(row["group"] == 58 and row["recast_centiseconds"] == 250 for row in starts)
+        expected_hp = max(0, before["hp"] - damage_value(effect))
+        evidence.append({"effect": effect, "before_hp": before["hp"], "after_hp": expected_hp,
+                         "received_tp_before": state["actors"][str(entity)]["tp"],
+                         "local_guard_remaining_ms": state["combat"]["fast_blade_guard_remaining_ms"]})
+
+    def incoming(s):
+        return [row for row in s["combat"]["effects"] if row["source"] == int(target)
+                and row["target"] == entity and row["action"] == 7 and damage_value(row) > 0]
+
+    state = live_worker.wait_state(player.name, lambda s: bool(incoming(s)), "natural marmot retaliation", 15)
+    retaliation = incoming(state)[0]
+    assert retaliation["kind"] == 1 and retaliation["request"] == 0
+    # First positive hit against a previously full-health fighter. Later ticks
+    # can regenerate HP; never infer a pre-hit value from a later desired result.
     for bot in (player, observer):
-        state = live_worker.wait_state(bot.name,
-            lambda s: any(e["source"] == entity and e["target"] == int(target) and e["action"] == 9
-                          and e["result"] == effect["result"] for e in s["combat"]["effects"])
-                and any(i["target"] == int(target) and i["result"] == effect["result"]
-                        and i["hp_max"] == before["hp_max"]
-                        and i["hp"] == max(0, before["hp"] - damage) for i in s["combat"]["integrities"]),
-            "matching action result and committed HP decrease", 10)
-        assert state["phase"] == "ready" and state["gm_rank"] == 0 and state["territory"] == 141
-        assert state["scene"] is None
-        observed = next(e for e in state["combat"]["effects"]
-                        if e["result"] == effect["result"] and e["source"] == entity and e["target"] == int(target))
-        assert observed["effects"] == effect["effects"] and observed["kind"] == 1
+        observed = live_worker.wait_state(bot.name,
+            lambda s: committed_damage(s, retaliation, fighter_before),
+            "independently observed first retaliation effect and exact committed HP", 10)
+        assert observed["actors"][str(entity)]["hp"] > 0
+        assert observed["phase"] == "ready" and observed["territory"] == 141 and observed["gm_rank"] == 0
+        assert observed["scene"] is None and observed["event_id"] is None
     # Disconnect is deliberate: do not bypass the client's in-combat logout restriction.
     player.close()
     live_worker.wait_state(observer.name, lambda s: str(entity) not in s["actors"], "fighter disconnect", 30)
     observer.logout()
     observer.close()
+    (environment.artifacts / "combat-repeated.json").write_text(json.dumps({
+        "attacks": evidence, "attempt_monotonic": attempts, "retaliation": retaliation,
+        "fighter_hp_before_combat": fighter_before["hp"], "both_clients_verified": True,
+        "scope": "three Fast Blades and first retaliation; no kill/loot/pursuit claim"}, indent=2), encoding="utf-8")

@@ -1,6 +1,7 @@
 #pragma once
 #include "Protocol.h"
 #include <nlohmann/json.hpp>
+#include <chrono>
 
 namespace Sapphire::Testing
 {
@@ -13,6 +14,9 @@ namespace Sapphire::Testing
   private:
     nlohmann::json m_state;
   };
+  // Local conservative pacing guard, not a received server-ready acknowledgement.
+  uint32_t fastBladeGuardRemainingMs(std::chrono::steady_clock::time_point ready,
+                                    std::chrono::steady_clock::time_point now);
   // Deliberately narrow initial combat profile: living Gladiator, Fast Blade,
   // observed nearby level-one battle NPC. No arbitrary ability/raw-packet API.
   Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,

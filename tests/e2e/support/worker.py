@@ -8,6 +8,8 @@ import subprocess
 import threading
 import time
 
+from .combat import fast_blade_ready
+
 
 class WorkerError(RuntimeError):
     pass
@@ -230,6 +232,13 @@ class Bot:
         if catalog.get("profile") != "sapphire-3.3":
             raise UnsupportedScene("scene catalog profile mismatch")
         self.worker.request("choose_scene", self.name, **scene_arguments(scene), results=results)
+
+    def wait_fast_blade_ready(self, target, timeout=30):
+        # Received TP/target plus the worker's LOCAL conservative pacing guard.
+        # State notifications (including ordinary heartbeat replies) drive waits;
+        # no fixed recast sleep, privileged replenishment or automatic retry.
+        return self.worker.wait_state(self.name, lambda s: fast_blade_ready(s, target),
+                                      "Fast Blade local guard, natural TP and estimated range", timeout)
 
     def fast_blade(self, target, timeout=10):
         request = self.worker.request("fast_blade", self.name, target=target)["request"]
