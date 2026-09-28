@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts, lobby name reservation/finalization, refreshed list/select, private territory 182, explicit source-defined Ul'dah scenes 0/1, all ring choices/items and scene-40 continuation after fresh authentication and restart | All ring branches within the first opening branch verified; appearance/classes, complete opening quest and travel to public Ul'dah remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning source-defined Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby name reservation/finalization, refreshed list/select, private territory 182, scenes 0/1, all ring choices/items and scene-40 continuation after fresh authentication and restart | All Ul'dah starting classes and ring branches within the first opening branch verified; appearance breadth, other cities/classes, complete opening quest and travel to public Ul'dah remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -55,10 +55,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `907a58bd0` took 562.855s with zero skips/errors/failures and verified
+  rehearsal at `59ab9e539` took 556.957s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-ekb2o2rs` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-opening-rings.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-y62rdmhf` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-opening-classes.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -585,20 +585,29 @@ the private runtime root is absent. All 245 Python contracts pass with Clang/MSV
 workers and in network-isolated Linux; all six native suites pass with Clang, MSVC
 and GNU 11.4.
 
-The later `907a58bd0` extension runs four isolated empty-account journeys in the
-same case and pins all source-defined results 1..4 to exact items 4423..4426. Each
-character independently proves scenes 0→1, its sole selected ring after fresh
-HTTP/lobby authentication, scene 40, and identical inventory/continuation after one
-shared world restart. A policy contract fixes the complete choice map. The clean
-nine-case gate passed in **562.855s**; creation took **58.616s** and
-`character-creation-opening.json` SHA-256 is
-`108435b5f1766e675b30d7d796e287920b0e98d02c6630bcf5b7190be8c63bbf`.
+The later `59ab9e539` extension runs four isolated empty-account journeys in the
+same case and pins all source-defined results 1..4 to exact items 4423..4426. Its
+bounded creation payload accepts only source-defined Ul'dah starters Gladiator,
+Pugilist and Thaumaturge; received class-job and independently located level-one
+work-index state prove each class rather than trusting the request. Every character
+proves scenes 0→1, its sole selected ring after fresh HTTP/lobby authentication,
+scene 40, and identical inventory/continuation after one shared world restart. A
+policy contract fixes the complete choice map and the native protocol contract
+rejects a non-Ul'dah class. The clean nine-case gate passed in **556.957s**; creation
+took **58.868s** and `character-creation-opening.json` SHA-256 is
+`c93f2a7ad1093e42260edc3f9bc7e99eafb808a0607ffe4ca247668444cf32f6`.
+Worker SHA-256 is
+`30212b835fb2db774ca952ef8dca6943b52c9e350f14e7d7c48b178890aff7c6`;
+the private runtime root is absent. The immediately preceding failed gate is retained
+under `.e2e-artifacts/ci/gameplay-ci-a5wh09qq`: it used the stale profile worker and
+also caught natural target drift before Fast Blade, so it is not success evidence.
 
-This evidence remains deliberately narrow: it covers four canonical Gladiators,
-all ring choices and the initial/continuation opening scenes. It does not establish
-account signup UI, appearance/class combinations, name rejection/deletion, the
-complete opening quest, travel into public Ul'dah, real-client cutscene presentation
-or broader protocol compatibility.
+This evidence remains deliberately narrow: it covers the three Ul'dah starting
+classes, one canonical appearance payload, all ring choices and the
+initial/continuation opening scenes. It does not establish account signup UI,
+appearance breadth, other cities/classes, name rejection/deletion, the complete
+opening quest, travel into public Ul'dah, real-client cutscene presentation or
+broader protocol compatibility.
 
 ## Workload diagnostic-failure cleanup hardening
 

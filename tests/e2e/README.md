@@ -12,7 +12,7 @@ lobby, world and MariaDB processes with matching game data:
 - Invalid credentials are rejected.
 - Genuine HTTP login, encrypted lobby negotiation, character selection and world
   handoff succeed with non-GM accounts. A separate case starts with an account that
-  has no characters, reserves a name and finalizes canonical Gladiators through
+  has no characters, reserves a name and finalizes canonical Ul'dah starters through
   lobby operations, refreshes each isolated account's character list, and enters
   the normal private opening territory.
 - Readiness requires zone initialization, self-spawn **and the server clearing
@@ -45,12 +45,14 @@ lobby, world and MariaDB processes with matching game data:
   received deletion, checks every tracked slot for unintended changes, and verifies
   the deletion plus retained quest progress after the final restart.
 
-- Four newly created Gladiators start Ul'dah event 1245187 through its source-defined
+- Four newly created characters spanning Gladiator, Pugilist and Thaumaturge start
+  Ul'dah event 1245187 through its source-defined
   enter-territory operation and exercise all explicit ring results 1..4. Each
   receives scenes 0 then 1, exactly one corresponding item 4423..4426, and the
   scene-40 continuation through fresh authentication and a shared world restart.
-  This covers only the ring choice and first opening branch, not appearance/class
-  creation combinations, the complete opening quest or travel into public Ul'dah.
+  This covers only the three Ul'dah starting classes, ring choice and first opening
+  branch, not appearance breadth, other cities/classes, the complete opening quest
+  or travel into public Ul'dah.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot
   verifies every matching result/committed HP decrease, the first natural retaliation,
