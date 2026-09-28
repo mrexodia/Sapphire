@@ -33,7 +33,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge and discard; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot and one independently observed player defeat | Representative subset verified; item use, overflow merges, equipment/currency operations, pursuit, respawn, combos and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported capability; only fixed one/two-result returns | Missing |
-| Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Existing eight-case clean suite and new player-defeat case verified separately; combined clean gate pending |
+| Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
@@ -54,21 +54,21 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - 245 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
-- The provisioned CI entry point passes all eight cases. The latest clean-checkout
-  rehearsal at `326114b5e` took 343.613s with zero skips/errors/failures and verified
+- The provisioned CI entry point passes all nine cases. The latest clean-checkout
+  rehearsal at `4755fc94b` took 432.516s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-b511jzk6` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-creation.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-zd2rsqts` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-player-defeat.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
   protected-environment approval and VM disposal responsibilities. Local rehearsal
   does not prove hosted approval, cancellation cleanup or independent compatibility.
-- Eight live cases pass together: rejected credentials, login/idle/logout, observed
+- Nine live cases pass together: rejected credentials, login/idle/logout, observed
   movement/Say/position persistence, single quest, chained quests plus inventory
-  persistence, zoning persistence, combat defeat/rewards and normal lobby creation
-  plus the first Ul'dah opening branch. Both public tested territories use compatible
+  persistence, zoning persistence, enemy defeat/rewards, player defeat and normal
+  lobby creation plus the first Ul'dah opening branch. Both public tested territories use compatible
   server-side meshes; the private opening territory does not make a navigation claim.
 - The initial single-action combat slice uses a fresh level-one Gladiator and the unchanged Central Thanalan
   population. The action catalog validates normally learned Fast Blade (9),
@@ -374,15 +374,19 @@ when normal regeneration occurs between attacks, rather than incorrectly derivin
 a pre-hit value from the previous attack's post-hit value. Native and Python policy
 contracts cover level-14 acceptance while preserving kind/death/range/resource guards.
 
-The targeted dirty-checkpoint run passed in **111.56s** and removed its private
-runtime. Evidence: `.e2e-artifacts/player-defeat-live/sapphire-e2e-l2kr1naa`, raw
-worker journal and `combat-player-defeat.json` SHA-256
-`ea850f8db5bbd0ca3357123d444daaebfa2a72da5b52d21bd324b5919d77244f`.
+The targeted dirty-checkpoint run passed in **111.56s**. The subsequent clean
+strict nine-case gate at `4755fc94b` passed in **432.516s**, zero skips/errors/
+failures, with exact collection/input identity and cleanup checks. Evidence:
+`build-e2e/ci-summary-player-defeat.json`,
+`.e2e-artifacts/ci/gameplay-ci-zd2rsqts/live.xml`, environment
+`sapphire-e2e-ed1g83qo`. The player-defeat case took 87.777s and its
+`combat-player-defeat.json` SHA-256 is
+`0cea232b93a0094beefc2031a8f6ffaca6d97134f07449720e4f3551239a3507`.
 The worker SHA-256 was
 `383c8854a0048c33b77ba7e058ceb9055be473262442edc7d6894817faf1f37a` and server
 SHA-256 was
-`233b53537476d69c0dc62e01f30fc1baf2a96298b4a25175e8a036191c25c7d2`.
-This increment does not yet have a combined clean nine-case gate.
+`233b53537476d69c0dc62e01f30fc1baf2a96298b4a25175e8a036191c25c7d2`;
+the private runtime root is absent.
 
 This proves one player defeat after one initiating strike. It does not prove
 natural proximity aggro, arbitrary enemy levels/abilities, pursuit, party combat,
