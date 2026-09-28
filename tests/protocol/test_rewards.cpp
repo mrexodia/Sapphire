@@ -119,6 +119,30 @@ int main()
       catch(const ProtocolError&) { rejected = true; }
       check(rejected, "invalid/unready/unobserved/mismatched swap rejected");
     }
+    auto split = splitItemRequest(state.state(), 0x12345678, 0x01020306,
+                                  1, 2, 4551, 2, 1, 3, 24);
+    Bytes splitExpected = moveExpected;
+    splitExpected[0] = 6; splitExpected[4] = 10;
+    splitExpected[40] = 1; splitExpected[44] = 0xc7; splitExpected[45] = 0x11;
+    check(split == splitExpected, "split request must match exact bounded partial-stack wire fixture");
+    rejected = false;
+    try { splitItemRequest(state.state(), 1, 1, 1, 2, 4551, 2, 2, 3, 24); }
+    catch(const ProtocolError&) { rejected = true; }
+    check(rejected, "whole-stack split rejected");
+    auto splitState = state.state();
+    splitState["inventory"]["3:24"] = {{"storage", 3}, {"slot", 24}, {"id", 4551}, {"count", 1}};
+    auto merge = mergeItemRequest(splitState, 0x12345678, 0x01020307,
+                                  3, 24, 4551, 1, 1, 2, 2);
+    Bytes mergeExpected = splitExpected;
+    mergeExpected[0] = 7; mergeExpected[4] = 12;
+    mergeExpected[12] = 3; mergeExpected[16] = 24; mergeExpected[20] = 1;
+    mergeExpected[32] = 1; mergeExpected[36] = 2; mergeExpected[40] = 2;
+    check(merge == mergeExpected, "merge request must match exact bounded matching-stack wire fixture");
+    rejected = false;
+    try { mergeItemRequest(swapState, 1, 1, 3, 24, 4555, 3, 1, 2, 2); }
+    catch(const ProtocolError&) { rejected = true; }
+    check(rejected, "mismatched merge rejected");
+
     batch.contextId = 0x01020305; batch.operationType = 9; batch.errorType = 0;
     auto swapInventoryBeforeAck = state.state()["inventory"];
     receive(state, batch);

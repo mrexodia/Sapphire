@@ -18,6 +18,8 @@ def test_capabilities(worker):
     assert "fast_blade" in caps["methods"]
     assert "request_item_move" in caps["methods"]
     assert "request_item_swap" in caps["methods"]
+    assert "request_item_split" in caps["methods"]
+    assert "request_item_merge" in caps["methods"]
 
 
 def test_unknown_bot_and_invalid_method(worker):

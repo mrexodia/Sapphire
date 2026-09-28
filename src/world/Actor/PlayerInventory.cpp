@@ -882,18 +882,18 @@ void Player::splitItem( uint16_t fromInventoryId, uint16_t fromSlotId, uint16_t 
   if( !fromItem )
     return;
 
-  // check we have enough items in the origin slot
-  // nb: don't let the client 'split' a whole stack into another slot
-  if( fromItem->getStackSize() < itemCount )
-    // todo: correct the invalid item split? does retail do this or does it just ignore it?
+  // A split must leave a non-empty source stack; whole-stack relocation is MOVEITEM.
+  if( fromItem->getStackSize() <= itemCount )
     return;
 
   // make sure toInventoryId & toSlot are actually free so we don't orphan an item
   if( m_storageMap[ toInventoryId ]->getItem( toSlot ) )
-    // todo: correct invalid move? again, not sure what retail does here
     return;
 
-  auto newItem = addItem( fromItem->getId(), itemCount, fromItem->isHq(), true, false );
+  // addItem() chooses and populates its own free slot. Using it here and then also
+  // assigning the requested destination aliases one item into two slots. Create the
+  // persistent item directly and publish it only at the requested destination.
+  auto newItem = createItem( fromItem->getId(), itemCount, fromItem->isHq() );
   if( !newItem )
     return;
 

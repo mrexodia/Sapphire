@@ -60,6 +60,37 @@ def test_swap_request_waits_for_exact_ack_without_predicting_inventory():
     assert all(state["rewards"]["inventory"] == before for state in states)
 
 
+@pytest.mark.parametrize("method,operation,counts", [
+    ("request_item_split", 10, {"expected_count": 3, "split_count": 1}),
+    ("request_item_merge", 12, {"expected_count": 1, "expected_destination_count": 2}),
+])
+def test_split_merge_acknowledgements_never_predict_inventory(method, operation, counts):
+    before = {"0:1": {"storage": 0, "slot": 1, "id": 4555, "count": 3}}
+
+    class Worker:
+        def request(self, actual, bot, **args):
+            assert actual == method and bot == "subject"
+            assert args == {"storage": 0, "slot": 1, "destination_storage": 3,
+                            "destination_slot": 24, "expected_item": 4555, **counts}
+            return {"context": 321}
+
+        def wait_state(self, bot, predicate, description, timeout):
+            states = [{"rewards": {"inventory": deepcopy(before), "operation_batches": [row]}}
+                      for row in ({"context": 321, "operation": operation - 1, "error": 0},
+                                  {"context": 321, "operation": operation, "error": 1},
+                                  {"context": 321, "operation": operation, "error": 0})]
+            assert [predicate(state) for state in states] == [False, False, True]
+            return states[-1]
+
+    bot = Bot(Worker(), "subject")
+    if method.endswith("split"):
+        receipt = bot.request_item_split(0, 1, 3, 24, 4555, 3, 1)
+    else:
+        receipt = bot.request_item_merge(0, 1, 3, 24, 4555, 1, 2)
+    assert receipt == {"context": 321, "operation": operation, "acknowledged": True,
+                       "inventory_change_verified": False}
+
+
 class MoveFixture:
     """Exercise the actual scenario verifier with deliberately wrong fresh snapshots."""
     def __init__(self):

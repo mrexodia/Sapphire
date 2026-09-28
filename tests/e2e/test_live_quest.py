@@ -166,6 +166,55 @@ def swap_reward_and_verify_restart(environment, worker, player, fixture, expecte
     return player, expected_inventory, evidence
 
 
+def split_merge_reward_and_verify_restarts(environment, worker, player, fixture, expected, work_index, quests):
+    state = player.expect_rewards(expected, work_index)
+    before = deepcopy(state["rewards"]["inventory"])
+    stacks = [(key, item) for key, item in before.items()
+              if item["id"] == 4555 and item["storage"] in range(4)]
+    assert len(stacks) == 1 and stacks[0][1]["count"] == 3
+    source, item = stacks[0]
+    empty = next((f"{storage}:{slot}" for storage in reversed(range(4)) for slot in reversed(range(25))
+                  if f"{storage}:{slot}" not in before), None)
+    assert empty is not None
+    destination_storage, destination_slot = map(int, empty.split(":"))
+    split_inventory = deepcopy(before)
+    split_inventory[source]["count"] = 2
+    split_inventory[empty] = {"storage": destination_storage, "slot": destination_slot,
+                              "id": 4555, "count": 1}
+    split_receipt = player.request_item_split(item["storage"], item["slot"],
+        destination_storage, destination_slot, 4555, 3, 1)
+    assert split_receipt["acknowledged"] and split_receipt["inventory_change_verified"] is False
+    player.logout()
+    player.close()
+    environment.restart_world()
+    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    state = player.login_via_lobby(auth, fixture["name"])
+    state = player.expect_rewards(expected, work_index)
+    assert state["rewards"]["inventory"] == split_inventory
+    for quest in quests:
+        player.expect_quest_complete(quest)
+
+    merge_receipt = player.request_item_merge(destination_storage, destination_slot,
+        item["storage"], item["slot"], 4555, 1, 2)
+    assert merge_receipt["acknowledged"] and merge_receipt["inventory_change_verified"] is False
+    player.logout()
+    player.close()
+    environment.restart_world()
+    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    state = player.login_via_lobby(auth, fixture["name"])
+    state = player.expect_rewards(expected, work_index)
+    assert state["rewards"]["inventory"] == before
+    for quest in quests:
+        player.expect_quest_complete(quest)
+    evidence = {"source": source, "destination": empty, "item": 4555,
+        "split_receipt": split_receipt, "merge_receipt": merge_receipt, "before": before,
+        "after_split_restart": split_inventory, "after_merge_restart": deepcopy(state["rewards"]["inventory"]),
+        "scope": "partial 3-to-2+1 split and whole 1+2 merge in observed ordinary bag slots"}
+    (environment.artifacts / "inventory-split-merge.json").write_text(
+        json.dumps(evidence, indent=2), encoding="utf-8")
+    return player, before, evidence
+
+
 def discard_reward_and_verify_restart(environment, worker, player, fixture, expected, work_index, quests):
     state = worker.snapshot(player.name)
     inventory = deepcopy(state["rewards"]["inventory"])
@@ -291,6 +340,10 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
             environment, live_worker, reloaded, player_fixture, expected,
             catalog["work_index"], completed_quests)
         assert live_worker.snapshot(reloaded.name)["rewards"]["inventory"] == swapped_inventory
+        reloaded, merged_inventory, _ = split_merge_reward_and_verify_restarts(
+            environment, live_worker, reloaded, player_fixture, expected,
+            catalog["work_index"], completed_quests)
+        assert live_worker.snapshot(reloaded.name)["rewards"]["inventory"] == merged_inventory
         reloaded = discard_reward_and_verify_restart(environment, live_worker, reloaded, player_fixture,
                                                     expected, catalog["work_index"], completed_quests)
     reloaded.logout()

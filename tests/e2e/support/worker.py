@@ -103,10 +103,14 @@ class Worker:
                 self._pending.add(identifier)
                 if method not in {"snapshot", "capabilities"}:
                     safe_args = args if method in {"walk_to", "interact", "choose_scene", "say", "discard_item", "fast_blade"} else {}
-                    if method in {"request_item_move", "request_item_swap"}:
+                    if method in {"request_item_move", "request_item_swap", "request_item_split", "request_item_merge"}:
                         keys = ("storage", "slot", "expected_item", "destination_storage", "destination_slot")
                         if method == "request_item_swap":
                             keys += ("expected_destination_item",)
+                        elif method == "request_item_split":
+                            keys += ("expected_count", "split_count")
+                        elif method == "request_item_merge":
+                            keys += ("expected_count", "expected_destination_count")
                         safe_args = {key: args[key] for key in keys}
                     if method == "cross_exit":
                         safe_args = {"exit_id": args["exit"]["id"], "territory": args["exit"]["territory"]}
@@ -289,6 +293,29 @@ class Bot:
                           for row in s["rewards"]["operation_batches"]),
             "matching swap acknowledgement (not inventory mutation)", timeout)
         return {"context": context, "operation": 9, "acknowledged": True, "inventory_change_verified": False}
+
+    def request_item_split(self, storage, slot, destination_storage, destination_slot,
+                           expected_item, expected_count, split_count, timeout=10):
+        context = self.worker.request("request_item_split", self.name, storage=storage, slot=slot,
+            destination_storage=destination_storage, destination_slot=destination_slot,
+            expected_item=expected_item, expected_count=expected_count, split_count=split_count)["context"]
+        self.worker.wait_state(self.name,
+            lambda s: any(row["context"] == context and row["operation"] == 10 and row["error"] == 0
+                          for row in s["rewards"]["operation_batches"]),
+            "matching split acknowledgement (not inventory mutation)", timeout)
+        return {"context": context, "operation": 10, "acknowledged": True, "inventory_change_verified": False}
+
+    def request_item_merge(self, storage, slot, destination_storage, destination_slot,
+                           expected_item, expected_count, expected_destination_count, timeout=10):
+        context = self.worker.request("request_item_merge", self.name, storage=storage, slot=slot,
+            destination_storage=destination_storage, destination_slot=destination_slot,
+            expected_item=expected_item, expected_count=expected_count,
+            expected_destination_count=expected_destination_count)["context"]
+        self.worker.wait_state(self.name,
+            lambda s: any(row["context"] == context and row["operation"] == 12 and row["error"] == 0
+                          for row in s["rewards"]["operation_batches"]),
+            "matching merge acknowledgement (not inventory mutation)", timeout)
+        return {"context": context, "operation": 12, "acknowledged": True, "inventory_change_verified": False}
 
     def say(self, message):
         self.worker.request("say", self.name, message=message)

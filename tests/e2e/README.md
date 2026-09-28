@@ -196,7 +196,8 @@ bot.close()    # Removes the bot from the worker.
 Additional actions: `wait_world_ready`, `walk_route`, `interact`, `choose_dialogue`,
 `wait_event_finished`, `expect_quest_active`, `expect_quest_complete`,
 `reward_snapshot`, `expect_rewards`, `request_item_move`, `request_item_swap`,
-`discard_item`, `cross_exit`, `say`, `expect_say`, `wait_fast_blade_ready`, and
+`request_item_split`, `request_item_merge`, `discard_item`, `cross_exit`, `say`,
+`expect_say`, `wait_fast_blade_ready`, and
 `fast_blade`.
 Use `worker.wait_state(...)` for bounded predicates against received state. Event
 notifications wake waits; snapshots also cover observations received before the
@@ -235,6 +236,13 @@ identities are rejected so the bounded regression has an unambiguous exact-map
 result. The caller still cannot choose counts or an arbitrary operation, and the
 operation-9 acknowledgement is not mutation evidence.
 
+`request_item_split(...)` requires an exact observed source count, a positive
+strictly smaller split count and an observed empty ordinary-bag destination.
+`request_item_merge(...)` requires exact observed source/destination counts and the
+same item identity in distinct ordinary-bag slots. Operation-10/12 acknowledgements
+are non-mutation evidence, just like move/swap acknowledgements; only later complete
+snapshots establish either result.
+
 The chain regression earns its three ethers normally, requests the move to bag 3,
 slot 24, logs out and authenticates again. Complete received snapshots must then
 show the source absent, that exact destination holding all three ethers, and every
@@ -247,14 +255,21 @@ The reloaded client then swaps the occupied ether and potion slots. It normally
 logs out, the world restarts, and a fresh authentication must show both exact
 identities/counts exchanged with every other tracked slot unchanged.
 `inventory-swap.json` records the operation-9 acknowledgement separately from the
-post-restart map. The existing discard test subsequently deletes the relocated
-ether stack and verifies that deletion across the final restart. No database
-mutation, grant, optimistic slot update, forced resync or fabricated server
-response supplies gameplay evidence.
+post-restart map. Next, one earned three-item stack is split 3→2+1 into an observed
+empty slot. A world restart/fresh authentication must show both exact stacks and
+every other slot unchanged. The one-item stack is then merged back; another restart
+must restore the exact pre-split map. `inventory-split-merge.json` separates both
+acknowledgements from those snapshots. The discard test subsequently deletes the
+merged ether stack and verifies that deletion across the final restart. The server
+split implementation creates the new persistent item directly at the requested
+slot; it no longer aliases an `addItem()` auto-slot into a second destination.
+No database mutation, grant, optimistic slot update, forced resync or fabricated
+server response supplies gameplay evidence.
 
-This covers an ordinary empty-destination whole-stack move and a two-occupied-slot
-swap, not split/merge, equipment/currency moves, item use, immediate operation
-publication, crash consistency or independent real-client inventory presentation.
+This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
+swap, one partial split and one no-overflow same-item merge—not equipment/currency
+moves, overflow merges, item use, immediate operation publication, crash consistency
+or independent real-client inventory presentation.
 
 `close` cancels pending connection/movement timers and closes sockets; `remove`
 also releases the bot. End-of-input shuts down all worker-owned connections.

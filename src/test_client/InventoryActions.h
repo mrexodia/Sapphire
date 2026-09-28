@@ -16,4 +16,14 @@ namespace Sapphire::Testing
                         uint32_t storage, uint32_t slot, uint32_t expectedItem,
                         uint32_t destinationStorage, uint32_t destinationSlot,
                         uint32_t expectedDestinationItem);
+  // Split part of one observed stack into an observed empty ordinary bag slot.
+  Bytes splitItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
+                         uint32_t storage, uint32_t slot, uint32_t expectedItem,
+                         uint32_t expectedCount, uint32_t splitCount,
+                         uint32_t destinationStorage, uint32_t destinationSlot);
+  // Merge one observed stack into another observed stack of the same item.
+  Bytes mergeItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
+                         uint32_t storage, uint32_t slot, uint32_t expectedItem,
+                         uint32_t expectedCount, uint32_t destinationStorage,
+                         uint32_t destinationSlot, uint32_t expectedDestinationCount);
 }
