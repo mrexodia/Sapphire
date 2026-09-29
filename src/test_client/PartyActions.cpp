@@ -28,19 +28,30 @@ namespace Sapphire::Testing
     return objectBytes(packet);
   }
 
-  Bytes partyAcceptRequest(const nlohmann::json& pendingInvite)
+  static Bytes partyReplyRequest(const nlohmann::json& pendingInvite, Common::InviteReplyType answer,
+                                 const char* operation)
   {
     if(!pendingInvite.is_object() || pendingInvite.value("auth_type", 0) != Common::HierarchyType::PCPARTY ||
        pendingInvite.value("result", 0) != Common::InviteUpdateType::NEW_INVITE ||
        !pendingInvite.contains("character_id") || !pendingInvite.at("character_id").is_number_unsigned() ||
        pendingInvite.at("character_id").get<uint64_t>() == 0)
-      throw ProtocolError("party acceptance requires an exact received pending invite");
+      throw ProtocolError(std::string(operation) + " requires an exact received pending invite");
     requireName(pendingInvite.value("name", ""));
     Wire::WorldPackets::Client::FFXIVIpcInviteReply packet{};
     packet.InviteCharacterID = pendingInvite.at("character_id");
     packet.AuthType = Common::HierarchyType::PCPARTY;
-    packet.Answer = Common::InviteReplyType::ACCEPT;
+    packet.Answer = answer;
     return objectBytes(packet);
+  }
+
+  Bytes partyAcceptRequest(const nlohmann::json& pendingInvite)
+  {
+    return partyReplyRequest(pendingInvite, Common::InviteReplyType::ACCEPT, "party acceptance");
+  }
+
+  Bytes partyDeclineRequest(const nlohmann::json& pendingInvite)
+  {
+    return partyReplyRequest(pendingInvite, Common::InviteReplyType::DENY, "party decline");
   }
 
   static void requireMembership(const nlohmann::json& party, uint32_t selfEntity,

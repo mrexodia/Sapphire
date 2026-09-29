@@ -102,7 +102,8 @@ namespace Sapphire::Testing
       {"chat", Json::array()}, {"party_chat", Json::array()},
       {"created_via_lobby", false}, {"deleted_via_lobby", false},
       {"scene", nullptr}, {"event_id", nullptr}, {"name_rejection", nullptr}, {"pending_party_invite", nullptr},
-      {"party_invite_result", nullptr}, {"party", {{"id", 0}, {"chat_channel", 0}, {"count", 0},
+      {"party_invite_result", nullptr}, {"party_invite_reply", nullptr}, {"party_invite_update", nullptr},
+      {"party", {{"id", 0}, {"chat_channel", 0}, {"count", 0},
                                                             {"leader_index", 0}, {"members", Json::array()}}},
       {"discovery_reply", nullptr}, {"discovery_requests_sent", Json::array()},
       {"central_thanalan_discoveries", Json::array()}, {"central_thanalan_discovery", false},
@@ -563,8 +564,21 @@ namespace Sapphire::Testing
         throw ProtocolError("unsupported party invite update");
       Json update{{"character_id", p.InviteCharacterID}, {"auth_type", p.AuthType}, {"result", p.Result},
                   {"name", receivedName(p.InviteName, sizeof(p.InviteName))}};
+      m_state["party_invite_update"] = update;
       if(p.Result == Common::InviteUpdateType::NEW_INVITE) m_state["pending_party_invite"] = update;
       event("party_invite_update", update);
+    }
+    if(h.type == WS::FFXIVIpcInviteReplyResult::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcInviteReplyResult>(segment.data, off);
+      if(p.AuthType != Common::HierarchyType::PCPARTY ||
+         (p.Answer != Common::InviteReplyType::DENY && p.Answer != Common::InviteReplyType::ACCEPT))
+        throw ProtocolError("unsupported party invite reply result");
+      m_state["party_invite_reply"] = {{"result", p.Result}, {"auth_type", p.AuthType},
+                                        {"answer", p.Answer},
+                                        {"name", receivedName(p.InviteCharacterName,
+                                                               sizeof(p.InviteCharacterName))}};
+      event("party_invite_reply", m_state["party_invite_reply"]);
     }
     if(h.type == WS::FFXIVIpcUpdateParty::_ServerIpcType)
     {
@@ -913,12 +927,14 @@ namespace Sapphire::Testing
       sendZone(WC::FFXIVIpcInvite::_ServerIpcType, payload);
       return Json::object();
     }
-    if(method == "accept_party")
+    if(method == "accept_party" || method == "decline_party")
     {
       if(m_moving || !m_state["event_id"].is_null() || m_state["party"].at("count") != 0)
-        throw ProtocolError("party acceptance requires an idle ungrouped character");
-      auto payload = partyAcceptRequest(m_state["pending_party_invite"]);
+        throw ProtocolError("party reply requires an idle ungrouped character");
+      auto payload = method == "accept_party" ? partyAcceptRequest(m_state["pending_party_invite"]) :
+                                                partyDeclineRequest(m_state["pending_party_invite"]);
       m_state["pending_party_invite"] = nullptr;
+      m_state["party_invite_reply"] = nullptr;
       sendZone(WC::FFXIVIpcInviteReply::_ServerIpcType, payload);
       return Json::object();
     }

@@ -391,6 +391,17 @@ class Bot:
         return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 2,
                                       "received two-member party state", timeout)
 
+    def decline_party(self, timeout=10):
+        pending = self.worker.wait_state(self.name, lambda s: s["pending_party_invite"] is not None,
+                                         "received pending party invite", timeout)["pending_party_invite"]
+        self.worker.request("decline_party", self.name)
+        state = self.worker.wait_state(self.name,
+            lambda s: s["party_invite_reply"] == {"result": 0, "auth_type": 1,
+                                                    "answer": 0, "name": pending["name"]}
+                      and s["party"]["count"] == 0,
+            "exact received party decline result", timeout)
+        return state["party_invite_reply"]
+
     def leave_party(self, timeout=10):
         self.worker.request("leave_party", self.name)
         return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 0,

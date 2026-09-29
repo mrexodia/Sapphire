@@ -38,6 +38,17 @@ def test_received_party_join_and_leave(environment, live_worker):
         lambda s: str(leader_id) in s["actors"] and s["actors"][str(leader_id)]["name"] == leader_fixture["name"],
         "party inviter received by member")
     leader.invite_party(member_id, member_fixture["name"])
+    declined = member.decline_party()
+    assert declined == {"result": 0, "auth_type": 1, "answer": 0, "name": leader_fixture["name"]}
+    member_character_id = member_state["characters"][0]["character_id"]
+    live_worker.wait_state(leader.name,
+        lambda s: s["party_invite_update"] == {"character_id": member_character_id,
+                                                "auth_type": 1, "result": 5,
+                                                "name": member_fixture["name"]}
+                  and s["party"]["count"] == 0,
+        "leader received exact party decline")
+    assert live_worker.snapshot(member.name)["party"]["count"] == 0
+    leader.invite_party(member_id, member_fixture["name"])
     member_party = member.accept_party()
     leader_party = live_worker.wait_state(leader.name, lambda s: s["party"]["count"] == 2,
                                           "leader received two-member party state")

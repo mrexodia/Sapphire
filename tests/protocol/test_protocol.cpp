@@ -170,8 +170,14 @@ int main()
                                       {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}});
     const Bytes expectedAccept{8,7,6,5,4,3,2,1, 1,1,0,0,0,0,0,0};
     require(accept == expectedAccept, "party acceptance exact byte fixture");
+    auto decline = partyDeclineRequest({{"character_id", uint64_t{0x0102030405060708}},
+                                        {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}});
+    const Bytes expectedDecline{8,7,6,5,4,3,2,1, 1,0,0,0,0,0,0,0};
+    require(decline == expectedDecline, "party decline exact byte fixture");
     rejects([&] { partyAcceptRequest({{"character_id", 1}, {"auth_type", 2}, {"result", 1},
                                       {"name", "E2E Leader"}}); });
+    rejects([&] { partyDeclineRequest({{"character_id", 1}, {"auth_type", 1}, {"result", 5},
+                                       {"name", "E2E Leader"}}); });
     nlohmann::json party{{"id", 1}, {"chat_channel", uint64_t{0x0102030405060708}}, {"count", 2},
                          {"members", {{{"entity_id", 2097153}}, {{"entity_id", 2097154}}}}};
     require(partyLeaveRequest(party, 2097153) == Bytes(4, 0), "party leave exact byte fixture");
