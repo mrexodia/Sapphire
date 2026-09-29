@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say, exact bidirectional direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, alliances/free companies/other chat channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say, exact bidirectional direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, alliances/free companies/other chat channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -730,6 +730,23 @@ and worker SHA-256
 `68c0a18c9c32e8aa103900239c25a617089165a64c1eaa4ad461d142a4b939d9`.
 This proves one natural Blizzard path, not general magic/combat or independent
 real-client presentation.
+
+At `cb59aca38`, a fresh non-GM player and independent witness exercise the
+source-catalogued common Sprint action 3 through a normal action request. Both
+receive one identical self-targeted action result containing exact status 50,
+`TypeSetStatusMe` (`0x12`), source flag `0x80`, parameter 30 and the bounded request
+ID; both separately receive a HUD commit with TP zero. The actor also receives the
+source-derived group-56, 3000-centisecond action-start metadata. The API requires
+exact received living player state, at least 50 received TP, an elapsed local guard
+and bounded request ID; it does not expose arbitrary actions. Exact bytes and
+kind/death/TP/request rejection pass on Clang, MSVC and GNU, with **257 passed, 11
+live skips** in the expanded Python suite. The clean focused case passed in
+**28.35s** at `.e2e-artifacts/discovery-live/sapphire-e2e-axabc8dz`; manifest
+SHA-256 is `a73bc9996805f583ededb8feba6ab149c1bd1b7f1365edb6c9c862f5a64d865a`
+and event journal SHA-256 is
+`da04d36415d3ae0abe9afea59dea407ea7206cb2f5cedc6999edc79a2fc6eb21`.
+The source is clean and runtime removal is confirmed. This proves one common
+self-status ability and exact TP-zero commit, not general statuses or abilities.
 
 ## Independently observed player defeat
 

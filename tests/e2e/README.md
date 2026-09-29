@@ -108,6 +108,9 @@ lobby, world and MariaDB processes with matching game data:
   Ring2 round trip and the supported opening subset, not other accessory types,
   off-hand/head/waist, later gear,
   appearance breadth, other cities/classes or the complete opening.
+- A fresh non-GM player performs source-catalogued Sprint (3); both the actor and an
+  independent witness receive the exact self-status effect and zero-TP HUD commit,
+  while the actor receives exact action-start recast metadata.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot
   verifies every matching result/committed HP decrease, the first natural retaliation,
