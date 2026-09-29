@@ -36,7 +36,10 @@ lobby, world and MariaDB processes with matching game data:
 - Two normal clients receive each other's exact spawn entity/name, complete a
   bounded party invite/accept flow, independently receive the same nonzero party
   ID and exact two-member roster, then both receive an empty party after the member
-  leaves. Invite acknowledgements are not treated as membership evidence.
+  leaves. The zoning scenario additionally keeps that party across a physical
+  130→141 crossing and checks each client's exact self-territory plus the protocol's
+  zeroed-detail representation for its remote-zone member. Invite acknowledgements
+  are not treated as membership evidence.
 - A three-client zoning test walks a verified approach into an actual exit volume,
   crosses from Ul'dah to Central Thanalan, observes departure and arrival from
   separate bots, checks destination chat/keepalives, and enters the sole enabled

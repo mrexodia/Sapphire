@@ -362,8 +362,22 @@ Clang, MSVC and GNU. The clean live case passed in **27.62s** at
 `be39e5187670bc5c43128a595ca7b07b71c186b9ff11bedf36298303aff69d10`, event
 journal SHA-256 is
 `20af0eded10445ad9edd8c494802410e1fd9b67afb3816aee72bee619797ef37`,
-`dirty=false`, and the private runtime was removed. This is one local party
-join/leave path, not broad party, cross-zone, party-chat or instance evidence.
+`dirty=false`, and the private runtime was removed.
+
+At `0545efdf4`, the zoning scenario retains that exact party while the leader
+physically crosses from territory 130 to 141. Both clients preserve the same party
+and member identities. Each independently receives its own exact territory and the
+server's explicit zeroed-detail representation for the remote-zone member, after
+which both receive disband state. The first run correctly rejected an invalid
+assumption that asynchronous cross-zone party entries expose the remote territory;
+that failed diagnostic remains preserved rather than weakening identity checks.
+The clean case passed in **55.97s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-bphktcjy`; manifest SHA-256 is
+`bb67ef03eb5216b03d5d41ae05dcd51bf2978d28ceeb1c28157daf071a42c546`, event
+journal SHA-256 is
+`9dfaa593eb0cf57c5b83a8b6af6899258805b85fa09989ba3a6a7fac44fcb856`,
+`dirty=false`, and runtime cleanup is confirmed. This remains one local party
+join/leave and cross-zone path, not broad party, party-chat or instance evidence.
 
 ## Repeated combat and first retaliation
 
