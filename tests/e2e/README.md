@@ -34,14 +34,15 @@ lobby, world and MariaDB processes with matching game data:
   three ethers rather than the alternative potions. Both completions and cumulative
   rewards survive world restart.
 - Two normal clients receive each other's exact spawn entity/name, complete a
-  bounded party invite/accept flow, independently receive the same nonzero party
+  bounded party invite/decline/reinvite/accept flow, independently receive the same nonzero party
   ID and exact two-member roster, then both receive an empty party after the member
   leaves. The zoning scenario additionally keeps that party across a physical
   130→141 crossing and checks each client's exact self-territory plus the protocol's
   zeroed-detail representation for its remote-zone member. In both same-zone and
   cross-zone states, each direction sends through the exact received party channel;
   the other client independently matches party/channel and sender entity/character/name.
-  Invite acknowledgements are not treated as membership evidence.
+  Both sides receive exact decline identities while remaining ungrouped; invite
+  acknowledgements are not treated as membership evidence.
 - A four-client zoning test walks a verified approach into an actual exit volume,
   crosses from Ul'dah to Central Thanalan, and observes departure and arrival from
   separate bots. It enters the sole source discovery sphere containing that arrival

@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say and a received two-client party join/leave lifecycle with exact bidirectional same-zone and cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, broader social/group policy, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say and a received two-client party decline/reinvite/join/leave lifecycle with exact bidirectional same-zone and cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, broader social/group policy, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -428,6 +428,19 @@ party journal SHA-256 is
 `f5a8ea88b1566b38f17bd9c63e7975eecb49a21bd7aee927d250973a36b91291`, and
 cross-zone journal SHA-256 is
 `6f338e2aad4bd137931a8055456eb44412f1df315f27f15dfdc66a7b0b9579dd`.
+The source is clean and runtime removal is confirmed.
+
+At `11b70e6cb`, the first exact pending invitation is instead declined with the
+normal reply operation. The member receives exact auth-type/deny/inviter-name result,
+the leader receives exact rejected member character-ID/name/type/result, and both
+remain ungrouped. A second bounded invite is then independently received and
+accepted before the existing roster/chat/leave assertions. Exact decline bytes and
+wrong-type/result rejection contracts pass on Clang, MSVC and GNU. The clean case
+passed in **26.29s** at `.e2e-artifacts/discovery-live/sapphire-e2e-7yyuk4wm`;
+manifest SHA-256 is
+`619095332fcebf24c020645d89b92b94d691b6dbed038a919c322f1788329337` and event
+journal SHA-256 is
+`4a9a8470a0bdecc37f3e112cdbb6eca6047bac73031d1967a7adefc568634980`.
 The source is clean and runtime removal is confirmed. This remains one two-client
 party and channel path, not broader party policy, alliance, instance or arbitrary
 chat-channel evidence.
