@@ -113,9 +113,16 @@ separate evidence that its binaries came from the checkout.
   upload glob to include these directories, catalogs, assets or runtime trees.
 - Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. A passed summary covers this nine-scenario headless suite only.
+  local run. A passed summary covers this ten-scenario headless suite only.
 
-Latest local evidence: clean revision `8ca87f3f1` passed the nine-case strict
+Latest local evidence: clean revision `ef752323d` passed the ten-case strict gate
+in 681.66 seconds with zero skips/errors/failures, exact collection and staged-input
+identity, and removed private runtime. This includes the received party lifecycle,
+cross-zone party state, source-bound discovery persistence and Ring2 round trip.
+Evidence is `build-e2e/ci-summary-party-discovery.json` with private diagnostics at
+`.e2e-artifacts/ci/gameplay-ci-03mqfc8d`; this is local, not hosted execution.
+
+Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
 gate in 620.91 seconds with no skips/errors/failures, exact collection and staged-
 input identities, and verified private-runtime cleanup. Creation took 65.662s and
 now verifies all five Gladiator starter-equipment slots plus each distinct Pugilist/

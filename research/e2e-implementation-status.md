@@ -126,17 +126,21 @@ a nearby passing test does not close them.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
-- 252 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 255 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
-- The provisioned CI entry point passes all nine cases on Windows and Linux. The
-  latest strict Linux rehearsal at `4bbf7ec9a` took 1009.57s with zero
+- The provisioned CI entry point passes its strict collection on Windows and Linux. The
+  latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
   skips/errors/failures and verified exact collection, staged-input identities,
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
-  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows gate at
-  `670238294` took 650.23s and includes the Ring1 round trips
-  (`gameplay-ci-9he7litu`, summary
-  `build-e2e/ci-summary-starter-rings.json`). In both current platform summaries
+  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows ten-case
+  gate at `ef752323d` took **681.66s**, including party lifecycle/cross-zone state,
+  discovery and Ring2 coverage (`gameplay-ci-03mqfc8d`, summary
+  `build-e2e/ci-summary-party-discovery.json`). Summary SHA-256 is
+  `bfd7d1052828a569027d9f2629a5862d4a1e89b7a73eeb1e373bb5ba90b87920`,
+  private manifest SHA-256 is
+  `2204158d74d04b2c4f1958cb5445d8f9bdf764ffc9fed31626f45776d7e2d292`, and
+  its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
@@ -144,9 +148,9 @@ a nearby passing test does not close them.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
   protected-environment approval and VM disposal responsibilities. Local rehearsal
   does not prove hosted approval, cancellation cleanup or independent compatibility.
-- Nine live cases pass together: rejected credentials, login/idle/logout, observed
-  movement/Say/position persistence, single quest, chained quests plus inventory
-  persistence and one persisted gil-shop sale/purchase pair, zoning persistence, enemy defeat/rewards,
+- Ten live cases pass together: rejected credentials, login/idle/logout, received
+  party join/leave, observed movement/Say/position persistence, single quest, chained quests plus inventory
+  persistence and one persisted gil-shop sale/purchase pair, zoning/discovery/cross-zone-party persistence, enemy defeat/rewards,
   player defeat with independently observed pursuit/leash/reset plus source-bound homepoint return, and normal lobby creation spanning all four
   Ul'dah ring choices and all three starter classes plus persisted opening/equipment checks. Both public tested territories use compatible
   server-side meshes; the private opening territory does not make a navigation claim.
