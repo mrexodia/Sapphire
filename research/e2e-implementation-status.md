@@ -126,7 +126,7 @@ a nearby passing test does not close them.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
-- 255 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 256 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes its strict collection on Windows and Linux. The
   latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
