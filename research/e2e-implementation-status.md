@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/waist, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -134,16 +134,16 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
-  gate at `7c4769d18` took **1142.66s**, including exact generic currency-move rejection, same- and cross-zone nonparty
+  gate at `d6fb47d80` took **1211.86s**, including source-routed head purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
   Tell, cross-zone party Tell, independently observed living Return, persisted
   three-stage later-equipment purchase/resale/equip, the quantity-three VFX item action/liquidation,
   observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
   discovery, Ring2, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-uircuf2z`, summary
-  `build-e2e/ci-summary-currency-rejection.json`). Summary SHA-256 is
-  `bf63d31146a9177fb894be5c5b4f48a1eabef0a300438b0419fa6c0e8a74b7fa`,
+  (`gameplay-ci-wvsiq81h`, summary
+  `build-e2e/ci-summary-head-shop.json`). Summary SHA-256 is
+  `a6d9eb9a37ca029faad83ae5c5eb1861a35cea4ab9f39e55c85289eb621b2438`,
   private manifest SHA-256 is
-  `59516e128d5309338bb783397384e751381b6666ca88e8f117784db7751b5408`, and
+  `0ae1571a378af05c1af3511f671c5d37105df0c28c6ebef70bffbe62e7de1e24`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -1590,6 +1590,33 @@ journal SHA-256 is
 The source is clean and runtime removal is confirmed. This proves deterministic
 rejection of an invalid generic currency-container move plus ordinary shop-driven
 gil mutations; it does not claim a positive direct currency transfer operation.
+
+At `d6fb47d80`, the chain reaches a second source shop and a previously uncovered
+head slot without fixture relocation. From the exact post-body-equip state, starter
+body 2983 is sold from its received bag identity for source price 59; immediate
+state and restart prove exact absence and 101 gil. The catalog scans source shop
+rows for the cheapest level-one all-class single-stack head listing affordable from
+that state, then accepts only a complete source-navmesh corridor from the current
+shop: layout 4393619 / ENpc 1005495 / event 262415, index 0, item 2638, 47 gil,
+source slot 3 / equipment slot 2. The route has 200 points and length
+**92.945559m**, every requested waypoint is received by the actor, and a fresh
+normal client at the destination independently observes arrival within 0.15m. The
+purchase accepts only that exact received scene, 101 gil, equipped body 2967 and
+absence of item 2638/starter body. Restart proves one exact bag item and 54 gil.
+Because starter head is genuinely empty, the bounded equip request accepts only
+2638→`1000:2`; another restart proves that location, exact remaining bag/currency/
+EXP state and no other mutation. Exact purchase/equip bytes, wrong event/item/slot
+and malformed-state contracts pass on Clang, MSVC and GNU with **258 passed, 12
+live skips**. The clean chain passed in **488.80s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-o0i4ls0c`; manifest SHA-256 is
+`4a0ec052bbc48a30d3e81ae1f9949bf3240616459cae63f4aff9125bb04a324d`,
+`gil-shop-sale.json` SHA-256 is
+`46038cb70cc56a68be41091ed16745bcd5148587ca954459f15ab8db8211b47e`, and event
+journal SHA-256 is
+`004b0e1b263a864b9dc88e3098ee3251cb4ed6d726f1253bd4ac85f17b893fa1`.
+The source is clean and runtime removal is confirmed. This proves one normally
+routed second shop and one later head item, not general merchant/navigation or all
+equipment slots.
 
 The first live attempt exposed two server defects rather than prompting weaker
 assertions. `addCurrency()` created a missing currency item with the generic
