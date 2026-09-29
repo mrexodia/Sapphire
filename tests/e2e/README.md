@@ -419,7 +419,10 @@ publication or mutation. Their exact bag identities are sold for 59/47/66 gil an
 restart-proven as absent with 208 gil. A 56-point/~23.28m source route reaches a
 fourth shop under an independent witness; neck item 15130 is bought for 168 gil,
 restart-verified, equipped only to empty `1000:9`, and restart-proven with exact
-40-gil/empty-bag/EXP state. `gil-shop-sale.json`
+40-gil/empty-bag/EXP state. Neck 15130 is then ordinarily unequipped and restart-
+proven before normal resale restores 208 gil. The same exact shop sells source
+wrist item 15132 for 168 gil; purchase and `1000:10` equip are separately restart-
+proven with exact 40-gil/empty-bag/EXP state. `gil-shop-sale.json`
 records those snapshots and effect;
 the operation-10 acknowledgement remains explicitly separate
 from mutation evidence. The server split implementation creates the new persistent
@@ -433,7 +436,7 @@ server response supplies gameplay evidence.
 This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
 swap, one partial split, one no-overflow same-item merge, discard, one exact
 single-item sales, one exact three-item purchase and three later-equipment purchase/equip
-cycles with later resales, source-routed head, ear and neck purchases/equips, and
+cycles with later resales, source-routed head, ear, neck and wrist purchases/equips, and
 deterministic generic currency-move rejection—not other later equipment, positive direct currency
 transfers, overflow merges, consuming item mutation, arbitrary shops/items or general quantities,
 immediate operation publication, crash
@@ -506,8 +509,9 @@ complete ~92.95m shop-to-shop route. Selling starter feet funds the cheapest
 reachable ear listing: third-shop event 262425/index 0/item 4200 at 66 gil, with a
 complete ~91.37m route. Liquidating the exact body/head/ear identities funds the
 cheapest reachable neck listing: fourth-shop event 262640/index 1/item 15130 at 168
-gil, with a complete ~23.28m route. Python validates all exact transactions, all six
-equipment metadata bindings, all four event families, route continuity,
+gil, with a complete ~23.28m route. The same shop's index 2/item 15132 wrist listing
+costs 168 gil after exact neck resale. Python validates all exact transactions, all
+seven equipment metadata bindings, all four event families, route continuity,
 and endpoint range. This does not establish arbitrary quantities/items, other shops,
 consuming item mutation, positive direct currency transfer, concurrent transactions,
 or real-client shop UI.

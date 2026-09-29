@@ -115,19 +115,19 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this twelve-scenario headless suite only.
 
-Latest local evidence: clean revision `17ad3c752` passed the twelve-case strict gate
-in 1332.65 seconds with zero skips/errors/failures, exact collection and staged-input
+Latest local evidence: clean revision `6ea7ed1e7` passed the twelve-case strict gate
+in 1367.22 seconds with zero skips/errors/failures, exact collection and staged-input
 identity, and removed private runtime. This includes source-routed second-/third-/fourth-shop
-head, ear and neck purchases/equips, restart-proven generic currency-move rejection, same- and
+head, ear, neck and wrist purchases/equips, restart-proven generic currency-move rejection, same- and
 cross-zone nonparty Tell, cross-zone party Tell, independently observed living
 Return, persisted three-stage later-equipment purchase/resale/equip, the quantity-
 three VFX action/liquidation, source-bound observed Sprint, the full eight-member
 party lifecycle, two persisted discovery parts/shapes, Ring2, duplicate-name
 rejection and normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-neck-shop.json` (SHA-256
-`ab34218ecac00ae14f9e6e359b3c4a1986d632138ce32255e666088d8e6f501b`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-ot6cl8ch` and private manifest
-SHA-256 `65165e16f7109a6d08ba8242a375a4b0902529214c827aa7a04ebeec6b7df154`;
+`build-e2e/ci-summary-wrist-shop.json` (SHA-256
+`500ed64780b61bc787850b2c432b9dfc34f22e9b8498dd40a8cac20676dfbea4`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-3uhrtpbn` and private manifest
+SHA-256 `253990fc01a081466c679d9e523b7cdfa0eef0bb3d0f2bad9f2fd3ad8cc071ad`;
 this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
