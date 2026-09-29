@@ -99,7 +99,7 @@ namespace Sapphire::Testing
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
       {"chat", Json::array()}, {"created_via_lobby", false}, {"deleted_via_lobby", false},
-      {"scene", nullptr}, {"event_id", nullptr}, {"pending_party_invite", nullptr},
+      {"scene", nullptr}, {"event_id", nullptr}, {"name_rejection", nullptr}, {"pending_party_invite", nullptr},
       {"party_invite_result", nullptr}, {"party", {{"id", 0}, {"count", 0}, {"leader_index", 0}, {"members", Json::array()}}},
       {"discovery_reply", nullptr},
       {"discovery_request_sent", false}, {"central_thanalan_discovery", false}, {"heartbeat_replies", 0},
@@ -156,9 +156,11 @@ namespace Sapphire::Testing
     const auto createCharacter = args.value("create_character", false);
     const auto deleteCharacter = args.value("delete_character", false);
     const auto expectAbsent = args.value("expect_character_absent", false);
-    if(static_cast<int>(createCharacter) + static_cast<int>(deleteCharacter) + static_cast<int>(expectAbsent) > 1)
+    const auto expectNameRejected = args.value("expect_name_rejected", false);
+    if(static_cast<int>(createCharacter) + static_cast<int>(deleteCharacter) + static_cast<int>(expectAbsent) +
+       static_cast<int>(expectNameRejected) > 1)
       throw ProtocolError("character lobby modes are mutually exclusive");
-    if((createCharacter || deleteCharacter || expectAbsent) &&
+    if((createCharacter || deleteCharacter || expectAbsent || expectNameRejected) &&
        !std::all_of(character.begin(), character.end(), [](unsigned char c) {
          return c == ' ' || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
        }))
@@ -218,7 +220,21 @@ namespace Sapphire::Testing
     const auto h = readObject<Wire::FFXIVARR_IPC_HEADER>(segment.data);
     event("packet", {{"channel", "lobby"}, {"opcode", h.type}});
     if(h.type == Wire::LobbyPackets::ServerLobbyIpcType::NackReply)
+    {
+      const auto p = readObject<LS::FFXIVIpcNackReply>(segment.data, sizeof(h));
+      event("lobby_nack", {{"request", p.requestNumber}, {"error_code", p.errorCode},
+                            {"error_status", p.errorStatus}, {"message_number", p.errorMessageNo}});
+      if(m_state["phase"] == "character_name_reservation" && m_login.value("expect_name_rejected", false) &&
+         p.errorCode == 3074 && p.errorStatus == 0 && p.errorMessageNo == 13004)
+      {
+        m_state["name_rejection"] = {{"error_code", p.errorCode}, {"error_status", p.errorStatus},
+                                     {"message_number", p.errorMessageNo}};
+        m_deadline.cancel(); phase("name_rejected");
+        event("name_rejected", m_state["name_rejection"]);
+        return;
+      }
       throw ProtocolError("lobby rejected request");
+    }
     if(h.type == LS::FFXIVIpcLoginReply::_ServerIpcType && m_state["phase"] == "lobby_authenticating")
     {
       const auto p = readObject<LS::FFXIVIpcLoginReply>(segment.data, sizeof(h));
@@ -280,7 +296,8 @@ namespace Sapphire::Testing
         sendLobby(request._ServerIpcType, objectBytes(request));
         return;
       }
-      if(!afterCreation && m_login.value("create_character", false) && m_state["characters"].empty())
+      if(!afterCreation && (m_login.value("create_character", false) ||
+                            m_login.value("expect_name_rejected", false)) && m_state["characters"].empty())
       {
         LC::FFXIVIpcCharaMake request{};
         request.requestNumber = 3; request.clientTimeValue = timeSeconds();
@@ -315,6 +332,8 @@ namespace Sapphire::Testing
       if(p.optionParam != LC::CharacterOperation::CHARAOPE_RESERVENAME || p.count != 1 ||
          text(p.chrArray[0].chrName) != wanted || !p.chrArray[0].characterId)
         throw ProtocolError("invalid character-name reservation reply");
+      if(m_login.value("expect_name_rejected", false))
+        throw ProtocolError("duplicate character name was unexpectedly reserved");
       m_creationCharacterId = p.chrArray[0].characterId;
       LC::FFXIVIpcCharaMake request{};
       request.requestNumber = 4; request.clientTimeValue = timeSeconds();

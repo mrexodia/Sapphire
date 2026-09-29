@@ -27,6 +27,14 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         player = Bot(live_worker, f"new-character-{index}")
         state = player.create_character_via_lobby(account["auth"], account["name"], class_job)
         assert state["created_via_lobby"] is True and state["territory"] == 182
+        duplicate_name_rejection = None
+        if index == 0:
+            duplicate_account = environment.fresh_account()
+            duplicate = Bot(live_worker, "new-character-duplicate-name")
+            rejected = duplicate.expect_name_rejected(duplicate_account["auth"], account["name"])
+            assert rejected["characters"] == []
+            duplicate.close()
+            duplicate_name_rejection = rejected["name_rejection"]
         assert state["gm_rank"] == 0 and state["actors"][str(state["entity_id"])]["level"] == 1
         assert state["rewards"]["class_job"] == class_job
         assert [row["name"] for row in state["characters"]] == [account["name"]]
@@ -154,7 +162,8 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                         "opening_range_scene": opening["supported_range"]["expected_scene"],
                         "opening_range_route_length": opening["supported_range"]["route_length"],
                         "opening_position": opening_position,
-                        "opening_quest_active": opening_quest_active})
+                        "opening_quest_active": opening_quest_active,
+                        "duplicate_name_rejection": duplicate_name_rejection})
 
     environment.restart_world()
     evidence = []
@@ -271,6 +280,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                          "unequipped_ring": unequipped_ring,
                          "ring2_roundtrip": ring2_roundtrip,
                          "normal_lobby_deletion": deletion,
+                         "duplicate_name_rejection": record["duplicate_name_rejection"],
                          "opening_range_scene": record["opening_range_scene"],
                          "opening_range_route_length": record["opening_range_route_length"],
                          "coming_to_uldah_active_sequence": 255 if record["opening_quest_active"] else None,
@@ -280,5 +290,5 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
     (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
         "coming_to_uldah_completion_blocker": opening["completion_route_blocker"],
-        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices with persisted Ring1 equip/unequip round trips plus one persisted Ring2 round trip and one normal deletion proved absent through fresh HTTP/lobby authentication, all five persisted Gladiator starter-equipment slots plus each distinct starter main hand, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
+        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices with persisted Ring1 equip/unequip round trips plus one persisted Ring2 round trip, one exact duplicate-name rejection and one normal deletion proved absent through fresh HTTP/lobby authentication, all five persisted Gladiator starter-equipment slots plus each distinct starter main hand, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
     }, indent=2), encoding="utf-8")

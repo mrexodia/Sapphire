@@ -25,17 +25,28 @@ LobbyPacketContainer::~LobbyPacketContainer()
 
 void LobbyPacketContainer::addPacket( FFXIVPacketBasePtr pEntry )
 {
-  memcpy( m_dataBuf.data() + m_header.size, &pEntry->getData()[ 0 ], pEntry->getSize() );
+  const auto entrySize = static_cast< uint32_t >( pEntry->getSize() );
+  const auto paddedSize = ( entrySize + 7u ) & ~7u;
+  if( m_header.size + paddedSize > m_dataBuf.size() )
+    throw std::runtime_error( "Lobby packet container capacity exceeded" );
+  memcpy( m_dataBuf.data() + m_header.size, &pEntry->getData()[ 0 ], entrySize );
+  // Blowfish emits complete eight-byte blocks. Publish that padding in both the
+  // segment and outer lengths; otherwise a non-aligned NACK truncates ciphertext.
+  FFXIVARR_PACKET_SEGMENT_HEADER segment{};
+  memcpy( &segment, m_dataBuf.data() + m_header.size, sizeof( segment ) );
+  segment.size = paddedSize;
+  memcpy( m_dataBuf.data() + m_header.size, &segment, sizeof( segment ) );
 
   // encryption key is set, we want to encrypt this packet
   if( m_encKey != nullptr )
   {
     BlowFish blowfish;
     blowfish.initialize( m_encKey, 0x10 );
-    blowfish.Encode( m_dataBuf.data() + m_header.size + 0x10, m_dataBuf.data() + m_header.size + 0x10, static_cast< uint32_t >( pEntry->getSize() ) - 0x10 );
+    blowfish.Encode( m_dataBuf.data() + m_header.size + 0x10, m_dataBuf.data() + m_header.size + 0x10,
+                     paddedSize - 0x10 );
   }
 
-  m_header.size += static_cast< uint32_t >( pEntry->getSize() );
+  m_header.size += paddedSize;
   m_header.count++;
 }
 

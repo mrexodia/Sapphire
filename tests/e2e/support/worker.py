@@ -232,6 +232,16 @@ class Bot:
             raise WorkerError("character deletion was not confirmed by refreshed lobby list")
         return state
 
+    def expect_name_rejected(self, auth, character, timeout=30):
+        self.worker.request("login", self.name, host=auth["lobbyHost"], port=auth["lobbyPort"],
+                            session=auth["sId"], character=character, expect_name_rejected=True)
+        state = self.worker.wait_state(self.name, lambda s: s["phase"] == "name_rejected",
+                                       "exact duplicate-name rejection", timeout)
+        if state.get("name_rejection") != {"error_code": 3074, "error_status": 0,
+                                             "message_number": 13004}:
+            raise WorkerError("unexpected duplicate-name rejection identity")
+        return state
+
     def expect_character_absent(self, auth, character, timeout=30):
         self.worker.request("login", self.name, host=auth["lobbyHost"], port=auth["lobbyPort"],
                             session=auth["sId"], character=character, expect_character_absent=True)
