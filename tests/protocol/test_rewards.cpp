@@ -70,6 +70,7 @@ int main()
     check(state.state()["inventory"].contains("1:2") && !state.state()["inventory"].contains("3:24"),
           "request serialization never moves inventory");
     auto gearState = state.state();
+    gearState["class_job"] = 1;
     gearState["containers"]["1000"] = true;
     gearState["inventory"]["1000:0"] = {{"storage", 1000}, {"slot", 0}, {"id", 1601}, {"count", 1}};
     auto unequip = unequipItemRequest(gearState, 0x12345678, 0x01020308, 0, 1601, 3, 24);
@@ -98,7 +99,7 @@ int main()
     reequipState["inventory"].erase("1000:0");
     starter["storage"] = 3; starter["slot"] = 24;
     reequipState["inventory"]["3:24"] = starter;
-    auto reequip = reequipGladiatorStarterRequest(reequipState, 0x12345678, 0x01020309, 3, 24, 1601);
+    auto reequip = reequipStarterMainHandRequest(reequipState, 0x12345678, 0x01020309, 3, 24, 1601);
     Bytes reequipExpected = moveExpected;
     reequipExpected[0] = 9;
     reequipExpected[12] = 3; reequipExpected[16] = 24; reequipExpected[20] = 1;
@@ -106,7 +107,17 @@ int main()
     reequipExpected[32] = 0xe8; reequipExpected[33] = 0x03;
     reequipExpected[36] = 0;
     check(reequip == reequipExpected, "starter re-equip must match exact bag-to-main-hand wire fixture");
-    for(int fault = 0; fault < 7; ++fault)
+    for(const auto& supported : {std::pair<uint32_t, uint32_t>{2, 1680}, {7, 2055}})
+    {
+      auto other = reequipState;
+      other["class_job"] = supported.first;
+      other["inventory"]["3:24"]["id"] = supported.second;
+      auto request = reequipStarterMainHandRequest(other, 0x12345678, 0x01020309, 3, 24, supported.second);
+      reequipExpected[24] = static_cast<uint8_t>(supported.second);
+      reequipExpected[25] = static_cast<uint8_t>(supported.second >> 8);
+      check(request == reequipExpected, "each Ul'dah starter main hand has an exact wire fixture");
+    }
+    for(int fault = 0; fault < 8; ++fault)
     {
       auto invalid = reequipState;
       if(fault == 0) invalid["inventory_ready"] = false;
@@ -114,9 +125,10 @@ int main()
       if(fault == 2) invalid["inventory"].erase("3:24");
       if(fault == 3) invalid["inventory"]["3:24"]["count"] = 2;
       if(fault == 4) invalid["inventory"]["1000:0"] = starter;
+      if(fault == 7) invalid["class_job"] = 2;
       rejected = false;
-      try { reequipGladiatorStarterRequest(invalid, 1, 1, fault == 5 ? 4 : 3, 24,
-                                           fault == 6 ? 1602 : 1601); }
+      try { reequipStarterMainHandRequest(invalid, 1, 1, fault == 5 ? 4 : 3, 24,
+                                          fault == 6 ? 1602 : 1601); }
       catch(const ProtocolError&) { rejected = true; }
       check(rejected, "invalid/unobserved/mismatched starter re-equip rejected");
     }

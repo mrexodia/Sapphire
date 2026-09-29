@@ -779,7 +779,7 @@ namespace Sapphire::Testing
         if(!args.at(key).is_number_unsigned() || args.at(key) > uint64_t{0xffffffff})
           throw ProtocolError("inventory arguments must be unsigned 32-bit integers");
       if(m_inventoryContext == 0xffffffff) throw ProtocolError("inventory context budget exhausted");
-      auto payload = reequipGladiatorStarterRequest(m_rewards.state(), m_entity, ++m_inventoryContext,
+      auto payload = reequipStarterMainHandRequest(m_rewards.state(), m_entity, ++m_inventoryContext,
                                     args.at("storage"), args.at("slot"), args.at("expected_item"));
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};

@@ -37,7 +37,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         assert before["items"] == {} and before["exp"] == 0 and before["level"] == 1
         expected_inventory = None
         unequipped = None
-        if index == 0:
+        if index < 3:
             inventory = deepcopy(live_worker.snapshot(player.name)["rewards"]["inventory"])
             source = inventory["1000:0"]
             destination = next((f"{bag}:{slot}" for bag in range(4) for slot in range(25)
@@ -172,5 +172,5 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
     (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
         "coming_to_uldah_completion_blocker": opening["completion_route_blocker"],
-        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices, one starter equipment round trip, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
+        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices, one persisted starter-main-hand round trip for each class, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
     }, indent=2), encoding="utf-8")
