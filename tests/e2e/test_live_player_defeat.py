@@ -116,6 +116,15 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
                   and str(target) in s["actors"]
                   and math.dist(s["actors"][str(target)]["position"], pursuit["enemy"]["position"]) < 2,
         "enemy retreats to spawn while fighter survives", 45)
+    health_reset = live_worker.wait_state(fighter.name,
+        lambda s: str(target) in s["actors"]
+                  and s["actors"][str(target)]["hp"] == s["actors"][str(target)]["hp_max"] > 0,
+        "retreated enemy health reset", 10)
+    observer_health_reset = live_worker.wait_state(observer.name,
+        lambda s: str(target) in s["actors"]
+                  and s["actors"][str(target)]["hp"] == health_reset["actors"][str(target)]["hp"],
+        "observer sees retreated enemy health reset", 10)
+    assert observer_health_reset["actors"][str(target)]["hp_max"] == health_reset["actors"][str(target)]["hp_max"]
     fighter.walk_route(list(reversed(pursuit["leash_route"])), 6.0, 30)
     live_worker.wait_state(observer.name,
         lambda s: str(entity) in s["actors"]
@@ -220,7 +229,10 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
         "enemy_position_at_leash_peak": leash_peak["actors"][str(target)]["position"],
         "received_leash_peak_distance": leash_peak_distance,
         "enemy_position_after_reset": reset["actors"][str(target)]["position"],
-        "enemy_hp_after_reset": reset["actors"][str(target)]["hp"],
+        "enemy_hp_at_spawn_arrival": reset["actors"][str(target)]["hp"],
+        "enemy_hp_after_reset": health_reset["actors"][str(target)]["hp"],
+        "enemy_hp_max_after_reset": health_reset["actors"][str(target)]["hp_max"],
+        "health_reset_observer_verified": True,
         "fighter_hp_after_reset": reset["actors"][str(entity)]["hp"],
         "second_opening_effect": second_opening_effect,
         "enemy_position_after_pursuit": enemy_pursued_position, "pursuit_observer_verified": True,

@@ -8,7 +8,8 @@ namespace Sapphire::Testing
 {
   using Json = nlohmann::json;
   namespace WS = Wire::WorldPackets::Server;
-  CombatState::CombatState() : m_state{{"effects", Json::array()}, {"integrities", Json::array()}, {"starts", Json::array()}} {}
+  CombatState::CombatState() : m_state{{"effects", Json::array()}, {"integrities", Json::array()},
+                                           {"starts", Json::array()}, {"hud_params", Json::array()}} {}
   static void append(Json& array, Json value)
   {
     array.push_back(std::move(value));
@@ -38,6 +39,14 @@ namespace Sapphire::Testing
       for(size_t i = 0; i < p.TargetCount; ++i)
         append(m_state["effects"], {{"source", source}, {"target", p.Target[i]}, {"action", p.ActionKey},
           {"kind", p.ActionKind}, {"request", p.RequestId}, {"result", p.ResultId}, {"effects", effects(p.CalcResult[i])}});
+    }
+    else if(opcode == WS::FFXIVIpcHudParam::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcHudParam>(data, off);
+      if(!source || !p.HpMax || p.Hp > p.HpMax || p.Mp > p.MpMax)
+        throw ProtocolError("invalid combat HUD parameters");
+      append(m_state["hud_params"], {{"target", source}, {"hp", p.Hp}, {"hp_max", p.HpMax},
+                                      {"mp", p.Mp}, {"mp_max", p.MpMax}, {"tp", p.Tp}});
     }
     else if(opcode == WS::FFXIVIpcActorControlSelf::_ServerIpcType)
     {

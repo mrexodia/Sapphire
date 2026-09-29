@@ -80,6 +80,15 @@ int main()
     require(state.state()["integrities"].back()["hp"] == 13);
     require(state.state()["integrities"].back()["previous_hp"] == 20);
     require(state.state()["integrities"].back()["tp"] == 40);
+    WS::FFXIVIpcHudParam hud{};
+    hud.Hp = 20; hud.HpMax = 20; hud.Mp = 30; hud.MpMax = 40; hud.Tp = 52685;
+    require(state.receive(hud._ServerIpcType, 8, packet(hud)));
+    require((state.state()["hud_params"].back() == Json{{"target", 8}, {"hp", 20}, {"hp_max", 20},
+                                                         {"mp", 30}, {"mp_max", 40}, {"tp", 52685}}));
+    hud.Hp = 21;
+    rejects([&] { state.receive(hud._ServerIpcType, 8, packet(hud)); });
+    hud.Hp = 20;
+    rejects([&] { state.receive(hud._ServerIpcType, 0, packet(hud)); });
     integrity.Hp = 21;
     rejects([&] { state.receive(integrity._ServerIpcType, 8, packet(integrity)); });
     auto shortPacket = packet(result); shortPacket.pop_back();
@@ -95,6 +104,8 @@ int main()
     integrity.Hp = 13;
     for(int i = 0; i < 200; ++i) state.receive(integrity._ServerIpcType, 8, packet(integrity));
     require(state.state()["integrities"].size() == 128);
+    for(int i = 0; i < 200; ++i) state.receive(hud._ServerIpcType, 8, packet(hud));
+    require(state.state()["hud_params"].size() == 128);
     WS::FFXIVIpcActorControlSelf start{};
     start.category = 0x11; start.param1 = 58; start.param2 = 9; start.param3 = 250;
     require(state.receive(start._ServerIpcType, 7, packet(start)));

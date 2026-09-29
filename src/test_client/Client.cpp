@@ -392,6 +392,14 @@ namespace Sapphire::Testing
           for(const auto* field : {"hp", "hp_max", "mp", "tp"}) m_state["actors"][key][field] = integrity[field];
         detail["integrity"] = integrity;
       }
+      else if(h.type == WS::FFXIVIpcHudParam::_ServerIpcType)
+      {
+        const auto& hud = m_combat.state()["hud_params"].back();
+        const auto key = std::to_string(hud["target"].get<uint32_t>());
+        if(m_state["actors"].contains(key))
+          for(const auto* field : {"hp", "hp_max", "mp", "tp"}) m_state["actors"][key][field] = hud[field];
+        detail["hud_params"] = hud;
+      }
       else if(h.type == WS::FFXIVIpcActorControlSelf::_ServerIpcType)
       {
         detail["start"] = m_combat.state()["starts"].back();
