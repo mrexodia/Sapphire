@@ -70,8 +70,10 @@ lobby, world and MariaDB processes with matching game data:
   first ring then completes a separate Ring2 equip across world restart and an
   unequip proved by another fresh login; source rows bind all four items to
   single-stack equip-slot category 12. After all retained evidence, that disposable
-  character is deleted through the encrypted lobby; a refreshed list and then a
-  new HTTP/lobby session independently prove absence rather than trusting the reply.
+  a second empty account receives the exact source duplicate-name rejection for the
+  first character. After all retained evidence, that character is deleted through
+  the encrypted lobby; a refreshed list and then a new HTTP/lobby session
+  independently prove absence rather than trusting the reply.
   Receipts are never treated as mutation proof. Each branch also walks a generated
   eight-point route into source-LGB opening range 4101537, receives exact scene 20,
   and proves the endpoint after fresh authentication. This is one bounded

@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 round trips plus one Ring2 round trip, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 round trips plus one Ring2 round trip, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Locally live-verified on Windows and containerized Ubuntu 22.04; hosted deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -960,7 +960,24 @@ event-journal SHA-256 is
 `11c233eeb5528b3d9f68297184db8876e28a9f5f52aa9b55f31cf801bf8d7b51`.
 The manifest is clean and runtime removal is confirmed. Exact byte fixtures and
 bounded mode/name/identity rejection pass with Clang, MSVC and GNU. This proves one
-normal deletion, not name-policy breadth or account lifecycle UI.
+normal deletion, not account lifecycle UI.
+
+At `36d85d7b0`, a second empty account normally reserves the already-created first
+character's exact name. The lobby returns source error code 3074, status 0 and
+message 13004; only that phase- and identity-bound NACK is accepted as the expected
+rejection. Execution exposed that `LobbyPacketContainer` encrypted a complete final
+Blowfish block but published the unpadded segment length, truncating non-eight-byte
+NACK ciphertext. The fix publishes matching padded segment/outer lengths and checks
+container capacity; aligned successful packets remain byte-for-byte unchanged.
+Clang and GNU build the corrected lobby, while Clang/MSVC/GNU protocol and worker
+contracts pass. The clean creation case passed in **143.44s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-snn32y05`; manifest SHA-256 is
+`150d592b0f9775692292aa9f6934e7435e43f3d2f41a9f8ef0569b0910c664c2`, artifact
+SHA-256 is `7a2d4f466d74fdad0ebe36981fd464a1682c0e02e2348de4f57a281f1e0a3c02`, and
+event-journal SHA-256 is
+`e161777fefb454a140fbc4de39c9022072cd0c94b75f26c3fbc2aede1bb898bf`.
+The source is clean and runtime removal is confirmed. This verifies duplicate-name
+rejection only, not all naming policy or account UI behavior.
 
 The first broad gate retained at `.e2e-artifacts/ci/gameplay-ci-aybzbmom` reached
 8/9 passes and exposed an unrelated invalid simultaneity assertion: two independent
@@ -982,7 +999,7 @@ classes, one canonical appearance payload, all ring choices, all five Gladiator
 starter slots and each distinct starter main hand, the initial/continuation scenes
 and Coming to Ul'dah acceptance. It does not establish quest turn-in/rewards,
 other accessory types/off-hand/head/waist, later equipment, account signup UI,
-appearance breadth, other cities/classes, name-rejection breadth, travel into
+appearance breadth, other cities/classes, broader naming policy, travel into
 public Ul'dah, real-client cutscene presentation or broader protocol compatibility.
 
 ## Workload diagnostic-failure cleanup hardening
