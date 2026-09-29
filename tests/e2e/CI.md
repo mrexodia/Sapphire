@@ -115,13 +115,13 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this ten-scenario headless suite only.
 
-Latest local evidence: clean revision `41f7b6edd` passed the ten-case strict gate
-in 669.39 seconds with zero skips/errors/failures, exact collection and staged-input
+Latest local evidence: clean revision `ed6b3e6c8` passed the ten-case strict gate
+in 671.20 seconds with zero skips/errors/failures, exact collection and staged-input
 identity, and removed private runtime. This includes the received party lifecycle,
-cross-zone party state, source-bound discovery persistence, Ring2 round trip and
-normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-character-delete.json` with private diagnostics at
-`.e2e-artifacts/ci/gameplay-ci-8wokhgj0`; this is local, not hosted execution.
+cross-zone party state, source-bound discovery persistence, Ring2 round trip,
+duplicate-name rejection and normal lobby deletion with fresh-session absence proof.
+Evidence is `build-e2e/ci-summary-name-rejection.json` with private diagnostics at
+`.e2e-artifacts/ci/gameplay-ci-wqbed6h0`; this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
 gate in 620.91 seconds with no skips/errors/failures, exact collection and staged-
