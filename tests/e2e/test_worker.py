@@ -32,6 +32,7 @@ def test_capabilities(worker):
     assert "buy_shop_item" in caps["methods"]
     assert "buy_shop_equipment" in caps["methods"]
     assert "tell" in caps["methods"]
+    assert "tell_remote" in caps["methods"]
     assert "tell_offline" in caps["methods"]
     assert "return_homepoint" in caps["methods"]
     assert all(method in caps["methods"] for method in
@@ -131,6 +132,8 @@ def test_action_before_readiness_is_rejected(worker):
                 worker.request("party_chat", "test", message="party hello")
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("tell", "test", target=1, name="Target", message="hello")
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("tell_remote", "test", target=1, name="Target", message="hello")
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("tell_offline", "test", target=1, name="Target", message="hello")
             with pytest.raises(WorkerError, match="world-ready"):

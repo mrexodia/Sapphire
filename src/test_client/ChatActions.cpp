@@ -49,4 +49,43 @@ namespace Sapphire::Testing
     copyText(packet.message, message);
     return objectBytes(packet);
   }
+
+  Bytes remoteTellRequest(const nlohmann::json& actors, const nlohmann::json& knownPlayers,
+                          const nlohmann::json& party, const nlohmann::json& partyChat,
+                          const nlohmann::json& tells, uint64_t currentToken,
+                          uint32_t targetEntity, const std::string& targetName,
+                          const std::string& message)
+  {
+    const auto key = std::to_string(targetEntity);
+    if(!targetEntity || actors.contains(key) || !knownPlayers.is_object() ||
+       !knownPlayers.contains(key) || knownPlayers.at(key).value("name", "") != targetName ||
+       knownPlayers.at(key).value("spawned", true) ||
+       party.value("id", uint64_t{0}) != 0 || party.value("count", 0) != 0)
+      throw ProtocolError("remote nonparty tell requires one exact prior received spawn and current disband");
+    const auto recent = [&](const nlohmann::json& rows, bool partyEvidence)
+    {
+      if(!rows.is_array()) return false;
+      for(auto it = rows.rbegin(); it != rows.rend(); ++it)
+      {
+        const auto token = it->value("token", uint64_t{0});
+        if(it->value("actor", 0u) == targetEntity && it->value("name", "") == targetName &&
+           it->value("character_id", uint64_t{0}) != 0 && token && token <= currentToken &&
+           currentToken - token <= 16 && (!partyEvidence || it->value("party_id", uint64_t{0}) != 0))
+          return true;
+      }
+      return false;
+    };
+    if(!recent(partyChat, true) && !recent(tells, false))
+      throw ProtocolError("remote nonparty tell requires recent exact received liveness evidence");
+    if(targetName.empty() || targetName.size() >= 32 ||
+       !std::all_of(targetName.begin(), targetName.end(), [](unsigned char c) { return c >= 0x20 && c <= 0x7e; }) ||
+       message.empty() || message.size() > 128 || message[0] == '!' ||
+       !std::all_of(message.begin(), message.end(), [](unsigned char c) { return c >= 0x20 && c <= 0x7e; }))
+      throw ProtocolError("remote tell requires bounded printable identity and message");
+    Wire::WorldPackets::Client::FFXIVIpcChatTo packet{};
+    packet.type = static_cast<uint8_t>(Common::ChatType::Tell);
+    copyText(packet.toName, targetName);
+    copyText(packet.message, message);
+    return objectBytes(packet);
+  }
 }

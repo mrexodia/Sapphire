@@ -194,6 +194,37 @@ int main()
                               "Exact tell message", true); });
     rejects([&] { tellRequest(nlohmann::json::object(), tellParty, 2097154, "E2E Target",
                               "Exact tell message", true); });
+    nlohmann::json knownPlayers{{"2097154", {{"name", "E2E Target"}, {"spawned", false},
+                                               {"last_seen_token", 80}}}};
+    nlohmann::json disbanded{{"id", 0}, {"count", 0}, {"members", nlohmann::json::array()}};
+    nlohmann::json recentPartyChat = {{{"actor", 2097154}, {"name", "E2E Target"},
+                                       {"character_id", uint64_t{42}}, {"party_id", uint64_t{9}},
+                                       {"token", 90}}};
+    require(remoteTellRequest(nlohmann::json::object(), knownPlayers, disbanded, recentPartyChat,
+                              nlohmann::json::array(), 100, 2097154, "E2E Target",
+                              "Exact tell message") == expectedTell,
+            "cross-zone nonparty tell exact recently-live identity fixture");
+    nlohmann::json recentTell = {{{"actor", 2097154}, {"name", "E2E Target"},
+                                  {"character_id", uint64_t{42}}, {"party_id", uint64_t{0}},
+                                  {"token", 100}}};
+    require(remoteTellRequest(nlohmann::json::object(), knownPlayers, disbanded,
+                              nlohmann::json::array(), recentTell, 100, 2097154,
+                              "E2E Target", "Exact tell message") == expectedTell,
+            "cross-zone nonparty reply exact recently-live identity fixture");
+    rejects([&] { remoteTellRequest(partyActors, knownPlayers, disbanded, recentPartyChat,
+                                    nlohmann::json::array(), 100, 2097154, "E2E Target", "Exact tell message"); });
+    auto spawnedKnown = knownPlayers; spawnedKnown["2097154"]["spawned"] = true;
+    rejects([&] { remoteTellRequest(nlohmann::json::object(), spawnedKnown, disbanded, recentPartyChat,
+                                    nlohmann::json::array(), 100, 2097154, "E2E Target", "Exact tell message"); });
+    auto grouped = disbanded; grouped["id"] = 9; grouped["count"] = 2;
+    rejects([&] { remoteTellRequest(nlohmann::json::object(), knownPlayers, grouped, recentPartyChat,
+                                    nlohmann::json::array(), 100, 2097154, "E2E Target", "Exact tell message"); });
+    recentPartyChat[0]["token"] = 83;
+    rejects([&] { remoteTellRequest(nlohmann::json::object(), knownPlayers, disbanded, recentPartyChat,
+                                    nlohmann::json::array(), 100, 2097154, "E2E Target", "Exact tell message"); });
+    rejects([&] { remoteTellRequest(nlohmann::json::object(), knownPlayers, disbanded,
+                                    nlohmann::json::array(), nlohmann::json::array(), 100,
+                                    2097154, "E2E Target", "Exact tell message"); });
     auto accept = partyAcceptRequest({{"character_id", uint64_t{0x0102030405060708}},
                                       {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}});
     const Bytes expectedAccept{8,7,6,5,4,3,2,1, 1,1,0,0,0,0,0,0};

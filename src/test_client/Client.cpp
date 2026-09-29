@@ -99,7 +99,8 @@ namespace Sapphire::Testing
     m_deadline(io), m_heartbeat(io), m_movement(io)
   {
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
-      {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
+      {"actors", Json::object()}, {"known_players", Json::object()},
+      {"quests", Json::object()}, {"complete_quests", Json::object()},
       {"chat", Json::array()}, {"party_chat", Json::array()}, {"tells", Json::array()},
       {"tell_not_found", nullptr}, {"offline_tell_pending", false},
       {"created_via_lobby", false}, {"deleted_via_lobby", false},
@@ -473,13 +474,19 @@ namespace Sapphire::Testing
           if(member.value("character_id", uint64_t{0}) == p.fromCharacterID &&
              member.value("name", "") == sender && member.value("entity_id", 0u) != 0)
             partyMatches.push_back(member.at("entity_id"));
+        std::vector<uint32_t> knownMatches;
+        for(auto it = m_state["known_players"].begin(); it != m_state["known_players"].end(); ++it)
+          if(it.value().value("name", "") == sender)
+            knownMatches.push_back(static_cast<uint32_t>(std::stoul(it.key())));
+        std::vector<uint32_t> identities;
+        for(const auto& matches : {actorMatches, partyMatches, knownMatches})
+          for(const auto actor : matches)
+            if(std::find(identities.begin(), identities.end(), actor) == identities.end()) identities.push_back(actor);
         if(p.type != 0 || !p.fromCharacterID || message.empty() || message.size() > 128 ||
            !std::all_of(message.begin(), message.end(), [](unsigned char c) { return c >= 0x20 && c <= 0x7e; }) ||
-           actorMatches.size() > 1 || partyMatches.size() > 1 ||
-           (actorMatches.empty() && partyMatches.empty()) ||
-           (!actorMatches.empty() && !partyMatches.empty() && actorMatches[0] != partyMatches[0]))
-          throw ProtocolError("tell sender does not match one bounded received spawn or party identity");
-        const auto actor = actorMatches.empty() ? partyMatches[0] : actorMatches[0];
+           actorMatches.size() > 1 || partyMatches.size() > 1 || knownMatches.size() > 1 || identities.size() != 1)
+          throw ProtocolError("tell sender does not match one bounded received player identity");
+        const auto actor = identities[0];
         for(const auto& member : party.at("members"))
           if(member.value("entity_id", 0u) == actor && member.value("name", "") == sender &&
              member.value("character_id", uint64_t{0}) != p.fromCharacterID)
@@ -665,6 +672,9 @@ namespace Sapphire::Testing
       m_combat = CombatState{};
       m_movement.cancel(); m_moving = false;
       m_state["territory"] = p.TerritoryType;
+      for(auto it = m_state["actors"].begin(); it != m_state["actors"].end(); ++it)
+        if(it.value().value("kind", 0) == 1 && m_state["known_players"].contains(it.key()))
+          m_state["known_players"][it.key()].update({{"spawned", false}, {"last_seen_token", m_seq + 1}});
       m_state["actors"] = Json::object();
       m_state["observed_position"] = p.Pos;
       std::copy(std::begin(p.Pos), std::end(p.Pos), m_predicted.begin());
@@ -683,6 +693,9 @@ namespace Sapphire::Testing
         {"hp_max", p.HpMax}, {"tp", p.Tp}, {"mp", p.Mp}, {"kind", p.ObjKind}, {"layout_id", p.LayoutId},
         {"base_id", p.NpcId}, {"name_id", p.NameId}, {"name", name}};
       m_state["actors"][std::to_string(actor)] = state;
+      if(p.ObjKind == 1 && actor && !name.empty())
+        m_state["known_players"][std::to_string(actor)] =
+          {{"name", name}, {"spawned", true}, {"last_seen_token", m_seq + 1}};
       event("spawn", {{"actor", actor}, {"state", state}});
       if(actor == m_entity)
       {
@@ -727,7 +740,11 @@ namespace Sapphire::Testing
     else if(h.type == WS::FFXIVIpcActorFreeSpawn::_ServerIpcType)
     {
       auto p = readObject<WS::FFXIVIpcActorFreeSpawn>(segment.data, off);
-      m_state["actors"].erase(std::to_string(p.actorId)); event("despawn", {{"actor", p.actorId}});
+      const auto key = std::to_string(p.actorId);
+      m_state["actors"].erase(key);
+      if(m_state["known_players"].contains(key))
+        m_state["known_players"][key].update({{"spawned", false}, {"last_seen_token", m_seq + 1}});
+      event("despawn", {{"actor", p.actorId}});
     }
     else if(h.type == WS::FFXIVIpcQuests::_ServerIpcType)
     {
@@ -1236,6 +1253,15 @@ namespace Sapphire::Testing
           args.at("destination_storage"), args.at("destination_slot"), args.at("expected_destination_count"));
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};
+    }
+    if(method == "tell_remote")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("remote tell requires an idle character");
+      auto payload = remoteTellRequest(m_state["actors"], m_state["known_players"], m_state["party"],
+                                       m_state["party_chat"], m_state["tells"], m_seq,
+                                       args.at("target"), args.at("name"), args.at("message"));
+      sendChat(WC::FFXIVIpcChatTo::_ServerIpcType, payload);
+      return Json::object();
     }
     if(method == "tell" || method == "tell_offline")
     {

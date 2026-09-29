@@ -163,12 +163,30 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     player.tell(source_state["entity_id"], source_fixture["name"], "traveler to remote source exact tell")
     traveler_to_source = source.expect_tell(state, "traveler to remote source exact tell")
     assert traveler_to_source["party_id"] == party_states[source.name]["party"]["id"]
+    source.party_chat("source liveness before cross-zone nonparty tell")
+    player.expect_party_chat(source_state, "source liveness before cross-zone nonparty tell")
+    source.leave_party()
+    for bot in (source, player):
+        live_worker.wait_state(bot.name, lambda s: s["party"]["count"] == 0 and s["party"]["id"] == 0,
+                               "cross-zone party disband before nonparty Tell")
+    player.tell_remote(source_state["entity_id"], source_fixture["name"],
+                       "traveler to cross-zone nonparty source")
+    nonparty_traveler_to_source = source.expect_tell(
+        state, "traveler to cross-zone nonparty source")
+    assert nonparty_traveler_to_source["party_id"] == 0
+    source.tell_remote(state["entity_id"], fixture["name"],
+                       "source to cross-zone nonparty traveler")
+    nonparty_source_to_traveler = player.expect_tell(
+        source_state, "source to cross-zone nonparty traveler")
+    assert nonparty_source_to_traveler["party_id"] == 0
     (environment.artifacts / "cross-zone-social.json").write_text(json.dumps({
-        "source_to_traveler": source_to_traveler,
-        "traveler_to_source": traveler_to_source,
+        "party_source_to_traveler": source_to_traveler,
+        "party_traveler_to_source": traveler_to_source,
+        "nonparty_traveler_to_source": nonparty_traveler_to_source,
+        "nonparty_source_to_traveler": nonparty_source_to_traveler,
         "traveler_party": party_states[player.name]["party"],
         "source_party": party_states[source.name]["party"],
-        "liveness_binding": "each remote Tell followed an exact received party-chat identity within 16 worker events"
+        "liveness_binding": "party Tells require exact party chat within 16 worker events; after exact disband, the first nonparty Tell requires that same fresh source identity and the reply requires the exact incoming Tell"
     }, indent=2), encoding="utf-8")
     player.expect_rewards(before, 1)
     first_reply = player.discover_central_thanalan(
@@ -191,9 +209,8 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     live_worker.wait_state(player.name,
         lambda s: all(s["heartbeats"][channel] > heartbeats[channel] for channel in ("zone", "chat")),
         "both channels remain live after zoning")
-    source.leave_party()
-    live_worker.wait_state(player.name, lambda s: s["party"]["count"] == 0,
-                           "traveler received cross-zone party disband")
+    assert live_worker.snapshot(source.name)["party"]["count"] == 0
+    assert live_worker.snapshot(player.name)["party"]["count"] == 0
     player.logout()
     live_worker.wait_state(discovery_observer.name, lambda s: actor not in s["actors"],
                            "destination session cleanup", 30)

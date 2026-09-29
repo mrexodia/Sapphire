@@ -9,4 +9,9 @@ namespace Sapphire::Testing
                     uint32_t targetEntity, const std::string& targetName,
                     const std::string& message, bool expectOffline = false,
                     bool allowRemoteParty = false);
+  Bytes remoteTellRequest(const nlohmann::json& actors, const nlohmann::json& knownPlayers,
+                          const nlohmann::json& party, const nlohmann::json& partyChat,
+                          const nlohmann::json& tells, uint64_t currentToken,
+                          uint32_t targetEntity, const std::string& targetName,
+                          const std::string& message);
 }

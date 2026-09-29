@@ -620,6 +620,10 @@ class Bot:
         return self.worker.request("tell", self.name, target=target_entity,
                                    name=target_name, message=message)
 
+    def tell_remote(self, target_entity, target_name, message):
+        return self.worker.request("tell_remote", self.name, target=target_entity,
+                                   name=target_name, message=message)
+
     def tell_offline(self, target_entity, target_name, message, timeout=10):
         self.worker.request("tell_offline", self.name, target=target_entity,
                             name=target_name, message=message)
@@ -640,8 +644,10 @@ class Bot:
                        if member["entity_id"] == expected_entity and member["name"] == expected_name]
             expected_party = state["party"]["id"] if len(members) == 1 else 0
             actor = state["actors"].get(str(expected_entity))
+            known = state["known_players"].get(str(expected_entity))
             identity_received = ((actor is not None and actor["kind"] == 1
                                   and actor["name"] == expected_name)
+                                 or (known is not None and known["name"] == expected_name)
                                  or (len(members) == 1
                                      and members[0]["character_id"] == expected_character))
             return (identity_received and row["actor"] == expected_entity
