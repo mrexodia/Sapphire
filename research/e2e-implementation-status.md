@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say and a received two-client party join/leave lifecycle; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, broader social/group policy, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and source-LGB Central Thanalan map discovery | One path in each category is verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -73,7 +73,7 @@ a nearby passing test does not close them.
 | Ordered journal and race-safe waits | sequenced bounded worker events; Python state/event versions registered before triggers | Verified |
 | Base/layout/runtime identity separation | versioned catalogs bind source actor/event IDs and resolve received runtime entities | Verified for catalogued content |
 | Core semantic API | login/select/world-ready/logout, movement, interaction, scene choice, quest/reward expectations are wrapped above raw packets | Verified for supported subset |
-| Later combat/social/transition/instance API | natural combat, Say and one physical zone transition are live | **Partial:** parties and instance entry are absent; combat/social/transition breadth is narrow |
+| Later combat/social/transition/instance API | natural combat, Say, a two-client party lifecycle and one physical zone transition are live | **Partial:** instance entry is absent; combat/social/transition breadth is narrow |
 | Action preconditions/transitions/deadlines/diagnostics | native guards, Python predicates, per-action timeouts and journals | Verified for enabled methods |
 | Scene adapter: approach→interact→observe→choose→finish→state | live quest, shop and opening scenarios use explicit catalogs and received identities | Verified for supported one/two-result and opening chains |
 | Unknown scenes fail closed | worker/policy contracts; workload invariant rejects any unexpected scene | Verified |
@@ -345,6 +345,25 @@ semantic two-action reproduction:
   `5po9v23t`, and `build-e2e/minimizer-live.log`. Combined candidate elapsed time
   was 154.484s. These are deterministic-deadline reducer mechanics, not broad
   failure-minimization quality or a new server defect.
+
+## Received two-client party lifecycle
+
+At `465dc9d66`, two normal non-GM clients independently receive each other's exact
+spawn entity/name before the leader sends a bounded normal party invitation. The
+member accepts only the exact pending character-ID/type/result/name tuple received
+from the server. Both clients then independently receive the same nonzero party ID,
+leader index and exact two-member entity/character/name roster. The member sends a
+normal leave request only from received self-membership; because this is a
+source-server two-member party, both clients receive the resulting empty disband
+state. No invitation receipt is treated as membership proof. Exact invite, accept
+and leave byte fixtures and malformed/unobserved rejection contracts pass with
+Clang, MSVC and GNU. The clean live case passed in **27.62s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-zlc5dlwq`; manifest SHA-256 is
+`be39e5187670bc5c43128a595ca7b07b71c186b9ff11bedf36298303aff69d10`, event
+journal SHA-256 is
+`20af0eded10445ad9edd8c494802410e1fd9b67afb3816aee72bee619797ef37`,
+`dirty=false`, and the private runtime was removed. This is one local party
+join/leave path, not broad party, cross-zone, party-chat or instance evidence.
 
 ## Repeated combat and first retaliation
 
