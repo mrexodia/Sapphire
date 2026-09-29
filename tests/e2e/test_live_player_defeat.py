@@ -56,11 +56,33 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
                   if actor["kind"] == 2 and actor["base_id"] == 302 and actor["level"] == 14
                   and actor["hp"] == actor["hp_max"] > 0
                   and math.dist(actor["position"], state["observed_position"]) < 3)
-    fighter.wait_fast_blade_ready(target)
+    live_worker.wait_state(fighter.name,
+        lambda s: s["actors"].get(str(entity), {}).get("tp", 0) >= 60,
+        "naturally regenerated opening TP", 10)
+    # This population may roam while TP regenerates. Follow only bounded received
+    # positions using normal movement, with every reached point witnessed.
+    opening_approach = []
+    for _ in range(6):
+        state = live_worker.snapshot(fighter.name)
+        current_enemy = state["actors"].get(str(target))
+        assert current_enemy and current_enemy["hp"] == current_enemy["hp_max"] > 0
+        distance = math.dist(current_enemy["position"], state["predicted_position"])
+        if distance < 2.5:
+            break
+        assert distance < 20, "natural opening target left bounded follow range"
+        destination = list(current_enemy["position"])
+        fighter.walk_to(destination, 2.0, 15)
+        live_worker.wait_state(observer.name,
+            lambda s: str(entity) in s["actors"]
+                      and math.dist(s["actors"][str(entity)]["position"], destination) < 0.15,
+            "observer sees bounded opening approach", 15)
+        opening_approach.append(destination)
+    else:
+        raise AssertionError("bounded opening approach did not reach the natural target")
+    state = fighter.wait_fast_blade_ready(target)
+    enemy_start = state["actors"][str(target)]["position"]
     opening_effect = fighter.fast_blade(target)
     assert opening_effect["target"] == target and damage_value(opening_effect) > 0
-
-    enemy_start = state["actors"][str(target)]["position"]
 
     # Drive beyond the source implementation's 40m spawn-distance retreat threshold.
     leash_peak = None
@@ -192,6 +214,7 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     (environment.artifacts / "combat-player-defeat.json").write_text(json.dumps({
         "population_layout": int(layout_id), "enemy_base_id": 302, "enemy_level": 14,
         "fighter_hp_before": before["hp"], "opening_effect": opening_effect,
+        "observed_opening_approach": opening_approach,
         "pursuit_route_length": pursuit["route_length"], "enemy_position_before_pursuit": enemy_start,
         "leash_route_length": pursuit["leash_route_length"],
         "enemy_position_at_leash_peak": leash_peak["actors"][str(target)]["position"],
