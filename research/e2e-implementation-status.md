@@ -472,8 +472,22 @@ clean case passed in **27.94s** at
 `7831c9e86f6781b12ee722c8d1ce038997dd24c35c9586d3d7e267cc4fa7e3c4` and event
 journal SHA-256 is
 `04d057e20956d5cd47d1ed46962539759bb9e63d22276440dab4ae0c8bf48116`.
+The source is clean and runtime removal is confirmed.
+
+At `66e3102a6`, the transferred received leader removes the exact third roster
+member with the normal kick operation. The former leader's same attempt fails
+locally from its received nonleader state; two-member rosters are also rejected by
+the bounded API rather than conflating kick with disband. The removed client
+receives exact empty party state, while both remaining clients independently retain
+the original party/channel, transferred leader and exact two-member identities.
+Exact target-name bytes plus nonleader, two-member and wrong-target rejection
+contracts pass on Clang, MSVC and GNU. The clean case passed in **27.64s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-rzm5oed6`; manifest SHA-256 is
+`5df7d60e71a20ceb52f88463dffecee02b315a83e3851ee98085ec8f48c71d2a` and event
+journal SHA-256 is
+`1de5f6a9750617f0b4a56af096bb0a0135d5bf3539326b3e1b2b58533f548457`.
 The source is clean and runtime removal is confirmed. This remains one three-client
-party/channel policy path, not alliance, instance, kick or arbitrary chat-channel
+party/channel policy path, not alliance, instance or arbitrary chat-channel
 evidence.
 
 ## Repeated combat and first retaliation

@@ -38,8 +38,9 @@ lobby, world and MariaDB processes with matching game data:
   then adds the third client while preserving party/channel identity. All three
   receive the exact expanded roster, both existing members receive the newcomer's
   party chat, and all three receive an exact leadership transfer. The former leader
-  then fails closed on a further invite. The newcomer leaves while the original two
-  retain the transferred leader and exact remaining roster before disband. The
+  then fails closed on a further invite and kick. The transferred leader normally
+  kicks the newcomer; the removed client receives empty state while the original
+  two retain the leader and exact remaining roster before disband. The
   zoning scenario additionally keeps the
   two-client form of that party across a physical
   130→141 crossing and checks each client's exact self-territory plus the protocol's
