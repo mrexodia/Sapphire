@@ -582,15 +582,23 @@ python -m tests.e2e.run_workload --profile .e2e-local.json \
 ```
 
 - Exploration chooses seeded, allowlisted walk/Say/heartbeat/reconnect actions.
-  Reconnect observes despawn, performs new HTTP/lobby login, and checks identity
-  and persisted position. Unknown actions/parameters are rejected.
+  Every movement waypoint must be independently received by the next bot. On one
+  observed stall per action, exploration may perform exactly one normal logout,
+  fresh HTTP/lobby/world login and suffix replan only from a finite received
+  position within 0.75m of the same curated corridor. The original error and both
+  witnessed/reloaded positions remain in the outcome. A second stall, changed
+  identity or off-corridor state fails; no packet or coordinate is fabricated.
+  Ordinary reconnect actions likewise observe despawn and check identity/persisted
+  position. Unknown actions/parameters are rejected.
 - Soak ramps 2..32 bots and executes distinct actors concurrently in bounded
   rounds. Supported actions are walk/Say/heartbeat; reconnect is serial-only.
 - Plans allow at most 1000 total actions and a 1..3600s **action** time budget.
   Setup and teardown have their own bounds and are excluded from that budget.
   Exhausting the budget is a failure, not a silently successful short run.
 - Every round checks readiness, non-GM status, territory, no unexpected scene,
-  and server liveness. Movement and Say assertions come from another bot.
+  and server liveness. Movement and Say assertions come from another bot. Soak
+  movement has the same per-waypoint progress watchdog but deliberately performs
+  no recovery or automatic retry.
 - New plans are version 2. Replay preserves semantic decisions and route identity,
   not packet timing, credentials or ephemeral actor IDs. Version-1 plans still
   replay unpaced; pacing requires v2 so older executors cannot silently ignore it.

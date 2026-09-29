@@ -34,7 +34,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
-| Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent observers | Two-bot exploration verified; narrow supported-state coverage |
+| Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
@@ -83,7 +83,7 @@ a nearby passing test does not close them.
 | Navmesh routing for selected territories | matching TSET catalogs/meshes for territories 130 and 141; disconnected/off-mesh routes fail closed | Verified for selected corridors only |
 | Content-aware transitions/doors/dynamic obstacles | one source-defined exit volume is crossed | **Partial:** general transitions, doors and dynamic obstacles are absent |
 | Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
-| Progress watchdog and bounded replanning | monotonic route/state deadlines retain failures | **Partial:** no general stalled-progress detector or replanning policy |
+| Progress watchdog and bounded replanning | workload movement requires every waypoint from an independent observer; exploration permits one recorded fresh-session replan only from the same curated corridor, while soak/regression fail without recovery | Verified for bounded workload navigation; no general-navigation replanner claim |
 | Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
 | Authored regression mode | strict nine-case allowlist plus native/Python contracts | Verified for supported suite |
 | Seeded exploration mode | v1/v2 plans, allowlisted preconditions, decisions, observations and replay | Verified for walk/Say/heartbeat/reconnect subset |
@@ -217,6 +217,21 @@ a nearby passing test does not close them.
   Replay world peak RSS was 377,630,720 bytes. Action p95 was 2.719s, not RTT.
   Both private runtimes were removed. Five-minute runs still do not establish
   long-duration stability, large-population capacity or broader gameplay policy.
+- `a1b8ee21f` adds received progress checks at every workload waypoint rather than
+  accepting only a sent route or final prediction. Exploration alone may recover
+  once through normal logout and fresh HTTP/lobby/world authentication, and only
+  when the witness and reloaded positions resolve within 0.75m of the same curated
+  route. The outcome retains the original stall, positions and resume waypoint;
+  a second stall, identity change or off-corridor position fails. Soak never
+  retries. Three dedicated contracts cover successful one-shot recovery, zero-retry
+  soak failure and second-stall failure. **255** Python contracts pass with Clang,
+  MSVC and network-isolated GNU workers. A normal two-bot/12-action exploration
+  exercised the per-waypoint watchdog without recovery and passed in 29.766s of
+  action span with runtime removal (`sapphire-e2e-il0bl6zg`); its `result.json`
+  SHA-256 is
+  `649d34fa18cd8b23be4a8a1b646975633a6dd73796dcd9d4a20960df7f8031ae`.
+  The bounded recovery path is contract-verified, not claimed as a live injected
+  network-fault result.
 - Version-2 plans add an explicit round-start interval and minimum successful
   action span, with no post-work idle padding. Pacing requires complete soak
   rounds and walk/Say coverage for every bot. Two-second idle checkpoints verify
