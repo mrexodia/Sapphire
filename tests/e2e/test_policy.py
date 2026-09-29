@@ -117,7 +117,11 @@ def test_shop_catalog_binds_route_actor_and_exact_sale():
             "purchase": {"shop_id": 262468, "index": 0, "item": 5890, "quantity": 3, "unit_gil": 8, "gil": 24,
                          "item_action": {"row": 232, "type": 852, "arg": 235}},
             "equipment_purchase": {"shop_id": 262468, "index": 11, "item": 3286,
-                                   "quantity": 1, "gil": 39, "source_slot": 7, "gear_slot": 6}}
+                                   "quantity": 1, "gil": 39, "resale_gil": 39,
+                                   "source_slot": 7, "gear_slot": 6},
+            "second_equipment_purchase": {"shop_id": 262468, "index": 9, "item": 3748,
+                                          "quantity": 1, "gil": 54,
+                                          "source_slot": 8, "gear_slot": 7}}
     assert validate_shop_catalog(data) == data
     for changed in ({**data, "territory": 141}, {**data, "sale": {"item": 4551, "quantity": 2, "gil": 56}},
                     {**data, "purchase": {**data["purchase"], "item": 1}},

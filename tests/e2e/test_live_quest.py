@@ -464,6 +464,84 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     reloaded, state = restart_shop_bot(reloaded, "shop-gear-equipped-reloaded",
                                       equipped_rewards, equipped_inventory)
 
+    leg_sale_key = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
+                                        for slot in reversed(range(25)))
+                        if key not in equipped_inventory)
+    leg_sale_storage, leg_sale_slot = map(int, leg_sale_key.split(":"))
+    leg_unequip_receipt = reloaded.request_item_unequip(
+        gear_slot, leg_sale_storage, leg_sale_slot, catalog["equipment_purchase"]["item"])
+    leg_sale_inventory = deepcopy(equipped_inventory)
+    del leg_sale_inventory[starter_key]
+    leg_sale_inventory[leg_sale_key] = {"storage": leg_sale_storage, "slot": leg_sale_slot,
+                                        "id": catalog["equipment_purchase"]["item"], "count": 1}
+    leg_sale_rewards = deepcopy(equipped_rewards)
+    leg_sale_rewards["items"][str(catalog["equipment_purchase"]["item"])] = 1
+    reloaded, state = restart_shop_bot(reloaded, "shop-purchased-leg-unequipped",
+                                      leg_sale_rewards, leg_sale_inventory)
+    reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
+    reloaded.sell_shop_item(leg_sale_storage, leg_sale_slot,
+                            catalog["equipment_purchase"]["item"])
+    resale_rewards = deepcopy(leg_sale_rewards)
+    del resale_rewards["items"][str(catalog["equipment_purchase"]["item"])]
+    resale_rewards["currencies"]["1"] += catalog["equipment_purchase"]["resale_gil"]
+    resale_inventory = deepcopy(leg_sale_inventory)
+    del resale_inventory[leg_sale_key]
+    resale_inventory["2000:0"]["count"] = resale_rewards["currencies"]["1"]
+    state = reloaded.expect_rewards(resale_rewards, work_index)
+    assert state["rewards"]["inventory"] == resale_inventory
+    reloaded, state = restart_shop_bot(reloaded, "shop-purchased-leg-sold",
+                                      resale_rewards, resale_inventory)
+    assert resale_rewards["currencies"]["1"] == 56
+
+    second = catalog["second_equipment_purchase"]
+    reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
+    reloaded.buy_shop_second_equipment(catalog["shop"]["event_id"])
+    second_rewards = deepcopy(resale_rewards)
+    second_rewards["items"][str(second["item"])] = 1
+    second_rewards["currencies"]["1"] -= second["gil"]
+    state = reloaded.expect_rewards(second_rewards, work_index)
+    second_inventory = deepcopy(state["rewards"]["inventory"])
+    second_expected = deepcopy(resale_inventory)
+    second_expected["2000:0"]["count"] = second_rewards["currencies"]["1"]
+    second_added = set(second_inventory) - set(second_expected)
+    assert len(second_added) == 1
+    second_key = next(iter(second_added))
+    assert second_inventory[second_key]["id"] == second["item"]
+    assert second_inventory[second_key]["count"] == 1
+    assert {key: value for key, value in second_inventory.items() if key != second_key} == second_expected
+    reloaded.exit_gil_shop(catalog["shop"]["event_id"])
+    reloaded, state = restart_shop_bot(reloaded, "shop-second-equipment-purchased",
+                                      second_rewards, second_inventory)
+
+    second_gear_key = f"1000:{second['gear_slot']}"
+    assert second_inventory[second_gear_key] == {"storage": 1000, "slot": second["gear_slot"],
+                                                 "id": 3750, "count": 1}
+    second_empty = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
+                                        for slot in reversed(range(25)))
+                        if key not in second_inventory)
+    second_empty_storage, second_empty_slot = map(int, second_empty.split(":"))
+    second_unequip_receipt = reloaded.request_item_unequip(
+        second["gear_slot"], second_empty_storage, second_empty_slot, 3750)
+    second_unequipped_inventory = deepcopy(second_inventory)
+    del second_unequipped_inventory[second_gear_key]
+    second_unequipped_inventory[second_empty] = {
+        "storage": second_empty_storage, "slot": second_empty_slot, "id": 3750, "count": 1}
+    second_unequipped_rewards = deepcopy(second_rewards)
+    second_unequipped_rewards["items"]["3750"] = 1
+    reloaded, state = restart_shop_bot(reloaded, "shop-second-gear-empty",
+                                      second_unequipped_rewards, second_unequipped_inventory)
+    second_item = second_unequipped_inventory[second_key]
+    second_equip_receipt = reloaded.request_shop_item_equip(
+        second_item["storage"], second_item["slot"], second["item"], second["gear_slot"])
+    final_inventory = deepcopy(second_unequipped_inventory)
+    del final_inventory[second_key]
+    final_inventory[second_gear_key] = {"storage": 1000, "slot": second["gear_slot"],
+                                        "id": second["item"], "count": 1}
+    final_rewards = deepcopy(second_unequipped_rewards)
+    del final_rewards["items"][str(second["item"])]
+    reloaded, state = restart_shop_bot(reloaded, "shop-second-gear-equipped",
+                                      final_rewards, final_inventory)
+
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
@@ -486,6 +564,16 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "shop_equip_receipt": equip_receipt,
         "rewards_after_shop_equip_restart": equipped_rewards,
         "inventory_after_shop_equip_restart": equipped_inventory,
+        "purchased_leg_unequip_receipt": leg_unequip_receipt,
+        "rewards_after_purchased_leg_resale_restart": resale_rewards,
+        "inventory_after_purchased_leg_resale_restart": resale_inventory,
+        "second_equipment_purchase": second,
+        "rewards_after_second_equipment_purchase_restart": second_rewards,
+        "inventory_after_second_equipment_purchase_restart": second_inventory,
+        "second_starter_unequip_receipt": second_unequip_receipt,
+        "second_shop_equip_receipt": second_equip_receipt,
+        "rewards_after_second_shop_equip_restart": final_rewards,
+        "inventory_after_second_shop_equip_restart": final_inventory,
         "arrival_observed": True,
         "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")

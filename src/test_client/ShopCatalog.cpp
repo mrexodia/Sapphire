@@ -83,6 +83,8 @@ int main(int argc, char** argv)
     uint32_t purchaseItem = 0, purchasePrice = std::numeric_limits<uint32_t>::max(), purchaseIndex = 0;
     uint32_t equipmentItem = 0, equipmentPrice = std::numeric_limits<uint32_t>::max();
     uint32_t equipmentIndex = 0, equipmentSourceSlot = 0;
+    struct EquipmentCandidate { uint32_t item, price, index, sourceSlot; };
+    std::vector<EquipmentCandidate> equipmentCandidates;
     constexpr std::array<uint32_t, 5> starterItems{1601, 2983, 3520, 3296, 3750};
     for(uint32_t index = 0; index < 40; ++index)
     {
@@ -93,11 +95,15 @@ int main(int argc, char** argv)
       if(item && item->data().Price && item->data().Price <= reward->data().Price * 2u &&
          item->data().StackMax == 1 && item->data().Slot > 0 && item->data().Slot <= 13 &&
          item->data().EquipLevel <= 1 && item->data().Class == 0 &&
-         item->data().Price < equipmentPrice &&
          std::find(starterItems.begin(), starterItems.end(), shopItem->data().ItemId) == starterItems.end())
       {
-        equipmentItem = shopItem->data().ItemId; equipmentPrice = item->data().Price;
-        equipmentIndex = index; equipmentSourceSlot = item->data().Slot;
+        equipmentCandidates.push_back({static_cast<uint32_t>(shopItem->data().ItemId), item->data().Price, index,
+                                       item->data().Slot});
+        if(item->data().Price < equipmentPrice)
+        {
+          equipmentItem = shopItem->data().ItemId; equipmentPrice = item->data().Price;
+          equipmentIndex = index; equipmentSourceSlot = item->data().Slot;
+        }
       }
       if(!item || !item->data().Price || item->data().Price > reward->data().Price) continue;
       if(item->data().Price < purchasePrice)
@@ -108,6 +114,15 @@ int main(int argc, char** argv)
     if(!purchaseItem) throw std::runtime_error("selected gil shop has no affordable source item");
     if(!equipmentItem || equipmentSourceSlot < 2)
       throw std::runtime_error("selected gil shop has no bounded later equipment purchase");
+    EquipmentCandidate secondEquipment{};
+    for(const auto& candidate : equipmentCandidates)
+      if(candidate.sourceSlot != equipmentSourceSlot &&
+         (!secondEquipment.item || candidate.price < secondEquipment.price ||
+          (candidate.price == secondEquipment.price && candidate.item < secondEquipment.item)))
+        secondEquipment = candidate;
+    if(!secondEquipment.item || secondEquipment.sourceSlot < 2 ||
+       secondEquipment.price > reward->data().Price * 2u)
+      throw std::runtime_error("selected gil shop has no second affordable equipment slot");
     auto selectedItem = data.getRow<Excel::Item>(purchaseItem);
     if(!selectedItem || !selectedItem->data().StackMax)
       throw std::runtime_error("selected gil-shop item has no stack metadata");
@@ -129,8 +144,14 @@ int main(int argc, char** argv)
                                      {"arg", itemAction->data().Calcu0Arg[0]}}}}},
       {"equipment_purchase", {{"shop_id", selected.event}, {"index", equipmentIndex},
                               {"item", equipmentItem}, {"quantity", 1},
-                              {"gil", equipmentPrice}, {"source_slot", equipmentSourceSlot},
+                              {"gil", equipmentPrice}, {"resale_gil", equipmentPrice},
+                              {"source_slot", equipmentSourceSlot},
                               {"gear_slot", equipmentSourceSlot - 1}}},
+      {"second_equipment_purchase", {{"shop_id", selected.event}, {"index", secondEquipment.index},
+                                     {"item", secondEquipment.item}, {"quantity", 1},
+                                     {"gil", secondEquipment.price},
+                                     {"source_slot", secondEquipment.sourceSlot},
+                                     {"gear_slot", secondEquipment.sourceSlot - 1}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

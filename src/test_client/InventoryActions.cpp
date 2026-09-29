@@ -68,15 +68,16 @@ namespace Sapphire::Testing
                              uint32_t storage, uint32_t slot, uint32_t expectedItem,
                              uint32_t gearSlot)
   {
-    constexpr uint32_t gearStorage = 1000, supportedItem = 3286;
-    if(rewards.value("class_job", 0u) != 1 || storage > 3 || slot >= 25 ||
-       expectedItem != supportedItem || gearSlot != Common::GearSetSlot::Legs ||
+    constexpr uint32_t gearStorage = 1000;
+    const bool supported = (expectedItem == 3286 && gearSlot == Common::GearSetSlot::Legs) ||
+                           (expectedItem == 3748 && gearSlot == Common::GearSetSlot::Feet);
+    if(rewards.value("class_job", 0u) != 1 || storage > 3 || slot >= 25 || !supported ||
        !rewards.at("inventory_ready").get<bool>())
-      throw ProtocolError("shop equipment requires the exact received Gladiator leg item");
+      throw ProtocolError("shop equipment requires an exact supported received Gladiator item/slot");
     const auto key = std::to_string(storage) + ":" + std::to_string(slot);
     const auto destination = std::to_string(gearStorage) + ":" + std::to_string(gearSlot);
     const auto& inventory = rewards.at("inventory");
-    if(!inventory.contains(key) || inventory.at(key).at("id") != supportedItem ||
+    if(!inventory.contains(key) || inventory.at(key).at("id") != expectedItem ||
        inventory.at(key).at("count") != 1 || inventory.contains(destination))
       throw ProtocolError("shop equipment source/destination does not match received inventory");
     for(auto container : {storage, gearStorage})
@@ -87,7 +88,7 @@ namespace Sapphire::Testing
     p.ContextId = context; p.OperationType = Common::ITEM_OPERATION_TYPE_MOVEITEM;
     p.SrcActorId = p.DstActorId = entity;
     p.SrcStorageId = storage; p.SrcContainerIndex = static_cast<int16_t>(slot);
-    p.SrcStack = 1; p.SrcCatalogId = supportedItem;
+    p.SrcStack = 1; p.SrcCatalogId = expectedItem;
     p.DstStorageId = gearStorage; p.DstContainerIndex = static_cast<int16_t>(gearSlot);
     return objectBytes(p);
   }

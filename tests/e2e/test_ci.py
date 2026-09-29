@@ -89,7 +89,11 @@ def profile(tmp_path):
             "purchase": {"shop_id": 262468, "index": 0, "item": 5890, "quantity": 3, "unit_gil": 8, "gil": 24,
                          "item_action": {"row": 232, "type": 852, "arg": 235}},
             "equipment_purchase": {"shop_id": 262468, "index": 11, "item": 3286,
-                                   "quantity": 1, "gil": 39, "source_slot": 7, "gear_slot": 6}}
+                                   "quantity": 1, "gil": 39, "resale_gil": 39,
+                                   "source_slot": 7, "gear_slot": 6},
+            "second_equipment_purchase": {"shop_id": 262468, "index": 9, "item": 3748,
+                                          "quantity": 1, "gil": 54,
+                                          "source_slot": 8, "gear_slot": 7}}
     Path(p["shop_catalog"]).write_text(json.dumps(shop))
     respawn = {"version": 1, "profile": "sapphire-3.3", "homepoint": 9, "territory": 130,
                "pop_range": {"id": 1, "position": [0, 0, 0], "rotation": [0, 0, 0]}}
