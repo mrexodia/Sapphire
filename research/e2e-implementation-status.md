@@ -486,6 +486,18 @@ contracts pass on Clang, MSVC and GNU. The clean case passed in **27.64s** at
 `5df7d60e71a20ceb52f88463dffecee02b315a83e3851ee98085ec8f48c71d2a` and event
 journal SHA-256 is
 `1de5f6a9750617f0b4a56af096bb0a0135d5bf3539326b3e1b2b58533f548457`.
+The source is clean and runtime removal is confirmed.
+
+At `0eed41656`, after kick leaves the exact two-member roster, the transferred
+leader sends the explicit normal disband operation. The former leader's same action
+fails locally from received nonleader state. Both clients independently receive
+empty party state; this is distinct from the earlier implicit two-member disband
+caused by leave. Exact zero-reserve bytes and nonleader rejection pass on Clang,
+MSVC and GNU. The clean case passed in **28.33s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-sabonb13`; manifest SHA-256 is
+`2006685064792d9f1522da97d9eda52688f641f497233ee880751c9a0f8c9c8d` and event
+journal SHA-256 is
+`b780d07b48e2114cff5c9f0d2e93140b534835950620eb3f52b7ccf64e0f76ca`.
 The source is clean and runtime removal is confirmed. This remains one three-client
 party/channel policy path, not alliance, instance or arbitrary chat-channel
 evidence.

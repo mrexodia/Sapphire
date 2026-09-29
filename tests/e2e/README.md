@@ -40,7 +40,8 @@ lobby, world and MariaDB processes with matching game data:
   party chat, and all three receive an exact leadership transfer. The former leader
   then fails closed on a further invite and kick. The transferred leader normally
   kicks the newcomer; the removed client receives empty state while the original
-  two retain the leader and exact remaining roster before disband. The
+  two retain the leader and exact remaining roster before the transferred leader
+  explicitly disbands; the former leader cannot construct either operation. The
   zoning scenario additionally keeps the
   two-client form of that party across a physical
   130→141 crossing and checks each client's exact self-territory plus the protocol's
