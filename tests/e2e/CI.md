@@ -115,17 +115,17 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this eleven-scenario headless suite only.
 
-Latest local evidence: clean revision `b13f5efad` passed the eleven-case strict gate
-in 930.63 seconds with zero skips/errors/failures, exact collection and staged-input
-identity, and removed private runtime. This includes the persisted quantity-three
-purchase and independently observed VFX item action, source-bound observed Sprint,
-exact online/offline Tell, the full eight-member party policy/reconnect lifecycle,
-two persisted source-bound discovery parts/shapes, Ring2, duplicate-name rejection
-and normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-vfx-item.json` (SHA-256
-`7256dbeabe1bf07222564bae979e7c6f4e54e2b21c4f14363f1d64ea644c2789`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-3naibh_n` and private manifest
-SHA-256 `be06f93a731aca9f8e6177c1a795375259a68a482fcbf66cb016d8cfe7853331`;
+Latest local evidence: clean revision `5e9c01c84` passed the eleven-case strict gate
+in 1002.79 seconds with zero skips/errors/failures, exact collection and staged-input
+identity, and removed private runtime. This includes persisted later-equipment
+purchase/equip, the quantity-three VFX action/liquidation, exact same- and cross-zone
+Tell, source-bound observed Sprint, the full eight-member party lifecycle, two
+persisted discovery parts/shapes, Ring2, duplicate-name rejection and normal lobby
+deletion with fresh-session absence proof. Evidence is
+`build-e2e/ci-summary-social-equipment.json` (SHA-256
+`6d2b3fe07cffca4a027c889ae57df0ba20f7e4a155bef963e274f7a8eac9694c`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-ndl_o26m` and private manifest
+SHA-256 `8bec8cd77dfd23377eeabbb5d1c79a52731c30e2957ce168e760b5f6fa6a68e3`;
 this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict

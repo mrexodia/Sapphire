@@ -134,15 +134,15 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows eleven-case
-  gate at `b13f5efad` took **930.63s**, including the persisted quantity-three
-  purchase and independently observed VFX item action, exact online/offline Tell,
-  observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
-  discovery, Ring2, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-3naibh_n`, summary `build-e2e/ci-summary-vfx-item.json`). Summary
-  SHA-256 is
-  `7256dbeabe1bf07222564bae979e7c6f4e54e2b21c4f14363f1d64ea644c2789`,
+  gate at `5e9c01c84` took **1002.79s**, including persisted later-equipment
+  purchase/equip, the quantity-three VFX item action/liquidation, exact same- and
+  cross-zone Tell, observed Sprint, the full-roster party/reconnect lifecycle, dual
+  persisted discovery, Ring2, duplicate-name rejection and normal character
+  deletion (`gameplay-ci-ndl_o26m`, summary
+  `build-e2e/ci-summary-social-equipment.json`). Summary SHA-256 is
+  `6d2b3fe07cffca4a027c889ae57df0ba20f7e4a155bef963e274f7a8eac9694c`,
   private manifest SHA-256 is
-  `be06f93a731aca9f8e6177c1a795375259a68a482fcbf66cb016d8cfe7853331`, and
+  `8bec8cd77dfd23377eeabbb5d1c79a52731c30e2957ce168e760b5f6fa6a68e3`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
