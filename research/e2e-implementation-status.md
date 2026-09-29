@@ -31,7 +31,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
 | More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands and all four source-defined Ring1 choices plus one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessories/off-hand/head/waist/later equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
-| Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, and source-LGB opening WithinRange scene 20 | Exit plus one enter-territory and one within-range subset verified; discovery/general adapters missing |
+| Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and source-LGB Central Thanalan map discovery | One path in each category is verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
@@ -78,7 +78,7 @@ a nearby passing test does not close them.
 | Scene adapter: approach→interact→observe→choose→finish→state | live quest, shop and opening scenarios use explicit catalogs and received identities | Verified for supported one/two-result and opening chains |
 | Unknown scenes fail closed | worker/policy contracts; workload invariant rejects any unexpected scene | Verified |
 | Yield/resume scene exchange | Server logs prove quest yield is unimplemented and no established resume packet/result exists | **Blocked; unsupported capability is explicit** |
-| Range/discovery/territory triggers | physical ExitRange crossing plus source-bound enter-territory and opening WithinRange operations | **Partial:** one range path is verified, but discovery and general adapters are absent |
+| Range/discovery/territory triggers | physical ExitRange crossing plus source-bound enter-territory, opening WithinRange and Central Thanalan discovery operations | **Partial:** one exact path in each category is verified, but general adapters are absent |
 | Curated waypoint stage | independently observed quest/shop/transition/pursuit routes | Verified |
 | Navmesh routing for selected territories | matching TSET catalogs/meshes for territories 130 and 141; disconnected/off-mesh routes fail closed | Verified for selected corridors only |
 | Content-aware transitions/doors/dynamic obstacles | one source-defined exit volume is crossed | **Partial:** general transitions, doors and dynamic obstacles are absent |
@@ -192,9 +192,19 @@ a nearby passing test does not close them.
 - `test_live_zoning.py` crosses exit 2377056 from territory 130 to 141 after a
   41-point/18.64m walk. A source observer stays outside the trigger and observes
   departure; a destination observer sees arrival and chat. Both channels remain
-  alive; territory/position/rewards survive restart. Latest isolated run: 58.51s,
-  `build-e2e/zoning.xml`. The current seven-case run also includes the refinement
-  that leaves the source observer stationary outside the trigger.
+  alive; territory/position/rewards survive restart. The transition generator now
+  also resolves the sole enabled source-LGB discovery sphere containing arrival:
+  layout 3643706, map 21, part 1. The bounded client accepts that exact range only
+  from a finite received position inside its source volume, permits one request per
+  session, receives the exact map/part reply and exact source-derived 15 EXP, then
+  proves discovery bit persistence from fresh PlayerStatus after world restart.
+  This is not acknowledgement-as-mutation proof: the clean run journals a reply
+  first and an independent fresh-login `discovery_state` later. Run
+  `sapphire-e2e-be9syxf4` passed in 55.52s at revision `38dc3b2db`; manifest SHA-256
+  is `fd5bc9da699e3d4f5b46c558d0135485bc716e099e2151243adb45eda03ae820`, event
+  journal SHA-256 is `8bccb4669335ff70bfff250d0fe4d7ba9a278a93ec8214ba603843e59c949e6d`,
+  `dirty=false`, and its private runtime was removed. This verifies one discovery
+  path, not general map-range evaluation.
 - `.e2e-assets/runtime-nav-v1/navi` contains separately generated w1t1/w1f2 tiles.
   Live logs explicitly show both territories initialized with `NAVI`, not merely
   configured file paths. Server mesh hashes are in the manifest. Original collision

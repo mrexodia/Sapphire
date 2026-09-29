@@ -35,8 +35,10 @@ lobby, world and MariaDB processes with matching game data:
   rewards survive world restart.
 - A three-client zoning test walks a verified approach into an actual exit volume,
   crosses from Ul'dah to Central Thanalan, observes departure and arrival from
-  separate bots, checks destination chat/keepalives and reloads the new territory
-  and position after world restart.
+  separate bots, checks destination chat/keepalives, and enters the sole enabled
+  source discovery sphere containing that arrival. It receives exact map 21/part 1
+  and 15 EXP, then reloads the territory, position and discovery bit after world
+  restart. The reply is retained separately from fresh-login mutation proof.
 - The chain test moves the earned ether stack to an observed empty ordinary bag
   slot, verifies exact placement through a fresh login and again after world
   restart, preserving all other tracked slots and rewards. It then swaps the
