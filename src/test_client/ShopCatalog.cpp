@@ -3,6 +3,7 @@
 #include <Logging/Logger.h>
 #include <Navi/NaviProvider.h>
 #include <nlohmann/json.hpp>
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <filesystem>
@@ -93,12 +94,20 @@ int main(int argc, char** argv)
       }
     }
     if(!purchaseItem) throw std::runtime_error("selected gil shop has no affordable source item");
+    auto selectedItem = data.getRow<Excel::Item>(purchaseItem);
+    if(!selectedItem || !selectedItem->data().StackMax)
+      throw std::runtime_error("selected gil-shop item has no stack metadata");
+    const auto purchaseQuantity = std::min<uint32_t>(selectedItem->data().StackMax,
+                                                      reward->data().Price / purchasePrice);
+    if(purchaseQuantity < 2 || purchaseQuantity > 99)
+      throw std::runtime_error("selected gil-shop item lacks a bounded multi-quantity purchase");
     nlohmann::json output{{"version", 1}, {"profile", "sapphire-3.3"}, {"territory", 130},
       {"start_actor", 1001289}, {"shop", {{"layout_id", selected.layout}, {"base_id", selected.base},
         {"event_id", selected.event}, {"position", {selected.position.x, selected.position.y, selected.position.z}}}},
       {"sale", {{"item", 4551}, {"quantity", 1}, {"gil", reward->data().Price}}},
       {"purchase", {{"shop_id", selected.event}, {"index", purchaseIndex}, {"item", purchaseItem},
-                    {"quantity", 1}, {"gil", purchasePrice}}},
+                    {"quantity", purchaseQuantity}, {"unit_gil", purchasePrice},
+                    {"gil", purchasePrice * purchaseQuantity}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

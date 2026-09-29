@@ -32,7 +32,7 @@ namespace Sapphire::Testing
     packet.results[0] = 0;
     packet.results[1] = 1;
     packet.results[4] = supportedShop;
-    packet.results[5] = 1;
+    packet.results[5] = 3;
     packet.results[6] = supportedItem;
     return objectBytes(packet);
   }

@@ -303,7 +303,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
 
     player.buy_shop_item(catalog["shop"]["event_id"])
     purchased_rewards = deepcopy(after_rewards)
-    purchased_rewards["items"][str(catalog["purchase"]["item"])] = 1
+    purchased_rewards["items"][str(catalog["purchase"]["item"])] = catalog["purchase"]["quantity"]
     purchased_rewards["currencies"]["1"] -= catalog["purchase"]["gil"]
     state = player.expect_rewards(purchased_rewards, work_index)
     purchased_inventory = deepcopy(state["rewards"]["inventory"])
@@ -338,7 +338,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "rewards_after_sale": after_rewards, "inventory_after_sale": sold_inventory,
         "purchase": catalog["purchase"], "rewards_after_purchase_restart": purchased_rewards,
         "inventory_after_purchase_restart": purchased_inventory, "arrival_observed": True,
-        "scope": "one normally earned potion sold, then one source-listed affordable item bought, through one source-bound gil shop"
+        "scope": "one normally earned potion sold, then one bounded multi-quantity source-listed stack bought through one source-bound gil shop"
     }, indent=2), encoding="utf-8")
     return reloaded
 

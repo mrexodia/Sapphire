@@ -255,7 +255,7 @@ int main()
     auto purchase = shopPurchaseReturn(262468);
     require(purchase.size() == 1028 && purchase[0] == 0x44 && purchase[1] == 0x01 &&
             purchase[12] == 1 && purchase[24] == 0x44 && purchase[25] == 0x01 &&
-            purchase[26] == 0x04 && purchase[28] == 1 && purchase[32] == 0x02 &&
+            purchase[26] == 0x04 && purchase[28] == 3 && purchase[32] == 0x02 &&
             purchase[33] == 0x17, "shop purchase return fixture");
     rejects([&] { shopPurchaseReturn(0x00040005); });
 
