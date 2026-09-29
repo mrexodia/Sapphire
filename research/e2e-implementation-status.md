@@ -134,13 +134,13 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows ten-case
-  gate at `56911f505` took **935.70s**, including party lifecycle/cross-zone chat,
-  dual persisted discovery, Ring2, duplicate-name rejection and normal character
-  deletion (`gameplay-ci-uf7cd_tf`, summary
-  `build-e2e/ci-summary-dual-discovery-clean.json`). Summary SHA-256 is
-  `6380ee30e9f190981999f00b7ae7023bbd970c7d791d06bacade4f5036796000`,
+  gate at `bd33b926d` took **988.28s**, including the full-roster party/reconnect
+  lifecycle and cross-zone chat, dual persisted discovery, Ring2, duplicate-name
+  rejection and normal character deletion (`gameplay-ci-47rnsvjy`, summary
+  `build-e2e/ci-summary-full-party.json`). Summary SHA-256 is
+  `6f4e0cb60a76cd309d5109fb842c1736242d2c7dbe11f60ece7c1317e6a22738`,
   private manifest SHA-256 is
-  `8cb06b32ec92a93a9171f7af551839313c36a05b959a0a4e344f4ef05b41b92e`, and
+  `a0e13a9ab148b5c8b03f689fa26173982764bf8a2f12b28392cca0625b0e03d3`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.

@@ -115,13 +115,14 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this ten-scenario headless suite only.
 
-Latest local evidence: clean revision `56911f505` passed the ten-case strict gate
-in 935.70 seconds with zero skips/errors/failures, exact collection and staged-input
-identity, and removed private runtime. This includes the received party lifecycle,
-cross-zone party chat, two persisted source-bound discovery parts/shapes, Ring2,
-duplicate-name rejection and normal lobby deletion with fresh-session absence proof.
-Evidence is `build-e2e/ci-summary-dual-discovery-clean.json` with private diagnostics
-at `.e2e-artifacts/ci/gameplay-ci-uf7cd_tf`; this is local, not hosted execution.
+Latest local evidence: clean revision `bd33b926d` passed the ten-case strict gate
+in 988.28 seconds with zero skips/errors/failures, exact collection and staged-input
+identity, and removed private runtime. This includes the full eight-member party
+policy/reconnect lifecycle, cross-zone party chat, two persisted source-bound
+discovery parts/shapes, Ring2, duplicate-name rejection and normal lobby deletion
+with fresh-session absence proof. Evidence is `build-e2e/ci-summary-full-party.json`
+with private diagnostics at `.e2e-artifacts/ci/gameplay-ci-47rnsvjy`; this is local,
+not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
 gate in 620.91 seconds with no skips/errors/failures, exact collection and staged-
