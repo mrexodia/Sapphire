@@ -58,6 +58,8 @@ def test_opening_quest_catalog_fails_closed_without_completion_corridor():
             "approach_route": route, "approach_route_length": length,
             "completion_route_supported": False,
             "completion_route_blocker": "incomplete navigation corridor",
+            "starter_ring_items": [{"item": item, "equip_slot_category": 12, "stack_max": 1}
+                                   for item in (4423, 4424, 4425, 4426)],
             "opening_event_ranges": [
                 {"id": 4101525, "enabled": False, "shape": 1, "position": [91.77615, 4, -108.8433]},
                 {"id": 4101535, "enabled": False, "shape": 1, "position": [8.53425, 4, -143.5217]},

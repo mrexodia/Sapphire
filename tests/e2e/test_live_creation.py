@@ -203,8 +203,43 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         assert state["territory"] == 182 and state["gm_rank"] == 0
         state = roundtrip.expect_rewards(final_expected, record["work_index"])
         assert state["rewards"]["inventory"] == final_inventory
-        roundtrip.logout()
-        roundtrip.close()
+        ring2_roundtrip = None
+        if index == 0:
+            receipt = roundtrip.request_item_reequip_starter(ring_storage, ring_index,
+                                                              record["item"], 12)
+            assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
+            ring2_inventory = deepcopy(final_inventory)
+            ring2_item = ring2_inventory.pop(record["ring_slot"])
+            ring2_item.update(storage=1000, slot=12)
+            ring2_inventory["1000:12"] = ring2_item
+            ring2_expected = deepcopy(final_expected)
+            del ring2_expected["items"][str(record["item"])]
+            roundtrip.logout(wait_server_close=True)
+            roundtrip.close()
+            environment.restart_world()
+            auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+            ring2_restarted = Bot(live_worker, "new-character-ring2-restarted")
+            state = ring2_restarted.login_via_lobby(auth, account["name"])
+            state = ring2_restarted.expect_rewards(ring2_expected, record["work_index"])
+            assert state["rewards"]["inventory"] == ring2_inventory
+            receipt = ring2_restarted.request_item_unequip(12, ring_storage, ring_index, record["item"])
+            assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
+            ring2_restarted.logout(wait_server_close=True)
+            ring2_restarted.close()
+            auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+            ring2_final = Bot(live_worker, "new-character-ring2-final")
+            state = ring2_final.login_via_lobby(auth, account["name"])
+            state = ring2_final.expect_rewards(final_expected, record["work_index"])
+            assert state["rewards"]["inventory"] == final_inventory
+            ring2_final.logout()
+            ring2_final.close()
+            ring2_roundtrip = {"item": record["item"], "gear_slot": 12,
+                               "equipped_after_restart": ring2_inventory,
+                               "unequipped_after_fresh_login": final_inventory,
+                               "acknowledgement_is_not_mutation_proof": True}
+        else:
+            roundtrip.logout()
+            roundtrip.close()
         evidence.append({"character": account["name"], "choice": record["choice"],
                          "item": record["item"], "class_job": record["class_job"],
                          "work_index": record["work_index"],
@@ -219,6 +254,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                          "unequipped": record["unequipped"], "reequipped": record["reequipped"],
                          "equipped_ring": record["equipped_ring"],
                          "unequipped_ring": unequipped_ring,
+                         "ring2_roundtrip": ring2_roundtrip,
                          "opening_range_scene": record["opening_range_scene"],
                          "opening_range_route_length": record["opening_range_route_length"],
                          "coming_to_uldah_active_sequence": 255 if record["opening_quest_active"] else None,
@@ -228,5 +264,5 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
     (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
         "coming_to_uldah_completion_blocker": opening["completion_route_blocker"],
-        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices with persisted Ring1 equip/unequip round trips, all five persisted Gladiator starter-equipment slots plus each distinct starter main hand, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
+        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices with persisted Ring1 equip/unequip round trips plus one persisted Ring2 round trip, all five persisted Gladiator starter-equipment slots plus each distinct starter main hand, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
     }, indent=2), encoding="utf-8")

@@ -136,6 +136,10 @@ def validate_opening_quest_catalog(data):
             or data.get("completion_route_blocker") != "incomplete navigation corridor" \
             or "completion_route" in data:
         raise WorkerError("opening quest completion must fail closed without a corridor")
+    rings = data.get("starter_ring_items")
+    if rings != [{"item": item, "equip_slot_category": 12, "stack_max": 1}
+                 for item in (4423, 4424, 4425, 4426)]:
+        raise WorkerError("opening ring equipment source binding mismatch")
     ranges = data.get("opening_event_ranges")
     if (not isinstance(ranges, list) or {row.get("id") for row in ranges} != {4101525, 4101535, 4101537}
             or any(row.get("shape") != 1 or row.get("enabled") is not False for row in ranges)):

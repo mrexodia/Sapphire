@@ -120,6 +120,15 @@ int main(int argc, char** argv)
                            std::pow(route[i][2]-route[i-1][2],2));
       return result;
     };
+    Json starterRings = Json::array();
+    for(const auto itemId : {4423u, 4424u, 4425u, 4426u})
+    {
+      auto item = data.getRow<Excel::Item>(itemId);
+      if(!item || item->data().Slot != 12 || item->data().StackMax != 1)
+        throw std::runtime_error("opening ring source equipment binding missing");
+      starterRings.push_back({{"item",itemId},{"equip_slot_category",item->data().Slot},
+                              {"stack_max",item->data().StackMax}});
+    }
     bool completionRoute = true;
     std::vector<Sapphire::Testing::Point> finish;
     try { finish = Sapphire::Testing::navigationRoute(*finder.getNavMesh(), giver, recipient); }
@@ -130,6 +139,7 @@ int main(int argc, char** argv)
       {"reward",{{"exp",exp},{"gil",quest->data().Reward.Gil}}},
       {"approach_route",approach},{"approach_route_length",length(approach)},
       {"completion_route_supported",completionRoute},{"opening_event_ranges",ranges},
+      {"starter_ring_items",starterRings},
       {"supported_range",{{"event_id",1245187},{"param",4101537},{"route",rangeRoute},
                            {"route_length",length(rangeRoute)},{"expected_scene",20}}},
       {"navigation",{{"mesh",std::filesystem::absolute(std::filesystem::path(argv[2])/"w1t1"/"w1t1.nav").generic_string()},

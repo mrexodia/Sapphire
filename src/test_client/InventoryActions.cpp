@@ -60,7 +60,7 @@ namespace Sapphire::Testing
       else if(gearSlot == Common::GearSetSlot::Hands) starterItem = 3520;
       else if(gearSlot == Common::GearSetSlot::Legs) starterItem = 3296;
       else if(gearSlot == Common::GearSetSlot::Feet) starterItem = 3750;
-      else if(gearSlot == Common::GearSetSlot::Ring1 &&
+      else if((gearSlot == Common::GearSetSlot::Ring1 || gearSlot == Common::GearSetSlot::Ring2) &&
               (expectedItem == 4423 || expectedItem == 4424 ||
                expectedItem == 4425 || expectedItem == 4426))
         starterItem = expectedItem;

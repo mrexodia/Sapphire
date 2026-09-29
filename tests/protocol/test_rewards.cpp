@@ -129,23 +129,23 @@ int main()
       check(request == reequipExpected, "each shared Ul'dah starter armor slot has an exact wire fixture");
     }
     for(uint32_t ring : {4423u, 4424u, 4425u, 4426u})
-    {
-      auto other = reequipState;
-      other["inventory"]["3:24"]["id"] = ring;
-      auto request = reequipStarterItemRequest(other, 0x12345678, 0x01020309, 3, 24,
-                                               ring, Sapphire::Common::GearSetSlot::Ring1);
-      reequipExpected[24] = static_cast<uint8_t>(ring);
-      reequipExpected[25] = static_cast<uint8_t>(ring >> 8);
-      reequipExpected[36] = Sapphire::Common::GearSetSlot::Ring1;
-      check(request == reequipExpected, "each source-defined Ul'dah ring has an exact accessory fixture");
-    }
+      for(uint32_t ringSlot : {Sapphire::Common::GearSetSlot::Ring1, Sapphire::Common::GearSetSlot::Ring2})
+      {
+        auto other = reequipState;
+        other["inventory"]["3:24"]["id"] = ring;
+        auto request = reequipStarterItemRequest(other, 0x12345678, 0x01020309, 3, 24, ring, ringSlot);
+        reequipExpected[24] = static_cast<uint8_t>(ring);
+        reequipExpected[25] = static_cast<uint8_t>(ring >> 8);
+        reequipExpected[36] = static_cast<uint8_t>(ringSlot);
+        check(request == reequipExpected, "each source-defined Ul'dah ring has exact Ring1/Ring2 fixtures");
+      }
     {
       auto invalidRing = reequipState;
       invalidRing["inventory"]["3:24"]["id"] = 4423;
       rejected = false;
-      try { reequipStarterItemRequest(invalidRing, 1, 1, 3, 24, 4423, Sapphire::Common::GearSetSlot::Ring2); }
+      try { reequipStarterItemRequest(invalidRing, 1, 1, 3, 24, 4423, Sapphire::Common::GearSetSlot::Neck); }
       catch(const ProtocolError&) { rejected = true; }
-      check(rejected, "starter accessory is bound to its supported ring slot");
+      check(rejected, "starter accessory rejects a non-ring slot");
     }
     for(int fault = 0; fault < 9; ++fault)
     {
