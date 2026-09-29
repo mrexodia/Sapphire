@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 round trips plus one Ring2 round trip, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 round trips plus one Ring2 round trip, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Locally live-verified on Windows and containerized Ubuntu 22.04; hosted deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -946,6 +946,22 @@ The manifest is clean and its private runtime was removed. Clang, MSVC and GNU
 reward fixtures cover both ring slots and reject non-ring destinations. This is one
 second-ring round trip, not evidence for other accessory types.
 
+At `694802919`, the first fully evidenced disposable creation branch is then deleted
+through the normal encrypted lobby operation. The request is built only from its
+exact freshly received character/content/entity/index/world/name identity and is
+accepted only for the sole matching list entry. The deletion reply is explicitly
+not mutation proof: the same lobby session first refreshes to an empty list, then a
+new HTTP login and independently encrypted lobby session proves the character still
+absent. The clean case passed in **143.49s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-49hnew7j`; manifest SHA-256 is
+`ccac6be28c9f530ac9e010b2142ae284f8805a85d53d8c0fdfee82dd0acac118`, artifact
+SHA-256 is `26d8f0bf4a4b32e0f7d3fb9c5b8f25d13d41e4a530338860334ea45958ae8a8e`, and
+event-journal SHA-256 is
+`11c233eeb5528b3d9f68297184db8876e28a9f5f52aa9b55f31cf801bf8d7b51`.
+The manifest is clean and runtime removal is confirmed. Exact byte fixtures and
+bounded mode/name/identity rejection pass with Clang, MSVC and GNU. This proves one
+normal deletion, not name-policy breadth or account lifecycle UI.
+
 The first broad gate retained at `.e2e-artifacts/ci/gameplay-ci-aybzbmom` reached
 8/9 passes and exposed an unrelated invalid simultaneity assertion: two independent
 clients both observed the naturally moving enemy pursue, but their asynchronous
@@ -966,7 +982,7 @@ classes, one canonical appearance payload, all ring choices, all five Gladiator
 starter slots and each distinct starter main hand, the initial/continuation scenes
 and Coming to Ul'dah acceptance. It does not establish quest turn-in/rewards,
 other accessory types/off-hand/head/waist, later equipment, account signup UI,
-appearance breadth, other cities/classes, name rejection/deletion, travel into
+appearance breadth, other cities/classes, name-rejection breadth, travel into
 public Ul'dah, real-client cutscene presentation or broader protocol compatibility.
 
 ## Workload diagnostic-failure cleanup hardening
