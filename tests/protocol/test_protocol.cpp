@@ -3,6 +3,7 @@
 #include "RespawnActions.h"
 #include "ShopActions.h"
 #include "TransitionActions.h"
+#include "PartyActions.h"
 #include <Crypt/Random.h>
 #include <algorithm>
 #include <set>
@@ -134,6 +135,24 @@ int main()
     rejects([&] { centralThanalanDiscoveryRequest(141, 3643706, unreachedDiscovery); });
     auto malformedDiscovery = discoveryArrival; malformedDiscovery[1] = std::numeric_limits<float>::infinity();
     rejects([&] { centralThanalanDiscoveryRequest(141, 3643706, malformedDiscovery); });
+
+    nlohmann::json partyActors = {{"2097154", {{"kind", 1}, {"name", "E2E Target"}}}};
+    auto invite = partyInviteRequest(partyActors, 2097154, "E2E Target");
+    Bytes expectedInvite(33, 0); expectedInvite[0] = 1;
+    std::copy_n(std::string("E2E Target").begin(), 10, expectedInvite.begin() + 1);
+    require(invite == expectedInvite, "party invite exact byte fixture");
+    rejects([&] { partyInviteRequest(partyActors, 2097153, "E2E Target"); });
+    rejects([&] { partyInviteRequest(partyActors, 2097154, "Wrong Target"); });
+    auto accept = partyAcceptRequest({{"character_id", uint64_t{0x0102030405060708}},
+                                      {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}});
+    const Bytes expectedAccept{8,7,6,5,4,3,2,1, 1,1,0,0,0,0,0,0};
+    require(accept == expectedAccept, "party acceptance exact byte fixture");
+    rejects([&] { partyAcceptRequest({{"character_id", 1}, {"auth_type", 2}, {"result", 1},
+                                      {"name", "E2E Leader"}}); });
+    nlohmann::json party{{"id", 1}, {"count", 2},
+                         {"members", {{{"entity_id", 2097153}}, {{"entity_id", 2097154}}}}};
+    require(partyLeaveRequest(party, 2097153) == Bytes(4, 0), "party leave exact byte fixture");
+    rejects([&] { partyLeaveRequest(party, 2097155); });
 
     nlohmann::json defeatedActors = {{"2097153", {{"hp", 0}}}};
     auto homepoint = returnHomepointRequest(2097153, 141, 9, defeatedActors);

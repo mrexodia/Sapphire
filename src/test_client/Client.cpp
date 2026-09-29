@@ -4,6 +4,7 @@
 #include "ShopActions.h"
 #include "RespawnActions.h"
 #include "TransitionActions.h"
+#include "PartyActions.h"
 #include <Network/CommonActorControl.h>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
 #include <Network/PacketDef/Lobby/ServerLobbyDef.h>
@@ -16,6 +17,16 @@ namespace Sapphire::Testing
 {
   namespace LC = Wire::LobbyPackets::Client;
   namespace LS = Wire::LobbyPackets::Server;
+
+  static std::string receivedName(const void* bytes, size_t size)
+  {
+    const auto* begin = static_cast<const uint8_t*>(bytes);
+    const auto* end = std::find(begin, begin + size, uint8_t{0});
+    if(end == begin || end == begin + size ||
+       !std::all_of(begin, end, [](uint8_t c) { return c >= 0x20 && c <= 0x7e; }))
+      throw ProtocolError("malformed received character name");
+    return {reinterpret_cast<const char*>(begin), reinterpret_cast<const char*>(end)};
+  }
   namespace WC = Wire::WorldPackets::Client;
   namespace WS = Wire::WorldPackets::Server;
 
@@ -88,7 +99,9 @@ namespace Sapphire::Testing
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
       {"chat", Json::array()}, {"created_via_lobby", false},
-      {"scene", nullptr}, {"event_id", nullptr}, {"discovery_reply", nullptr},
+      {"scene", nullptr}, {"event_id", nullptr}, {"pending_party_invite", nullptr},
+      {"party_invite_result", nullptr}, {"party", {{"id", 0}, {"count", 0}, {"leader_index", 0}, {"members", Json::array()}}},
+      {"discovery_reply", nullptr},
       {"discovery_request_sent", false}, {"central_thanalan_discovery", false}, {"heartbeat_replies", 0},
       {"heartbeats", {{"zone", 0}, {"chat", 0}}}, {"packets_received", 0}};
   }
@@ -431,6 +444,46 @@ namespace Sapphire::Testing
         event("discovery_state", {{"map_id", 21}, {"part_id", 1}, {"discovered", discovered}});
       m_state["central_thanalan_discovery"] = discovered;
     }
+    if(h.type == WS::FFXIVIpcInviteResult::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcInviteResult>(segment.data, off);
+      if(p.AuthType != Common::HierarchyType::PCPARTY)
+        throw ProtocolError("unsupported invite result type");
+      m_state["party_invite_result"] = {{"result", p.Result}, {"target", receivedName(p.TargetName, sizeof(p.TargetName))}};
+      event("party_invite_result", m_state["party_invite_result"]);
+    }
+    if(h.type == WS::FFXIVIpcInviteUpdate::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcInviteUpdate>(segment.data, off);
+      if(p.AuthType != Common::HierarchyType::PCPARTY || p.InviteCharacterID == 0 ||
+         (p.Result != Common::InviteUpdateType::NEW_INVITE && p.Result != Common::InviteUpdateType::ACCEPT_INVITE &&
+          p.Result != Common::InviteUpdateType::REJECT_INVITE))
+        throw ProtocolError("unsupported party invite update");
+      Json update{{"character_id", p.InviteCharacterID}, {"auth_type", p.AuthType}, {"result", p.Result},
+                  {"name", receivedName(p.InviteName, sizeof(p.InviteName))}};
+      if(p.Result == Common::InviteUpdateType::NEW_INVITE) m_state["pending_party_invite"] = update;
+      event("party_invite_update", update);
+    }
+    if(h.type == WS::FFXIVIpcUpdateParty::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcUpdateParty>(segment.data, off);
+      if(p.PartyCount > 8 || (p.PartyCount == 0) != (p.PartyID == 0) ||
+         (p.PartyCount && p.LeaderIndex >= p.PartyCount))
+        throw ProtocolError("malformed received party state");
+      Json members = Json::array();
+      for(size_t i = 0; i < p.PartyCount; ++i)
+      {
+        const auto& member = p.Member[i];
+        if(!member.CharaId || !member.EntityId) throw ProtocolError("party member identity missing");
+        members.push_back({{"character_id", member.CharaId}, {"entity_id", member.EntityId},
+                           {"name", receivedName(member.Name, sizeof(member.Name))},
+                           {"territory", member.TerritoryType}, {"level", member.Lv},
+                           {"class_job", member.ClassJob}});
+      }
+      m_state["party"] = {{"id", p.PartyID}, {"count", p.PartyCount},
+                          {"leader_index", p.LeaderIndex}, {"members", members}};
+      event("party_state", m_state["party"]);
+    }
     if(h.type == WS::FFXIVIpcDiscoveryReply::_ServerIpcType)
     {
       const auto p = readObject<WS::FFXIVIpcDiscoveryReply>(segment.data, off);
@@ -459,8 +512,10 @@ namespace Sapphire::Testing
     {
       const auto p = readObject<WS::FFXIVIpcPlayerSpawn>(segment.data, off);
       const auto actor = segment.header.source_actor;
+      const auto name = p.ObjKind == 1 ? receivedName(p.Name, sizeof(p.Name)) : std::string{};
       Json state{{"position", p.Pos}, {"gm_rank", p.GMRank}, {"level", p.Lv}, {"hp", p.Hp},
-        {"hp_max", p.HpMax}, {"tp", p.Tp}, {"mp", p.Mp}, {"kind", p.ObjKind}, {"layout_id", p.LayoutId}, {"base_id", p.NpcId}, {"name_id", p.NameId}};
+        {"hp_max", p.HpMax}, {"tp", p.Tp}, {"mp", p.Mp}, {"kind", p.ObjKind}, {"layout_id", p.LayoutId},
+        {"base_id", p.NpcId}, {"name_id", p.NameId}, {"name", name}};
       m_state["actors"][std::to_string(actor)] = state;
       event("spawn", {{"actor", actor}, {"state", state}});
       if(actor == m_entity)
@@ -732,6 +787,30 @@ namespace Sapphire::Testing
       {
         throw ProtocolError("malformed received shop purchase state at validation stage " + std::to_string(stage));
       }
+    }
+    if(method == "invite_party")
+    {
+      if(m_moving || !m_state["event_id"].is_null() || m_state["party"].at("count") != 0)
+        throw ProtocolError("party invite requires an idle ungrouped character");
+      auto payload = partyInviteRequest(m_state["actors"], args.at("target"), args.at("name"));
+      sendZone(WC::FFXIVIpcInvite::_ServerIpcType, payload);
+      return Json::object();
+    }
+    if(method == "accept_party")
+    {
+      if(m_moving || !m_state["event_id"].is_null() || m_state["party"].at("count") != 0)
+        throw ProtocolError("party acceptance requires an idle ungrouped character");
+      auto payload = partyAcceptRequest(m_state["pending_party_invite"]);
+      m_state["pending_party_invite"] = nullptr;
+      sendZone(WC::FFXIVIpcInviteReply::_ServerIpcType, payload);
+      return Json::object();
+    }
+    if(method == "leave_party")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("party leave requires an idle character");
+      auto payload = partyLeaveRequest(m_state["party"], m_entity);
+      sendZone(WC::FFXIVIpcPcPartyLeave::_ServerIpcType, payload);
+      return Json::object();
     }
     if(method == "fast_blade" || method == "bootshine" || method == "blizzard")
     {

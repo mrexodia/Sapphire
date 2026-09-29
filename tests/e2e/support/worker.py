@@ -352,6 +352,25 @@ class Bot:
                     if e["source"] == state["entity_id"] and e["target"] == target
                     and e["action"] == 142 and e["request"] == request)
 
+    def invite_party(self, target_entity, target_name, timeout=10):
+        self.worker.request("invite_party", self.name, target=target_entity, name=target_name)
+        return self.worker.wait_state(self.name,
+            lambda s: s["party_invite_result"] is not None
+                      and s["party_invite_result"]["target"] == target_name,
+            "matching party invite result", timeout)
+
+    def accept_party(self, timeout=10):
+        self.worker.wait_state(self.name, lambda s: s["pending_party_invite"] is not None,
+                               "received pending party invite", timeout)
+        self.worker.request("accept_party", self.name)
+        return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 2,
+                                      "received two-member party state", timeout)
+
+    def leave_party(self, timeout=10):
+        self.worker.request("leave_party", self.name)
+        return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 0,
+                                      "received empty party state", timeout)
+
     def fast_blade(self, target, timeout=10):
         request = self.worker.request("fast_blade", self.name, target=target)["request"]
         state = self.worker.wait_state(self.name,

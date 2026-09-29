@@ -27,6 +27,7 @@ def test_capabilities(worker):
     assert "sell_shop_item" in caps["methods"]
     assert "buy_shop_item" in caps["methods"]
     assert "return_homepoint" in caps["methods"]
+    assert all(method in caps["methods"] for method in ("invite_party", "accept_party", "leave_party"))
 
 
 def test_unknown_bot_and_invalid_method(worker):
@@ -91,6 +92,8 @@ def test_action_before_readiness_is_rejected(worker):
                 worker.request("buy_shop_item", "test", token=1, event_id=262468)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("return_homepoint", "test")
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("invite_party", "test", target=1, name="Target")
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("request_item_move", "test", storage=0, slot=0,
                                expected_item=4555, destination_storage=3, destination_slot=24)

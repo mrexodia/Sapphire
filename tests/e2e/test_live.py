@@ -24,6 +24,36 @@ def test_login_idle_logout(environment, live_worker):
     bot.close()
 
 
+def test_received_party_join_and_leave(environment, live_worker):
+    leader_fixture = environment.fresh_character()
+    member_fixture = environment.fresh_character()
+    leader, member = Bot(live_worker, "party-leader"), Bot(live_worker, "party-member")
+    leader_state = leader.login_via_lobby(leader_fixture["auth"], leader_fixture["name"])
+    member_state = member.login_via_lobby(member_fixture["auth"], member_fixture["name"])
+    leader_id, member_id = leader_state["entity_id"], member_state["entity_id"]
+    live_worker.wait_state(leader.name,
+        lambda s: str(member_id) in s["actors"] and s["actors"][str(member_id)]["name"] == member_fixture["name"],
+        "party target received by leader")
+    live_worker.wait_state(member.name,
+        lambda s: str(leader_id) in s["actors"] and s["actors"][str(leader_id)]["name"] == leader_fixture["name"],
+        "party inviter received by member")
+    leader.invite_party(member_id, member_fixture["name"])
+    member_party = member.accept_party()
+    leader_party = live_worker.wait_state(leader.name, lambda s: s["party"]["count"] == 2,
+                                          "leader received two-member party state")
+    expected = {(leader_id, leader_fixture["name"]), (member_id, member_fixture["name"])}
+    for state in (leader_party, member_party):
+        party = state["party"]
+        assert party["id"] != 0 and party["leader_index"] == 0
+        assert {(row["entity_id"], row["name"]) for row in party["members"]} == expected
+    member.leave_party()
+    live_worker.wait_state(leader.name, lambda s: s["party"]["count"] == 0,
+                           "leader received party disband")
+    for bot in (leader, member):
+        bot.logout()
+        bot.close()
+
+
 def test_observed_movement_and_position_persistence(environment, live_worker):
     mover_fixture = environment.fresh_character()
     observer_fixture = environment.fresh_character()
