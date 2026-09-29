@@ -1184,7 +1184,13 @@ compatibility.
    and production loot selection remain uncovered. Preserve observed resource/range
    checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond
-   the first Ul'dah opening branch; unknown content must still fail.
+   the first Ul'dah opening branch; unknown content must still fail. Instance entry
+   is not currently a defensible shortcut: `findContent` accepts a requested
+   territory without checking a received unlock/level, while `cfDutyAccepted`
+   explicitly logs `TODO: Duty accept`. The level-one fixtures expose no established
+   received duty-unlock state. Do not send a normally unavailable duty request merely
+   because this server trusts it; first obtain a source-defined ordinary unlock
+   journey and exact received eligibility/match semantics.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
    The separate 30-minute paced workload is not part of the ten-case CI gate.
