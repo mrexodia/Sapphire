@@ -50,18 +50,19 @@ lobby, world and MariaDB processes with matching game data:
   enter-territory operation and exercise all explicit ring results 1..4. Each
   receives scenes 0 then 1, exactly one corresponding item 4423..4426, and the
   scene-40 continuation through fresh authentication and a shared world restart.
-  Before the first journey, the client moves the observed starter sword from main
-  hand to an observed empty ordinary-bag slot. Fresh authentication proves that
-  unequip, then a bounded source-specific operation moves the same sword back to
-  the observed-empty main hand; restart proves the exact final equipment state.
+  Before each distinct class journey, the client moves the observed starter main
+  hand (Gladiator 1601, Pugilist 1680 or Thaumaturge 2055) to an observed-empty
+  ordinary-bag slot. Fresh authentication proves each unequip, then a class/item-
+  bound operation moves the same weapon back to the observed-empty main hand;
+  restart proves every exact final equipment state.
   Receipts are never treated as mutation proof. The first character then walks a
   source-generated ~9.84m route to Wymond and accepts Coming to Ul'dah (66130)
   through explicit scenes 0/1/2. Active sequence 255, position and opening sequence
   2 (scene 40→30) survive restart. The generated giver-to-Momodi route fails closed
   as `incomplete navigation corridor`, so turn-in, the quest's 50 EXP/103 gil and
-  public-Ul'dah travel are not claimed. This covers only one starter-weapon round
-  trip, three Ul'dah starting classes and the supported opening subset, not broader
-  equipment, appearance breadth, other cities/classes or the complete opening.
+  public-Ul'dah travel are not claimed. This covers one starter-weapon round trip
+  for each of three Ul'dah starting classes and the supported opening subset, not
+  other slots/items, appearance breadth, other cities/classes or the complete opening.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot
   verifies every matching result/committed HP decrease, the first natural retaliation,

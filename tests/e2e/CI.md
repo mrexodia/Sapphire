@@ -115,14 +115,14 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `3b94d9150` passed the nine-case strict
-gate in 647.79 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and verified private-runtime cleanup. Player defeat took
-124.873s and now verifies independently received 237/237 enemy health restoration
-following the existing leash-position reset; Blizzard, Bootshine, opening acceptance,
-equipment round trip and sale/purchase remained covered. Evidence is
-`build-e2e/ci-summary-health-reset.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-9avpxoit`. The preceding failed gate is retained at
+Latest local evidence: clean revision `ee6f58fc2` passed the nine-case strict
+gate in 665.89 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and verified private-runtime cleanup. Creation took 66.434s and
+now verifies persisted starter-main-hand round trips for Gladiator, Pugilist and
+Thaumaturge; health reset, Blizzard, Bootshine, opening acceptance and sale/purchase
+remained covered. Evidence is `build-e2e/ci-summary-starter-equipment.json` with
+private diagnostics under `.e2e-artifacts/ci/gameplay-ci-em9omn5g`. The earlier
+failed gate is retained at
 `.e2e-artifacts/ci/gameplay-ci-lfghcvlf`: eight cases passed, but player-defeat
 correctly failed when its natural target roamed beyond melee range during TP wait.
 The fix follows only bounded received positions with witness verification. This

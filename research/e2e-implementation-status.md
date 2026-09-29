@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices, equipment round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices, all three class-bound starter-main-hand round trips, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed starter main-hand unequip/re-equip round trip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted starter-main-hand unequip/re-equip for all three Ul'dah starter classes and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -54,10 +54,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - 252 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `3b94d9150` took 647.79s with zero skips/errors/failures and verified
+  rehearsal at `ee6f58fc2` took 665.89s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-9avpxoit` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-health-reset.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-em9omn5g` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-starter-equipment.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -732,10 +732,27 @@ route. Thus neither turn-in nor the listed rewards are claimed. The clean gate t
 and `character-creation-opening.json` SHA-256 is
 `1bbe7def532fdbc6f802ece68fb38abce6d30a84b2751508daba917815c89332`.
 
+At `ee6f58fc2`, the same ordinary operation-8 path is independently exercised for
+each distinct Ul'dah starter: Gladiator 1601, Pugilist 1680 and Thaumaturge 2055.
+The reverse operation validates the received class/item pair and fails closed for
+all other classes/items, quantities, containers, incomplete snapshots and occupied
+main hand. Each operation receipt remains explicitly non-proof. Fresh authentication
+proves all three unequips; the shared world restart proves all three exact re-equips
+while retaining each selected ring. The targeted case passed in 100.44s; artifact
+SHA-256 is
+`370b5f7e0cd53759f10a1ba7d82912a41d704a68dacfd7494bb169b1e8cc80c9`.
+The clean nine-case gate passed in **665.89s**, with creation at **66.434s**,
+exact identities and cleanup. Evidence:
+`build-e2e/ci-summary-starter-equipment.json`,
+`.e2e-artifacts/ci/gameplay-ci-em9omn5g`, clean artifact SHA-256
+`43dc01c7ede66e53d1df812b109e3554477ed9987b15586439697eb040aa108f`
+and worker SHA-256
+`a2d0d869c321fd125c53ea3d7828a416b35ef16bb35392a78800b98524ffcade`.
+
 This evidence remains deliberately narrow: it covers the three Ul'dah starting
 classes, one canonical appearance payload, all ring choices, one starter main-hand
-round trip, the initial/continuation scenes and Coming to Ul'dah acceptance. It does
-not establish quest turn-in/rewards, other equipment operations, account signup UI,
+round trip per class, the initial/continuation scenes and Coming to Ul'dah
+acceptance. It does not establish quest turn-in/rewards, other equipment operations, account signup UI,
 appearance breadth, other cities/classes, name rejection/deletion, travel into
 public Ul'dah, real-client cutscene presentation or broader protocol compatibility.
 
