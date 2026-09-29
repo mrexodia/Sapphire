@@ -85,7 +85,7 @@ a nearby passing test does not close them.
 | Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
 | Progress watchdog and bounded replanning | workload movement requires every waypoint from an independent observer; exploration permits one recorded fresh-session replan only from the same curated corridor, while soak/regression fail without recovery | Verified for bounded workload navigation; no general-navigation replanner claim |
 | Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
-| Authored regression mode | strict ten-case allowlist plus native/Python contracts | Verified for supported suite |
+| Authored regression mode | strict eleven-case allowlist plus native/Python contracts | Verified for supported suite |
 | Seeded exploration mode | v1/v2 plans, allowlisted preconditions, decisions, observations and replay | Verified for walk/Say/heartbeat/reconnect subset |
 | Soak/load mode | bounded ramp/pacing/actions, liveness and process/worker resource samples | Verified as bounded smoke and 30-minute low-rate evidence; not capacity/overnight proof |
 | Record actual actions, not seed alone | plan/outcome/checkpoint journals retain semantic order, limits and observations; replay warns that scheduling is nondeterministic | Verified |
@@ -126,21 +126,22 @@ a nearby passing test does not close them.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
-- 256 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 257 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes its strict collection on Windows and Linux. The
   latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
   skips/errors/failures and verified exact collection, staged-input identities,
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
-  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows ten-case
-  gate at `bd33b926d` took **988.28s**, including the full-roster party/reconnect
-  lifecycle and cross-zone chat, dual persisted discovery, Ring2, duplicate-name
-  rejection and normal character deletion (`gameplay-ci-47rnsvjy`, summary
-  `build-e2e/ci-summary-full-party.json`). Summary SHA-256 is
-  `6f4e0cb60a76cd309d5109fb842c1736242d2c7dbe11f60ece7c1317e6a22738`,
+  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows eleven-case
+  gate at `0c69c5813` took **953.84s**, including exact online/offline Tell,
+  observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
+  discovery, Ring2, duplicate-name rejection and normal character deletion
+  (`gameplay-ci-axg9nnrk`, summary `build-e2e/ci-summary-sprint-tell.json`). Summary
+  SHA-256 is
+  `96e6e96fe4aa968a74d161c5051431d30791ea3352f34830014266095038a338`,
   private manifest SHA-256 is
-  `a0e13a9ab148b5c8b03f689fa26173982764bf8a2f12b28392cca0625b0e03d3`, and
+  `97f4b23c02121c419e6df63990e39a1eee0240957f5c1997f97388892b9555ae`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -1427,7 +1428,7 @@ compatibility.
    journey and exact received eligibility/match semantics.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   The separate 30-minute paced workload is not part of the ten-case CI gate.
+   The separate 30-minute paced workload is not part of the eleven-case CI gate.
 5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
    coverage and independently captured trace/layout checks. Strengthen fault and
    cancellation coverage separately from successful-path evidence. Do not alter

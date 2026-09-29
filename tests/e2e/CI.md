@@ -113,16 +113,19 @@ separate evidence that its binaries came from the checkout.
   upload glob to include these directories, catalogs, assets or runtime trees.
 - Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. A passed summary covers this ten-scenario headless suite only.
+  local run. A passed summary covers this eleven-scenario headless suite only.
 
-Latest local evidence: clean revision `bd33b926d` passed the ten-case strict gate
-in 988.28 seconds with zero skips/errors/failures, exact collection and staged-input
-identity, and removed private runtime. This includes the full eight-member party
-policy/reconnect lifecycle, cross-zone party chat, two persisted source-bound
-discovery parts/shapes, Ring2, duplicate-name rejection and normal lobby deletion
-with fresh-session absence proof. Evidence is `build-e2e/ci-summary-full-party.json`
-with private diagnostics at `.e2e-artifacts/ci/gameplay-ci-47rnsvjy`; this is local,
-not hosted execution.
+Latest local evidence: clean revision `0c69c5813` passed the eleven-case strict gate
+in 953.84 seconds with zero skips/errors/failures, exact collection and staged-input
+identity, and removed private runtime. This includes source-bound observed Sprint,
+exact online/offline Tell, the full eight-member party policy/reconnect lifecycle,
+two persisted source-bound discovery parts/shapes, Ring2, duplicate-name rejection
+and normal lobby deletion with fresh-session absence proof. Evidence is
+`build-e2e/ci-summary-sprint-tell.json` (SHA-256
+`96e6e96fe4aa968a74d161c5051431d30791ea3352f34830014266095038a338`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-axg9nnrk` and private manifest
+SHA-256 `97f4b23c02121c419e6df63990e39a1eee0240957f5c1997f97388892b9555ae`;
+this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
 gate in 620.91 seconds with no skips/errors/failures, exact collection and staged-

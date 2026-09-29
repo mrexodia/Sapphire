@@ -795,7 +795,7 @@ runtime, raw database, game assets, local profiles or unredacted configs.
 `.github/workflows/test-client.yml` builds and tests the asset-independent client
 on Linux and Windows. It does **not** provision game data, run gameplay tests, or
 claim real-client compatibility. The opt-in `gameplay-e2e.yml` workflow and
-`python -m tests.e2e.run_ci` entry point implement a separate ten-case gameplay
+`python -m tests.e2e.run_ci` entry point implement a separate eleven-case gameplay
 gate, with strict preflight, no skips, staged-input identity and cleanup checks.
 Only an allowlisted summary is publishable; raw pytest/JUnit and gameplay logs
 stay private. See [CI.md](CI.md) for runner access restrictions, approval settings,
