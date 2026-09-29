@@ -409,7 +409,11 @@ starter body 2983 then yields restart-proven 101 gil. The actor walks a complete
 source-navmesh 200-point/~92.95m route to a second exact shop while a fresh normal
 client independently witnesses arrival. It buys source head item 2638 for 47 gil,
 restart-verifies the bag/currency state, equips it only to empty `1000:2`, and uses
-a final restart to prove the exact result. `gil-shop-sale.json`
+a restart to prove the exact result. The displaced starter feet are then sold for
+48 gil. A second complete source-navmesh route reaches a third exact shop under an
+independent destination witness; source ear item 4200 is bought for 66 gil,
+restart-verified, equipped only to empty `1000:8`, and restart-proven with exact
+36-gil/empty-bag/EXP state. `gil-shop-sale.json`
 records those snapshots and effect;
 the operation-10 acknowledgement remains explicitly separate
 from mutation evidence. The server split implementation creates the new persistent
@@ -423,7 +427,7 @@ server response supplies gameplay evidence.
 This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
 swap, one partial split, one no-overflow same-item merge, discard, one exact
 single-item sales, one exact three-item purchase and three later-equipment purchase/equip
-cycles with two resales, one source-routed head purchase/equip, and deterministic
+cycles with two resales, source-routed head and ear purchases/equips, and deterministic
 generic currency-move rejection—not other later equipment, positive direct currency
 transfers, overflow merges, consuming item mutation, arbitrary shops/items or general quantities,
 immediate operation publication, crash
@@ -492,8 +496,10 @@ source-priced starter legs makes index 3 item 2967 affordable; it is the cheapes
 listing in a third distinct slot, a level-one all-class body item costing 59 gil.
 Selling displaced starter body 2983 then funds a source scan for the cheapest
 reachable head listing: second-shop event 262415/index 0/item 2638 at 47 gil, with a
-complete ~92.95m shop-to-shop route. Python validates all exact transactions, all
-four equipment metadata bindings, both event families, route continuity,
+complete ~92.95m shop-to-shop route. Selling starter feet funds the cheapest
+reachable ear listing: third-shop event 262425/index 0/item 4200 at 66 gil, with a
+complete ~91.37m route. Python validates all exact transactions, all five equipment
+metadata bindings, all three event families, route continuity,
 and endpoint range. This does not establish arbitrary quantities/items, other shops,
 consuming item mutation, positive direct currency transfer, concurrent transactions,
 or real-client shop UI.

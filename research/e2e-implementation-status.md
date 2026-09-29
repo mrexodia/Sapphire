@@ -134,16 +134,16 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
-  gate at `d6fb47d80` took **1211.86s**, including source-routed head purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
+  gate at `a1c27a973` took **1251.73s**, including source-routed head and ear purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
   Tell, cross-zone party Tell, independently observed living Return, persisted
   three-stage later-equipment purchase/resale/equip, the quantity-three VFX item action/liquidation,
   observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
   discovery, Ring2, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-wvsiq81h`, summary
-  `build-e2e/ci-summary-head-shop.json`). Summary SHA-256 is
-  `a6d9eb9a37ca029faad83ae5c5eb1861a35cea4ab9f39e55c85289eb621b2438`,
+  (`gameplay-ci-57twsx3_`, summary
+  `build-e2e/ci-summary-ear-shop.json`). Summary SHA-256 is
+  `d80088e12f0f93b7bda6c38a22d806d01b260881733499b728ab316a865881d4`,
   private manifest SHA-256 is
-  `0ae1571a378af05c1af3511f671c5d37105df0c28c6ebef70bffbe62e7de1e24`, and
+  `a0ebe0e787f52128345ee5e4f25f32f47fd25b6f5cdb7ad5276504fabaaa6fb0`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -1617,6 +1617,30 @@ journal SHA-256 is
 The source is clean and runtime removal is confirmed. This proves one normally
 routed second shop and one later head item, not general merchant/navigation or all
 equipment slots.
+
+At `a1c27a973`, the same chain extends to one source-listed ear accessory and a
+third normally reached shop. The exact starter-feet bag identity is sold at the
+head shop for source price 48; immediate state and restart prove exact absence and
+102 gil. The catalog then scans source rows for the cheapest level-one all-class
+single-stack ear listing affordable from that state and accepts only a complete
+source-navmesh corridor: layout 4614930 / ENpc 1005900 / event 262425, index 0,
+item 4200, 66 gil, source slot 9 / equipment slot 8. Its head-shop-to-ear-shop route
+has 201 points and length **91.368600m**; the actor receives every requested
+waypoint and a fresh normal destination client independently observes arrival
+within 0.15m. Purchase is gated by exact scene, 102 gil, equipped head 2638 and
+absence of item 4200/starter feet. Restart proves the exact bag item and 36 gil;
+the bounded equip request accepts only 4200→`1000:8`, and another restart proves
+that location, empty ordinary bags, 36 gil, 100 EXP/level one and no other mutation.
+Exact bytes and malformed-state contracts pass on Clang, MSVC and GNU with **258
+passed, 12 live skips**. The clean chain passed in **517.31s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-f35w1x93`; manifest SHA-256 is
+`dbbf118e0133830943c6de3c7621ecfbfd035c9cf3ce2a90c9c0a7595a928f01`,
+`gil-shop-sale.json` SHA-256 is
+`26f8bf1a41aaa0e0127210fde79b84bb708ed84d38e7b550992bd0d28bae9ca6`, and event
+journal SHA-256 is
+`6c1f61cac855a3247d6e245d8e61dd4ca91f292362ea1abe07c16c34aab629ed`.
+The source is clean and runtime removal is confirmed. This proves one ear item and
+one additional exact route/shop, not all accessories or general routing/shops.
 
 The first live attempt exposed two server defects rather than prompting weaker
 assertions. `addCurrency()` created a missing currency item with the generic

@@ -115,19 +115,19 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this twelve-scenario headless suite only.
 
-Latest local evidence: clean revision `d6fb47d80` passed the twelve-case strict gate
-in 1211.86 seconds with zero skips/errors/failures, exact collection and staged-input
-identity, and removed private runtime. This includes a source-routed second-shop
-head purchase/equip, restart-proven generic currency-move rejection, same- and
+Latest local evidence: clean revision `a1c27a973` passed the twelve-case strict gate
+in 1251.73 seconds with zero skips/errors/failures, exact collection and staged-input
+identity, and removed private runtime. This includes source-routed second-/third-shop
+head and ear purchases/equips, restart-proven generic currency-move rejection, same- and
 cross-zone nonparty Tell, cross-zone party Tell, independently observed living
 Return, persisted three-stage later-equipment purchase/resale/equip, the quantity-
 three VFX action/liquidation, source-bound observed Sprint, the full eight-member
 party lifecycle, two persisted discovery parts/shapes, Ring2, duplicate-name
 rejection and normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-head-shop.json` (SHA-256
-`a6d9eb9a37ca029faad83ae5c5eb1861a35cea4ab9f39e55c85289eb621b2438`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-wvsiq81h` and private manifest
-SHA-256 `0ae1571a378af05c1af3511f671c5d37105df0c28c6ebef70bffbe62e7de1e24`;
+`build-e2e/ci-summary-ear-shop.json` (SHA-256
+`d80088e12f0f93b7bda6c38a22d806d01b260881733499b728ab316a865881d4`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-57twsx3_` and private manifest
+SHA-256 `a0ebe0e787f52128345ee5e4f25f32f47fd25b6f5cdb7ad5276504fabaaa6fb0`;
 this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
