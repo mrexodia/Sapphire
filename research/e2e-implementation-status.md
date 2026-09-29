@@ -134,14 +134,15 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows eleven-case
-  gate at `0c69c5813` took **953.84s**, including exact online/offline Tell,
+  gate at `b13f5efad` took **930.63s**, including the persisted quantity-three
+  purchase and independently observed VFX item action, exact online/offline Tell,
   observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
   discovery, Ring2, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-axg9nnrk`, summary `build-e2e/ci-summary-sprint-tell.json`). Summary
+  (`gameplay-ci-3naibh_n`, summary `build-e2e/ci-summary-vfx-item.json`). Summary
   SHA-256 is
-  `96e6e96fe4aa968a74d161c5051431d30791ea3352f34830014266095038a338`,
+  `7256dbeabe1bf07222564bae979e7c6f4e54e2b21c4f14363f1d64ea644c2789`,
   private manifest SHA-256 is
-  `97f4b23c02121c419e6df63990e39a1eee0240957f5c1997f97388892b9555ae`, and
+  `be06f93a731aca9f8e6177c1a795375259a68a482fcbf66cb016d8cfe7853331`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
