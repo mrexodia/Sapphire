@@ -115,6 +115,7 @@ def test_shop_catalog_binds_route_actor_and_exact_sale():
             "shop": {"layout_id": 3, "base_id": 4, "event_id": 262468, "position": [1, 0, 0]},
             "sale": {"item": 4551, "quantity": 1, "gil": 28},
             "starter_liquidation": {"item": 3296, "quantity": 1, "gil": 45},
+            "starter_body_liquidation": {"item": 2983, "quantity": 1, "gil": 59},
             "purchase": {"shop_id": 262468, "index": 0, "item": 5890, "quantity": 3, "unit_gil": 8, "gil": 24,
                          "item_action": {"row": 232, "type": 852, "arg": 235}},
             "equipment_purchase": {"shop_id": 262468, "index": 11, "item": 3286,
@@ -125,7 +126,12 @@ def test_shop_catalog_binds_route_actor_and_exact_sale():
                                           "source_slot": 8, "gear_slot": 7},
             "third_equipment_purchase": {"shop_id": 262468, "index": 3, "item": 2967,
                                          "quantity": 1, "gil": 59,
-                                         "source_slot": 4, "gear_slot": 3}}
+                                         "source_slot": 4, "gear_slot": 3},
+            "head_purchase": {"shop": {"layout_id": 4393619, "base_id": 1005495,
+                                          "event_id": 262415, "position": [2, 0, 0]},
+                              "index": 0, "item": 2638, "quantity": 1, "gil": 47,
+                              "source_slot": 3, "gear_slot": 2,
+                              "route": [[1, 0, 0], [2, 0, 0]], "route_length": 1}}
     assert validate_shop_catalog(data) == data
     for changed in ({**data, "territory": 141}, {**data, "sale": {"item": 4551, "quantity": 2, "gil": 56}},
                     {**data, "purchase": {**data["purchase"], "item": 1}},

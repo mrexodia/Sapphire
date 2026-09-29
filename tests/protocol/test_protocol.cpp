@@ -318,6 +318,14 @@ int main()
             thirdEquipmentPurchase[32] == 0x97 && thirdEquipmentPurchase[33] == 0x0b,
             "third shop equipment purchase return fixture");
     rejects([&] { shopThirdEquipmentPurchaseReturn(0x00040005); });
+    auto headEquipmentPurchase = shopHeadEquipmentPurchaseReturn(262415);
+    require(headEquipmentPurchase.size() == 1028 && headEquipmentPurchase[0] == 0x0f &&
+            headEquipmentPurchase[1] == 0x01 && headEquipmentPurchase[12] == 1 &&
+            headEquipmentPurchase[24] == 0x0f && headEquipmentPurchase[25] == 0x01 &&
+            headEquipmentPurchase[26] == 0x04 && headEquipmentPurchase[28] == 1 &&
+            headEquipmentPurchase[32] == 0x4e && headEquipmentPurchase[33] == 0x0a,
+            "head shop equipment purchase return fixture");
+    rejects([&] { shopHeadEquipmentPurchaseReturn(262468); });
 
     LobbyCipher sender, receiver;
     auto hello = sender.initialize(42, "SapphireE2E");

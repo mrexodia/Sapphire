@@ -644,6 +644,69 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                       third_final_rewards, third_final_inventory)
     currency_move_receipt["rejection_verified_after_restart"] = True
 
+    starter_body_sale = catalog["starter_body_liquidation"]
+    starter_body_matches = [(key, item) for key, item in third_final_inventory.items()
+                            if item["storage"] in range(4) and item["id"] == starter_body_sale["item"]]
+    assert len(starter_body_matches) == 1 and starter_body_matches[0][1]["count"] == 1
+    starter_body_key, starter_body_item = starter_body_matches[0]
+    reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
+    reloaded.sell_shop_item(starter_body_item["storage"], starter_body_item["slot"],
+                            starter_body_sale["item"])
+    head_funds_rewards = deepcopy(third_final_rewards)
+    del head_funds_rewards["items"][str(starter_body_sale["item"])]
+    head_funds_rewards["currencies"]["1"] += starter_body_sale["gil"]
+    head_funds_inventory = deepcopy(third_final_inventory)
+    del head_funds_inventory[starter_body_key]
+    head_funds_inventory["2000:0"]["count"] = head_funds_rewards["currencies"]["1"]
+    state = reloaded.expect_rewards(head_funds_rewards, work_index)
+    assert state["rewards"]["inventory"] == head_funds_inventory
+    reloaded, state = restart_shop_bot(reloaded, "shop-starter-body-sold",
+                                      head_funds_rewards, head_funds_inventory)
+    assert head_funds_rewards["currencies"]["1"] == 101
+
+    head = catalog["head_purchase"]
+    head_observer_fixture = environment.fresh_character(head["route"][-1])
+    head_observer = Bot(worker, "head-shop-observer")
+    head_observer.login_via_lobby(head_observer_fixture["auth"], head_observer_fixture["name"])
+    actor = str(state["entity_id"])
+    reloaded.walk_route(head["route"], 6.0, 90)
+    head_arrival = worker.wait_state(head_observer.name,
+        lambda s: actor in s["actors"]
+                  and math.dist(s["actors"][actor]["position"], head["route"][-1]) < 0.15,
+        "head-shop arrival independently observed", 30)
+    head_observer.logout()
+    head_observer.close()
+    reloaded.open_gil_shop(head["shop"]["layout_id"], head["shop"]["event_id"])
+    reloaded.buy_shop_head_equipment(head["shop"]["event_id"])
+    head_rewards = deepcopy(head_funds_rewards)
+    head_rewards["items"][str(head["item"])] = 1
+    head_rewards["currencies"]["1"] -= head["gil"]
+    state = reloaded.expect_rewards(head_rewards, work_index)
+    head_inventory = deepcopy(state["rewards"]["inventory"])
+    head_expected = deepcopy(head_funds_inventory)
+    head_expected["2000:0"]["count"] = head_rewards["currencies"]["1"]
+    head_added = set(head_inventory) - set(head_expected)
+    assert len(head_added) == 1
+    head_key = next(iter(head_added))
+    assert head_inventory[head_key]["id"] == head["item"] and head_inventory[head_key]["count"] == 1
+    assert {key: value for key, value in head_inventory.items() if key != head_key} == head_expected
+    reloaded.exit_gil_shop(head["shop"]["event_id"])
+    reloaded, state = restart_shop_bot(reloaded, "shop-head-equipment-purchased",
+                                      head_rewards, head_inventory)
+    head_gear_key = f"1000:{head['gear_slot']}"
+    assert head_gear_key not in head_inventory
+    head_item = head_inventory[head_key]
+    head_equip_receipt = reloaded.request_shop_item_equip(
+        head_item["storage"], head_item["slot"], head["item"], head["gear_slot"])
+    head_final_inventory = deepcopy(head_inventory)
+    del head_final_inventory[head_key]
+    head_final_inventory[head_gear_key] = {"storage": 1000, "slot": head["gear_slot"],
+                                           "id": head["item"], "count": 1}
+    head_final_rewards = deepcopy(head_rewards)
+    del head_final_rewards["items"][str(head["item"])]
+    reloaded, state = restart_shop_bot(reloaded, "shop-head-equipment-equipped",
+                                      head_final_rewards, head_final_inventory)
+
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
@@ -691,6 +754,17 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "inventory_after_third_shop_equip_restart": third_final_inventory,
         "currency_move_rejection_receipt": currency_move_receipt,
         "inventory_after_currency_move_rejection_restart": third_final_inventory,
+        "starter_body_liquidation": starter_body_sale,
+        "rewards_after_starter_body_liquidation_restart": head_funds_rewards,
+        "inventory_after_starter_body_liquidation_restart": head_funds_inventory,
+        "head_purchase": {key: value for key, value in head.items() if key != "route"},
+        "head_route_points": len(head["route"]),
+        "head_arrival_witness": head_arrival["actors"][actor]["position"],
+        "rewards_after_head_purchase_restart": head_rewards,
+        "inventory_after_head_purchase_restart": head_inventory,
+        "head_equip_receipt": head_equip_receipt,
+        "rewards_after_head_equip_restart": head_final_rewards,
+        "inventory_after_head_equip_restart": head_final_inventory,
         "arrival_observed": True,
         "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")

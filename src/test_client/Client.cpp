@@ -1044,6 +1044,26 @@ namespace Sapphire::Testing
       m_state["scene"] = nullptr;
       return Json::object();
     }
+    if(method == "buy_shop_head_equipment")
+    {
+      constexpr uint32_t shop = 262415, item = 2638, gil = 101;
+      const auto& scene = m_state["scene"];
+      const auto& inventory = m_rewards.state().at("inventory");
+      if(!scene.is_object() || scene.value("token", uint64_t{0}) != args.at("token") ||
+         scene.value("event_id", 0u) != args.at("event_id") ||
+         scene.value("event_id", 0u) != shop || scene.value("scene_id", 0u) != 40 ||
+         !inventory.contains("2000:0") || inventory.at("2000:0").value("id", 0u) != 1 ||
+         inventory.at("2000:0").value("count", 0u) != gil ||
+         !inventory.contains("1000:3") || inventory.at("1000:3").value("id", 0u) != 2967)
+        throw ProtocolError("head equipment purchase requires exact received shop/funds/equipment state");
+      for(const auto& entry : inventory)
+        if(entry.value("id", 0u) == item || entry.value("id", 0u) == 2983)
+          throw ProtocolError("head equipment purchase requires exact post-body-liquidation inventory");
+      sendZone(WC::FFXIVIpcReturnEventScene255::_ServerIpcType,
+               shopHeadEquipmentPurchaseReturn(shop));
+      m_state["scene"] = nullptr;
+      return Json::object();
+    }
     if(method == "invite_party")
     {
       const auto& party = m_state["party"];

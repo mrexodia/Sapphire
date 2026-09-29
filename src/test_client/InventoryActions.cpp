@@ -71,7 +71,8 @@ namespace Sapphire::Testing
     constexpr uint32_t gearStorage = 1000;
     const bool supported = (expectedItem == 3286 && gearSlot == Common::GearSetSlot::Legs) ||
                            (expectedItem == 3748 && gearSlot == Common::GearSetSlot::Feet) ||
-                           (expectedItem == 2967 && gearSlot == Common::GearSetSlot::Body);
+                           (expectedItem == 2967 && gearSlot == Common::GearSetSlot::Body) ||
+                           (expectedItem == 2638 && gearSlot == Common::GearSetSlot::Head);
     if(rewards.value("class_job", 0u) != 1 || storage > 3 || slot >= 25 || !supported ||
        !rewards.at("inventory_ready").get<bool>())
       throw ProtocolError("shop equipment requires an exact supported received Gladiator item/slot");

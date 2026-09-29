@@ -26,9 +26,12 @@ int main(int argc, char** argv)
     if(!data.init(argv[1])) throw std::runtime_error("cannot initialize game data");
     auto reward = data.getRow<Excel::Item>(4551);
     auto starterLegs = data.getRow<Excel::Item>(3296);
+    auto starterBody = data.getRow<Excel::Item>(2983);
     if(!reward || !reward->data().Price) throw std::runtime_error("supported sale item has no gil value");
     if(!starterLegs || !starterLegs->data().Price)
       throw std::runtime_error("supported starter-leg liquidation has no gil value");
+    if(!starterBody || !starterBody->data().Price)
+      throw std::runtime_error("supported starter-body liquidation has no gil value");
     Sapphire::Common::Navi::NaviProvider finder("w1t1");
     if(!finder.init(argv[2])) throw std::runtime_error("Ul'dah tile-cache navmesh unavailable");
 
@@ -137,6 +140,53 @@ int main(int argc, char** argv)
         thirdEquipment = candidate;
     if(!thirdEquipment.item || thirdEquipment.sourceSlot < 2)
       throw std::runtime_error("selected gil shop has no third affordable equipment slot");
+
+    struct HeadCandidate
+    {
+      Candidate shop{}; uint32_t item{}, price{}, index{};
+      double routeLength{std::numeric_limits<double>::infinity()};
+      std::vector<std::array<float, 3>> route;
+    } head;
+    const auto headFunds = thirdFunds - thirdEquipment.price + starterBody->data().Price;
+    for(const auto& candidate : candidates)
+    {
+      auto candidateShop = data.getRow<Excel::Shop>(candidate.event);
+      if(!candidateShop) continue;
+      for(uint32_t index = 0; index < 40; ++index)
+      {
+        auto shopItem = data.getRow<Excel::ShopItem>(candidateShop->data().Item[index]);
+        if(!shopItem) continue;
+        auto item = data.getRow<Excel::Item>(shopItem->data().ItemId);
+        if(!item || !item->data().Price || item->data().Price > headFunds ||
+           item->data().StackMax != 1 || item->data().Slot != 3 ||
+           item->data().EquipLevel > 1 || item->data().Class != 0)
+          continue;
+        try
+        {
+          auto route = Sapphire::Testing::navigationRoute(*finder.getNavMesh(),
+            {selected.position.x, selected.position.y, selected.position.z},
+            {candidate.position.x, candidate.position.y, candidate.position.z});
+          double length = 0;
+          for(size_t i = 1; i < route.size(); ++i)
+          {
+            const auto& a = route[i - 1]; const auto& b = route[i];
+            const double step = std::sqrt(std::pow(a[0]-b[0], 2) + std::pow(a[1]-b[1], 2) +
+                                          std::pow(a[2]-b[2], 2));
+            if(!std::isfinite(step) || step > 2)
+              throw std::runtime_error("head-shop route contains unsupported jump");
+            length += step;
+          }
+          const auto itemId = static_cast<uint32_t>(shopItem->data().ItemId);
+          if(!head.item || item->data().Price < head.price ||
+             (item->data().Price == head.price && length < head.routeLength) ||
+             (item->data().Price == head.price && length == head.routeLength && itemId < head.item))
+            head = {candidate, itemId, item->data().Price, index, length, std::move(route)};
+        }
+        catch(const std::exception&) { /* A partial corridor is never selected. */ }
+      }
+    }
+    if(!head.item || head.route.empty() || !std::isfinite(head.routeLength) || head.routeLength > 500)
+      throw std::runtime_error("no complete affordable route to a source-listed head shop");
     auto selectedItem = data.getRow<Excel::Item>(purchaseItem);
     if(!selectedItem || !selectedItem->data().StackMax)
       throw std::runtime_error("selected gil-shop item has no stack metadata");
@@ -152,6 +202,8 @@ int main(int argc, char** argv)
       {"sale", {{"item", 4551}, {"quantity", 1}, {"gil", reward->data().Price}}},
       {"starter_liquidation", {{"item", 3296}, {"quantity", 1},
                                 {"gil", starterLegs->data().Price}}},
+      {"starter_body_liquidation", {{"item", 2983}, {"quantity", 1},
+                                     {"gil", starterBody->data().Price}}},
       {"purchase", {{"shop_id", selected.event}, {"index", purchaseIndex}, {"item", purchaseItem},
                     {"quantity", purchaseQuantity}, {"unit_gil", purchasePrice},
                     {"gil", purchasePrice * purchaseQuantity},
@@ -173,6 +225,13 @@ int main(int argc, char** argv)
                                     {"gil", thirdEquipment.price},
                                     {"source_slot", thirdEquipment.sourceSlot},
                                     {"gear_slot", thirdEquipment.sourceSlot - 1}}},
+      {"head_purchase", {{"shop", {{"layout_id", head.shop.layout}, {"base_id", head.shop.base},
+                                     {"event_id", head.shop.event},
+                                     {"position", {head.shop.position.x, head.shop.position.y,
+                                                    head.shop.position.z}}}},
+                         {"index", head.index}, {"item", head.item}, {"quantity", 1},
+                         {"gil", head.price}, {"source_slot", 3}, {"gear_slot", 2},
+                         {"route_length", head.routeLength}, {"route", head.route}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

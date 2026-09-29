@@ -219,6 +219,8 @@ def validate_shop_catalog(data):
         raise WorkerError("unsupported shop equipment-purchase binding")
     if data.get("starter_liquidation") != {"item": 3296, "quantity": 1, "gil": 45}:
         raise WorkerError("unsupported starter-equipment liquidation binding")
+    if data.get("starter_body_liquidation") != {"item": 2983, "quantity": 1, "gil": 59}:
+        raise WorkerError("unsupported starter-body liquidation binding")
     if data.get("second_equipment_purchase") != {
             "shop_id": 262468, "index": 9, "item": 3748, "quantity": 1, "gil": 54,
             "resale_gil": 54, "source_slot": 8, "gear_slot": 7}:
@@ -227,6 +229,22 @@ def validate_shop_catalog(data):
             "shop_id": 262468, "index": 3, "item": 2967, "quantity": 1, "gil": 59,
             "source_slot": 4, "gear_slot": 3}:
         raise WorkerError("unsupported third shop equipment-purchase binding")
+    head = data.get("head_purchase", {})
+    if ({key: head.get(key) for key in ("index", "item", "quantity", "gil", "source_slot", "gear_slot")} !=
+            {"index": 0, "item": 2638, "quantity": 1, "gil": 47,
+             "source_slot": 3, "gear_slot": 2}):
+        raise WorkerError("unsupported source head-equipment purchase binding")
+    head_shop = head.get("shop", {})
+    if ({key: head_shop.get(key) for key in ("layout_id", "base_id", "event_id")} !=
+            {"layout_id": 4393619, "base_id": 1005495, "event_id": 262415}
+            or len(head_shop.get("position", [])) != 3
+            or not all(type(value) in (int, float) and math.isfinite(value)
+                       for value in head_shop["position"])):
+        raise WorkerError("unsupported source head-shop actor binding")
+    head_route = validated_route(head)
+    if math.dist(head_route[0], data["shop"]["position"]) > 2 or \
+       math.dist(head_route[-1], head_shop["position"]) > 2:
+        raise WorkerError("head-shop route endpoints do not bind both exact shop actors")
     shop = data.get("shop", {})
     if (set(shop) != {"layout_id", "base_id", "event_id", "position"}
             or any(type(shop.get(key)) is not int or shop[key] <= 0
