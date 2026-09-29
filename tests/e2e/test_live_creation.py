@@ -65,6 +65,14 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         assert scene["territory"] == 182 and scene["gm_rank"] == 0
         player.choose_dialogue(catalog, "finish")
         player.wait_event_finished()
+        player.walk_route(opening["supported_range"]["route"], 2.0, 15)
+        player.enter_uldah_opening_range(opening["supported_range"])
+        scene = live_worker.wait_state(player.name,
+            lambda s: s["scene"] is not None and s["scene"]["event_id"] == 1245187
+                      and s["scene"]["scene_id"] == opening["supported_range"]["expected_scene"],
+            "source-defined opening within-range scene")
+        player.choose_dialogue(catalog, "finish")
+        player.wait_event_finished()
         expected = deepcopy(before)
         expected["items"][str(item_id)] = 1
         for moved in unequipped:
@@ -83,6 +91,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         reloaded = Bot(live_worker, f"new-character-reloaded-{index}")
         state = reloaded.login_via_lobby(auth, account["name"])
         assert state["created_via_lobby"] is False and state["territory"] == 182 and state["gm_rank"] == 0
+        assert math.dist(state["observed_position"], opening["supported_range"]["route"][-1]) < 0.15
         state = reloaded.expect_rewards(expected, work_index)
         inventory = deepcopy(state["rewards"]["inventory"])
         inventory_after_fresh = deepcopy(inventory)
@@ -142,6 +151,8 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                         "inventory_after_fresh": inventory_after_fresh,
                         "unequipped": unequipped, "reequipped": reequipped,
                         "equipped_ring": equipped_ring, "ring_slot": ring_slot,
+                        "opening_range_scene": opening["supported_range"]["expected_scene"],
+                        "opening_range_route_length": opening["supported_range"]["route_length"],
                         "opening_position": opening_position,
                         "opening_quest_active": opening_quest_active})
 
@@ -208,6 +219,8 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                          "unequipped": record["unequipped"], "reequipped": record["reequipped"],
                          "equipped_ring": record["equipped_ring"],
                          "unequipped_ring": unequipped_ring,
+                         "opening_range_scene": record["opening_range_scene"],
+                         "opening_range_route_length": record["opening_range_route_length"],
                          "coming_to_uldah_active_sequence": 255 if record["opening_quest_active"] else None,
                          "opening_position_after_restart": record["opening_position"],
                          "scene_after_opening_sequence_2": 30 if record["opening_quest_active"] else None})

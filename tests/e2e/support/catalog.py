@@ -118,6 +118,18 @@ def validate_opening_quest_catalog(data):
             or data.get("completion_route_blocker") != "incomplete navigation corridor" \
             or "completion_route" in data:
         raise WorkerError("opening quest completion must fail closed without a corridor")
+    ranges = data.get("opening_event_ranges")
+    if (not isinstance(ranges, list) or {row.get("id") for row in ranges} != {4101525, 4101535, 4101537}
+            or any(row.get("shape") != 1 or row.get("enabled") is not False for row in ranges)):
+        raise WorkerError("opening event-range source binding mismatch")
+    binding = data.get("supported_range", {})
+    if ({key: binding.get(key) for key in ("event_id", "param", "expected_scene")} !=
+            {"event_id": 1245187, "param": 4101537, "expected_scene": 20}):
+        raise WorkerError("unsupported opening range binding")
+    range_route = validated_route(binding)
+    source = next(row for row in ranges if row["id"] == 4101537)
+    if math.dist(range_route[0], [42, 4, -157.6]) > 1 or math.dist(range_route[-1], source["position"]) > 0.25:
+        raise WorkerError("opening range route does not bind source geometry")
     return data
 
 

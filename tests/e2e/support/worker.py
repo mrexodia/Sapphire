@@ -249,6 +249,11 @@ class Bot:
     def start_uldah_opening(self):
         self.worker.request("start_uldah_opening", self.name)
 
+    def enter_uldah_opening_range(self, binding):
+        self.worker.request("enter_uldah_opening_range", self.name,
+                            event_id=binding["event_id"], param=binding["param"],
+                            position=binding["route"][-1])
+
     def return_homepoint(self, territory, position, timeout=30):
         state = self.worker.snapshot(self.name)
         entity = str(state["entity_id"])

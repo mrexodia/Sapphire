@@ -628,6 +628,16 @@ namespace Sapphire::Testing
       sendZone(p._ServerIpcType, objectBytes(p));
       return Json::object();
     }
+    if(method == "enter_uldah_opening_range")
+    {
+      if(m_moving || !m_state["event_id"].is_null() || !m_state["scene"].is_null())
+        throw ProtocolError("opening range requires an idle character");
+      const auto position = args.at("position").get<std::array<float, 3>>();
+      auto payload = openingWithinRangeRequest(m_state["territory"], args.at("event_id"),
+                                               args.at("param"), m_predicted, position);
+      sendZone(WC::FFXIVIpcEventHandlerWithinRange::_ServerIpcType, payload);
+      return Json::object();
+    }
     if(method == "choose_scene")
     {
       const auto& scene = m_state["scene"];

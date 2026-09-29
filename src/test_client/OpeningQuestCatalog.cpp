@@ -2,12 +2,67 @@
 #include <Exd/ExdData.h>
 #include <Logging/Logger.h>
 #include <Navi/NaviProvider.h>
+#include <File.h>
+#include <datReader/DatCategories/bg/lgb.h>
 #include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <cmath>
+#include <set>
+#include <algorithm>
 #include "NavigationRoute.h"
+
+using Json = nlohmann::json;
+
+static Json openingRanges(Sapphire::Data::ExdData& data)
+{
+  const std::set<uint32_t> supported{4101537, 4101525, 4101535};
+  auto territory = data.getRow<Excel::TerritoryType>(182);
+  if(!territory) throw std::runtime_error("opening territory metadata missing");
+  auto path = territory->getString(territory->data().LVB);
+  const auto level = path.find("/level/");
+  if(level == std::string::npos) throw std::runtime_error("opening territory has no level path");
+  path = "bg/" + path.substr(0, level) + "/level/";
+  Json result = Json::array();
+  LGB_GROUP::AssetTypeFilter filter = [](eAssetType type) { return type == eAssetType::EventRange; };
+  for(const auto* name : {"bg", "planmap", "planevent", "planner"})
+  {
+    const auto filePath = path + name + ".lgb";
+    if(!data.getGameData()->doesFileExist(filePath))
+    {
+      if(std::string(name) == "planner") continue;
+      throw std::runtime_error("missing opening level layer: " + filePath);
+    }
+    auto section = data.getGameData()->getFile(filePath)->access_data_sections().at(0);
+    if(section.size() < sizeof(LGB_FILE_HEADER) || std::memcmp(section.data(), "LGB1", 4) ||
+       std::memcmp(section.data() + 12, "LGP1", 4))
+    {
+      if(std::string(name) == "planner") continue;
+      throw std::runtime_error("unsupported opening level layer: " + filePath);
+    }
+    LGB_FILE lgb(section.data(), name, &filter);
+    for(const auto& group : lgb.groups)
+      for(const auto& entry : group.entries)
+      {
+        const auto& header = entry->header;
+        if(!supported.count(header.InstanceID)) continue;
+        const auto& range = std::static_pointer_cast<EventRangeEntry>(entry)->header;
+        result.push_back({{"id",header.InstanceID},
+                          {"position",{header.Transformation.Translation.x,header.Transformation.Translation.y,
+                                       header.Transformation.Translation.z}},
+                          {"rotation",{header.Transformation.Rotation.x,header.Transformation.Rotation.y,
+                                       header.Transformation.Rotation.z}},
+                          {"scale",{header.Transformation.Scale.x,header.Transformation.Scale.y,
+                                    header.Transformation.Scale.z}},
+                          {"enabled",range.triggerBox.enabled != 0},
+                          {"shape",static_cast<int>(range.triggerBox.triggerBoxShape)}});
+      }
+  }
+  if(result.size() != supported.size())
+    throw std::runtime_error("source-defined opening event ranges did not resolve exactly");
+  return result;
+}
 
 int main(int argc, char** argv)
 {
@@ -39,6 +94,22 @@ int main(int argc, char** argv)
                                               recipientRow->data().TransZ};
     Sapphire::Common::Navi::NaviProvider finder("w1t1");
     if(!finder.init(argv[2])) throw std::runtime_error("Ul'dah tile-cache navmesh unavailable");
+    auto ranges = openingRanges(data);
+    const auto selected = std::find_if(ranges.begin(), ranges.end(),
+      [](const auto& range) { return range.at("id") == 4101537; });
+    if(selected == ranges.end() || selected->at("shape") != 1)
+      throw std::runtime_error("supported opening range is not a source-defined box");
+    const auto rangeCenter = selected->at("position").get<Sapphire::Testing::Point>();
+    auto rangeRoute = Sapphire::Testing::navigationRoute(*finder.getNavMesh(), start, rangeCenter);
+    const auto endpoint = rangeRoute.back();
+    const auto scale = selected->at("scale").get<Sapphire::Testing::Point>();
+    const auto rotation = selected->at("rotation").get<Sapphire::Testing::Point>();
+    const auto dx = endpoint[0] - rangeCenter[0], dz = endpoint[2] - rangeCenter[2];
+    const auto localX = std::cos(rotation[1]) * dx - std::sin(rotation[1]) * dz;
+    const auto localZ = std::sin(rotation[1]) * dx + std::cos(rotation[1]) * dz;
+    if(std::abs(localX) > scale[0] * 0.5f || std::abs(localZ) > scale[2] * 0.5f ||
+       std::abs(endpoint[1] - rangeCenter[1]) > scale[1] * 0.5f)
+      throw std::runtime_error("opening range route does not end inside the source box");
     auto approach = Sapphire::Testing::navigationRoute(*finder.getNavMesh(), start, giver);
     auto length = [](const auto& route)
     {
@@ -58,7 +129,9 @@ int main(int argc, char** argv)
       {"recipient",{{"layout_id",3969632},{"base_id",1003988},{"position",recipient}}},
       {"reward",{{"exp",exp},{"gil",quest->data().Reward.Gil}}},
       {"approach_route",approach},{"approach_route_length",length(approach)},
-      {"completion_route_supported",completionRoute},
+      {"completion_route_supported",completionRoute},{"opening_event_ranges",ranges},
+      {"supported_range",{{"event_id",1245187},{"param",4101537},{"route",rangeRoute},
+                           {"route_length",length(rangeRoute)},{"expected_scene",20}}},
       {"navigation",{{"mesh",std::filesystem::absolute(std::filesystem::path(argv[2])/"w1t1"/"w1t1.nav").generic_string()},
                      {"format","TSET-v1"},{"polyref_bits",sizeof(dtPolyRef)*8}}}};
     if(completionRoute)

@@ -110,6 +110,16 @@ int main()
               "bounded Ul'dah creation payload fixture");
     }
     rejects([&] { canonicalUldahCreationPayload(3); });
+    const std::array<float, 3> openingRange{42.22481918334961f, 4.198298931121826f, -160.70899963378906f};
+    const Bytes expectedOpeningRange{0xa1,0x95,0x3e,0, 3,0,0x13,0,
+                                     0x37,0xe6,0x28,0x42, 0x77,0x58,0x86,0x40,
+                                     0x81,0xb5,0x20,0xc3};
+    require(openingWithinRangeRequest(182, 1245187, 4101537, openingRange, openingRange) == expectedOpeningRange,
+            "source-defined opening within-range byte fixture");
+    rejects([&] { openingWithinRangeRequest(181, 1245187, 4101537, openingRange, openingRange); });
+    rejects([&] { openingWithinRangeRequest(182, 1245187, 4101535, openingRange, openingRange); });
+    auto unreachedRange = openingRange; unreachedRange[2] += 1;
+    rejects([&] { openingWithinRangeRequest(182, 1245187, 4101537, unreachedRange, openingRange); });
 
     nlohmann::json defeatedActors = {{"2097153", {{"hp", 0}}}};
     auto homepoint = returnHomepointRequest(2097153, 141, 9, defeatedActors);
