@@ -1,4 +1,5 @@
 """A normal physical exit crossing, with independent observers on both sides."""
+import json
 import math
 from copy import deepcopy
 import pytest
@@ -81,7 +82,8 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     received = source.expect_party_chat(state, "traveler to remote source party message")
     assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
     player.expect_rewards(before, 1)
-    player.discover_central_thanalan(discovery, target_arrival["actors"][actor]["position"])
+    first_reply = player.discover_central_thanalan(
+        discovery, target_arrival["actors"][actor]["position"])["discovery_reply"]
     after_discovery = deepcopy(before)
     after_discovery["exp"] += discovery["level_one_exp_reward"]
     player.expect_rewards(after_discovery, 1)
@@ -90,7 +92,8 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
         lambda s: actor in s["actors"]
                   and math.dist(s["actors"][actor]["position"], second_discovery["route"][-1]) < 0.15,
         "traveler independently observed in second discovery box")
-    player.discover_central_thanalan(second_discovery, second_arrival["actors"][actor]["position"])
+    second_reply = player.discover_central_thanalan(
+        second_discovery, second_arrival["actors"][actor]["position"])["discovery_reply"]
     after_discovery["exp"] += second_discovery["level_one_exp_reward"]
     state = player.expect_rewards(after_discovery, 1)
     player.say("E2E destination chat after zoning")
@@ -118,5 +121,17 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     assert state["central_thanalan_discovery"] is True
     assert state["central_thanalan_discoveries"] == [1, 3]
     reloaded.expect_rewards(after_discovery, 1)
+    (environment.artifacts / "central-thanalan-discovery.json").write_text(json.dumps({
+        "bindings": [{"layout_id": discovery["id"], "part_id": discovery["discovery_index"],
+                      "shape": discovery["shape"], "witness_position": target_arrival["actors"][actor]["position"]},
+                     {"layout_id": second_discovery["id"], "part_id": second_discovery["discovery_index"],
+                      "shape": second_discovery["shape"], "witness_position": second_arrival["actors"][actor]["position"],
+                      "route_points": len(second_discovery["route"]),
+                      "route_length": second_discovery["route_length"]}],
+        "received_replies": [first_reply, second_reply],
+        "fresh_login_discoveries": state["central_thanalan_discoveries"],
+        "expected_cumulative_exp": after_discovery["exp"],
+        "reply_is_not_persistence_proof": True
+    }, indent=2), encoding="utf-8")
     reloaded.logout()
     reloaded.close()
