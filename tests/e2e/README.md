@@ -36,7 +36,8 @@ lobby, world and MariaDB processes with matching game data:
 - Three normal clients receive exact spawn identities. Two complete a bounded
   invite/decline/reinvite/accept flow and exact initial roster; the received leader
   then adds the third client while preserving party/channel identity. All three
-  receive the exact expanded roster, both existing members receive the newcomer's
+  receive the exact expanded roster; the initial pair also exchange exact direct
+  Tells over the separate chat channel, both existing members receive the newcomer's
   party chat, and all three receive an exact leadership transfer. The former leader
   then fails closed on a further invite and kick. The transferred leader normally
   kicks the newcomer; the removed client receives empty state while the original
