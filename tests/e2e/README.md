@@ -109,9 +109,13 @@ lobby, world and MariaDB processes with matching game data:
   as `incomplete navigation corridor`, so turn-in, the quest's 50 EXP/103 gil and
   public-Ul'dah travel are not claimed. This covers all five Gladiator starter
   equipment slots, each distinct starter main hand, all four Ring1 choices, one
-  Ring2 round trip and the supported opening subset, not other accessory types,
-  off-hand/head/waist, later gear,
+  Ring2 round trip, one purchased later leg item/equip and the supported opening
+  subset, not other accessory types, off-hand/head/waist, other later gear,
   appearance breadth, other cities/classes or the complete opening.
+- A fresh living non-GM player in Central Thanalan performs source-catalogued Return
+  (6). The actor receives exact cast/recast metadata, one source witness receives
+  the same cast and departure, and a destination witness observes exact homepoint-9
+  arrival. Fresh authentication after restart proves the territory/position.
 - A fresh non-GM player performs source-catalogued Sprint (3); both the actor and an
   independent witness receive the exact self-status effect and zero-TP HUD commit,
   while the actor receives exact action-start recast metadata.
@@ -814,7 +818,7 @@ runtime, raw database, game assets, local profiles or unredacted configs.
 `.github/workflows/test-client.yml` builds and tests the asset-independent client
 on Linux and Windows. It does **not** provision game data, run gameplay tests, or
 claim real-client compatibility. The opt-in `gameplay-e2e.yml` workflow and
-`python -m tests.e2e.run_ci` entry point implement a separate eleven-case gameplay
+`python -m tests.e2e.run_ci` entry point implement a separate twelve-case gameplay
 gate, with strict preflight, no skips, staged-input identity and cleanup checks.
 Only an allowlisted summary is publishable; raw pytest/JUnit and gameplay logs
 stay private. See [CI.md](CI.md) for runner access restrictions, approval settings,

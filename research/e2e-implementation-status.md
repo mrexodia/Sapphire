@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/later-gear purchase/equip path; ordinary Say, exact same-zone nonparty and cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist, other later gear and currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/later-gear purchase/equip path; ordinary Say, exact same-zone nonparty and cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist, other later gear and currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -85,7 +85,7 @@ a nearby passing test does not close them.
 | Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
 | Progress watchdog and bounded replanning | workload movement requires every waypoint from an independent observer; exploration permits one recorded fresh-session replan only from the same curated corridor, while soak/regression fail without recovery | Verified for bounded workload navigation; no general-navigation replanner claim |
 | Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
-| Authored regression mode | strict eleven-case allowlist plus native/Python contracts | Verified for supported suite |
+| Authored regression mode | strict twelve-case allowlist plus native/Python contracts | Verified for supported suite |
 | Seeded exploration mode | v1/v2 plans, allowlisted preconditions, decisions, observations and replay | Verified for walk/Say/heartbeat/reconnect subset |
 | Soak/load mode | bounded ramp/pacing/actions, liveness and process/worker resource samples | Verified as bounded smoke and 30-minute low-rate evidence; not capacity/overnight proof |
 | Record actual actions, not seed alone | plan/outcome/checkpoint journals retain semantic order, limits and observations; replay warns that scheduling is nondeterministic | Verified |
@@ -133,16 +133,16 @@ a nearby passing test does not close them.
   skips/errors/failures and verified exact collection, staged-input identities,
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
-  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows eleven-case
-  gate at `5e9c01c84` took **1002.79s**, including persisted later-equipment
-  purchase/equip, the quantity-three VFX item action/liquidation, exact same- and
-  cross-zone Tell, observed Sprint, the full-roster party/reconnect lifecycle, dual
-  persisted discovery, Ring2, duplicate-name rejection and normal character
-  deletion (`gameplay-ci-ndl_o26m`, summary
-  `build-e2e/ci-summary-social-equipment.json`). Summary SHA-256 is
-  `6d2b3fe07cffca4a027c889ae57df0ba20f7e4a155bef963e274f7a8eac9694c`,
+  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
+  gate at `e3685631a` took **1041.29s**, adding independently observed living Return
+  to persisted later-equipment purchase/equip, the quantity-three VFX item
+  action/liquidation, exact same- and cross-zone Tell, observed Sprint, the
+  full-roster party/reconnect lifecycle, dual persisted discovery, Ring2,
+  duplicate-name rejection and normal character deletion (`gameplay-ci-up_vh_yf`,
+  summary `build-e2e/ci-summary-return.json`). Summary SHA-256 is
+  `550ecdcffff43e9015c03db1d5d52f5b715ecca080279e7223ba9aab65216a92`,
   private manifest SHA-256 is
-  `8bec8cd77dfd23377eeabbb5d1c79a52731c30e2957ce168e760b5f6fa6a68e3`, and
+  `95febb48b42968bb987459c4239724713b0306d33a10b23b5e93feac2348aa65`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -151,9 +151,9 @@ a nearby passing test does not close them.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
   protected-environment approval and VM disposal responsibilities. Local rehearsal
   does not prove hosted approval, cancellation cleanup or independent compatibility.
-- Ten live cases pass together: rejected credentials, login/idle/logout, received
+- Twelve live cases pass together: rejected credentials, login/idle/logout, received
   party join/leave, observed movement/Say/position persistence, single quest, chained quests plus inventory
-  persistence and one persisted gil-shop sale/purchase pair, zoning/discovery/cross-zone-party persistence, enemy defeat/rewards,
+  persistence and one persisted gil-shop sale/purchase pair, zoning/discovery/cross-zone-party persistence, observed living Return, enemy defeat/rewards,
   player defeat with independently observed pursuit/leash/reset plus source-bound homepoint return, and normal lobby creation spanning all four
   Ul'dah ring choices and all three starter classes plus persisted opening/equipment checks. Both public tested territories use compatible
   server-side meshes; the private opening territory does not make a navigation claim.
@@ -166,8 +166,8 @@ a nearby passing test does not close them.
   That original slice did not establish repeated actions or retaliation; the
   first extension below covered three paced strikes and the first retaliation hit.
   The later defeat/reward extension now covers one complete level-one defeat and
-  persisted current-test-table loot/EXP, independently observed Pugilist Bootshine
-  and independently observed Thaumaturge Blizzard. Combos, broader abilities,
+  persisted current-test-table loot/EXP, independently observed Pugilist Bootshine,
+  independently observed Thaumaturge Blizzard and source-bound living Return. Combos, broader abilities,
   general cooldown scheduling, general aggro/leash policy and production loot
   selection remain uncovered. Later increments
   below cover one player defeat and homepoint return, but not raises or death penalties.
@@ -768,6 +768,29 @@ and worker SHA-256
 `68c0a18c9c32e8aa103900239c25a617089165a64c1eaa4ad461d142a4b939d9`.
 This proves one natural Blizzard path, not general magic/combat or independent
 real-client presentation.
+
+At `e3685631a`, a fresh living non-GM player in Central Thanalan performs
+source-catalogued common Return action 6 through one normal action request. The
+bounded operation requires an exact received living self, territory 141, homepoint
+9, idle state, elapsed local action guard and bounded request ID. The actor receives
+one exact action-6/kind-1/self-targeted five-second cast plus group-57,
+90000-centisecond recast metadata; a source-zone witness independently receives the
+same cast and then the actor's despawn. A separate destination witness in territory
+130 independently receives the actor at source pop range 3693863, and a world
+restart plus fresh HTTP/lobby/world session proves that exact territory/position
+persisted. The source-generated action metadata also requires level zero, no cost,
+common class-job zero and no enemy target. Exact bytes and territory/homepoint/death/
+request rejection plus malformed/capped cast decoding pass on Clang, MSVC and GNU;
+the Python suite reports **257 passed, 12 live skips**. The clean focused case passed
+in **48.09s** at `.e2e-artifacts/discovery-live/sapphire-e2e-c44fm6rh`; manifest
+SHA-256 is `14c8518ed49a493752c9c22bc469fa1d32c19c3e09da7885da61a789d2c92ae9`,
+`living-return.json` SHA-256 is
+`58a0a1de1596f007e58d26b1dc665e552e43d5c90147e08832b1e4749a6f2f6e`, and event
+journal SHA-256 is
+`4dbcf907256746d6e30b99b67ef2b556c73f5880855276c080818ec7eddd0347`.
+The source is clean and runtime removal is confirmed. This proves one normal living
+Return path, not arbitrary teleports, interruption/cooldown policy or broad ability
+support.
 
 At `cb59aca38`, a fresh non-GM player and independent witness exercise the
 source-catalogued common Sprint action 3 through a normal action request. Both
@@ -1533,7 +1556,7 @@ compatibility.
    journey and exact received eligibility/match semantics.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   The separate 30-minute paced workload is not part of the eleven-case CI gate.
+   The separate 30-minute paced workload is not part of the twelve-case CI gate.
 5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
    coverage and independently captured trace/layout checks. Strengthen fault and
    cancellation coverage separately from successful-path evidence. Do not alter
