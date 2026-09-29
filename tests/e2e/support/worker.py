@@ -107,7 +107,7 @@ class Worker:
                     if method in {"request_item_unequip", "request_item_reequip_starter", "request_item_move", "request_item_swap", "request_item_split", "request_item_merge"}:
                         keys = (("gear_slot", "expected_item", "destination_storage", "destination_slot")
                                 if method == "request_item_unequip" else
-                                (("storage", "slot", "expected_item")
+                                (("storage", "slot", "expected_item", "gear_slot")
                                  if method == "request_item_reequip_starter" else
                                  ("storage", "slot", "expected_item", "destination_storage", "destination_slot")))
                         if method == "request_item_swap":
@@ -379,9 +379,9 @@ class Bot:
             "matching unequip acknowledgement (not inventory mutation)", timeout)
         return {"context": context, "operation": 8, "acknowledged": True, "inventory_change_verified": False}
 
-    def request_item_reequip_starter(self, storage, slot, expected_item, timeout=10):
+    def request_item_reequip_starter(self, storage, slot, expected_item, gear_slot=0, timeout=10):
         context = self.worker.request("request_item_reequip_starter", self.name, storage=storage,
-            slot=slot, expected_item=expected_item)["context"]
+            slot=slot, expected_item=expected_item, gear_slot=gear_slot)["context"]
         self.worker.wait_state(self.name,
             lambda s: any(row["context"] == context and row["operation"] == 8 and row["error"] == 0
                           for row in s["rewards"]["operation_batches"]),

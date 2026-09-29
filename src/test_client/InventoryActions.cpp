@@ -45,18 +45,27 @@ namespace Sapphire::Testing
     p.DstStorageId = destinationStorage; p.DstContainerIndex = static_cast<int16_t>(destinationSlot);
     return objectBytes(p);
   }
-  Bytes reequipStarterMainHandRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
-                                      uint32_t storage, uint32_t slot, uint32_t expectedItem)
+  Bytes reequipStarterItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
+                                  uint32_t storage, uint32_t slot, uint32_t expectedItem,
+                                  uint32_t gearSlot)
   {
     constexpr uint32_t gearStorage = 1000;
-    constexpr uint32_t mainHand = Common::GearSetSlot::MainHand;
     const auto classJob = rewards.value("class_job", 0u);
-    const auto starterItem = classJob == 1 ? 1601u : classJob == 2 ? 1680u : classJob == 7 ? 2055u : 0u;
+    uint32_t starterItem = 0;
+    if(classJob == 1 || classJob == 2 || classJob == 7)
+    {
+      if(gearSlot == Common::GearSetSlot::MainHand)
+        starterItem = classJob == 1 ? 1601u : classJob == 2 ? 1680u : 2055u;
+      else if(gearSlot == Common::GearSetSlot::Body) starterItem = 2983;
+      else if(gearSlot == Common::GearSetSlot::Hands) starterItem = 3520;
+      else if(gearSlot == Common::GearSetSlot::Legs) starterItem = 3296;
+      else if(gearSlot == Common::GearSetSlot::Feet) starterItem = 3750;
+    }
     if(storage > 3 || slot >= 25 || !starterItem || expectedItem != starterItem ||
        !rewards.at("inventory_ready").get<bool>())
-      throw ProtocolError("re-equip supports only the matching Ul'dah starter main hand");
+      throw ProtocolError("re-equip supports only matching Ul'dah starter equipment");
     const auto key = std::to_string(storage) + ":" + std::to_string(slot);
-    const auto destination = std::to_string(gearStorage) + ":" + std::to_string(mainHand);
+    const auto destination = std::to_string(gearStorage) + ":" + std::to_string(gearSlot);
     const auto& inventory = rewards.at("inventory");
     if(!inventory.contains(key) || inventory.at(key).at("id") != expectedItem ||
        inventory.at(key).at("count") != 1 || inventory.contains(destination))
@@ -70,7 +79,7 @@ namespace Sapphire::Testing
     p.SrcActorId = p.DstActorId = entity;
     p.SrcStorageId = storage; p.SrcContainerIndex = static_cast<int16_t>(slot);
     p.SrcStack = 1; p.SrcCatalogId = starterItem;
-    p.DstStorageId = gearStorage; p.DstContainerIndex = mainHand;
+    p.DstStorageId = gearStorage; p.DstContainerIndex = static_cast<int16_t>(gearSlot);
     return objectBytes(p);
   }
   Bytes moveItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,

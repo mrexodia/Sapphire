@@ -99,7 +99,7 @@ int main()
     reequipState["inventory"].erase("1000:0");
     starter["storage"] = 3; starter["slot"] = 24;
     reequipState["inventory"]["3:24"] = starter;
-    auto reequip = reequipStarterMainHandRequest(reequipState, 0x12345678, 0x01020309, 3, 24, 1601);
+    auto reequip = reequipStarterItemRequest(reequipState, 0x12345678, 0x01020309, 3, 24, 1601, 0);
     Bytes reequipExpected = moveExpected;
     reequipExpected[0] = 9;
     reequipExpected[12] = 3; reequipExpected[16] = 24; reequipExpected[20] = 1;
@@ -112,12 +112,23 @@ int main()
       auto other = reequipState;
       other["class_job"] = supported.first;
       other["inventory"]["3:24"]["id"] = supported.second;
-      auto request = reequipStarterMainHandRequest(other, 0x12345678, 0x01020309, 3, 24, supported.second);
+      auto request = reequipStarterItemRequest(other, 0x12345678, 0x01020309, 3, 24, supported.second, 0);
       reequipExpected[24] = static_cast<uint8_t>(supported.second);
       reequipExpected[25] = static_cast<uint8_t>(supported.second >> 8);
       check(request == reequipExpected, "each Ul'dah starter main hand has an exact wire fixture");
     }
-    for(int fault = 0; fault < 8; ++fault)
+    for(const auto& armor : {std::pair<uint32_t, uint32_t>{3, 2983}, {4, 3520}, {6, 3296}, {7, 3750}})
+    {
+      auto other = reequipState;
+      other["inventory"]["3:24"]["id"] = armor.second;
+      auto request = reequipStarterItemRequest(other, 0x12345678, 0x01020309, 3, 24,
+                                               armor.second, armor.first);
+      reequipExpected[24] = static_cast<uint8_t>(armor.second);
+      reequipExpected[25] = static_cast<uint8_t>(armor.second >> 8);
+      reequipExpected[36] = static_cast<uint8_t>(armor.first);
+      check(request == reequipExpected, "each shared Ul'dah starter armor slot has an exact wire fixture");
+    }
+    for(int fault = 0; fault < 9; ++fault)
     {
       auto invalid = reequipState;
       if(fault == 0) invalid["inventory_ready"] = false;
@@ -127,8 +138,8 @@ int main()
       if(fault == 4) invalid["inventory"]["1000:0"] = starter;
       if(fault == 7) invalid["class_job"] = 2;
       rejected = false;
-      try { reequipStarterMainHandRequest(invalid, 1, 1, fault == 5 ? 4 : 3, 24,
-                                          fault == 6 ? 1602 : 1601); }
+      try { reequipStarterItemRequest(invalid, 1, 1, fault == 5 ? 4 : 3, 24,
+                                      fault == 6 ? 1602 : 1601, fault == 8 ? 13 : 0); }
       catch(const ProtocolError&) { rejected = true; }
       check(rejected, "invalid/unobserved/mismatched starter re-equip rejected");
     }

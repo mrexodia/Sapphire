@@ -36,22 +36,26 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         before = player.reward_snapshot(work_index)
         assert before["items"] == {} and before["exp"] == 0 and before["level"] == 1
         expected_inventory = None
-        unequipped = None
-        if index < 3:
-            inventory = deepcopy(live_worker.snapshot(player.name)["rewards"]["inventory"])
-            source = inventory["1000:0"]
-            destination = next((f"{bag}:{slot}" for bag in range(4) for slot in range(25)
-                                if f"{bag}:{slot}" not in inventory), None)
-            assert destination is not None and source["count"] == 1
-            destination_storage, destination_slot = map(int, destination.split(":"))
-            receipt = player.request_item_unequip(0, destination_storage, destination_slot, source["id"])
-            assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
-            expected_inventory = deepcopy(inventory)
-            moved = expected_inventory.pop("1000:0")
-            moved.update(storage=destination_storage, slot=destination_slot)
-            expected_inventory[destination] = moved
-            unequipped = {"item": source["id"], "from": "1000:0", "to": destination,
-                          "acknowledgement_is_not_mutation_proof": True}
+        unequipped = []
+        gear_slots = [0, 3, 4, 6, 7] if index == 0 else [0] if index < 3 else []
+        if gear_slots:
+            expected_inventory = deepcopy(live_worker.snapshot(player.name)["rewards"]["inventory"])
+            for gear_slot in gear_slots:
+                gear_key = f"1000:{gear_slot}"
+                source = expected_inventory[gear_key]
+                destination = next((f"{bag}:{slot}" for bag in range(4) for slot in range(25)
+                                    if f"{bag}:{slot}" not in expected_inventory), None)
+                assert destination is not None and source["count"] == 1
+                destination_storage, destination_slot = map(int, destination.split(":"))
+                receipt = player.request_item_unequip(gear_slot, destination_storage,
+                                                       destination_slot, source["id"])
+                assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
+                moved = expected_inventory.pop(gear_key)
+                moved.update(storage=destination_storage, slot=destination_slot)
+                expected_inventory[destination] = moved
+                unequipped.append({"item": source["id"], "gear_slot": gear_slot,
+                                   "from": gear_key, "to": destination,
+                                   "acknowledgement_is_not_mutation_proof": True})
 
         player.start_uldah_opening()
         player.choose_dialogue(catalog, choice)
@@ -64,9 +68,10 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         player.wait_event_finished()
         expected = deepcopy(before)
         expected["items"][str(item_id)] = 1
-        if unequipped is not None:
-            expected["items"][str(unequipped["item"])] = 1
-            # The ring is added after the unequip request, into the next empty bag slot.
+        if unequipped:
+            for moved in unequipped:
+                expected["items"][str(moved["item"])] = 1
+            # The ring is added after the unequip requests, into the next empty bag slot.
             ring_slot = next(f"{bag}:{slot}" for bag in range(4) for slot in range(25)
                              if f"{bag}:{slot}" not in expected_inventory)
             expected_inventory[ring_slot] = {"storage": int(ring_slot.split(":")[0]),
@@ -82,19 +87,23 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         state = reloaded.expect_rewards(expected, work_index)
         inventory = deepcopy(state["rewards"]["inventory"])
         inventory_after_fresh = deepcopy(inventory)
-        reequipped = None
+        reequipped = []
         if expected_inventory is not None:
             assert inventory == expected_inventory
-            source = inventory[unequipped["to"]]
-            storage, slot = map(int, unequipped["to"].split(":"))
-            receipt = reloaded.request_item_reequip_starter(storage, slot, source["id"])
-            assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
-            moved = inventory.pop(unequipped["to"])
-            moved.update(storage=1000, slot=0)
-            inventory["1000:0"] = moved
-            del expected["items"][str(source["id"])]
-            reequipped = {"item": source["id"], "from": unequipped["to"], "to": "1000:0",
-                          "acknowledgement_is_not_mutation_proof": True}
+            for unequip in unequipped:
+                source = inventory[unequip["to"]]
+                storage, slot = map(int, unequip["to"].split(":"))
+                gear_slot = unequip["gear_slot"]
+                receipt = reloaded.request_item_reequip_starter(storage, slot, source["id"], gear_slot)
+                assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
+                moved = inventory.pop(unequip["to"])
+                moved.update(storage=1000, slot=gear_slot)
+                gear_key = f"1000:{gear_slot}"
+                inventory[gear_key] = moved
+                del expected["items"][str(source["id"])]
+                reequipped.append({"item": source["id"], "gear_slot": gear_slot,
+                                   "from": unequip["to"], "to": gear_key,
+                                   "acknowledgement_is_not_mutation_proof": True})
         assert len([item for item in inventory.values() if item["id"] == item_id and item["count"] == 1]) == 1
 
         # OpeningSequence=1 must select scene 40 after fresh authentication, not replay scene 0.
@@ -172,5 +181,5 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
     (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
         "coming_to_uldah_completion_blocker": opening["completion_route_blocker"],
-        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices, one persisted starter-main-hand round trip for each class, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
+        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices, all five persisted Gladiator starter-equipment slots plus each distinct starter main hand, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
     }, indent=2), encoding="utf-8")
