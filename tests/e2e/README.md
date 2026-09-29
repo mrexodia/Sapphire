@@ -59,6 +59,8 @@ lobby, world and MariaDB processes with matching game data:
   zeroed-detail representation for its remote-zone member. In both same-zone and
   cross-zone states, each direction sends through the exact received party channel;
   the other client independently matches party/channel and sender entity/character/name.
+  After each cross-zone party-chat receipt supplies bounded liveness evidence, both
+  directions also exchange exact direct Tells using the remote redacted roster identity.
   Both sides receive exact decline identities while remaining ungrouped; invite
   acknowledgements are not treated as membership evidence.
 - A four-client zoning test walks a verified approach into an actual exit volume,
