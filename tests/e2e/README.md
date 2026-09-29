@@ -370,7 +370,10 @@ opens only the matching received shop scenes, sells the observed one-item ordina
 bag stack, and requires the exact item decrease and 28-gil increase. From the
 refreshed received shop scene it then buys three source-listed item 5890 at eight
 gil each, requiring the exact three-item stack and four-gil balance immediately and
-after fresh authentication plus a world restart. `gil-shop-sale.json` records those snapshots;
+after fresh authentication plus a world restart. After leaving the shop, the actor
+uses the exact received three-stack through its source-bound VFX item action; actor
+and witness receive the same effect while immediate and restarted inventory remain
+unchanged. `gil-shop-sale.json` records those snapshots and effect;
 the operation-10 acknowledgement remains explicitly separate
 from mutation evidence. The server split implementation creates the new persistent
 item directly at the requested slot; it no longer aliases an `addItem()` auto-slot
@@ -383,7 +386,7 @@ server response supplies gameplay evidence.
 This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
 swap, one partial split, one no-overflow same-item merge, discard, one exact
 single-item sale and one exact three-item purchase—not equipment or currency-
-container moves, overflow merges, item use, arbitrary shops/items or general quantities,
+container moves, overflow merges, consuming item mutation, arbitrary shops/items or general quantities,
 immediate operation publication, crash
 consistency or independent real-client inventory presentation.
 
@@ -441,9 +444,11 @@ verified private catalog binds potion 4551 to one sale for 28 gil, ENpc base
 1009247/layout 4757046/event 262468, a 641-point route of approximately 302.30m,
 and that shop's source-listed index-zero item 5890 at eight gil each. The catalog
 derives the exact bounded quantity three from the source stack cap and sale proceeds,
-for a 24-gil purchase. Python validates both exact transactions, the event family, route continuity, and
-endpoint range. This does not establish arbitrary quantities/items, other shops,
-currency-container manipulation, concurrent transactions, or real-client shop UI.
+for a 24-gil purchase. It also binds ItemAction row 232, supported VFX type 852 and
+argument 235. Python validates both exact transactions, the action metadata, event
+family, route continuity, and endpoint range. This does not establish arbitrary quantities/items, other shops,
+consuming item mutation, currency-container manipulation, concurrent transactions,
+or real-client shop UI.
 
 ## Curated exit crossing
 
