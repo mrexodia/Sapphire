@@ -92,7 +92,13 @@ void Network::Acceptor::listen( const std::string& host, const uint16_t& port )
   asio::ip::tcp::endpoint endpoint = *resolver.resolve( query );
 
   m_acceptor.open( endpoint.protocol() );
+#ifdef _WIN32
+  // Preserve exclusive Windows bind behavior. POSIX needs SO_REUSEADDR to
+  // restart an owned listener while prior client sockets remain in TIME_WAIT.
   m_acceptor.set_option( asio::ip::tcp::acceptor::reuse_address( false ) );
+#else
+  m_acceptor.set_option( asio::ip::tcp::acceptor::reuse_address( true ) );
+#endif
   m_acceptor.bind( endpoint );
   m_acceptor.listen( asio::socket_base::max_connections );
 }

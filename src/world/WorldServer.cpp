@@ -67,7 +67,7 @@ using namespace Sapphire::World::Manager;
 
 WorldServer::WorldServer( const std::string& configName ) :
   m_configName( configName ),
-  m_bRunning( true ),
+  m_bRunning( false ),
   m_lastDBPingTime( 0 ),
   m_worldId( 67 ),
   m_port( 0 )
@@ -448,6 +448,9 @@ void WorldServer::init( int32_t argc, char *argv[ ] )
 
   Logger::debug( "Initialization took {0}ms", Common::Util::getTimeMs() - start );
 
+  // Publish readiness only after every service required by update() exists.
+  // Early init failures must not enter the update loop with partial state.
+  m_bRunning = true;
   Logger::info( "World server ready on {0}:{1}", m_ip, m_port );
 }
 

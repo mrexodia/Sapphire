@@ -23,6 +23,8 @@ int main( int32_t argc, char* argv[] )
   Common::Service< WorldServer >::set( pServer );
 
   pServer->init( argc, argv );
+  if( !pServer->isRunning() )
+    return 1;
 
   while( pServer->isRunning() )
   {
