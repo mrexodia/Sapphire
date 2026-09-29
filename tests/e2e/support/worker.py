@@ -578,6 +578,16 @@ class Bot:
             "matching re-equip acknowledgement (not inventory mutation)", timeout)
         return {"context": context, "operation": 8, "acknowledged": True, "inventory_change_verified": False}
 
+    def request_currency_move_rejection(self, expected_gil, timeout=10):
+        context = self.worker.request("request_currency_move_rejection", self.name,
+                                      expected_gil=expected_gil)["context"]
+        self.worker.wait_state(self.name,
+            lambda s: any(row["context"] == context and row["operation"] == 8 and row["error"] == 0
+                          for row in s["rewards"]["operation_batches"]),
+            "matching rejected-currency-move acknowledgement (not rejection proof)", timeout)
+        return {"context": context, "operation": 8, "acknowledged": True,
+                "rejection_verified": False}
+
     def request_item_move(self, storage, slot, destination_storage, destination_slot, expected_item, timeout=10):
         context = self.worker.request("request_item_move", self.name, storage=storage, slot=slot,
             destination_storage=destination_storage, destination_slot=destination_slot,

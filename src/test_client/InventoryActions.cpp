@@ -134,6 +134,25 @@ namespace Sapphire::Testing
     p.DstStorageId = gearStorage; p.DstContainerIndex = static_cast<int16_t>(gearSlot);
     return objectBytes(p);
   }
+  Bytes currencyMoveRejectionRequest(const nlohmann::json& rewards, uint32_t entity,
+                                     uint32_t context, uint32_t expectedGil)
+  {
+    constexpr uint32_t currencyStorage = 2000;
+    if(!entity || !context || !expectedGil || !rewards.at("inventory_ready").get<bool>() ||
+       !rewards.at("containers").contains("2000") || rewards.at("containers").at("2000") != true)
+      throw ProtocolError("currency move rejection requires complete exact received gil state");
+    const auto& inventory = rewards.at("inventory");
+    if(!inventory.contains("2000:0") || inventory.at("2000:0").at("id") != 1 ||
+       inventory.at("2000:0").at("count") != expectedGil || inventory.contains("2000:1"))
+      throw ProtocolError("currency move rejection source/destination does not match received state");
+    Wire::WorldPackets::Client::FFXIVIpcClientInventoryItemOperation p{};
+    p.ContextId = context; p.OperationType = Common::ITEM_OPERATION_TYPE_MOVEITEM;
+    p.SrcActorId = p.DstActorId = entity;
+    p.SrcStorageId = currencyStorage; p.SrcContainerIndex = 0;
+    p.SrcStack = expectedGil; p.SrcCatalogId = 1;
+    p.DstStorageId = currencyStorage; p.DstContainerIndex = 1;
+    return objectBytes(p);
+  }
   Bytes moveItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                         uint32_t storage, uint32_t slot, uint32_t expectedItem,
                         uint32_t destinationStorage, uint32_t destinationSlot)

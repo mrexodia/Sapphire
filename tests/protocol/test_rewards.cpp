@@ -70,6 +70,33 @@ int main()
     check(move == moveExpected, "move request must match exact bounded empty-destination wire fixture");
     check(state.state()["inventory"].contains("1:2") && !state.state()["inventory"].contains("3:24"),
           "request serialization never moves inventory");
+    auto currencyState = state.state();
+    currencyState["inventory"]["2000:0"] =
+      {{"storage", 2000}, {"slot", 0}, {"id", 1}, {"count", 42}};
+    auto currencyMove = currencyMoveRejectionRequest(currencyState, 0x12345678, 0x01020307, 42);
+    Bytes currencyExpected(48, 0);
+    currencyExpected[0] = 7; currencyExpected[1] = 3; currencyExpected[2] = 2; currencyExpected[3] = 1;
+    currencyExpected[4] = 8;
+    for(auto offset : {8, 28})
+    { currencyExpected[offset] = 0x78; currencyExpected[offset+1] = 0x56;
+      currencyExpected[offset+2] = 0x34; currencyExpected[offset+3] = 0x12; }
+    currencyExpected[12] = 0xd0; currencyExpected[13] = 0x07;
+    currencyExpected[20] = 42; currencyExpected[24] = 1;
+    currencyExpected[32] = 0xd0; currencyExpected[33] = 0x07;
+    currencyExpected[36] = 1;
+    check(currencyMove == currencyExpected, "currency rejection request must match exact fixed-slot wire fixture");
+    for(int fault = 0; fault < 4; ++fault)
+    {
+      auto invalid = currencyState;
+      if(fault == 0) invalid["inventory_ready"] = false;
+      if(fault == 1) invalid["containers"].erase("2000");
+      if(fault == 2) invalid["inventory"]["2000:0"]["count"] = 41;
+      if(fault == 3) invalid["inventory"]["2000:1"] = invalid["inventory"]["2000:0"];
+      rejected = false;
+      try { currencyMoveRejectionRequest(invalid, 1, 1, 42); }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "incomplete/mismatched currency rejection request rejected");
+    }
     auto gearState = state.state();
     gearState["class_job"] = 1;
     gearState["containers"]["1000"] = true;

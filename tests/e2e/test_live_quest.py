@@ -638,6 +638,11 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     del third_final_rewards["items"][str(third["item"])]
     reloaded, state = restart_shop_bot(reloaded, "shop-third-gear-equipped",
                                       third_final_rewards, third_final_inventory)
+    currency_move_receipt = reloaded.request_currency_move_rejection(
+        third_final_rewards["currencies"]["1"])
+    reloaded, state = restart_shop_bot(reloaded, "shop-currency-move-rejected",
+                                      third_final_rewards, third_final_inventory)
+    currency_move_receipt["rejection_verified_after_restart"] = True
 
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
@@ -684,6 +689,8 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "third_shop_equip_receipt": third_equip_receipt,
         "rewards_after_third_shop_equip_restart": third_final_rewards,
         "inventory_after_third_shop_equip_restart": third_final_inventory,
+        "currency_move_rejection_receipt": currency_move_receipt,
+        "inventory_after_currency_move_rejection_restart": third_final_inventory,
         "arrival_observed": True,
         "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")

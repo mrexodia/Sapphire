@@ -1243,6 +1243,17 @@ namespace Sapphire::Testing
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};
     }
+    if(method == "request_currency_move_rejection")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      if(!args.at("expected_gil").is_number_unsigned() || args.at("expected_gil") > uint64_t{0xffffffff})
+        throw ProtocolError("expected gil must be an unsigned 32-bit integer");
+      if(m_inventoryContext == 0xffffffff) throw ProtocolError("inventory context budget exhausted");
+      auto payload = currencyMoveRejectionRequest(m_rewards.state(), m_entity, ++m_inventoryContext,
+                                                   args.at("expected_gil"));
+      sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
+      return {{"context", m_inventoryContext}};
+    }
     if(method == "request_item_move")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");

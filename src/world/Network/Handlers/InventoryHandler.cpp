@@ -42,6 +42,16 @@ void Sapphire::Network::GameConnection::itemOperation( const Packets::FFXIVARR_P
 
   Logger::debug( "OperationType: {0}", operationType );
 
+  // Currency/crystal quantities are persisted by their dedicated semantic paths,
+  // not as movable item UIDs. Generic inventory operations would corrupt those
+  // fixed-slot containers, so acknowledge the malformed client request but never
+  // mutate either protected container.
+  if( fromContainer == Common::InventoryType::Currency ||
+      fromContainer == Common::InventoryType::Crystal ||
+      toContainer == Common::InventoryType::Currency ||
+      toContainer == Common::InventoryType::Crystal )
+    return;
+
   // TODO: other inventory operations need to be implemented
   switch( operationType )
   {

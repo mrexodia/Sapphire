@@ -14,7 +14,7 @@ namespace Sapphire::Testing
   Bytes unequipItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                            uint32_t gearSlot, uint32_t expectedItem,
                            uint32_t destinationStorage, uint32_t destinationSlot);
-  // Equip the exact source-listed later leg item to its observed-empty slot.
+  // Equip one exact source-listed later item to its observed-empty supported slot.
   Bytes equipShopItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                              uint32_t storage, uint32_t slot, uint32_t expectedItem,
                              uint32_t gearSlot);
@@ -22,6 +22,9 @@ namespace Sapphire::Testing
   Bytes reequipStarterItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                                   uint32_t storage, uint32_t slot, uint32_t expectedItem,
                                   uint32_t gearSlot);
+  // Construct one exact attempted gil-container move for rejection/persistence proof.
+  Bytes currencyMoveRejectionRequest(const nlohmann::json& rewards, uint32_t entity,
+                                     uint32_t context, uint32_t expectedGil);
   // Whole stack to an observed empty ordinary bag slot. Receipt is NOT mutation proof.
   Bytes moveItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                         uint32_t storage, uint32_t slot, uint32_t expectedItem,

@@ -33,6 +33,29 @@ def test_move_request_waits_for_exact_ack_without_predicting_inventory():
     assert all(state["rewards"]["inventory"] == before for state in states)
 
 
+def test_currency_rejection_acknowledgement_never_proves_rejection():
+    before = {"2000:0": {"storage": 2000, "slot": 0, "id": 1, "count": 42}}
+
+    class Worker:
+        def request(self, method, bot, **args):
+            assert method == "request_currency_move_rejection" and bot == "subject"
+            assert args == {"expected_gil": 42}
+            return {"context": 654}
+
+        def wait_state(self, bot, predicate, description, timeout):
+            states = [{"rewards": {"inventory": deepcopy(before), "operation_batches": [row]}}
+                      for row in ({"context": 654, "operation": 7, "error": 0},
+                                  {"context": 654, "operation": 8, "error": 1},
+                                  {"context": 654, "operation": 8, "error": 0})]
+            assert "not rejection proof" in description
+            assert [predicate(state) for state in states] == [False, False, True]
+            return states[-1]
+
+    receipt = Bot(Worker(), "subject").request_currency_move_rejection(42)
+    assert receipt == {"context": 654, "operation": 8, "acknowledged": True,
+                       "rejection_verified": False}
+
+
 def test_swap_request_waits_for_exact_ack_without_predicting_inventory():
     before = {"0:1": {"storage": 0, "slot": 1, "id": 4555, "count": 3},
               "3:24": {"storage": 3, "slot": 24, "id": 4551, "count": 2}}
