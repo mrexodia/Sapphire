@@ -35,11 +35,10 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         work_index = work_indices[0]
         before = player.reward_snapshot(work_index)
         assert before["items"] == {} and before["exp"] == 0 and before["level"] == 1
-        expected_inventory = None
+        expected_inventory = deepcopy(live_worker.snapshot(player.name)["rewards"]["inventory"])
         unequipped = []
         gear_slots = [0, 3, 4, 6, 7] if index == 0 else [0] if index < 3 else []
         if gear_slots:
-            expected_inventory = deepcopy(live_worker.snapshot(player.name)["rewards"]["inventory"])
             for gear_slot in gear_slots:
                 gear_key = f"1000:{gear_slot}"
                 source = expected_inventory[gear_key]
@@ -68,15 +67,15 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         player.wait_event_finished()
         expected = deepcopy(before)
         expected["items"][str(item_id)] = 1
-        if unequipped:
-            for moved in unequipped:
-                expected["items"][str(moved["item"])] = 1
-            # The ring is added after the unequip requests, into the next empty bag slot.
-            ring_slot = next(f"{bag}:{slot}" for bag in range(4) for slot in range(25)
-                             if f"{bag}:{slot}" not in expected_inventory)
-            expected_inventory[ring_slot] = {"storage": int(ring_slot.split(":")[0]),
-                                             "slot": int(ring_slot.split(":")[1]),
-                                             "id": item_id, "count": 1}
+        for moved in unequipped:
+            expected["items"][str(moved["item"])] = 1
+        # The opening grant is deliberately silent on this server. Locate and
+        # bind the ring only from the authoritative fresh-login inventory below.
+        ring_slot = next(f"{bag}:{slot}" for bag in range(4) for slot in range(25)
+                         if f"{bag}:{slot}" not in expected_inventory)
+        expected_inventory[ring_slot] = {"storage": int(ring_slot.split(":")[0]),
+                                         "slot": int(ring_slot.split(":")[1]),
+                                         "id": item_id, "count": 1}
         player.logout(wait_server_close=True)
         player.close()
 
@@ -88,22 +87,31 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         inventory = deepcopy(state["rewards"]["inventory"])
         inventory_after_fresh = deepcopy(inventory)
         reequipped = []
-        if expected_inventory is not None:
-            assert inventory == expected_inventory
-            for unequip in unequipped:
-                source = inventory[unequip["to"]]
-                storage, slot = map(int, unequip["to"].split(":"))
-                gear_slot = unequip["gear_slot"]
-                receipt = reloaded.request_item_reequip_starter(storage, slot, source["id"], gear_slot)
-                assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
-                moved = inventory.pop(unequip["to"])
-                moved.update(storage=1000, slot=gear_slot)
-                gear_key = f"1000:{gear_slot}"
-                inventory[gear_key] = moved
-                del expected["items"][str(source["id"])]
-                reequipped.append({"item": source["id"], "gear_slot": gear_slot,
-                                   "from": unequip["to"], "to": gear_key,
-                                   "acknowledgement_is_not_mutation_proof": True})
+        assert inventory == expected_inventory
+        for unequip in unequipped:
+            source = inventory[unequip["to"]]
+            storage, slot = map(int, unequip["to"].split(":"))
+            gear_slot = unequip["gear_slot"]
+            receipt = reloaded.request_item_reequip_starter(storage, slot, source["id"], gear_slot)
+            assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
+            moved = inventory.pop(unequip["to"])
+            moved.update(storage=1000, slot=gear_slot)
+            gear_key = f"1000:{gear_slot}"
+            inventory[gear_key] = moved
+            del expected["items"][str(source["id"])]
+            reequipped.append({"item": source["id"], "gear_slot": gear_slot,
+                               "from": unequip["to"], "to": gear_key,
+                               "acknowledgement_is_not_mutation_proof": True})
+        ring = inventory[ring_slot]
+        ring_storage, ring_index = map(int, ring_slot.split(":"))
+        receipt = reloaded.request_item_reequip_starter(ring_storage, ring_index, item_id, 11)
+        assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
+        moved_ring = inventory.pop(ring_slot)
+        moved_ring.update(storage=1000, slot=11)
+        inventory["1000:11"] = moved_ring
+        del expected["items"][str(item_id)]
+        equipped_ring = {"item": item_id, "gear_slot": 11, "from": ring_slot, "to": "1000:11",
+                         "acknowledgement_is_not_mutation_proof": True}
         assert len([item for item in inventory.values() if item["id"] == item_id and item["count"] == 1]) == 1
 
         # OpeningSequence=1 must select scene 40 after fresh authentication, not replay scene 0.
@@ -133,6 +141,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                         "before": before, "expected": expected, "inventory": inventory,
                         "inventory_after_fresh": inventory_after_fresh,
                         "unequipped": unequipped, "reequipped": reequipped,
+                        "equipped_ring": equipped_ring, "ring_slot": ring_slot,
                         "opening_position": opening_position,
                         "opening_quest_active": opening_quest_active})
 
@@ -162,8 +171,29 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
             assert scene["scene"]["scene_id"] == 30
             restarted.choose_dialogue(catalog, "finish")
         restarted.wait_event_finished()
-        restarted.logout()
+        ring_storage, ring_index = map(int, record["ring_slot"].split(":"))
+        receipt = restarted.request_item_unequip(11, ring_storage, ring_index, record["item"])
+        assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
+        unequipped_ring = {"item": record["item"], "gear_slot": 11, "from": "1000:11",
+                           "to": record["ring_slot"],
+                           "acknowledgement_is_not_mutation_proof": True}
+        final_inventory = deepcopy(record["inventory"])
+        moved_ring = final_inventory.pop("1000:11")
+        moved_ring.update(storage=ring_storage, slot=ring_index)
+        final_inventory[record["ring_slot"]] = moved_ring
+        final_expected = deepcopy(record["expected"])
+        final_expected["items"][str(record["item"])] = 1
+        restarted.logout(wait_server_close=True)
         restarted.close()
+
+        auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+        roundtrip = Bot(live_worker, f"new-character-ring-roundtrip-{index}")
+        state = roundtrip.login_via_lobby(auth, account["name"])
+        assert state["territory"] == 182 and state["gm_rank"] == 0
+        state = roundtrip.expect_rewards(final_expected, record["work_index"])
+        assert state["rewards"]["inventory"] == final_inventory
+        roundtrip.logout()
+        roundtrip.close()
         evidence.append({"character": account["name"], "choice": record["choice"],
                          "item": record["item"], "class_job": record["class_job"],
                          "work_index": record["work_index"],
@@ -173,7 +203,11 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                          "rewards_after_restart": record["expected"],
                          "inventory_after_fresh": record["inventory_after_fresh"],
                          "inventory_after_restart": record["inventory"],
+                         "rewards_after_ring_unequip_fresh_login": final_expected,
+                         "inventory_after_ring_unequip_fresh_login": final_inventory,
                          "unequipped": record["unequipped"], "reequipped": record["reequipped"],
+                         "equipped_ring": record["equipped_ring"],
+                         "unequipped_ring": unequipped_ring,
                          "coming_to_uldah_active_sequence": 255 if record["opening_quest_active"] else None,
                          "opening_position_after_restart": record["opening_position"],
                          "scene_after_opening_sequence_2": 30 if record["opening_quest_active"] else None})
@@ -181,5 +215,5 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
     (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
         "coming_to_uldah_completion_blocker": opening["completion_route_blocker"],
-        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices, all five persisted Gladiator starter-equipment slots plus each distinct starter main hand, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
+        "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices with persisted Ring1 equip/unequip round trips, all five persisted Gladiator starter-equipment slots plus each distinct starter main hand, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"
     }, indent=2), encoding="utf-8")
