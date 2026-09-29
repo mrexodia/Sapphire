@@ -384,12 +384,14 @@ class Bot:
                       and s["party_invite_result"]["target"] == target_name,
             "matching party invite result", timeout)
 
-    def accept_party(self, timeout=10):
+    def accept_party(self, expected_count=2, timeout=10):
+        if expected_count < 2 or expected_count > 8:
+            raise WorkerError("party acceptance requires a bounded expected roster size")
         self.worker.wait_state(self.name, lambda s: s["pending_party_invite"] is not None,
                                "received pending party invite", timeout)
         self.worker.request("accept_party", self.name)
-        return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 2,
-                                      "received two-member party state", timeout)
+        return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == expected_count,
+                                      f"received {expected_count}-member party state", timeout)
 
     def decline_party(self, timeout=10):
         pending = self.worker.wait_state(self.name, lambda s: s["pending_party_invite"] is not None,

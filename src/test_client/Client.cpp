@@ -921,8 +921,14 @@ namespace Sapphire::Testing
     }
     if(method == "invite_party")
     {
-      if(m_moving || !m_state["event_id"].is_null() || m_state["party"].at("count") != 0)
-        throw ProtocolError("party invite requires an idle ungrouped character");
+      const auto& party = m_state["party"];
+      const auto count = party.at("count").get<uint8_t>();
+      const auto leaderIndex = party.at("leader_index").get<size_t>();
+      const auto isLeader = count == 0 ||
+        (leaderIndex < party.at("members").size() &&
+         party.at("members")[leaderIndex].value("entity_id", 0u) == m_entity);
+      if(m_moving || !m_state["event_id"].is_null() || count >= 8 || !isLeader)
+        throw ProtocolError("party invite requires an idle ungrouped character or received party leadership");
       auto payload = partyInviteRequest(m_state["actors"], args.at("target"), args.at("name"));
       sendZone(WC::FFXIVIpcInvite::_ServerIpcType, payload);
       return Json::object();

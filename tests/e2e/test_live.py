@@ -27,16 +27,23 @@ def test_login_idle_logout(environment, live_worker):
 def test_received_party_join_and_leave(environment, live_worker):
     leader_fixture = environment.fresh_character()
     member_fixture = environment.fresh_character()
+    third_fixture = environment.fresh_character()
     leader, member = Bot(live_worker, "party-leader"), Bot(live_worker, "party-member")
+    third = Bot(live_worker, "party-third")
     leader_state = leader.login_via_lobby(leader_fixture["auth"], leader_fixture["name"])
     member_state = member.login_via_lobby(member_fixture["auth"], member_fixture["name"])
-    leader_id, member_id = leader_state["entity_id"], member_state["entity_id"]
+    third_state = third.login_via_lobby(third_fixture["auth"], third_fixture["name"])
+    leader_id, member_id, third_id = (leader_state["entity_id"], member_state["entity_id"],
+                                      third_state["entity_id"])
     live_worker.wait_state(leader.name,
         lambda s: str(member_id) in s["actors"] and s["actors"][str(member_id)]["name"] == member_fixture["name"],
         "party target received by leader")
     live_worker.wait_state(member.name,
         lambda s: str(leader_id) in s["actors"] and s["actors"][str(leader_id)]["name"] == leader_fixture["name"],
         "party inviter received by member")
+    live_worker.wait_state(leader.name,
+        lambda s: str(third_id) in s["actors"] and s["actors"][str(third_id)]["name"] == third_fixture["name"],
+        "third party target received by leader")
     leader.invite_party(member_id, member_fixture["name"])
     declined = member.decline_party()
     assert declined == {"result": 0, "auth_type": 1, "answer": 0, "name": leader_fixture["name"]}
@@ -64,10 +71,30 @@ def test_received_party_join_and_leave(environment, live_worker):
     sent = member.party_chat("member to leader party message")
     received = leader.expect_party_chat(member_party, "member to leader party message")
     assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
+
+    original_party = (leader_party["party"]["id"], leader_party["party"]["chat_channel"])
+    leader.invite_party(third_id, third_fixture["name"])
+    third_party = third.accept_party(expected_count=3)
+    expected_three = expected | {(third_id, third_fixture["name"])}
+    for bot in (leader, member, third):
+        joined = live_worker.wait_state(bot.name, lambda s: s["party"]["count"] == 3,
+                                        "received three-member party state")
+        assert (joined["party"]["id"], joined["party"]["chat_channel"]) == original_party
+        assert {(row["entity_id"], row["name"]) for row in joined["party"]["members"]} == expected_three
+    sent = third.party_chat("third member party message")
+    for receiver in (leader, member):
+        received = receiver.expect_party_chat(third_party, "third member party message")
+        assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
+    third.leave_party()
+    for bot in (leader, member):
+        remaining = live_worker.wait_state(bot.name, lambda s: s["party"]["count"] == 2,
+                                            "received roster after third member leaves")
+        assert (remaining["party"]["id"], remaining["party"]["chat_channel"]) == original_party
+        assert {(row["entity_id"], row["name"]) for row in remaining["party"]["members"]} == expected
     member.leave_party()
     live_worker.wait_state(leader.name, lambda s: s["party"]["count"] == 0,
                            "leader received party disband")
-    for bot in (leader, member):
+    for bot in (leader, member, third):
         bot.logout()
         bot.close()
 
