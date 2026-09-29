@@ -127,5 +127,5 @@ a WSB file establishes live client, guest orchestration or disposal coverage.
 
 Screenshots, complete inputs, client files, game settings, session-bearing
 process arguments and private logs must remain outside git/public CI artifacts.
-This manual lane is not added to the seven-case headless CI gate or its public
+This manual lane is not added to the ten-case headless CI gate or its public
 allowlist. Do not register an asset-bearing runner for untrusted pull requests.

@@ -95,7 +95,7 @@ separate evidence that its binaries came from the checkout.
   independent real-client compatibility. Static prerequisite validation never
   modifies quest progress; the live chain must complete its first quest normally.
 - The entry point collects the six whole live modules and requires exactly the
-  nine expected cases. Added/removed cases require explicit review of `CASES`.
+  ten expected cases. Added/removed cases require explicit review of `CASES`.
   Inherited pytest selection options and automatic third-party plugins are
   disabled. No tests, skipped cases, missing/duplicate phase reports, unexpected
   tests, failing setup/call/teardown, nonzero pytest exit, live child processes, or

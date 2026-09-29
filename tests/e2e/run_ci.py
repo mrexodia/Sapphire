@@ -25,6 +25,7 @@ VERSION = "2016.07.05.0000.0001"
 CASES = (
     "tests/e2e/test_live.py::test_rejected_credentials",
     "tests/e2e/test_live.py::test_login_idle_logout",
+    "tests/e2e/test_live.py::test_received_party_join_and_leave",
     "tests/e2e/test_live.py::test_observed_movement_and_position_persistence",
     "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[single]",
     "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[chain]",
