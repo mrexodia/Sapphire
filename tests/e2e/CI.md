@@ -115,14 +115,14 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `86c096912` passed the nine-case strict
-gate in 608.839 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and removed private runtime. The creation case took 66.021s and
-added source-routed Coming to Ul'dah acceptance, persisted active sequence 255 and
-opening scene 30 while failing closed on the missing completion corridor; the leash
-cycle, equipment round trip and sale/purchase remained covered. Evidence is
-`build-e2e/ci-summary-opening-quest.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-fercpke7`. This remains a local rehearsal, not a
+Latest local evidence: clean revision `2b9dfaf1e` passed the nine-case strict
+gate in 614.955 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and removed private runtime. The combat case took 72.673s and
+added independently observed natural-target Pugilist Bootshine after a bounded
+received-position approach; the opening acceptance, leash cycle, equipment round
+trip and sale/purchase remained covered. Evidence is
+`build-e2e/ci-summary-bootshine.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-bufnr5w5`. This remains a local rehearsal, not a
 hosted protected-runner execution.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its

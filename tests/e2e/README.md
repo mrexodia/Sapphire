@@ -67,7 +67,10 @@ lobby, world and MariaDB processes with matching game data:
   verifies every matching result/committed HP decrease, the first natural retaliation,
   zero target HP and delayed removal. The fighter receives exactly 50 EXP and the
   server's enabled `testTable` loot pools; exact rewards survive a fresh login.
-  Enemies, skills and resources are not granted or modified.
+  The same case creates a normal level-one Pugilist fixture, follows a roaming
+  natural target through bounded received-position movement observed by a witness,
+  and verifies Bootshine (53), its committed damage and action-start metadata on
+  both clients. Enemies, skills and resources are not granted or modified.
 - A separate fresh level-one Gladiator uses ordinary Fast Blade against an observed
   natural level-14 enemy and runs a complete ~50.69m source-navmesh route. Both
   clients observe pursuit beyond 35m and the enemy's natural retreat to its bound
@@ -437,8 +440,9 @@ bin/sapphire_test_combat_catalog <game/sqpack> build-e2e/combat-catalog.json
 ```
 
 Use `.exe` on Windows and set `combat_catalog` to the absolute output path. The
-validator requires the supported level-one Gladiator/Fast Blade metadata (60 TP,
-2.5-second recast, class-default melee range). This is not independent client evidence.
+validator requires supported level-one Gladiator/Fast Blade and Pugilist/Bootshine
+metadata (60 TP, 2.5-second recast, class-default melee range). This is not
+independent client evidence.
 
 `test_live_combat.py` places fresh characters one metre laterally from a spawn in
 the unchanged staged Central Thanalan population before their first connection.
@@ -465,6 +469,13 @@ positive natural marmot retaliation against the initially full-health fighter,
 including its exact committed HP result. Subsequent HP regeneration is not mistaken
 for absence of damage. The final committed integrity must report zero target HP,
 and both clients must observe the server's delayed target removal.
+
+A second source-defined population binding is used for Bootshine. Because the
+natural target may roam during the preceding defeat flow, the Pugilist follows at
+most six received positions within 20m using ordinary movement; a witness verifies
+each reached point. Both clients then require action 53's identical effect and exact
+committed HP decrease, plus group-58/250-centisecond start metadata. This is one
+additional ability, not combo, positional-bonus or general Pugilist coverage.
 
 The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
 Received rewards must be exactly 50 EXP, no level/currency change, one five-item
