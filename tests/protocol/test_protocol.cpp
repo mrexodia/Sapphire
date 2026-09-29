@@ -184,6 +184,8 @@ int main()
                                       {{"entity_id", 2097154}, {"name", "E2E Target"}}}}};
     require(partyLeaveRequest(party, 2097153) == Bytes(4, 0), "party leave exact byte fixture");
     rejects([&] { partyLeaveRequest(party, 2097155); });
+    require(partyDisbandRequest(party, 2097153) == Bytes(4, 0), "party disband exact byte fixture");
+    rejects([&] { partyDisbandRequest(party, 2097154); });
     Bytes expectedLeaderChange(32, 0);
     std::copy(inviteName.begin(), inviteName.end(), expectedLeaderChange.begin());
     require(partyChangeLeaderRequest(party, 2097153, 2097154, "E2E Target") == expectedLeaderChange,

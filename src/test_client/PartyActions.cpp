@@ -71,6 +71,17 @@ namespace Sapphire::Testing
     return objectBytes(packet);
   }
 
+  Bytes partyDisbandRequest(const nlohmann::json& party, uint32_t selfEntity)
+  {
+    requireMembership(party, selfEntity, "party disband");
+    const auto leaderIndex = party.value("leader_index", size_t{8});
+    const auto& members = party.at("members");
+    if(leaderIndex >= members.size() || members[leaderIndex].value("entity_id", 0u) != selfEntity)
+      throw ProtocolError("party disband requires received leadership");
+    Wire::WorldPackets::Client::FFXIVIpcPcPartyDisband packet{};
+    return objectBytes(packet);
+  }
+
   static void requireLeaderTarget(const nlohmann::json& party, uint32_t selfEntity,
                                   uint32_t targetEntity, const std::string& targetName,
                                   const char* operation)

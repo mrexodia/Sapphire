@@ -28,7 +28,7 @@ def test_capabilities(worker):
     assert "buy_shop_item" in caps["methods"]
     assert "return_homepoint" in caps["methods"]
     assert all(method in caps["methods"] for method in
-               ("invite_party", "accept_party", "decline_party", "leave_party",
+               ("invite_party", "accept_party", "decline_party", "leave_party", "disband_party",
                 "kick_party_member", "change_party_leader", "party_chat"))
 
 

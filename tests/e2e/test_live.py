@@ -104,9 +104,11 @@ def test_received_party_join_and_leave(environment, live_worker):
         assert (remaining["party"]["id"], remaining["party"]["chat_channel"]) == original_party
         assert {(row["entity_id"], row["name"]) for row in remaining["party"]["members"]} == expected
         assert remaining["party"]["members"][remaining["party"]["leader_index"]]["entity_id"] == member_id
-    member.leave_party()
+    with pytest.raises(WorkerError, match="received leadership"):
+        leader.disband_party()
+    member.disband_party()
     live_worker.wait_state(leader.name, lambda s: s["party"]["count"] == 0,
-                           "leader received party disband")
+                           "former leader received explicit party disband")
     for bot in (leader, member, third):
         bot.logout()
         bot.close()

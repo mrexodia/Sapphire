@@ -409,6 +409,11 @@ class Bot:
         return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 0,
                                       "received empty party state", timeout)
 
+    def disband_party(self, timeout=10):
+        self.worker.request("disband_party", self.name)
+        return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 0,
+                                      "received empty disbanded party state", timeout)
+
     def kick_party_member(self, target_entity, target_name, timeout=10):
         self.worker.request("kick_party_member", self.name, target=target_entity, name=target_name)
         return self.worker.wait_state(self.name,
