@@ -16,6 +16,8 @@ def test_capabilities(worker):
     assert "general_navigation" in caps["unsupported"]
     assert "general_combat" in caps["unsupported"]
     assert "fast_blade" in caps["methods"]
+    assert "bootshine" in caps["methods"]
+    assert "blizzard" in caps["methods"]
     assert "request_item_move" in caps["methods"]
     assert "request_item_swap" in caps["methods"]
     assert "request_item_split" in caps["methods"]
@@ -73,6 +75,10 @@ def test_action_before_readiness_is_rejected(worker):
                 worker.request("walk_to", "test", position=[0, 0, 0])
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("fast_blade", "test", target=123)
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("bootshine", "test", target=123)
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("blizzard", "test", target=123)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("start_uldah_opening", "test")
             with pytest.raises(WorkerError, match="world-ready"):
