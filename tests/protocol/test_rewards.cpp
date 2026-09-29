@@ -208,6 +208,19 @@ int main()
                                Sapphire::Common::GearSetSlot::Ear); }
     catch(const ProtocolError&) { rejected = true; }
     check(rejected, "shop neck item rejects mismatched ear destination");
+    auto shopWristState = shopEquipState;
+    shopWristState["inventory"]["3:24"]["id"] = 15132;
+    auto shopWrist = equipShopItemRequest(shopWristState, 0x12345678, 0x0102030a,
+                                          3, 24, 15132, Sapphire::Common::GearSetSlot::Wrist);
+    auto shopWristExpected = shopEquipExpected;
+    shopWristExpected[24] = 0x1c; shopWristExpected[25] = 0x3b;
+    shopWristExpected[36] = Sapphire::Common::GearSetSlot::Wrist;
+    check(shopWrist == shopWristExpected, "shop wrist equip must match exact bag-to-gear wire fixture");
+    rejected = false;
+    try { equipShopItemRequest(shopWristState, 1, 1, 3, 24, 15132,
+                               Sapphire::Common::GearSetSlot::Neck); }
+    catch(const ProtocolError&) { rejected = true; }
+    check(rejected, "shop wrist item rejects mismatched neck destination");
     for(int fault = 0; fault < 5; ++fault)
     {
       auto invalid = shopEquipState;

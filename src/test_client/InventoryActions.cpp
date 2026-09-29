@@ -74,7 +74,8 @@ namespace Sapphire::Testing
                            (expectedItem == 2967 && gearSlot == Common::GearSetSlot::Body) ||
                            (expectedItem == 2638 && gearSlot == Common::GearSetSlot::Head) ||
                            (expectedItem == 4200 && gearSlot == Common::GearSetSlot::Ear) ||
-                           (expectedItem == 15130 && gearSlot == Common::GearSetSlot::Neck);
+                           (expectedItem == 15130 && gearSlot == Common::GearSetSlot::Neck) ||
+                           (expectedItem == 15132 && gearSlot == Common::GearSetSlot::Wrist);
     if(rewards.value("class_job", 0u) != 1 || storage > 3 || slot >= 25 || !supported ||
        !rewards.at("inventory_ready").get<bool>())
       throw ProtocolError("shop equipment requires an exact supported received Gladiator item/slot");

@@ -37,6 +37,7 @@ def test_capabilities(worker):
     assert "buy_shop_head_equipment" in caps["methods"]
     assert "buy_shop_ear_equipment" in caps["methods"]
     assert "buy_shop_neck_equipment" in caps["methods"]
+    assert "buy_shop_wrist_equipment" in caps["methods"]
     assert "tell" in caps["methods"]
     assert "tell_remote" in caps["methods"]
     assert "tell_offline" in caps["methods"]
@@ -121,6 +122,8 @@ def test_action_before_readiness_is_rejected(worker):
                 worker.request("buy_shop_ear_equipment", "test", token=1, event_id=262425)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("buy_shop_neck_equipment", "test", token=1, event_id=262640)
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("buy_shop_wrist_equipment", "test", token=1, event_id=262640)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("use_shop_vfx_item", "test", storage=0, slot=0, expected_count=3)
             with pytest.raises(WorkerError, match="world-ready"):

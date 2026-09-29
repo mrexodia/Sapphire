@@ -274,6 +274,29 @@ int main(int argc, char** argv)
     }
     if(!neck.item || neck.route.empty() || !std::isfinite(neck.routeLength) || neck.routeLength > 500)
       throw std::runtime_error("no complete affordable route to a source-listed neck shop");
+
+    uint32_t wristItem = 0, wristPrice = std::numeric_limits<uint32_t>::max(), wristIndex = 0;
+    auto neckShop = data.getRow<Excel::Shop>(neck.shop.event);
+    if(!neckShop) throw std::runtime_error("selected neck shop has no source item list");
+    const auto wristFunds = neckFunds - neck.price + neck.price;
+    for(uint32_t index = 0; index < 40; ++index)
+    {
+      auto shopItem = data.getRow<Excel::ShopItem>(neckShop->data().Item[index]);
+      if(!shopItem) continue;
+      auto item = data.getRow<Excel::Item>(shopItem->data().ItemId);
+      if(!item || !item->data().Price || item->data().Price > wristFunds ||
+         item->data().StackMax != 1 || item->data().Slot != 11 ||
+         item->data().EquipLevel > 1 || item->data().Class != 0)
+        continue;
+      const auto itemId = static_cast<uint32_t>(shopItem->data().ItemId);
+      if(!wristItem || item->data().Price < wristPrice ||
+         (item->data().Price == wristPrice && itemId < wristItem))
+      {
+        wristItem = itemId; wristPrice = item->data().Price; wristIndex = index;
+      }
+    }
+    if(!wristItem)
+      throw std::runtime_error("selected neck shop has no affordable source-listed wrist item");
     auto selectedItem = data.getRow<Excel::Item>(purchaseItem);
     if(!selectedItem || !selectedItem->data().StackMax)
       throw std::runtime_error("selected gil-shop item has no stack metadata");
@@ -335,6 +358,9 @@ int main(int argc, char** argv)
                            {"index", neck.index}, {"item", neck.item}, {"quantity", 1},
                            {"gil", neck.price}, {"source_slot", 10}, {"gear_slot", 9},
                            {"route_length", neck.routeLength}, {"route", neck.route}}},
+      {"wrist_purchase", {{"shop_id", neck.shop.event}, {"index", wristIndex},
+                            {"item", wristItem}, {"quantity", 1}, {"gil", wristPrice},
+                            {"source_slot", 11}, {"gear_slot", 10}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

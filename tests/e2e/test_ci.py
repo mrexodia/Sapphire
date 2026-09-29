@@ -114,7 +114,10 @@ def profile(tmp_path):
                                           "event_id": 262640, "position": [4, 0, 0]},
                               "index": 1, "item": 15130, "quantity": 1, "gil": 168,
                               "source_slot": 10, "gear_slot": 9,
-                              "route": [[3, 0, 0], [4, 0, 0]], "route_length": 1}}
+                              "route": [[3, 0, 0], [4, 0, 0]], "route_length": 1},
+            "wrist_purchase": {"shop_id": 262640, "index": 2, "item": 15132,
+                                "quantity": 1, "gil": 168,
+                                "source_slot": 11, "gear_slot": 10}}
     Path(p["shop_catalog"]).write_text(json.dumps(shop))
     respawn = {"version": 1, "profile": "sapphire-3.3", "homepoint": 9, "territory": 130,
                "pop_range": {"id": 1, "position": [0, 0, 0], "rotation": [0, 0, 0]}}

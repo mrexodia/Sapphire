@@ -279,6 +279,10 @@ def validate_shop_catalog(data):
     if math.dist(neck_route[0], ear_shop["position"]) > 2 or \
        math.dist(neck_route[-1], neck_shop["position"]) > 2:
         raise WorkerError("neck-shop route endpoints do not bind both exact shop actors")
+    if data.get("wrist_purchase") != {"shop_id": 262640, "index": 2, "item": 15132,
+                                       "quantity": 1, "gil": 168,
+                                       "source_slot": 11, "gear_slot": 10}:
+        raise WorkerError("unsupported source wrist-equipment purchase binding")
     shop = data.get("shop", {})
     if (set(shop) != {"layout_id", "base_id", "event_id", "position"}
             or any(type(shop.get(key)) is not int or shop[key] <= 0

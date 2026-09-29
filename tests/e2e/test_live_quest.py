@@ -845,6 +845,62 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-equipped",
                                       neck_final_rewards, neck_final_inventory)
 
+    neck_liquidation_slot = 21
+    neck_unequip_receipt = reloaded.request_item_unequip(
+        neck["gear_slot"], 1, neck_liquidation_slot, neck["item"])
+    wrist_funds_rewards = deepcopy(neck_final_rewards)
+    wrist_funds_rewards["items"][str(neck["item"])] = 1
+    wrist_funds_inventory = deepcopy(neck_final_inventory)
+    del wrist_funds_inventory[neck_gear_key]
+    wrist_funds_inventory[f"1:{neck_liquidation_slot}"] = {
+        "storage": 1, "slot": neck_liquidation_slot, "id": neck["item"], "count": 1}
+    reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-unequipped",
+                                      wrist_funds_rewards, wrist_funds_inventory)
+    reloaded.open_gil_shop(neck["shop"]["layout_id"], neck["shop"]["event_id"])
+    reloaded.sell_shop_item(1, neck_liquidation_slot, neck["item"])
+    del wrist_funds_rewards["items"][str(neck["item"])]
+    wrist_funds_rewards["currencies"]["1"] += neck["gil"]
+    del wrist_funds_inventory[f"1:{neck_liquidation_slot}"]
+    wrist_funds_inventory["2000:0"]["count"] = wrist_funds_rewards["currencies"]["1"]
+    state = reloaded.expect_rewards(wrist_funds_rewards, work_index)
+    assert state["rewards"]["inventory"] == wrist_funds_inventory
+    reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-sold",
+                                      wrist_funds_rewards, wrist_funds_inventory)
+    assert wrist_funds_rewards["currencies"]["1"] == 208
+
+    wrist = catalog["wrist_purchase"]
+    assert wrist["shop_id"] == neck["shop"]["event_id"]
+    reloaded.open_gil_shop(neck["shop"]["layout_id"], wrist["shop_id"])
+    reloaded.buy_shop_wrist_equipment(wrist["shop_id"])
+    wrist_rewards = deepcopy(wrist_funds_rewards)
+    wrist_rewards["items"][str(wrist["item"])] = 1
+    wrist_rewards["currencies"]["1"] -= wrist["gil"]
+    state = reloaded.expect_rewards(wrist_rewards, work_index)
+    wrist_inventory = deepcopy(state["rewards"]["inventory"])
+    wrist_expected = deepcopy(wrist_funds_inventory)
+    wrist_expected["2000:0"]["count"] = wrist_rewards["currencies"]["1"]
+    wrist_added = set(wrist_inventory) - set(wrist_expected)
+    assert len(wrist_added) == 1
+    wrist_key = next(iter(wrist_added))
+    assert wrist_inventory[wrist_key]["id"] == wrist["item"] and wrist_inventory[wrist_key]["count"] == 1
+    assert {key: value for key, value in wrist_inventory.items() if key != wrist_key} == wrist_expected
+    reloaded.exit_gil_shop(wrist["shop_id"])
+    reloaded, state = restart_shop_bot(reloaded, "shop-wrist-equipment-purchased",
+                                      wrist_rewards, wrist_inventory)
+    wrist_gear_key = f"1000:{wrist['gear_slot']}"
+    assert wrist_gear_key not in wrist_inventory
+    wrist_item = wrist_inventory[wrist_key]
+    wrist_equip_receipt = reloaded.request_shop_item_equip(
+        wrist_item["storage"], wrist_item["slot"], wrist["item"], wrist["gear_slot"])
+    wrist_final_inventory = deepcopy(wrist_inventory)
+    del wrist_final_inventory[wrist_key]
+    wrist_final_inventory[wrist_gear_key] = {"storage": 1000, "slot": wrist["gear_slot"],
+                                             "id": wrist["item"], "count": 1}
+    wrist_final_rewards = deepcopy(wrist_rewards)
+    del wrist_final_rewards["items"][str(wrist["item"])]
+    reloaded, state = restart_shop_bot(reloaded, "shop-wrist-equipment-equipped",
+                                      wrist_final_rewards, wrist_final_inventory)
+
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
@@ -925,6 +981,15 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "neck_equip_receipt": neck_equip_receipt,
         "rewards_after_neck_equip_restart": neck_final_rewards,
         "inventory_after_neck_equip_restart": neck_final_inventory,
+        "neck_liquidation_unequip_receipt": neck_unequip_receipt,
+        "rewards_after_neck_liquidation_restart": wrist_funds_rewards,
+        "inventory_after_neck_liquidation_restart": wrist_funds_inventory,
+        "wrist_purchase": wrist,
+        "rewards_after_wrist_purchase_restart": wrist_rewards,
+        "inventory_after_wrist_purchase_restart": wrist_inventory,
+        "wrist_equip_receipt": wrist_equip_receipt,
+        "rewards_after_wrist_equip_restart": wrist_final_rewards,
+        "inventory_after_wrist_equip_restart": wrist_final_inventory,
         "arrival_observed": True,
         "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")
