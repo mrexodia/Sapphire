@@ -171,6 +171,12 @@ def validate_combat_catalog(data):
                  "effect_type": 1, "target_enemy": True}
     if data.get("bootshine") != bootshine:
         raise WorkerError("combat catalog does not match the supported level-one Bootshine profile")
+    blizzard = {"action": 142, "class_job": 7, "work_index": 5, "level": 1, "base_exp": 50,
+                "category": 2, "cost_type": 3, "cost": 4, "range": 25,
+                "cast_ms": 2500, "recast_ms": 2500, "recast_group": 58,
+                "effect_type": 1, "target_enemy": True}
+    if data.get("blizzard") != blizzard:
+        raise WorkerError("combat catalog does not match the supported level-one Blizzard profile")
     return data
 
 

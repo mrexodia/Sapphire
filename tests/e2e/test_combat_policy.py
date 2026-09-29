@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import pytest
 
-from .support.combat import bootshine_ready, committed_damage, damage_value, fast_blade_ready
+from .support.combat import blizzard_ready, bootshine_ready, committed_damage, damage_value, fast_blade_ready
 from .support.worker import Bot
 
 
@@ -11,7 +11,7 @@ def ready_state():
     return {"phase": "ready", "entity_id": 7, "gm_rank": 0, "moving": False,
             "event_id": None, "scene": None, "rewards": {"class_job": 1},
             "predicted_position": [0, 0, 0],
-            "combat": {"fast_blade_guard_remaining_ms": 0, "effects": [], "integrities": []},
+            "combat": {"starting_action_guard_remaining_ms": 0, "effects": [], "integrities": []},
             "actors": {"7": {"kind": 1, "hp": 94, "tp": 60},
                        "8": {"kind": 2, "level": 1, "hp": 94, "position": [0, 0, 2]}}}
 
@@ -19,9 +19,9 @@ def ready_state():
 def test_readiness_requires_both_elapsed_local_guard_and_received_resources():
     state = ready_state()
     assert fast_blade_ready(state, 8)
-    state["combat"]["fast_blade_guard_remaining_ms"] = 1
+    state["combat"]["starting_action_guard_remaining_ms"] = 1
     assert not fast_blade_ready(state, 8)
-    state["combat"]["fast_blade_guard_remaining_ms"] = 0
+    state["combat"]["starting_action_guard_remaining_ms"] = 0
     state["actors"]["7"]["tp"] = 59
     assert not fast_blade_ready(state, 8)
 
@@ -29,7 +29,7 @@ def test_readiness_requires_both_elapsed_local_guard_and_received_resources():
 @pytest.mark.parametrize("value", [None, True, -1, 0.1])
 def test_missing_or_invalid_guard_does_not_default_to_ready(value):
     state = ready_state()
-    state["combat"]["fast_blade_guard_remaining_ms"] = value
+    state["combat"]["starting_action_guard_remaining_ms"] = value
     with pytest.raises(ValueError, match="pacing guard"):
         fast_blade_ready(state, 8)
 
@@ -86,6 +86,22 @@ def test_bootshine_readiness_requires_received_pugilist_state():
         bootshine_ready(state, 8)
 
 
+def test_blizzard_readiness_requires_received_thaumaturge_mp_and_range():
+    state = ready_state()
+    state["rewards"]["class_job"] = 7
+    state["actors"]["7"]["mp"] = 4
+    state["actors"]["8"]["position"] = [0, 0, 24]
+    assert blizzard_ready(state, 8)
+    state["actors"]["7"]["mp"] = 3
+    assert not blizzard_ready(state, 8)
+    state["actors"]["7"]["mp"] = 4
+    state["actors"]["8"]["position"] = [0, 0, 24.6]
+    assert not blizzard_ready(state, 8)
+    state["rewards"]["class_job"] = 1
+    with pytest.raises(ValueError, match="Thaumaturge"):
+        blizzard_ready(state, 8)
+
+
 def example_hit():
     effect = {"source": 7, "target": 8, "action": 9, "kind": 1, "request": 1, "result": 42,
               "effects": [{"type": 3, "flag": 0, "value": 9, "args": [0, 0, 0]}]}
@@ -135,7 +151,7 @@ def test_retaliation_uses_independent_pre_hit_health():
 
 def test_python_wait_uses_state_notifications_without_sending_or_retrying_actions():
     states = [ready_state() for _ in range(3)]
-    states[0]["combat"]["fast_blade_guard_remaining_ms"] = 1
+    states[0]["combat"]["starting_action_guard_remaining_ms"] = 1
     states[1]["actors"]["7"]["tp"] = 59
 
     class FakeWorker:

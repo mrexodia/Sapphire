@@ -22,12 +22,12 @@ int main()
   {
     using Clock = std::chrono::steady_clock;
     const auto now = Clock::time_point{} + std::chrono::seconds(10);
-    require(fastBladeGuardRemainingMs(now, now) == 0);
-    require(fastBladeGuardRemainingMs(now - std::chrono::seconds(1), now) == 0);
-    require(fastBladeGuardRemainingMs(now + std::chrono::microseconds(1), now) == 1);
-    require(fastBladeGuardRemainingMs(now + std::chrono::microseconds(1001), now) == 2);
-    require(fastBladeGuardRemainingMs(now + std::chrono::milliseconds(2500), now) == 2500);
-    require(fastBladeGuardRemainingMs(now + std::chrono::milliseconds(2500), now + std::chrono::milliseconds(2499)) == 1);
+    require(startingActionGuardRemainingMs(now, now) == 0);
+    require(startingActionGuardRemainingMs(now - std::chrono::seconds(1), now) == 0);
+    require(startingActionGuardRemainingMs(now + std::chrono::microseconds(1), now) == 1);
+    require(startingActionGuardRemainingMs(now + std::chrono::microseconds(1001), now) == 2);
+    require(startingActionGuardRemainingMs(now + std::chrono::milliseconds(2500), now) == 2500);
+    require(startingActionGuardRemainingMs(now + std::chrono::milliseconds(2500), now + std::chrono::milliseconds(2499)) == 1);
     Json actors{{"7", {{"hp", 100}, {"tp", 1000}}}, {"8", {{"hp", 20}, {"kind", 2}, {"level", 1}, {"position", {0, 0, 2}}}}};
     Json rewards{{"class_job", 1}};
     auto body = fastBladeRequest(7, 1, 8, {0,0,0}, actors, rewards);
@@ -42,6 +42,15 @@ int main()
     expected[4] = 53; expected[8] = 2;
     require(bootshine == expected);
     rejects([&] { bootshineRequest(7, 2, 8, {0,0,0}, actors, rewards); });
+    auto casterActors = actors; casterActors["7"]["mp"] = 100;
+    auto blizzard = blizzardRequest(7, 3, 8, {0,0,0}, casterActors, {{"class_job", 7}});
+    expected[4] = 142; expected[8] = 3;
+    require(blizzard == expected);
+    rejects([&] { blizzardRequest(7, 3, 8, {0,0,0}, casterActors, rewards); });
+    auto noMp = casterActors; noMp["7"]["mp"] = 3;
+    rejects([&] { blizzardRequest(7, 3, 8, {0,0,0}, noMp, {{"class_job", 7}}); });
+    auto farCasterTarget = casterActors; farCasterTarget["8"]["position"] = {0, 0, 26};
+    rejects([&] { blizzardRequest(7, 3, 8, {0,0,0}, farCasterTarget, {{"class_job", 7}}); });
     rejects([&] { fastBladeRequest(7, 1, 8, {0,0,-2}, actors, rewards); });
     rejects([&] { fastBladeRequest(7, 1, 9, {0,0,0}, actors, rewards); });
     rejects([&] { fastBladeRequest(7, 65536, 8, {0,0,0}, actors, rewards); });

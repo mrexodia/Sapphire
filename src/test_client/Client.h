@@ -65,7 +65,7 @@ namespace Sapphire::Testing
     RewardsState m_rewards;
     CombatState m_combat;
     uint32_t m_actionRequest = 0;
-    std::chrono::steady_clock::time_point m_fastBladeReady{};
+    std::chrono::steady_clock::time_point m_startingActionReady{};
     Json m_login;
     std::shared_ptr<Channel> m_lobby, m_zone, m_chat;
     LobbyCipher m_cipher;

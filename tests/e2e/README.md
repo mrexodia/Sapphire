@@ -454,7 +454,7 @@ three units from its position estimate, wrong classes/kinds, dead actors and
 insufficient received TP; Fast Blade is no longer artificially restricted to
 level-one targets. A conservative 2.5-second request guard is extended from
 the received action-start recast; this is not a general cooldown scheduler. Snapshot
-`combat.fast_blade_guard_remaining_ms` exposes that **local** guard, rounded up so
+`combat.starting_action_guard_remaining_ms` exposes that **local** guard, rounded up so
 positive sub-millisecond waits never appear ready. `Bot.wait_fast_blade_ready()`
 uses state notifications (including ordinary heartbeat replies), received TP and
 estimated range; it neither sleeps a fixed recast interval nor retries actions.

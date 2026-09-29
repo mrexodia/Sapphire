@@ -59,7 +59,7 @@ namespace Sapphire::Testing
     if(m_state["integrities"].empty()) throw ProtocolError("no combat integrity to annotate");
     m_state["integrities"].back()["previous_hp"] = previousHp;
   }
-  uint32_t fastBladeGuardRemainingMs(std::chrono::steady_clock::time_point ready,
+  uint32_t startingActionGuardRemainingMs(std::chrono::steady_clock::time_point ready,
                                     std::chrono::steady_clock::time_point now)
   {
     if(ready <= now) return 0;
@@ -104,5 +104,31 @@ namespace Sapphire::Testing
                          const std::array<float, 3>& position, const Json& actors, const Json& rewards)
   {
     return startingMeleeRequest(53, 2, "Bootshine", entity, request, target, position, actors, rewards);
+  }
+  Bytes blizzardRequest(uint32_t entity, uint32_t request, uint32_t target,
+                        const std::array<float, 3>& position, const Json& actors, const Json& rewards)
+  {
+    const auto key = std::to_string(target), self = std::to_string(entity);
+    if(!request || request > 65535 || target == entity || rewards.at("class_job") != 7 ||
+       !actors.contains(self) || actors.at(self).at("hp") == 0 ||
+       !actors.contains(key) || actors.at(key).at("kind") != 2 || actors.at(key).at("hp") == 0)
+      throw ProtocolError("Blizzard requires a living Thaumaturge and observed battle NPC");
+    if(actors.at(self).at("mp").get<uint16_t>() < 4)
+      throw ProtocolError("Blizzard requires at least four received MP");
+    auto destination = actors.at(key).at("position").get<std::array<float, 3>>();
+    float squared = 0;
+    for(size_t i = 0; i < 3; ++i)
+    {
+      if(!std::isfinite(position[i]) || !std::isfinite(destination[i])) throw ProtocolError("invalid combat position");
+      squared += std::pow(position[i] - destination[i], 2);
+    }
+    if(squared > 625) throw ProtocolError("Blizzard target outside 25-unit range");
+    Wire::WorldPackets::Client::FFXIVIpcActionRequest p{};
+    std::memset(&p, 0, sizeof(p));
+    p.ActionKind = Common::ACTION_KIND_NORMAL; p.ActionKey = 142; p.RequestId = request; p.Target = target;
+    const auto angle = std::atan2(destination[0] - position[0], destination[2] - position[2]);
+    p.Dir = p.DirTarget = static_cast<uint16_t>(static_cast<uint32_t>(std::lround(
+      (angle + 3.14159265358979323846) * (32768.0 / 3.14159265358979323846))) & 0xffffu);
+    return objectBytes(p);
   }
 }

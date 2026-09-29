@@ -33,7 +33,11 @@ int main(int argc, char** argv)
     const uint32_t actionId = argc == 4 ? static_cast<uint32_t>(std::stoul(argv[3])) : 9;
     auto output = metadata(actionId);
     output["version"] = 1; output["profile"] = "sapphire-3.3";
-    if(argc == 3) output["bootshine"] = metadata(53);
+    if(argc == 3)
+    {
+      output["bootshine"] = metadata(53);
+      output["blizzard"] = metadata(142);
+    }
     std::ofstream file(argv[2]);
     if(!file || !(file << output.dump(2) << '\n')) throw std::runtime_error("cannot write combat catalog");
   }

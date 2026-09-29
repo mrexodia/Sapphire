@@ -396,11 +396,12 @@ namespace Sapphire::Testing
       {
         detail["start"] = m_combat.state()["starts"].back();
         if(detail["start"]["source"] == m_entity &&
-           (detail["start"]["action"] == 9 || detail["start"]["action"] == 53))
+           (detail["start"]["action"] == 9 || detail["start"]["action"] == 53 ||
+            detail["start"]["action"] == 142))
         {
           const auto recast = detail["start"]["recast_centiseconds"].get<uint32_t>();
           if(recast != 250) throw ProtocolError("unsupported starting-melee recast");
-          m_fastBladeReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(recast * 10);
+          m_startingActionReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(recast * 10);
         }
       }
       else
@@ -574,8 +575,8 @@ namespace Sapphire::Testing
     {
       auto state = m_state; state["seq"] = m_seq; state["moving"] = m_moving;
       state["rewards"] = m_rewards.state(); state["combat"] = m_combat.state();
-      state["combat"]["fast_blade_guard_remaining_ms"] =
-        fastBladeGuardRemainingMs(m_fastBladeReady, std::chrono::steady_clock::now());
+      state["combat"]["starting_action_guard_remaining_ms"] =
+        startingActionGuardRemainingMs(m_startingActionReady, std::chrono::steady_clock::now());
       return state;
     }
     if(method == "close") { close(); phase("closed"); return Json::object(); }
@@ -690,21 +691,26 @@ namespace Sapphire::Testing
         throw ProtocolError("malformed received shop purchase state at validation stage " + std::to_string(stage));
       }
     }
-    if(method == "fast_blade" || method == "bootshine")
+    if(method == "fast_blade" || method == "bootshine" || method == "blizzard")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
       if(!args.at("target").is_number_unsigned() || args.at("target") > uint64_t{0xffffffff})
         throw ProtocolError("combat target must be an observed 32-bit actor id");
-      if(std::chrono::steady_clock::now() < m_fastBladeReady) throw ProtocolError("starting-melee recast pending");
+      if(std::chrono::steady_clock::now() < m_startingActionReady) throw ProtocolError("starting-action recast pending");
       if(m_actionRequest >= 65535) throw ProtocolError("combat request budget exhausted");
-      auto payload = method == "fast_blade"
-        ? fastBladeRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
-                           m_state["actors"], m_rewards.state())
-        : bootshineRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
-                           m_state["actors"], m_rewards.state());
+      Bytes payload;
+      if(method == "fast_blade")
+        payload = fastBladeRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
+                                   m_state["actors"], m_rewards.state());
+      else if(method == "bootshine")
+        payload = bootshineRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
+                                   m_state["actors"], m_rewards.state());
+      else
+        payload = blizzardRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
+                                  m_state["actors"], m_rewards.state());
       sendZone(WC::FFXIVIpcActionRequest::_ServerIpcType, payload);
       // Conservative request pacing; the received ActionStart moves this deadline forward.
-      m_fastBladeReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(2500);
+      m_startingActionReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(2500);
       return {{"request", m_actionRequest}};
     }
     if(method == "return_homepoint")

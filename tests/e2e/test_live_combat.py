@@ -96,7 +96,7 @@ def test_observed_fast_blade_damage(environment, live_worker):
         expected_hp = max(0, before["hp"] - damage_value(effect))
         evidence.append({"effect": effect, "before_hp": before["hp"], "after_hp": expected_hp,
                          "received_tp_before": state["actors"][str(entity)]["tp"],
-                         "local_guard_remaining_ms": state["combat"]["fast_blade_guard_remaining_ms"]})
+                         "local_guard_remaining_ms": state["combat"]["starting_action_guard_remaining_ms"]})
 
     assert len(effects) >= 3
     for observed in committed_states.values():
@@ -218,6 +218,58 @@ def test_observed_fast_blade_damage(environment, live_worker):
     pugilist.logout()
     pugilist_witness.logout()
 
+    # Exercise the source-defined level-one caster action with received MP and
+    # independently observed natural-target range; do not grant a spell or resource.
+    blizzard_meta = catalog["blizzard"]
+    caster_spawn = population["LVD_BNPC_01"]["bnpcs"]["3746477"]
+    assert caster_spawn["baseInfo"]["baseId"] == 351 and caster_spawn["baseInfo"]["level"] == 1
+    caster_position = list(caster_spawn["baseInfo"]["position"])
+    caster_position[0] += 1.0
+    caster_fixture = environment.fresh_character(caster_position, 141, class_job=7)
+    caster_witness_fixture = environment.fresh_character(caster_position, 141)
+    caster = Bot(live_worker, "thaumaturge-caster")
+    caster_witness = Bot(live_worker, "thaumaturge-witness")
+    caster_state = caster.login_via_lobby(caster_fixture["auth"], caster_fixture["name"])
+    caster_entity = caster_state["entity_id"]
+    assert caster_state["rewards"]["class_job"] == blizzard_meta["class_job"]
+    caster_witness.login_via_lobby(caster_witness_fixture["auth"], caster_witness_fixture["name"])
+
+    def caster_candidates(s):
+        return [(key, actor) for key, actor in s["actors"].items()
+                if actor["kind"] == 2 and actor["base_id"] == 351 and actor["level"] == 1
+                and actor["hp"] == actor["hp_max"] > 0
+                and math.dist(actor["position"], s["predicted_position"]) < 20]
+
+    caster_state = live_worker.wait_state(caster.name,
+        lambda s: bool(caster_candidates(s)) and s["actors"][str(caster_entity)]["mp"] >= 4,
+        "natural target and received Thaumaturge MP", 30)
+    caster_target, caster_before = min(caster_candidates(caster_state),
+        key=lambda row: math.dist(row[1]["position"], caster_state["predicted_position"]))
+    caster_mp_before = caster_state["actors"][str(caster_entity)]["mp"]
+    live_worker.wait_state(caster_witness.name,
+        lambda s: caster_target in s["actors"] and str(caster_entity) in s["actors"]
+                  and s["actors"][caster_target]["hp"] == caster_before["hp"]
+                  and math.dist(s["actors"][caster_target]["position"],
+                                s["actors"][str(caster_entity)]["position"]) < 25,
+        "witness sees Thaumaturge and natural target within spell range", 20)
+    caster.wait_blizzard_ready(int(caster_target))
+    blizzard = caster.blizzard(int(caster_target))
+    assert blizzard["action"] == 142 and damage_value(blizzard) > 0
+    for bot in (caster, caster_witness):
+        live_worker.wait_state(bot.name, lambda s: committed_damage(s, blizzard, caster_before),
+                               "Blizzard matching effect and committed HP", 10)
+    caster_after = live_worker.wait_state(caster.name,
+        lambda s: any(row["target"] == caster_entity and row["result"] == blizzard["result"]
+                          and row["hp"] > 0 for row in s["combat"]["integrities"])
+                  and any(row["source"] == caster_entity and row["action"] == 142
+                          and row["group"] == 58 and row["recast_centiseconds"] == 250
+                          for row in s["combat"]["starts"]),
+        "received Blizzard source integrity and action start", 10)
+    blizzard_integrity = next(row for row in caster_after["combat"]["integrities"]
+                              if row["target"] == caster_entity and row["result"] == blizzard["result"])
+    caster.logout()
+    caster_witness.logout()
+
     (environment.artifacts / "combat-defeat-rewards.json").write_text(json.dumps({
         "attacks": evidence, "attempt_monotonic": attempts, "retaliation": retaliation,
         "fighter_hp_before_combat": fighter_before["hp"], "target_hp_after": 0,
@@ -228,5 +280,8 @@ def test_observed_fast_blade_damage(environment, live_worker):
         "bootshine": {"class_job": 2, "action_metadata": pugilist_meta, "effect": bootshine,
                       "target_before": pugilist_before, "observed_approach": pugilist_approach,
                       "both_clients_verified": True},
-        "scope": "one natural level-one Fast Blade enemy defeat with current testTable loot/EXP plus one independently observed natural-target Bootshine effect; no combo or general combat claim"
+        "blizzard": {"class_job": 7, "action_metadata": blizzard_meta, "effect": blizzard,
+                     "target_before": caster_before, "received_mp_before": caster_mp_before,
+                     "source_integrity": blizzard_integrity, "both_clients_verified": True},
+        "scope": "one natural level-one Fast Blade enemy defeat with current testTable loot/EXP plus independently observed natural-target Bootshine and Blizzard effects/resources; no combo or general combat claim"
     }, indent=2), encoding="utf-8")
