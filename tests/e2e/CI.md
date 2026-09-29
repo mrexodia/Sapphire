@@ -115,17 +115,18 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this twelve-scenario headless suite only.
 
-Latest local evidence: clean revision `7504e7051` passed the twelve-case strict gate
-in 1022.22 seconds with zero skips/errors/failures, exact collection and staged-input
+Latest local evidence: clean revision `2d7d9ef15` passed the twelve-case strict gate
+in 1084.07 seconds with zero skips/errors/failures, exact collection and staged-input
 identity, and removed private runtime. This includes same- and cross-zone nonparty
-Tell, cross-zone party Tell, independently observed living Return, persisted later-
-equipment purchase/equip, the quantity-three VFX action/liquidation, source-bound
-observed Sprint, the full eight-member party lifecycle, two persisted discovery
-parts/shapes, Ring2, duplicate-name rejection and normal lobby deletion with fresh-
-session absence proof. Evidence is `build-e2e/ci-summary-nonparty-direction.json`
-(SHA-256 `61c404b53aac06488a5465ba4cc62f11e2e110bfa08c3ce913086e45c6d3ee69`)
-with private diagnostics at `.e2e-artifacts/ci/gameplay-ci-essl6m_d` and private
-manifest SHA-256 `cf4a391a9ba7918243cf2d3330c63db298c69a16f9717421b7be91e93e4fcd64`;
+Tell, cross-zone party Tell, independently observed living Return, persisted two-
+stage later-equipment purchase/resale/equip, the quantity-three VFX
+action/liquidation, source-bound observed Sprint, the full eight-member party
+lifecycle, two persisted discovery parts/shapes, Ring2, duplicate-name rejection
+and normal lobby deletion with fresh-session absence proof. Evidence is
+`build-e2e/ci-summary-second-equipment.json` (SHA-256
+`fddb6980433362a4775b00914cf066f94771b6a0c181bcfbe9f4ae4848f3cc64`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-d46n56yp` and private manifest
+SHA-256 `19a8aa4f5d8fb7a8c1742f08faf6de5e9e4ec86cdacebb8efaed5f994c4494ec`;
 this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
