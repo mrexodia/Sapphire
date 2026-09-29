@@ -45,8 +45,10 @@ lobby, world and MariaDB processes with matching game data:
   party through exact received rosters up to eight members; the eighth member's
   message reaches all seven peers and a ninth invite fails closed at the protocol
   limit. The eighth member normally logs out, all seven peers retain its exact
-  identity with offline detail redacted, and a fresh HTTP/lobby/world session
-  restores the same full roster/channel and seven-recipient chat fan-out. Explicit
+  identity with offline detail redacted, and a direct Tell to that exact offline
+  identity returns the exact unavailable-target name on the chat connection. A
+  fresh HTTP/lobby/world session then restores the same full roster/channel and
+  seven-recipient chat fan-out. Explicit
   disband then reaches all eight. The former leader cannot construct
   restricted operations. The
   zoning scenario additionally keeps the

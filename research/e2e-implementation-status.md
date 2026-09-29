@@ -548,6 +548,22 @@ manifest SHA-256 is
 `07ba1bcbe5da74f26a4ea420c1fe84bbe18ef2ce78e63a69a1c6fd86b48859c7` and event
 journal SHA-256 is
 `0d1473a37ca16ae265d6bd0082f30a39dac2c879b1fc09091cb70b4221b57050`.
+The source is clean and runtime removal is confirmed.
+
+At `71faf44aa`, the full-roster reconnect path also exercises the unavailable Tell
+result after ordinary logout. Seven peers first receive the exact member identity
+with territory zero and the sender independently receives the target despawn; only
+that matching offline party identity can be requested. The sender then receives
+`FFXIVIpcTellNotFound` on the same chat connection with the exact target name before
+the existing fresh-session reconnect. Initial diagnostics preserved both an opcode
+collision from decoding `0x66` outside the phase-bound request and a timeout from
+incorrectly watching the world connection; the final decoder is request-phase-bound
+to the chat connection. Online/offline mismatch and stale-spawn contracts pass on
+Clang, MSVC and GNU. The clean case passed in **36.86s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-53vnt0pf`; manifest SHA-256 is
+`6404b607a66556800da6851d17487ee4c21d3723712097ed17acd07f89a1d04a` and event
+journal SHA-256 is
+`42ff16004682eafd4b565145e2d3f2176ee0d72d422b918005164a38c53353b3`.
 The source is clean and runtime removal is confirmed. Alliance, instance,
 linkshell/free-company and arbitrary nonparty Tell behavior remain uncovered.
 
