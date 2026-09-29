@@ -31,7 +31,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
 | More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say and a received two-client party join/leave lifecycle with exact bidirectional same-zone and cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, broader social/group policy, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
-| Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and source-LGB Central Thanalan map discovery | One path in each category is verified; general adapters remain missing |
+| Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
@@ -78,7 +78,7 @@ a nearby passing test does not close them.
 | Scene adapter: approach→interact→observe→choose→finish→state | live quest, shop and opening scenarios use explicit catalogs and received identities | Verified for supported one/two-result and opening chains |
 | Unknown scenes fail closed | worker/policy contracts; workload invariant rejects any unexpected scene | Verified |
 | Yield/resume scene exchange | Server logs prove quest yield is unimplemented and no established resume packet/result exists | **Blocked; unsupported capability is explicit** |
-| Range/discovery/territory triggers | physical ExitRange crossing plus source-bound enter-territory, opening WithinRange and Central Thanalan discovery operations | **Partial:** one exact path in each category is verified, but general adapters are absent |
+| Range/discovery/territory triggers | physical ExitRange crossing plus source-bound enter-territory, opening WithinRange and two Central Thanalan discovery operations | **Partial:** exact sphere and rotated-box discovery paths are verified, but general adapters are absent |
 | Curated waypoint stage | independently observed quest/shop/transition/pursuit routes | Verified |
 | Navmesh routing for selected territories | matching TSET catalogs/meshes for territories 130 and 141; disconnected/off-mesh routes fail closed | Verified for selected corridors only |
 | Content-aware transitions/doors/dynamic obstacles | one source-defined exit volume is crossed | **Partial:** general transitions, doors and dynamic obstacles are absent |
@@ -208,8 +208,29 @@ a nearby passing test does not close them.
   `sapphire-e2e-be9syxf4` passed in 55.52s at revision `38dc3b2db`; manifest SHA-256
   is `fd5bc9da699e3d4f5b46c558d0135485bc716e099e2151243adb45eda03ae820`, event
   journal SHA-256 is `8bccb4669335ff70bfff250d0fe4d7ba9a278a93ec8214ba603843e59c949e6d`,
-  `dirty=false`, and its private runtime was removed. This verifies one discovery
-  path, not general map-range evaluation.
+  `dirty=false`, and its private runtime was removed.
+
+  At `fff4f6a7a`, the same journey continues over a source-navmesh 731-point,
+  347.457m route to source-LGB rotated box 4204061 (map 21, part 3). A fourth
+  client at the endpoint independently receives the traveler within 0.15m; that
+  witnessed position must also match the actor's predicted endpoint before the
+  exact normal request is constructed. The independently observed arrival position
+  similarly gates part 1. Distinct exact replies yield source-derived cumulative
+  30 EXP, while a fresh login after world restart—not either reply—proves discovery
+  parts `[1,3]` and endpoint persistence. The client rejects unknown layout/part
+  pairs, repeated parts, malformed/off-volume positions and witness/endpoint
+  disagreement. Exact sphere/box request bytes and catalog identity, route length,
+  endpoint and w1f2 mesh contracts pass with Clang, MSVC and GNU. A failed 240s
+  route-budget hypothesis remains preserved; no automatic retry or recovery was
+  added. The clean case passed in **302.66s** at
+  `.e2e-artifacts/discovery-live/sapphire-e2e-qc4pa4el`; manifest SHA-256 is
+  `db41b278a741112b93321b0503b881092b9bc52b2061f1686ae303bed1be00f8`, dual
+  discovery artifact SHA-256 is
+  `58f8bc182e401cab62b53de4cdefb7b2d4f6113d2266a278e2fb82fc31ddc703`, and
+  bounded event-journal SHA-256 is
+  `3375fae3a5762c388545d92ce90f6336ddf4e17b622f1032a3c6fe2bb762e8b3`.
+  The source is clean and runtime removal is confirmed. This verifies two exact
+  range shapes/parts, not general map-range evaluation.
 - `.e2e-assets/runtime-nav-v1/navi` contains separately generated w1t1/w1f2 tiles.
   Live logs explicitly show both territories initialized with `NAVI`, not merely
   configured file paths. Server mesh hashes are in the manifest. Original collision

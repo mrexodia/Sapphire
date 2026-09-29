@@ -42,12 +42,14 @@ lobby, world and MariaDB processes with matching game data:
   cross-zone states, each direction sends through the exact received party channel;
   the other client independently matches party/channel and sender entity/character/name.
   Invite acknowledgements are not treated as membership evidence.
-- A three-client zoning test walks a verified approach into an actual exit volume,
-  crosses from Ul'dah to Central Thanalan, observes departure and arrival from
-  separate bots, checks destination chat/keepalives, and enters the sole enabled
-  source discovery sphere containing that arrival. It receives exact map 21/part 1
-  and 15 EXP, then reloads the territory, position and discovery bit after world
-  restart. The reply is retained separately from fresh-login mutation proof.
+- A four-client zoning test walks a verified approach into an actual exit volume,
+  crosses from Ul'dah to Central Thanalan, and observes departure and arrival from
+  separate bots. It enters the sole source discovery sphere containing that arrival
+  for exact map 21/part 1, then follows a complete 731-point destination-navmesh
+  route into source rotated box 4204061 while an endpoint bot independently receives
+  the traveler. Exact part-1/part-3 replies and 30 cumulative EXP are followed by a
+  restart/fresh login proving both discovery bits and endpoint persistence. Replies
+  remain separate from fresh-login mutation proof.
 - The chain test moves the earned ether stack to an observed empty ordinary bag
   slot, verifies exact placement through a fresh login and again after world
   restart, preserving all other tracked slots and rewards. It then swaps the
