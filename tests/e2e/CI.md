@@ -115,18 +115,18 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this twelve-scenario headless suite only.
 
-Latest local evidence: clean revision `485ffee34` passed the twelve-case strict gate
-in 1138.66 seconds with zero skips/errors/failures, exact collection and staged-input
-identity, and removed private runtime. This includes same- and cross-zone nonparty
-Tell, cross-zone party Tell, independently observed living Return, persisted three-
-stage later-equipment purchase/resale/equip, the quantity-three VFX
-action/liquidation, source-bound observed Sprint, the full eight-member party
-lifecycle, two persisted discovery parts/shapes, Ring2, duplicate-name rejection
-and normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-affordable-gear.json` (SHA-256
-`d16c73f45ad5c5cd8be90f426329024e948352a33fade9c4fa25de661563ffcd`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-b4azh23b` and private manifest
-SHA-256 `72101f0695b0ffb365a5a7072dedaa6bd3e64571daaf2cdff14e2e83ee08c503`;
+Latest local evidence: clean revision `7c4769d18` passed the twelve-case strict gate
+in 1142.66 seconds with zero skips/errors/failures, exact collection and staged-input
+identity, and removed private runtime. This includes restart-proven generic currency-
+move rejection, same- and cross-zone nonparty Tell, cross-zone party Tell,
+independently observed living Return, persisted three-stage later-equipment
+purchase/resale/equip, the quantity-three VFX action/liquidation, source-bound
+observed Sprint, the full eight-member party lifecycle, two persisted discovery
+parts/shapes, Ring2, duplicate-name rejection and normal lobby deletion with fresh-
+session absence proof. Evidence is `build-e2e/ci-summary-currency-rejection.json`
+(SHA-256 `bf63d31146a9177fb894be5c5b4f48a1eabef0a300438b0419fa6c0e8a74b7fa`)
+with private diagnostics at `.e2e-artifacts/ci/gameplay-ci-uircuf2z` and private
+manifest SHA-256 `59516e128d5309338bb783397384e751381b6666ca88e8f117784db7751b5408`;
 this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
