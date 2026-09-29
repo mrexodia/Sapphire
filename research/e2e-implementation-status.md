@@ -134,16 +134,16 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
-  gate at `a1c27a973` took **1251.73s**, including source-routed head and ear purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
+  gate at `17ad3c752` took **1332.65s**, including source-routed head, ear and neck purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
   Tell, cross-zone party Tell, independently observed living Return, persisted
   three-stage later-equipment purchase/resale/equip, the quantity-three VFX item action/liquidation,
   observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
   discovery, Ring2, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-57twsx3_`, summary
-  `build-e2e/ci-summary-ear-shop.json`). Summary SHA-256 is
-  `d80088e12f0f93b7bda6c38a22d806d01b260881733499b728ab316a865881d4`,
+  (`gameplay-ci-ot6cl8ch`, summary
+  `build-e2e/ci-summary-neck-shop.json`). Summary SHA-256 is
+  `ab34218ecac00ae14f9e6e359b3c4a1986d632138ce32255e666088d8e6f501b`,
   private manifest SHA-256 is
-  `a0ebe0e787f52128345ee5e4f25f32f47fd25b6f5cdb7ad5276504fabaaa6fb0`, and
+  `65165e16f7109a6d08ba8242a375a4b0902529214c827aa7a04ebeec6b7df154`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -1641,6 +1641,38 @@ journal SHA-256 is
 `6c1f61cac855a3247d6e245d8e61dd4ca91f292362ea1abe07c16c34aab629ed`.
 The source is clean and runtime removal is confirmed. This proves one ear item and
 one additional exact route/shop, not all accessories or general routing/shops.
+
+At `17ad3c752`, a fourth source shop and a second later accessory type are covered.
+The final body/head/ear equipment identities are each ordinarily unequipped to exact
+empty bag slots. Operation-8 receipts remain explicitly non-proof: separate fresh
+world sessions after each operation prove the exact source absence/destination
+presence before the next request. All three bag identities are then sold through
+the still-received ear-shop scene for their source prices 59/47/66; received state
+and restart prove empty bags, those equipment slots empty and exactly 208 gil. The
+catalog selects the cheapest affordable level-one all-class single-stack neck item
+and accepts only a complete source-navmesh route from the ear shop: layout 4067692 /
+ENpc 1004417 / event 262640, index 1, item 15130, 168 gil, source slot 10 /
+equipment slot 9. Its 56-point route is **23.282667m**; every actor waypoint is
+received and a fresh normal destination client independently witnesses arrival
+within 0.15m. Exact scene/funds/absence gates precede purchase. Restart proves one
+bag item and 40 gil; a bounded 15130→`1000:9` request is followed by another restart
+proving the exact neck location, empty bags, 40 gil and unchanged 100 EXP/level one.
+Four retained failed diagnostics (`sapphire-e2e-mx2dhuyg`, `sapphire-e2e-1asvrb_2`,
+`sapphire-e2e-_mbhu245`, plus instrumented `sapphire-e2e-25o8auwd`) showed why an
+operation receipt and immediate unchanged snapshot cannot establish rejection or
+mutation: the server had accepted the move but did not publish an immediate
+inventory delta. The scenario was corrected to use fresh-session state rather than
+weaken the assertion. Exact purchase/equip bytes and malformed-state contracts pass
+on Clang, MSVC and GNU with **258 passed, 12 live skips**. The clean chain passed in
+**589.42s** at `.e2e-artifacts/discovery-live/sapphire-e2e-5b4w9c3m`; manifest
+SHA-256 is `d462db8255ef812e06b37bb52e1b88e2f29d3a119878a51b7d74902e1c7a5e4b`,
+`gil-shop-sale.json` SHA-256 is
+`14320a36749a857be9a463b10fabcf8ea5c39b058487a8be8a836c71414b3a9b`, and event
+journal SHA-256 is
+`d20fccd37af1a651e7f941af1ef22e540520a5e55c593b451460be74e3fb31cd`.
+The source is clean and runtime removal is confirmed. This proves one neck item and
+one additional exact route/shop, not wrist/waist/off-hand coverage, arbitrary
+merchant access or general navigation.
 
 The first live attempt exposed two server defects rather than prompting weaker
 assertions. `addCurrency()` created a missing currency item with the generic
