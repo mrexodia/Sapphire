@@ -150,8 +150,12 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
         lambda s: math.dist(s["actors"].get(str(target), {}).get("position", enemy_start), enemy_start) >= 2,
         "observer sees hostile natural enemy pursuit", 30)
     enemy_pursued_position = pursued["actors"][str(target)]["position"]
-    assert math.dist(enemy_pursued_position, pursued_observer["actors"][str(target)]["position"]) < 0.15
-    assert math.dist(enemy_pursued_position, pursuit["route"][-1]) < math.dist(enemy_start, pursuit["route"][-1])
+    observer_pursued_position = pursued_observer["actors"][str(target)]["position"]
+    # These snapshots are independent and the enemy is still moving; requiring
+    # two asynchronously received positions to be the same tick is invalid.
+    # Each client must instead observe displacement toward the fighter's endpoint.
+    for position in (enemy_pursued_position, observer_pursued_position):
+        assert math.dist(position, pursuit["route"][-1]) < math.dist(enemy_start, pursuit["route"][-1])
 
     defeated = live_worker.wait_state(fighter.name,
         lambda s: s["actors"].get(str(entity), {}).get("hp") == 0,
