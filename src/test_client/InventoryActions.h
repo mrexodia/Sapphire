@@ -14,6 +14,10 @@ namespace Sapphire::Testing
   Bytes unequipItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                            uint32_t gearSlot, uint32_t expectedItem,
                            uint32_t destinationStorage, uint32_t destinationSlot);
+  // Equip the exact source-listed later leg item to its observed-empty slot.
+  Bytes equipShopItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
+                             uint32_t storage, uint32_t slot, uint32_t expectedItem,
+                             uint32_t gearSlot);
   // Re-equip one source-defined Ul'dah starter item to its observed-empty gear slot.
   Bytes reequipStarterItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                                   uint32_t storage, uint32_t slot, uint32_t expectedItem,

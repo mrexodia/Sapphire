@@ -434,6 +434,36 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     reloaded, state = restart_shop_bot(reloaded, "shop-equipment-reloaded",
                                       equipment_rewards, equipment_inventory)
 
+    gear_slot = catalog["equipment_purchase"]["gear_slot"]
+    starter_key = f"1000:{gear_slot}"
+    assert equipment_inventory[starter_key] == {"storage": 1000, "slot": gear_slot,
+                                                "id": 3296, "count": 1}
+    gear_empty = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
+                                      for slot in reversed(range(25)))
+                      if key not in equipment_inventory)
+    gear_empty_storage, gear_empty_slot = map(int, gear_empty.split(":"))
+    unequip_receipt = reloaded.request_item_unequip(gear_slot, gear_empty_storage,
+                                                     gear_empty_slot, 3296)
+    unequipped_inventory = deepcopy(equipment_inventory)
+    del unequipped_inventory[starter_key]
+    unequipped_inventory[gear_empty] = {"storage": gear_empty_storage, "slot": gear_empty_slot,
+                                        "id": 3296, "count": 1}
+    unequipped_rewards = deepcopy(equipment_rewards)
+    unequipped_rewards["items"]["3296"] = 1
+    reloaded, state = restart_shop_bot(reloaded, "shop-gear-empty-reloaded",
+                                      unequipped_rewards, unequipped_inventory)
+    purchased_item = unequipped_inventory[equipment_key]
+    equip_receipt = reloaded.request_shop_item_equip(purchased_item["storage"], purchased_item["slot"],
+                                                      catalog["equipment_purchase"]["item"], gear_slot)
+    equipped_inventory = deepcopy(unequipped_inventory)
+    del equipped_inventory[equipment_key]
+    equipped_inventory[starter_key] = {"storage": 1000, "slot": gear_slot,
+                                        "id": catalog["equipment_purchase"]["item"], "count": 1}
+    equipped_rewards = deepcopy(unequipped_rewards)
+    del equipped_rewards["items"][str(catalog["equipment_purchase"]["item"])]
+    reloaded, state = restart_shop_bot(reloaded, "shop-gear-equipped-reloaded",
+                                      equipped_rewards, equipped_inventory)
+
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
@@ -450,6 +480,12 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "equipment_purchase": catalog["equipment_purchase"],
         "rewards_after_equipment_purchase_restart": equipment_rewards,
         "inventory_after_equipment_purchase_restart": equipment_inventory,
+        "unequip_receipt": unequip_receipt,
+        "rewards_after_starter_unequip_restart": unequipped_rewards,
+        "inventory_after_starter_unequip_restart": unequipped_inventory,
+        "shop_equip_receipt": equip_receipt,
+        "rewards_after_shop_equip_restart": equipped_rewards,
+        "inventory_after_shop_equip_restart": equipped_inventory,
         "arrival_observed": True,
         "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")

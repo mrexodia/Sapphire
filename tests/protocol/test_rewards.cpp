@@ -108,6 +108,27 @@ int main()
     reequipExpected[32] = 0xe8; reequipExpected[33] = 0x03;
     reequipExpected[36] = 0;
     check(reequip == reequipExpected, "starter re-equip must match exact bag-to-main-hand wire fixture");
+    auto shopEquipState = reequipState;
+    shopEquipState["inventory"]["3:24"]["id"] = 3286;
+    auto shopEquip = equipShopItemRequest(shopEquipState, 0x12345678, 0x0102030a,
+                                          3, 24, 3286, Sapphire::Common::GearSetSlot::Legs);
+    auto shopEquipExpected = reequipExpected;
+    shopEquipExpected[0] = 0x0a; shopEquipExpected[24] = 0xd6; shopEquipExpected[25] = 0x0c;
+    shopEquipExpected[36] = Sapphire::Common::GearSetSlot::Legs;
+    check(shopEquip == shopEquipExpected, "shop leg equip must match exact bag-to-gear wire fixture");
+    for(int fault = 0; fault < 5; ++fault)
+    {
+      auto invalid = shopEquipState;
+      if(fault == 0) invalid["class_job"] = 2;
+      if(fault == 1) invalid["inventory"]["3:24"]["id"] = 3287;
+      if(fault == 2) invalid["inventory"]["3:24"]["count"] = 2;
+      if(fault == 3) invalid["inventory"]["1000:6"] = {{"id", 3296}, {"count", 1}};
+      rejected = false;
+      try { equipShopItemRequest(invalid, 1, 1, 3, 24, 3286,
+                                 fault == 4 ? Sapphire::Common::GearSetSlot::Feet : Sapphire::Common::GearSetSlot::Legs); }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "invalid/mismatched shop equipment request rejected");
+    }
     for(const auto& supported : {std::pair<uint32_t, uint32_t>{2, 1680}, {7, 2055}})
     {
       auto other = reequipState;
