@@ -426,7 +426,10 @@ namespace Sapphire::Testing
     {
       const auto p = readObject<WS::FFXIVIpcPlayerStatus>(segment.data, off);
       m_state["homepoint"] = p.HomePoint;
-      m_state["central_thanalan_discovery"] = (p.Discovery16[16] & 0x02) != 0;
+      const bool discovered = (p.Discovery16[16] & 0x02) != 0;
+      if(m_state["central_thanalan_discovery"].get<bool>() != discovered)
+        event("discovery_state", {{"map_id", 21}, {"part_id", 1}, {"discovered", discovered}});
+      m_state["central_thanalan_discovery"] = discovered;
     }
     if(h.type == WS::FFXIVIpcDiscoveryReply::_ServerIpcType)
     {
