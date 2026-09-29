@@ -25,7 +25,8 @@ self-hosted runners (checked through the read-only Actions runners API).
    Legacy MSET files are rejected. Do not modify installed game assets to pass.
 3. Put a local JSON profile outside the checkout with `game_data`, `mariadb_bin`,
    `navigation`, `quest_catalog`, `follow_up_catalog`, `transition_catalog`,
-   `combat_catalog`, `shop_catalog`, `respawn_catalog`, and `pursuit_catalog`.
+   `combat_catalog`, `shop_catalog`, `respawn_catalog`, `pursuit_catalog`, and
+   `opening_quest_catalog`.
    Normal local profiles
    also specify `binaries` and `worker`;
    the workflow overrides these with its newly built out-of-tree outputs. No DB
@@ -114,13 +115,14 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `5fb4c6750` passed the nine-case strict
-gate in 608.636 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and removed private runtime. The player-defeat case took 119.001s
-and covered one source-bound pursuit/leash/reset/re-engagement cycle before defeat
-and homepoint return; the equipment round trip, opening branches and persisted
-sale/purchase remained covered. Evidence is `build-e2e/ci-summary-leash-reset.json`
-with private diagnostics under `.e2e-artifacts/ci/gameplay-ci-s7ir0kzg`. This remains a local rehearsal, not a
+Latest local evidence: clean revision `86c096912` passed the nine-case strict
+gate in 608.839 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and removed private runtime. The creation case took 66.021s and
+added source-routed Coming to Ul'dah acceptance, persisted active sequence 255 and
+opening scene 30 while failing closed on the missing completion corridor; the leash
+cycle, equipment round trip and sale/purchase remained covered. Evidence is
+`build-e2e/ci-summary-opening-quest.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-fercpke7`. This remains a local rehearsal, not a
 hosted protected-runner execution.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its

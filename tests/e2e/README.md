@@ -54,10 +54,14 @@ lobby, world and MariaDB processes with matching game data:
   hand to an observed empty ordinary-bag slot. Fresh authentication proves that
   unequip, then a bounded source-specific operation moves the same sword back to
   the observed-empty main hand; restart proves the exact final equipment state.
-  Receipts are never treated as mutation proof. This covers only one starter-
-  weapon round trip, the three Ul'dah starting classes, ring choice and first
-  opening branch, not broader equipment, appearance breadth, other cities/classes,
-  the complete opening quest or travel into public Ul'dah.
+  Receipts are never treated as mutation proof. The first character then walks a
+  source-generated ~9.84m route to Wymond and accepts Coming to Ul'dah (66130)
+  through explicit scenes 0/1/2. Active sequence 255, position and opening sequence
+  2 (scene 40→30) survive restart. The generated giver-to-Momodi route fails closed
+  as `incomplete navigation corridor`, so turn-in, the quest's 50 EXP/103 gil and
+  public-Ul'dah travel are not claimed. This covers only one starter-weapon round
+  trip, three Ul'dah starting classes and the supported opening subset, not broader
+  equipment, appearance breadth, other cities/classes or the complete opening.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot
   verifies every matching result/committed HP decrease, the first natural retaliation,
@@ -152,7 +156,9 @@ not replace the live suite.
 8. For the player-defeat return path, generate the source-bound respawn catalog
    below and set `respawn_catalog`; generate the bounded pursuit catalog below and
    set `pursuit_catalog`.
-9. Run:
+9. For the creation/opening path, generate the source-bound opening quest catalog
+   below and set `opening_quest_catalog`.
+10. Run:
 
 ```sh
 python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
@@ -182,9 +188,10 @@ The runner:
   the encrypted lobby connection.
 - By default places ordinary fixtures in public Ul'dah (130), with opening progression
   initialized **before their first world connection**. That remains fixture setup,
-  not evidence of travel into Ul'dah. The dedicated creation case verifies only the
-  first Ul'dah opening branch in private territory 182; the complete opening quest
-  and travel to the public territory remain uncovered. Territory 182 is not
+  not evidence of travel into Ul'dah. The dedicated creation case verifies the ring
+  branch and source-routed Coming to Ul'dah acceptance in private territory 182;
+  the missing giver-to-recipient corridor blocks turn-in and travel to the public
+  territory. Territory 182 is not
   appropriate for two-player replication assertions.
   Quest fixtures start at the catalog's first walkable waypoint; this is not proof
   of travel from character creation to the quest giver. Quest state is never seeded.
@@ -406,6 +413,21 @@ territories initialize with `NAVI`. Other maps are not thereby validated. A
 manifest path/hash alone is not evidence that a server successfully loaded a mesh.
 Destination observers start at the catalog pop point in a whitelisted public
 territory before their first connection; the traveler crosses only through packets.
+
+## Opening quest acceptance catalog
+
+```sh
+cmake --build build --target sapphire_test_opening_quest_catalog --config Debug
+bin/sapphire_test_opening_quest_catalog <game/sqpack> <mesh-root> build-e2e/coming-to-uldah.json
+```
+
+Use `.exe` on Windows and set `opening_quest_catalog` to the absolute output path.
+The generator binds quest 66130, Wymond layout 3969639, Momodi layout 3969632,
+source reward metadata and a complete ~9.84m route from the canonical Ul'dah opening
+start to Wymond. It also attempts the giver-to-recipient route and records
+`incomplete navigation corridor` without retaining a partial route. The live case
+therefore proves acceptance and persistence only; it must not send fabricated
+movement or claim the 50 EXP/103 gil turn-in.
 
 ## Initial combat regression
 

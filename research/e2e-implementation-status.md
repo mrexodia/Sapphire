@@ -20,11 +20,11 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning source-defined Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby name reservation/finalization, refreshed list/select, private territory 182, scenes 0/1, all ring choices/items and scene-40 continuation after fresh authentication and restart | All Ul'dah starting classes and ring branches within the first opening branch verified; appearance breadth, other cities/classes, complete opening quest and travel to public Ul'dah remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices, equipment round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
-| Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking, Gil for Gold and committed Ul'dah opening choices | Three live verified adapters; Due Diligence remains source-derived |
+| Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking, Gil for Gold, opening ring and Coming to Ul'dah acceptance choices | Four live verified adapters; Due Diligence and Coming to Ul'dah completion remain route-blocked |
 | Interact / choose dialogue / unknown-scene failure | Exact received event/scene/token; no default choice or raw-packet control; contract tests | Verified for supported one/two-result returns |
 | Quest state / accept and cancel / completion | `test_live_quest.py`: Motivational Speaking (65686), cancel unchanged, accept sequence 255, completion | Verified |
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
@@ -51,14 +51,14 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same six CTest executables pass.
-- 249 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 250 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container. This WSL instance refuses even Python-only
   loopback connections; that check was not skipped or rewritten to make it pass.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `5fb4c6750` took 608.636s with zero skips/errors/failures and verified
+  rehearsal at `86c096912` took 608.839s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-s7ir0kzg` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-leash-reset.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-fercpke7` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-opening-quest.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -654,11 +654,24 @@ worker SHA-256 is
 and server SHA-256 is
 `ab48e771c1d467f8d1dc243e838ce1fdd6260e01e0974611ffbc4b9ad637c5e8`.
 
+At `86c096912`, a read-only catalog binds Coming to Ul'dah 66130, Wymond layout
+3969639, Momodi layout 3969632, source reward metadata (50 EXP/103 gil) and a
+complete ~9.84m w1t1 route from the canonical opening start to Wymond. The first
+Gladiator walks that route normally and accepts through explicit scenes 0→1→2.
+Active sequence 255 and endpoint persist through restart; `OpeningSequence=2` is
+then independently demonstrated by opening scenes 40→30. The generator also tries
+Wymond→Momodi and records `incomplete navigation corridor`, retaining no partial
+route. Thus neither turn-in nor the listed rewards are claimed. The clean gate took
+**608.839s**, creation **66.021s**; opening catalog SHA-256 is
+`be1413b805b57746f84cc697307dcaf4b2d1e726725892bc691064e742fc3e80`
+and `character-creation-opening.json` SHA-256 is
+`1bbe7def532fdbc6f802ece68fb38abce6d30a84b2751508daba917815c89332`.
+
 This evidence remains deliberately narrow: it covers the three Ul'dah starting
 classes, one canonical appearance payload, all ring choices, one starter main-hand
-unequip/re-equip round trip and the initial/continuation opening scenes. It does not
-establish other equipment operations, account signup UI, appearance breadth, other
-cities/classes, name rejection/deletion, the complete opening quest, travel into
+round trip, the initial/continuation scenes and Coming to Ul'dah acceptance. It does
+not establish quest turn-in/rewards, other equipment operations, account signup UI,
+appearance breadth, other cities/classes, name rejection/deletion, travel into
 public Ul'dah, real-client cutscene presentation or broader protocol compatibility.
 
 ## Workload diagnostic-failure cleanup hardening
