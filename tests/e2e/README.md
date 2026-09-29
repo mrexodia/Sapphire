@@ -59,7 +59,10 @@ lobby, world and MariaDB processes with matching game data:
   slot-bound operations restore each observed-empty gear slot. Each ring is then
   equipped from its exact freshly observed bag slot into Ring1; restart proves all
   seven starter-gear restores and all four ring equips. A reverse ring operation is
-  proved by another fresh login returning it to the exact original bag slot.
+  proved by another fresh login returning it to the exact original bag slot. The
+  first ring then completes a separate Ring2 equip across world restart and an
+  unequip proved by another fresh login; source rows bind all four items to
+  single-stack equip-slot category 12.
   Receipts are never treated as mutation proof. Each branch also walks a generated
   eight-point route into source-LGB opening range 4101537, receives exact scene 20,
   and proves the endpoint after fresh authentication. This is one bounded
@@ -69,8 +72,9 @@ lobby, world and MariaDB processes with matching game data:
   2 (scene 40→30) survive restart. The generated giver-to-Momodi route fails closed
   as `incomplete navigation corridor`, so turn-in, the quest's 50 EXP/103 gil and
   public-Ul'dah travel are not claimed. This covers all five Gladiator starter
-  equipment slots, each distinct starter main hand, all four Ring1 choices and the
-  supported opening subset, not other accessories/off-hand/head/waist, later gear,
+  equipment slots, each distinct starter main hand, all four Ring1 choices, one
+  Ring2 round trip and the supported opening subset, not other accessory types,
+  off-hand/head/waist, later gear,
   appearance breadth, other cities/classes or the complete opening.
 - A level-one Gladiator waits for naturally regenerated TP and performs paced Fast
   Blades until an observed nearby level-one marmot is defeated. An independent bot

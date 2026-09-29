@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 round trips, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 round trips plus one Ring2 round trip, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Locally live-verified on Windows and containerized Ubuntu 22.04; hosted deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands and all four source-defined Ring1 choices plus one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessories/off-hand/head/waist/later equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and source-LGB Central Thanalan map discovery | One path in each category is verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -891,9 +891,23 @@ original bag slot. The targeted case passed in **127.13s**; artifact
 `.e2e-artifacts/creation-ring-live/sapphire-e2e-azs17ll9/character-creation-opening.json`
 has SHA-256
 `bd461e51c559e1b8ef11d5d4652ae55d56d8df6276b9ca716202364417306df2`.
-Native fixtures cover all four ring IDs and reject Ring2 substitution; reward
-contracts pass with Clang, MSVC and GNU, and 74 relevant Python policy/worker
-contracts pass. No acknowledgement is used as equipment mutation proof.
+Native fixtures at that revision covered all four ring IDs and rejected Ring2
+substitution. No acknowledgement was used as equipment mutation proof.
+
+At `bc0c21b00`, matching Item source rows establish that all four opening items use
+single-stack equip-slot category 12. The bounded API now permits only Ring1 or
+Ring2 for those exact IDs. After the retained four Ring1 round trips, item 4423 is
+moved from its freshly observed bag slot to empty Ring2 slot 12; world restart and
+fresh authentication prove it only at `1000:12`. Its reverse operation remains a
+receipt until another fresh session proves the exact original bag state. The clean
+case passed in **143.15s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-t_32lguo`; manifest SHA-256 is
+`bae3e9d5847fa4b6d1eb066c2aad47c05c8d9cbd16a02f7e87506cf38f5bf8b8` and
+artifact SHA-256 is
+`ee6bcaf4ed5f61fbcda3fdbe4fc1399bf084310cbb89231fc69c74bb62455ca6`.
+The manifest is clean and its private runtime was removed. Clang, MSVC and GNU
+reward fixtures cover both ring slots and reject non-ring destinations. This is one
+second-ring round trip, not evidence for other accessory types.
 
 The first broad gate retained at `.e2e-artifacts/ci/gameplay-ci-aybzbmom` reached
 8/9 passes and exposed an unrelated invalid simultaneity assertion: two independent
@@ -914,7 +928,7 @@ This evidence remains deliberately narrow: it covers the three Ul'dah starting
 classes, one canonical appearance payload, all ring choices, all five Gladiator
 starter slots and each distinct starter main hand, the initial/continuation scenes
 and Coming to Ul'dah acceptance. It does not establish quest turn-in/rewards,
-other accessories/off-hand/head/waist, later equipment, account signup UI,
+other accessory types/off-hand/head/waist, later equipment, account signup UI,
 appearance breadth, other cities/classes, name rejection/deletion, travel into
 public Ul'dah, real-client cutscene presentation or broader protocol compatibility.
 
