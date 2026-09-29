@@ -28,11 +28,18 @@ def test_received_party_join_and_leave(environment, live_worker):
     leader_fixture = environment.fresh_character()
     member_fixture = environment.fresh_character()
     third_fixture = environment.fresh_character()
+    extra_fixtures = [environment.fresh_character() for _ in range(5)]
+    outsider_fixture = environment.fresh_character()
     leader, member = Bot(live_worker, "party-leader"), Bot(live_worker, "party-member")
     third = Bot(live_worker, "party-third")
+    extras = [Bot(live_worker, f"party-extra-{index}") for index in range(5)]
+    outsider = Bot(live_worker, "party-outsider")
     leader_state = leader.login_via_lobby(leader_fixture["auth"], leader_fixture["name"])
     member_state = member.login_via_lobby(member_fixture["auth"], member_fixture["name"])
     third_state = third.login_via_lobby(third_fixture["auth"], third_fixture["name"])
+    extra_states = [bot.login_via_lobby(fixture["auth"], fixture["name"])
+                    for bot, fixture in zip(extras, extra_fixtures)]
+    outsider_state = outsider.login_via_lobby(outsider_fixture["auth"], outsider_fixture["name"])
     leader_id, member_id, third_id = (leader_state["entity_id"], member_state["entity_id"],
                                       third_state["entity_id"])
     live_worker.wait_state(leader.name,
@@ -104,12 +111,39 @@ def test_received_party_join_and_leave(environment, live_worker):
         assert (remaining["party"]["id"], remaining["party"]["chat_channel"]) == original_party
         assert {(row["entity_id"], row["name"]) for row in remaining["party"]["members"]} == expected
         assert remaining["party"]["members"][remaining["party"]["leader_index"]]["entity_id"] == member_id
+    # Re-add the kicked client, then expand through the protocol's exact eight-member
+    # roster limit. Every member independently receives the same identities and leader.
+    expected_full = set(expected)
+    expansion = [(third, third_fixture, third_state), *zip(extras, extra_fixtures, extra_states)]
+    last_joined = None
+    for expected_count, (bot, fixture, bot_state) in enumerate(expansion, start=3):
+        member.invite_party(bot_state["entity_id"], fixture["name"])
+        last_joined = bot.accept_party(expected_count=expected_count)
+        expected_full.add((bot_state["entity_id"], fixture["name"]))
+    party_bots = [leader, member, third, *extras]
+    for bot in party_bots:
+        full = live_worker.wait_state(bot.name, lambda s: s["party"]["count"] == 8,
+                                      "received full eight-member party roster")
+        assert (full["party"]["id"], full["party"]["chat_channel"]) == original_party
+        assert {(row["entity_id"], row["name"]) for row in full["party"]["members"]} == expected_full
+        assert full["party"]["members"][full["party"]["leader_index"]]["entity_id"] == member_id
+    sent = extras[-1].party_chat("full roster party message")
+    for receiver in party_bots[:-1]:
+        received = receiver.expect_party_chat(last_joined, "full roster party message")
+        assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
+    live_worker.wait_state(member.name,
+        lambda s: str(outsider_state["entity_id"]) in s["actors"]
+                  and s["actors"][str(outsider_state["entity_id"])]["name"] == outsider_fixture["name"],
+        "ninth exact player received by full-party leader")
+    with pytest.raises(WorkerError, match="party invite requires"):
+        member.invite_party(outsider_state["entity_id"], outsider_fixture["name"])
     with pytest.raises(WorkerError, match="received leadership"):
         leader.disband_party()
     member.disband_party()
-    live_worker.wait_state(leader.name, lambda s: s["party"]["count"] == 0,
-                           "former leader received explicit party disband")
-    for bot in (leader, member, third):
+    for bot in party_bots:
+        live_worker.wait_state(bot.name, lambda s: s["party"]["count"] == 0,
+                               "received explicit full-party disband")
+    for bot in [*party_bots, outsider]:
         bot.logout()
         bot.close()
 
