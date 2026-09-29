@@ -133,11 +133,12 @@ a nearby passing test does not close them.
   skips/errors/failures and verified exact collection, staged-input identities,
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
-  `build-e2e/ci-summary-linux-gameplay.json`). The preceding Windows clean-checkout
-  gate at `8ca87f3f1` took 620.91s (`gameplay-ci-i5o5pnpz`, summary
-  `build-e2e/ci-summary-starter-slots.json`). In both summaries `--require-clean`
-  passed and `source_dirty` is false. Earlier dirty implementation rehearsals are
-  explicitly labeled as such.
+  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows gate at
+  `670238294` took 650.23s and includes the Ring1 round trips
+  (`gameplay-ci-9he7litu`, summary
+  `build-e2e/ci-summary-starter-rings.json`). In both current platform summaries
+  `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
+  rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
@@ -856,6 +857,21 @@ has SHA-256
 Native fixtures cover all four ring IDs and reject Ring2 substitution; reward
 contracts pass with Clang, MSVC and GNU, and 74 relevant Python policy/worker
 contracts pass. No acknowledgement is used as equipment mutation proof.
+
+The first broad gate retained at `.e2e-artifacts/ci/gameplay-ci-aybzbmom` reached
+8/9 passes and exposed an unrelated invalid simultaneity assertion: two independent
+clients both observed the naturally moving enemy pursue, but their asynchronous
+snapshots were 0.988m apart rather than within 0.15m. Commit `670238294` replaces
+same-tick equality with the semantic requirement that each separately received
+position moved from spawn toward the fighter endpoint; later exact matching combat
+results and committed defeat state remain unchanged. The targeted defeat case then
+passed in 144.99s. The strict clean gate passed all nine cases in **650.23s** with
+creation at **102.054s**, exact identities and cleanup. Evidence:
+`build-e2e/ci-summary-starter-rings.json`,
+`.e2e-artifacts/ci/gameplay-ci-9he7litu`, clean creation artifact SHA-256
+`3fbaf24054645b9638460370168397b43e21e74c77b2e60b95241562559198e0`
+and worker SHA-256
+`b61fde96d4b6d3f786dddaf1e167f56cb6b5688d3984c4adb790e6dd493e7227`.
 
 This evidence remains deliberately narrow: it covers the three Ul'dah starting
 classes, one canonical appearance payload, all ring choices, all five Gladiator
