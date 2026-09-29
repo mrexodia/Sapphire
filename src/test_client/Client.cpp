@@ -468,19 +468,24 @@ namespace Sapphire::Testing
         for(auto it = m_state["actors"].begin(); it != m_state["actors"].end(); ++it)
           if(it.value().value("kind", 0) == 1 && it.value().value("name", "") == sender)
             actorMatches.push_back(static_cast<uint32_t>(std::stoul(it.key())));
+        std::vector<uint32_t> partyMatches;
+        for(const auto& member : party.at("members"))
+          if(member.value("character_id", uint64_t{0}) == p.fromCharacterID &&
+             member.value("name", "") == sender && member.value("entity_id", 0u) != 0)
+            partyMatches.push_back(member.at("entity_id"));
         if(p.type != 0 || !p.fromCharacterID || message.empty() || message.size() > 128 ||
            !std::all_of(message.begin(), message.end(), [](unsigned char c) { return c >= 0x20 && c <= 0x7e; }) ||
-           actorMatches.size() != 1)
-          throw ProtocolError("tell sender does not match one bounded received player identity");
-        uint64_t partyId = 0;
+           actorMatches.size() > 1 || partyMatches.size() > 1 ||
+           (actorMatches.empty() && partyMatches.empty()) ||
+           (!actorMatches.empty() && !partyMatches.empty() && actorMatches[0] != partyMatches[0]))
+          throw ProtocolError("tell sender does not match one bounded received spawn or party identity");
+        const auto actor = actorMatches.empty() ? partyMatches[0] : actorMatches[0];
         for(const auto& member : party.at("members"))
-          if(member.value("entity_id", 0u) == actorMatches[0] && member.value("name", "") == sender)
-          {
-            if(member.value("character_id", uint64_t{0}) != p.fromCharacterID)
-              throw ProtocolError("tell sender character ID disagrees with received party identity");
-            partyId = party.at("id");
-          }
-        Json received{{"party_id", partyId}, {"actor", actorMatches[0]},
+          if(member.value("entity_id", 0u) == actor && member.value("name", "") == sender &&
+             member.value("character_id", uint64_t{0}) != p.fromCharacterID)
+            throw ProtocolError("tell sender character ID disagrees with received party identity");
+        const auto partyId = partyMatches.empty() ? uint64_t{0} : party.at("id").get<uint64_t>();
+        Json received{{"party_id", partyId}, {"actor", actor},
                       {"character_id", p.fromCharacterID}, {"name", sender},
                       {"message", message}, {"token", m_seq + 1}};
         m_state["tells"].push_back(received);
@@ -1192,8 +1197,22 @@ namespace Sapphire::Testing
       const auto target = args.at("target").get<uint32_t>();
       const auto targetName = args.at("name").get<std::string>();
       const auto expectOffline = method == "tell_offline";
+      bool allowRemoteParty = false;
+      if(!expectOffline && !m_state["actors"].contains(std::to_string(target)))
+      {
+        const auto& party = m_state["party"];
+        for(auto it = m_state["party_chat"].rbegin(); it != m_state["party_chat"].rend(); ++it)
+          if(it->value("actor", 0u) == target && it->value("name", "") == targetName &&
+             it->value("party_id", uint64_t{0}) == party.value("id", uint64_t{0}) &&
+             it->value("channel", uint64_t{0}) == party.value("chat_channel", uint64_t{0}) &&
+             it->value("token", uint64_t{0}) <= m_seq && m_seq - it->value("token", uint64_t{0}) <= 16)
+          {
+            allowRemoteParty = true;
+            break;
+          }
+      }
       auto payload = tellRequest(m_state["actors"], m_state["party"], target, targetName,
-                                 args.at("message"), expectOffline);
+                                 args.at("message"), expectOffline, allowRemoteParty);
       if(expectOffline)
       {
         m_state["tell_not_found"] = nullptr;

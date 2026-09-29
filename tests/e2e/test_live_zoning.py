@@ -81,6 +81,12 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     sent = player.party_chat("traveler to remote source party message")
     received = source.expect_party_chat(state, "traveler to remote source party message")
     assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
+    source.tell(state["entity_id"], fixture["name"], "source to remote traveler exact tell")
+    received_tell = player.expect_tell(source_state, "source to remote traveler exact tell")
+    assert received_tell["party_id"] == party_states[player.name]["party"]["id"]
+    player.tell(source_state["entity_id"], source_fixture["name"], "traveler to remote source exact tell")
+    received_tell = source.expect_tell(state, "traveler to remote source exact tell")
+    assert received_tell["party_id"] == party_states[source.name]["party"]["id"]
     player.expect_rewards(before, 1)
     first_reply = player.discover_central_thanalan(
         discovery, target_arrival["actors"][actor]["position"])["discovery_reply"]

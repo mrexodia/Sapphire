@@ -7,7 +7,7 @@ namespace Sapphire::Testing
 {
   Bytes tellRequest(const nlohmann::json& actors, const nlohmann::json& party,
                     uint32_t targetEntity, const std::string& targetName,
-                    const std::string& message, bool expectOffline)
+                    const std::string& message, bool expectOffline, bool allowRemoteParty)
   {
     const auto key = std::to_string(targetEntity);
     if(!targetEntity || targetName.empty() || targetName.size() >= 32)
@@ -26,7 +26,18 @@ namespace Sapphire::Testing
         throw ProtocolError("offline tell target state does not match received evidence");
     }
     else if(!spawned)
-      throw ProtocolError("online tell target must match an exact received player spawn");
+    {
+      if(!allowRemoteParty || !party.is_object() || !party.contains("members") ||
+         !party.at("members").is_array())
+        throw ProtocolError("online tell target must match an exact received player spawn");
+      const auto member = std::find_if(party.at("members").begin(), party.at("members").end(),
+        [&](const auto& row) { return row.value("entity_id", 0u) == targetEntity &&
+                                      row.value("name", "") == targetName &&
+                                      row.value("character_id", uint64_t{0}) != 0 &&
+                                      row.value("territory", 1) == 0; });
+      if(member == party.at("members").end())
+        throw ProtocolError("remote tell target must match exact redacted party identity");
+    }
     if(!std::all_of(targetName.begin(), targetName.end(), [](unsigned char c) { return c >= 0x20 && c <= 0x7e; }))
       throw ProtocolError("tell target requires a bounded received ASCII name");
     if(message.empty() || message.size() > 128 || message[0] == '!' ||

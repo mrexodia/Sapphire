@@ -602,8 +602,11 @@ class Bot:
                        if member["entity_id"] == expected_entity and member["name"] == expected_name]
             expected_party = state["party"]["id"] if len(members) == 1 else 0
             actor = state["actors"].get(str(expected_entity))
-            return (actor is not None and actor["kind"] == 1 and actor["name"] == expected_name
-                    and row["actor"] == expected_entity
+            identity_received = ((actor is not None and actor["kind"] == 1
+                                  and actor["name"] == expected_name)
+                                 or (len(members) == 1
+                                     and members[0]["character_id"] == expected_character))
+            return (identity_received and row["actor"] == expected_entity
                     and row["character_id"] == expected_character
                     and row["name"] == expected_name and row["message"] == message
                     and row["party_id"] == expected_party)

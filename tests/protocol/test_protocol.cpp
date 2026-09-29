@@ -168,7 +168,7 @@ int main()
     rejects([&] { partyInviteRequest(partyActors, 2097153, "E2E Target"); });
     rejects([&] { partyInviteRequest(partyActors, 2097154, "Wrong Target"); });
     nlohmann::json tellParty{{"members", {{{"entity_id", 2097154}, {"name", "E2E Target"},
-                                             {"territory", 130}}}}};
+                                             {"territory", 130}, {"character_id", uint64_t{42}}}}}};
     auto tell = tellRequest(partyActors, tellParty, 2097154, "E2E Target", "Exact tell message");
     Bytes expectedTell(1057, 0); expectedTell[0] = 12;
     std::copy(inviteName.begin(), inviteName.end(), expectedTell.begin() + 1);
@@ -185,6 +185,11 @@ int main()
     require(tellRequest(nlohmann::json::object(), offlineParty, 2097154, "E2E Target",
                         "Exact tell message", true) == expectedTell,
             "offline tell exact target/message byte fixture");
+    require(tellRequest(nlohmann::json::object(), offlineParty, 2097154, "E2E Target",
+                        "Exact tell message", false, true) == expectedTell,
+            "recently live remote-party tell exact target/message byte fixture");
+    rejects([&] { tellRequest(nlohmann::json::object(), offlineParty, 2097154, "E2E Target",
+                              "Exact tell message"); });
     rejects([&] { tellRequest(partyActors, offlineParty, 2097154, "E2E Target",
                               "Exact tell message", true); });
     rejects([&] { tellRequest(nlohmann::json::object(), tellParty, 2097154, "E2E Target",
