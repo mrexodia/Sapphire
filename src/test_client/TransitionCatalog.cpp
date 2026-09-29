@@ -27,7 +27,7 @@ static Json objects(Sapphire::Data::ExdData& data, uint16_t territory, Json& ign
   path = "bg/" + path.substr(0, level) + "/level/";
   Json result = Json::array();
   LGB_GROUP::AssetTypeFilter filter = [](eAssetType type) {
-    return type == eAssetType::ExitRange || type == eAssetType::PopRange;
+    return type == eAssetType::ExitRange || type == eAssetType::PopRange || type == eAssetType::MapRange;
   };
   for(const auto* name : {"bg", "planmap", "planevent", "planner"})
   {
@@ -67,6 +67,15 @@ static Json objects(Sapphire::Data::ExdData& data, uint16_t territory, Json& ign
           object["exit_type"] = exit.exitType;
           object["target_territory"] = exit.destTerritoryType;
           object["target_pop"] = exit.destInstanceObjectId;
+        }
+        else if(entry->getType() == eAssetType::MapRange)
+        {
+          const auto& range = std::static_pointer_cast<MapRangeEntry>(entry)->header;
+          object["kind"] = "map_range";
+          object["enabled"] = range.triggerBoxType.enabled != 0;
+          object["shape"] = static_cast<int>(range.triggerBoxType.triggerBoxShape);
+          object["discovery_enabled"] = range.discoveryEnabled != 0;
+          object["discovery_index"] = range.discoveryIndex;
         }
         else object["kind"] = "pop";
         result.push_back(std::move(object));
@@ -153,8 +162,34 @@ int main(int argc, char** argv)
         for(size_t axis = 0; axis < 3; ++axis) squared += std::pow(route[i][axis] - route[i-1][axis], 2);
         length += std::sqrt(squared);
       }
+      const auto targetTerritory = exit["target_territory"].get<uint16_t>();
+      const auto arrival = exit["destinations"][0]["position"].get<Sapphire::Testing::Point>();
+      Json discoveryMatches = Json::array();
+      for(const auto& candidate : targets.at(targetTerritory))
+      {
+        if(candidate["kind"] != "map_range" || !candidate.value("enabled", false) ||
+           !candidate.value("discovery_enabled", false) || candidate.value("shape", 0) != 3)
+          continue;
+        const auto c = candidate["position"].get<Sapphire::Testing::Point>();
+        const auto s = candidate["scale"].get<Sapphire::Testing::Point>();
+        if(s[0] <= 0 || s[1] <= 0 || s[2] <= 0) continue;
+        const auto horizontal = std::hypot(arrival[0]-c[0], arrival[2]-c[2]);
+        if(horizontal <= std::min(s[0], s[2]) * 0.5f &&
+           std::abs(arrival[1]-c[1]) <= s[1] * 0.5f)
+          discoveryMatches.push_back(candidate);
+      }
+      if(discoveryMatches.size() != 1)
+        throw std::runtime_error("arrival must resolve exactly one enabled spherical discovery range");
+      auto territoryInfo = data.getRow<Excel::TerritoryType>(targetTerritory);
+      auto mapInfo = territoryInfo ? data.getRow<Excel::Map>(territoryInfo->data().Map) : nullptr;
+      if(!territoryInfo || !mapInfo) throw std::runtime_error("discovery map metadata unavailable");
+      auto discovery = discoveryMatches[0];
+      discovery["map_id"] = territoryInfo->data().Map;
+      discovery["map_discovery_index"] = mapInfo->data().DiscoveryIndex;
+      discovery["uint16_storage"] = mapInfo->data().IsUint16Discovery != 0;
       result.erase("exits");
       result["transition"] = exit;
+      result["supported_discovery"] = discovery;
       result["route"] = route; result["route_length"] = length;
       result["navigation"] = {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                                {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}};
