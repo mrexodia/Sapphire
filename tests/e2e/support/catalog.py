@@ -213,6 +213,10 @@ def validate_shop_catalog(data):
                                "quantity": 3, "unit_gil": 8, "gil": 24,
                                "item_action": {"row": 232, "type": 852, "arg": 235}}:
         raise WorkerError("unsupported shop purchase binding")
+    if data.get("equipment_purchase") != {"shop_id": 262468, "index": 11, "item": 3286,
+                                         "quantity": 1, "gil": 39,
+                                         "source_slot": 7, "gear_slot": 6}:
+        raise WorkerError("unsupported shop equipment-purchase binding")
     shop = data.get("shop", {})
     if (set(shop) != {"layout_id", "base_id", "event_id", "position"}
             or any(type(shop.get(key)) is not int or shop[key] <= 0

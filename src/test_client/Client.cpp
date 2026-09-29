@@ -965,6 +965,25 @@ namespace Sapphire::Testing
         throw ProtocolError("malformed received shop purchase state at validation stage " + std::to_string(stage));
       }
     }
+    if(method == "buy_shop_equipment")
+    {
+      constexpr uint32_t shop = 262468, item = 3286, gil = 56;
+      const auto& scene = m_state["scene"];
+      const auto& inventory = m_rewards.state().at("inventory");
+      if(!scene.is_object() || scene.value("token", uint64_t{0}) != args.at("token") ||
+         scene.value("event_id", 0u) != args.at("event_id") ||
+         scene.value("event_id", 0u) != shop || scene.value("scene_id", 0u) != 40 ||
+         !inventory.contains("2000:0") || inventory.at("2000:0").value("id", 0u) != 1 ||
+         inventory.at("2000:0").value("count", 0u) != gil)
+        throw ProtocolError("equipment purchase requires exact received shop and sale proceeds");
+      for(const auto& entry : inventory)
+        if(entry.value("id", 0u) == item || entry.value("id", 0u) == 5890 || entry.value("id", 0u) == 4551)
+          throw ProtocolError("equipment purchase requires exact post-sale inventory");
+      sendZone(WC::FFXIVIpcReturnEventScene255::_ServerIpcType,
+               shopEquipmentPurchaseReturn(shop));
+      m_state["scene"] = nullptr;
+      return Json::object();
+    }
     if(method == "invite_party")
     {
       const auto& party = m_state["party"];

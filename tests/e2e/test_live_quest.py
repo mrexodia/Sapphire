@@ -346,6 +346,94 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert state["rewards"]["inventory"] == purchased_inventory
     for quest in quests:
         reloaded.expect_quest_complete(quest)
+
+    def restart_shop_bot(bot, name, expected_rewards, expected_inventory):
+        bot.logout()
+        bot.close()
+        environment.restart_world()
+        auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+        result = Bot(worker, name)
+        state = result.login_via_lobby(auth, fixture["name"])
+        state = result.expect_rewards(expected_rewards, work_index)
+        assert state["rewards"]["inventory"] == expected_inventory
+        for completed in quests:
+            result.expect_quest_complete(completed)
+        return result, state
+
+    # The VFX stack must first survive a restart unchanged. Split it into three
+    # exact one-item stacks, proving each operation only through a subsequent login.
+    first_empty = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
+                                       for slot in reversed(range(25)))
+                       if key not in purchased_inventory)
+    first_storage, first_slot = map(int, first_empty.split(":"))
+    first_split = reloaded.request_item_split(item_storage, item_slot, first_storage, first_slot,
+                                               catalog["purchase"]["item"], 3, 1)
+    first_split_inventory = deepcopy(purchased_inventory)
+    first_split_inventory[added_key]["count"] = 2
+    first_split_inventory[first_empty] = {"storage": first_storage, "slot": first_slot,
+                                          "id": catalog["purchase"]["item"], "count": 1}
+    reloaded, state = restart_shop_bot(reloaded, "shop-stack-reloaded-1",
+                                      purchased_rewards, first_split_inventory)
+    second_empty = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
+                                        for slot in reversed(range(25)))
+                        if key not in first_split_inventory)
+    second_storage, second_slot = map(int, second_empty.split(":"))
+    second_split = reloaded.request_item_split(item_storage, item_slot, second_storage, second_slot,
+                                                catalog["purchase"]["item"], 2, 1)
+    sale_inventory = deepcopy(first_split_inventory)
+    sale_inventory[added_key]["count"] = 1
+    sale_inventory[second_empty] = {"storage": second_storage, "slot": second_slot,
+                                    "id": catalog["purchase"]["item"], "count": 1}
+    reloaded, state = restart_shop_bot(reloaded, "shop-stack-reloaded-2",
+                                      purchased_rewards, sale_inventory)
+
+    reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
+    liquidation_rewards = deepcopy(purchased_rewards)
+    liquidation_inventory = deepcopy(sale_inventory)
+    vfx_stacks = [(key, item) for key, item in liquidation_inventory.items()
+                  if item["id"] == catalog["purchase"]["item"] and item["storage"] in range(4)]
+    assert len(vfx_stacks) == 3 and all(item["count"] == 1 for _, item in vfx_stacks)
+    for key, item in vfx_stacks:
+        reloaded.sell_shop_item(item["storage"], item["slot"], item["id"])
+        liquidation_rewards["items"][str(item["id"])] -= 1
+        if liquidation_rewards["items"][str(item["id"])] == 0:
+            del liquidation_rewards["items"][str(item["id"])]
+        liquidation_rewards["currencies"]["1"] += catalog["purchase"]["unit_gil"]
+        del liquidation_inventory[key]
+        liquidation_inventory["2000:0"]["count"] = liquidation_rewards["currencies"]["1"]
+        state = reloaded.expect_rewards(liquidation_rewards, work_index)
+        assert state["rewards"]["inventory"] == liquidation_inventory
+    potion_stacks = [(key, item) for key, item in liquidation_inventory.items()
+                     if item["id"] == catalog["sale"]["item"] and item["storage"] in range(4)]
+    assert len(potion_stacks) == 1 and potion_stacks[0][1]["count"] == 1
+    potion_key, potion = potion_stacks[0]
+    reloaded.sell_shop_item(potion["storage"], potion["slot"], potion["id"])
+    del liquidation_rewards["items"][str(potion["id"])]
+    liquidation_rewards["currencies"]["1"] += catalog["sale"]["gil"]
+    del liquidation_inventory[potion_key]
+    liquidation_inventory["2000:0"]["count"] = liquidation_rewards["currencies"]["1"]
+    state = reloaded.expect_rewards(liquidation_rewards, work_index)
+    assert state["rewards"]["inventory"] == liquidation_inventory
+    assert liquidation_rewards["currencies"]["1"] == 56
+
+    reloaded.buy_shop_equipment(catalog["shop"]["event_id"])
+    equipment_rewards = deepcopy(liquidation_rewards)
+    equipment_rewards["items"][str(catalog["equipment_purchase"]["item"])] = 1
+    equipment_rewards["currencies"]["1"] -= catalog["equipment_purchase"]["gil"]
+    state = reloaded.expect_rewards(equipment_rewards, work_index)
+    equipment_inventory = deepcopy(state["rewards"]["inventory"])
+    expected_before_equipment = deepcopy(liquidation_inventory)
+    expected_before_equipment["2000:0"]["count"] = equipment_rewards["currencies"]["1"]
+    equipment_added = set(equipment_inventory) - set(expected_before_equipment)
+    assert len(equipment_added) == 1
+    equipment_key = next(iter(equipment_added))
+    assert equipment_inventory[equipment_key]["id"] == catalog["equipment_purchase"]["item"]
+    assert equipment_inventory[equipment_key]["count"] == 1
+    assert {key: value for key, value in equipment_inventory.items() if key != equipment_key} == expected_before_equipment
+    reloaded.exit_gil_shop(catalog["shop"]["event_id"])
+    reloaded, state = restart_shop_bot(reloaded, "shop-equipment-reloaded",
+                                      equipment_rewards, equipment_inventory)
+
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
@@ -355,8 +443,15 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "item_use_effect": used_effect, "item_use_observer_received": True,
         "inventory_after_item_use": unchanged["rewards"]["inventory"],
         "rewards_after_purchase_restart": purchased_rewards,
-        "inventory_after_purchase_restart": purchased_inventory, "arrival_observed": True,
-        "scope": "one normally earned potion sold, then one bounded multi-quantity source-listed stack bought through one source-bound gil shop"
+        "inventory_after_purchase_restart": purchased_inventory,
+        "liquidation_split_receipts": [first_split, second_split],
+        "inventory_before_liquidation": sale_inventory,
+        "rewards_after_liquidation": liquidation_rewards,
+        "equipment_purchase": catalog["equipment_purchase"],
+        "rewards_after_equipment_purchase_restart": equipment_rewards,
+        "inventory_after_equipment_purchase_restart": equipment_inventory,
+        "arrival_observed": True,
+        "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")
     return reloaded
 

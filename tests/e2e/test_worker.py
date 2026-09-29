@@ -28,6 +28,7 @@ def test_capabilities(worker):
     assert "discover_central_thanalan" in caps["methods"]
     assert "sell_shop_item" in caps["methods"]
     assert "buy_shop_item" in caps["methods"]
+    assert "buy_shop_equipment" in caps["methods"]
     assert "tell" in caps["methods"]
     assert "tell_offline" in caps["methods"]
     assert "return_homepoint" in caps["methods"]
@@ -94,6 +95,8 @@ def test_action_before_readiness_is_rejected(worker):
         try:
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("walk_to", "test", position=[0, 0, 0])
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("buy_shop_equipment", "test", token=1, event_id=262468)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("use_shop_vfx_item", "test", storage=0, slot=0, expected_count=3)
             with pytest.raises(WorkerError, match="world-ready"):

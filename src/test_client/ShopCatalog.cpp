@@ -81,12 +81,24 @@ int main(int argc, char** argv)
     auto shop = data.getRow<Excel::Shop>(selected.event);
     if(!shop) throw std::runtime_error("selected gil shop has no source item list");
     uint32_t purchaseItem = 0, purchasePrice = std::numeric_limits<uint32_t>::max(), purchaseIndex = 0;
+    uint32_t equipmentItem = 0, equipmentPrice = std::numeric_limits<uint32_t>::max();
+    uint32_t equipmentIndex = 0, equipmentSourceSlot = 0;
+    constexpr std::array<uint32_t, 5> starterItems{1601, 2983, 3520, 3296, 3750};
     for(uint32_t index = 0; index < 40; ++index)
     {
       const auto shopItemId = shop->data().Item[index];
       auto shopItem = data.getRow<Excel::ShopItem>(shopItemId);
       if(!shopItem) continue;
       auto item = data.getRow<Excel::Item>(shopItem->data().ItemId);
+      if(item && item->data().Price && item->data().Price <= reward->data().Price * 2u &&
+         item->data().StackMax == 1 && item->data().Slot > 0 && item->data().Slot <= 13 &&
+         item->data().EquipLevel <= 1 && item->data().Class == 0 &&
+         item->data().Price < equipmentPrice &&
+         std::find(starterItems.begin(), starterItems.end(), shopItem->data().ItemId) == starterItems.end())
+      {
+        equipmentItem = shopItem->data().ItemId; equipmentPrice = item->data().Price;
+        equipmentIndex = index; equipmentSourceSlot = item->data().Slot;
+      }
       if(!item || !item->data().Price || item->data().Price > reward->data().Price) continue;
       if(item->data().Price < purchasePrice)
       {
@@ -94,6 +106,8 @@ int main(int argc, char** argv)
       }
     }
     if(!purchaseItem) throw std::runtime_error("selected gil shop has no affordable source item");
+    if(!equipmentItem || equipmentSourceSlot < 2)
+      throw std::runtime_error("selected gil shop has no bounded later equipment purchase");
     auto selectedItem = data.getRow<Excel::Item>(purchaseItem);
     if(!selectedItem || !selectedItem->data().StackMax)
       throw std::runtime_error("selected gil-shop item has no stack metadata");
@@ -113,6 +127,10 @@ int main(int argc, char** argv)
                     {"item_action", {{"row", selectedItem->data().Action},
                                      {"type", itemAction->data().Action},
                                      {"arg", itemAction->data().Calcu0Arg[0]}}}}},
+      {"equipment_purchase", {{"shop_id", selected.event}, {"index", equipmentIndex},
+                              {"item", equipmentItem}, {"quantity", 1},
+                              {"gil", equipmentPrice}, {"source_slot", equipmentSourceSlot},
+                              {"gear_slot", equipmentSourceSlot - 1}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};
