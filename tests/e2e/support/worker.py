@@ -409,6 +409,13 @@ class Bot:
         return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 0,
                                       "received empty party state", timeout)
 
+    def kick_party_member(self, target_entity, target_name, timeout=10):
+        self.worker.request("kick_party_member", self.name, target=target_entity, name=target_name)
+        return self.worker.wait_state(self.name,
+            lambda s: s["party"]["count"] >= 2
+                      and all(member["entity_id"] != target_entity for member in s["party"]["members"]),
+            "exact received party roster after kick", timeout)
+
     def change_party_leader(self, target_entity, target_name, timeout=10):
         self.worker.request("change_party_leader", self.name, target=target_entity, name=target_name)
         return self.worker.wait_state(self.name,

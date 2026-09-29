@@ -93,7 +93,11 @@ def test_received_party_join_and_leave(environment, live_worker):
     for receiver in (leader, member):
         received = receiver.expect_party_chat(third_party, "third member party message")
         assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
-    third.leave_party()
+    with pytest.raises(WorkerError, match="received leadership"):
+        leader.kick_party_member(third_id, third_fixture["name"])
+    member.kick_party_member(third_id, third_fixture["name"])
+    live_worker.wait_state(third.name, lambda s: s["party"]["count"] == 0,
+                           "kicked member received empty party state")
     for bot in (leader, member):
         remaining = live_worker.wait_state(bot.name, lambda s: s["party"]["count"] == 2,
                                             "received roster after third member leaves")

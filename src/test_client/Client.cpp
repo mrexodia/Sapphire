@@ -951,6 +951,15 @@ namespace Sapphire::Testing
       sendZone(WC::FFXIVIpcPcPartyLeave::_ServerIpcType, payload);
       return Json::object();
     }
+    if(method == "kick_party_member")
+    {
+      if(m_moving || !m_state["event_id"].is_null())
+        throw ProtocolError("party kick requires an idle character");
+      auto payload = partyKickRequest(m_state["party"], m_entity,
+                                      args.at("target"), args.at("name"));
+      sendZone(WC::FFXIVIpcPcPartyKick::_ServerIpcType, payload);
+      return Json::object();
+    }
     if(method == "change_party_leader")
     {
       if(m_moving || !m_state["event_id"].is_null())

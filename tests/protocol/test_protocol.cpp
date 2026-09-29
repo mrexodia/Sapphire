@@ -190,6 +190,13 @@ int main()
             "party leader change exact byte fixture");
     rejects([&] { partyChangeLeaderRequest(party, 2097154, 2097153, "E2E Leader"); });
     rejects([&] { partyChangeLeaderRequest(party, 2097153, 2097154, "Wrong Target"); });
+    auto partyThree = party; partyThree["count"] = 3;
+    partyThree["members"].push_back({{"entity_id", 2097155}, {"name", "E2E Third"}});
+    require(partyKickRequest(partyThree, 2097153, 2097154, "E2E Target") == expectedLeaderChange,
+            "party kick exact target-name byte fixture");
+    rejects([&] { partyKickRequest(party, 2097153, 2097154, "E2E Target"); });
+    rejects([&] { partyKickRequest(partyThree, 2097154, 2097155, "E2E Third"); });
+    rejects([&] { partyKickRequest(partyThree, 2097153, 2097155, "Wrong Third"); });
     auto partyChat = partyChatRequest(party, 2097153, "Received party message");
     Bytes expectedPartyChat(1032, 0);
     const Bytes expectedChannel{8,7,6,5,4,3,2,1};

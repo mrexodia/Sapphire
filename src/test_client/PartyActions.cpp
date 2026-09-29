@@ -71,10 +71,11 @@ namespace Sapphire::Testing
     return objectBytes(packet);
   }
 
-  Bytes partyChangeLeaderRequest(const nlohmann::json& party, uint32_t selfEntity,
-                                 uint32_t targetEntity, const std::string& targetName)
+  static void requireLeaderTarget(const nlohmann::json& party, uint32_t selfEntity,
+                                  uint32_t targetEntity, const std::string& targetName,
+                                  const char* operation)
   {
-    requireMembership(party, selfEntity, "party leader change");
+    requireMembership(party, selfEntity, operation);
     requireName(targetName);
     const auto leaderIndex = party.value("leader_index", size_t{8});
     const auto& members = party.at("members");
@@ -83,9 +84,26 @@ namespace Sapphire::Testing
        std::none_of(members.begin(), members.end(), [&](const auto& member) {
          return member.value("entity_id", 0u) == targetEntity && member.value("name", "") == targetName;
        }))
-      throw ProtocolError("party leader change requires received leadership and exact target membership");
+      throw ProtocolError(std::string(operation) + " requires received leadership and exact target membership");
+  }
+
+  Bytes partyChangeLeaderRequest(const nlohmann::json& party, uint32_t selfEntity,
+                                 uint32_t targetEntity, const std::string& targetName)
+  {
+    requireLeaderTarget(party, selfEntity, targetEntity, targetName, "party leader change");
     Wire::WorldPackets::Client::FFXIVIpcPcPartyChangeLeader packet{};
     copyText(packet.NextLeaderCharacterName, targetName);
+    return objectBytes(packet);
+  }
+
+  Bytes partyKickRequest(const nlohmann::json& party, uint32_t selfEntity,
+                         uint32_t targetEntity, const std::string& targetName)
+  {
+    requireLeaderTarget(party, selfEntity, targetEntity, targetName, "party kick");
+    if(party.value("count", 0) < 3)
+      throw ProtocolError("party kick requires a received roster of at least three members");
+    Wire::WorldPackets::Client::FFXIVIpcPcPartyKick packet{};
+    copyText(packet.LeaveCharacterName, targetName);
     return objectBytes(packet);
   }
 

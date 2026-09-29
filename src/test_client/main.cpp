@@ -43,7 +43,7 @@ int main()
         Json result = Json::object();
         if(method == "capabilities")
           result = {{"control_version", 1}, {"profile", "sapphire-3.3"}, {"scope", "loopback-only"},
-            {"methods", {"login", "snapshot", "walk_to", "interact", "start_uldah_opening", "enter_uldah_opening_range", "discover_central_thanalan", "choose_scene", "sell_shop_item", "buy_shop_item", "say", "discard_item", "request_item_move", "request_item_swap", "request_item_split", "request_item_merge", "return_homepoint", "cross_exit", "invite_party", "accept_party", "decline_party", "leave_party", "change_party_leader", "party_chat", "fast_blade", "bootshine", "blizzard", "logout", "close", "remove"}},
+            {"methods", {"login", "snapshot", "walk_to", "interact", "start_uldah_opening", "enter_uldah_opening_range", "discover_central_thanalan", "choose_scene", "sell_shop_item", "buy_shop_item", "say", "discard_item", "request_item_move", "request_item_swap", "request_item_split", "request_item_merge", "return_homepoint", "cross_exit", "invite_party", "accept_party", "decline_party", "leave_party", "kick_party_member", "change_party_leader", "party_chat", "fast_blade", "bootshine", "blizzard", "logout", "close", "remove"}},
             {"unsupported", {"compressed_frames", "scene_yield", "general_navigation", "general_combat"}}};
         else
         {
