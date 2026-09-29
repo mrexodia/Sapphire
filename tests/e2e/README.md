@@ -66,7 +66,10 @@ lobby, world and MariaDB processes with matching game data:
   party-chat liveness, and the reply requires the exact incoming Tell as liveness.
   Both resulting packets carry party ID zero.
   Both sides receive exact decline identities while remaining ungrouped; invite
-  acknowledgements are not treated as membership evidence.
+  acknowledgements are not treated as membership evidence. Linkshell/free-company/
+  alliance coverage is not inferred: matching source data has no placed event
+  `0xB0006` distributor, free-company creation has no normal caller, and no social-
+  alliance handler exists, so there is no honest ordinary creation journey.
 - A four-client zoning test walks a verified approach into an actual exit volume,
   crosses from Ul'dah to Central Thanalan, and observes departure and arrival from
   separate bots. It enters the sole source discovery sphere containing that arrival

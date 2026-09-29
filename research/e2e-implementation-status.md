@@ -627,6 +627,22 @@ The source is clean and runtime removal is confirmed. This proves one same-sessi
 cross-zone nonparty exchange, not a general player directory, friend system,
 alliance, linkshell/free-company or arbitrary chat-channel behavior.
 
+A source/data audit confirms that the remaining group-channel breadth cannot be
+reached honestly with the current matching content. `CmnDefLinkShell.cpp` contains
+a normal event script for `0xB0006` and would call `createLinkshell` after scene-2
+yield, but an exhaustive matching-3.3 `Level`→`ENpcBase` scan found **380** placed
+category-11 event bindings and no exact `0xB0006` actor in any territory. The only
+other caller is the GM-only `DebugCommandMgr::linkshell`; existing join/leadership/
+leave handlers all require an already received valid linkshell ID. Seeding one in
+the database, invoking the manager, using the debug command or inventing an actor
+would violate this framework's ordinary-protocol/source-content boundary.
+`FreeCompanyMgr::createFreeCompany` has no normal production caller, and there are
+no social-alliance handlers/managers beyond territory intended-use naming. Therefore
+linkshell, free-company and alliance E2E remain blocked until matching source data
+places a normally reachable distributor/creation journey or the server gains an
+established ordinary creation protocol and received identity semantics. No such
+channel is claimed from the party proxy.
+
 ## Repeated combat and first retaliation
 
 The combat regression now uses the same ordinary Fast Blade operation three
