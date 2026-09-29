@@ -141,6 +141,7 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     fighter.wait_fast_blade_ready(target)
     second_opening_effect = fighter.fast_blade(target)
     assert second_opening_effect["target"] == target and damage_value(second_opening_effect) > 0
+    pursuit_enemy_start = live_worker.snapshot(fighter.name)["actors"][str(target)]["position"]
 
     fighter.walk_route(pursuit["route"], 6.0, 30)
     live_worker.wait_state(observer.name,
@@ -148,18 +149,29 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
                   and math.dist(s["actors"][str(entity)]["position"], pursuit["route"][-1]) < 0.15,
         "independent observer sees fighter complete pursuit route", 30)
     pursued = live_worker.wait_state(fighter.name,
-        lambda s: math.dist(s["actors"].get(str(target), {}).get("position", enemy_start), enemy_start) >= 2,
+        lambda s: math.dist(s["actors"].get(str(target), {}).get("position", pursuit_enemy_start),
+                            pursuit_enemy_start) >= 2,
         "hostile natural enemy pursuit", 30)
     pursued_observer = live_worker.wait_state(observer.name,
-        lambda s: math.dist(s["actors"].get(str(target), {}).get("position", enemy_start), enemy_start) >= 2,
+        lambda s: math.dist(s["actors"].get(str(target), {}).get("position", pursuit_enemy_start),
+                            pursuit_enemy_start) >= 2,
         "observer sees hostile natural enemy pursuit", 30)
     enemy_pursued_position = pursued["actors"][str(target)]["position"]
     observer_pursued_position = pursued_observer["actors"][str(target)]["position"]
     # These snapshots are independent and the enemy is still moving; requiring
-    # two asynchronously received positions to be the same tick is invalid.
-    # Each client must instead observe displacement toward the fighter's endpoint.
+    # two asynchronously received positions to be the same tick is invalid. A
+    # chasing enemy may also pass the fighter's endpoint between snapshots, so
+    # endpoint distance is not monotonic. Require independently received movement
+    # at least 2m with a forward projection and cosine toward that endpoint instead.
+    route_vector = [end - start for start, end in zip(pursuit["route"][0], pursuit["route"][-1])]
+    route_length = math.sqrt(sum(value * value for value in route_vector))
+    assert route_length > 5
     for position in (enemy_pursued_position, observer_pursued_position):
-        assert math.dist(position, pursuit["route"][-1]) < math.dist(enemy_start, pursuit["route"][-1])
+        displacement = [end - start for start, end in zip(pursuit_enemy_start, position)]
+        displacement_length = math.sqrt(sum(value * value for value in displacement))
+        projection = sum(value * direction for value, direction in zip(displacement, route_vector)) / route_length
+        cosine = projection / displacement_length
+        assert displacement_length >= 2 and projection >= 2 and cosine > 0.5
 
     defeated = live_worker.wait_state(fighter.name,
         lambda s: s["actors"].get(str(entity), {}).get("hp") == 0,
@@ -232,7 +244,9 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
         "population_layout": int(layout_id), "enemy_base_id": 302, "enemy_level": 14,
         "fighter_hp_before": before["hp"], "opening_effect": opening_effect,
         "observed_opening_approach": opening_approach,
-        "pursuit_route_length": pursuit["route_length"], "enemy_position_before_pursuit": enemy_start,
+        "pursuit_route_length": pursuit["route_length"],
+        "enemy_position_before_first_engagement": enemy_start,
+        "enemy_position_before_pursuit": pursuit_enemy_start,
         "leash_route_length": pursuit["leash_route_length"],
         "enemy_position_at_leash_peak": leash_peak["actors"][str(target)]["position"],
         "received_leash_peak_distance": leash_peak_distance,
