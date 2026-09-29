@@ -457,9 +457,24 @@ Clang/MSVC/GNU protocol and Python contracts pass. The clean case passed in
 SHA-256 is `75e7db086985d99be6865cdbfd78ef0e2fc8469615c8b64361e3be8b92483589` and event
 journal SHA-256 is
 `39ca5cc85558a008164df4af46464c38c2623471932d98e9e9518fa6e68ac68a`.
+The source is clean and runtime removal is confirmed.
+
+At `3f817ee61`, the exact received leader transfers leadership to an exact other
+roster member through the normal operation. All three clients independently retain
+party/channel/roster identity and receive the leader index changing from 0 to 1.
+The former leader's attempt to construct another invite fails locally because its
+received roster no longer marks self as leader; no unauthorized request is sent.
+After the third member leaves, both remaining clients retain the transferred leader
+identity through the two-member state and final disband. Exact target-name bytes,
+nonleader and wrong-target rejection contracts pass on Clang, MSVC and GNU. The
+clean case passed in **27.94s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-a3b_shu2`; manifest SHA-256 is
+`7831c9e86f6781b12ee722c8d1ce038997dd24c35c9586d3d7e267cc4fa7e3c4` and event
+journal SHA-256 is
+`04d057e20956d5cd47d1ed46962539759bb9e63d22276440dab4ae0c8bf48116`.
 The source is clean and runtime removal is confirmed. This remains one three-client
-party/channel policy path, not alliance, instance, kick/leadership-transfer or
-arbitrary chat-channel evidence.
+party/channel policy path, not alliance, instance, kick or arbitrary chat-channel
+evidence.
 
 ## Repeated combat and first retaliation
 

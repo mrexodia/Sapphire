@@ -37,8 +37,10 @@ lobby, world and MariaDB processes with matching game data:
   invite/decline/reinvite/accept flow and exact initial roster; the received leader
   then adds the third client while preserving party/channel identity. All three
   receive the exact expanded roster, both existing members receive the newcomer's
-  party chat, and the newcomer leaves while the original two receive their exact
-  remaining roster before disband. The zoning scenario additionally keeps the
+  party chat, and all three receive an exact leadership transfer. The former leader
+  then fails closed on a further invite. The newcomer leaves while the original two
+  retain the transferred leader and exact remaining roster before disband. The
+  zoning scenario additionally keeps the
   two-client form of that party across a physical
   130→141 crossing and checks each client's exact self-territory plus the protocol's
   zeroed-detail representation for its remote-zone member. In both same-zone and
