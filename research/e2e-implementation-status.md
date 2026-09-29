@@ -21,7 +21,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
 | Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
-| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Windows live verified; Linux deployment unverified |
+| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Locally live-verified on Windows and containerized Ubuntu 22.04; hosted deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
 | Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking, Gil for Gold, opening ring and Coming to Ul'dah acceptance choices | Four live verified adapters; Due Diligence and Coming to Ul'dah completion remain route-blocked |
@@ -41,7 +41,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults and a controlled live diagnostic-write failure verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built binaries; hosted execution/runner controls unverified, no registered runners |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built Windows and Linux binaries; hosted execution/runner controls unverified, no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent lane live-verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
@@ -50,15 +50,21 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - Clang/Ninja and MSVC/Visual Studio: six CTest executables pass (protocol,
   rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
-- GNU 11.4/Ubuntu 22.04: standalone build and the same six CTest executables pass.
+- GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
+  executables pass; the resulting Linux API, lobby, world, DB manager and worker also
+  pass the nine-case live gate described below.
 - 252 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
-- The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `8ca87f3f1` took 620.91s with zero skips/errors/failures and verified
-  exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-i5o5pnpz` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-starter-slots.json`). `--require-clean` passed and `source_dirty`
-  is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
+- The provisioned CI entry point passes all nine cases on Windows and Linux. The
+  latest strict Linux rehearsal at `4bbf7ec9a` took 1009.57s with zero
+  skips/errors/failures and verified exact collection, staged-input identities,
+  clean source and normal cleanup (`gameplay-ci-kekux1o4` under
+  `.e2e-artifacts/linux-ci`, summary
+  `build-e2e/ci-summary-linux-gameplay.json`). The preceding Windows clean-checkout
+  gate at `8ca87f3f1` took 620.91s (`gameplay-ci-i5o5pnpz`, summary
+  `build-e2e/ci-summary-starter-slots.json`). In both summaries `--require-clean`
+  passed and `source_dirty` is false. Earlier dirty implementation rehearsals are
+  explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
@@ -67,8 +73,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - Nine live cases pass together: rejected credentials, login/idle/logout, observed
   movement/Say/position persistence, single quest, chained quests plus inventory
   persistence and one persisted gil-shop sale/purchase pair, zoning persistence, enemy defeat/rewards,
-  player defeat with independently observed pursuit/leash/reset plus source-bound homepoint return, and normal lobby creation plus the
-  first Ul'dah opening branch. Both public tested territories use compatible
+  player defeat with independently observed pursuit/leash/reset plus source-bound homepoint return, and normal lobby creation spanning all four
+  Ul'dah ring choices and all three starter classes plus persisted opening/equipment checks. Both public tested territories use compatible
   server-side meshes; the private opening territory does not make a navigation claim.
 - The initial single-action combat slice uses a fresh level-one Gladiator and the unchanged Central Thanalan
   population. The action catalog validates normally learned Fast Blade (9),
@@ -931,6 +937,48 @@ This is one headless sale/purchase pair, not general shops, arbitrary item/quant
 transactions, currency-container movement, real-client shop presentation,
 transaction isolation, multi-process allocation safety, crash consistency or
 leak-freedom.
+
+## Full Linux gameplay deployment and restart correction
+
+A local Ubuntu 22.04 container now provides actual Linux gameplay evidence, not
+only worker contracts. The complete `sapphire_gameplay_ci` target was built with
+GNU 11.4 from an isolated rsync source copy; API, lobby, world, DB manager, script
+modules and worker were staged together. All six native suites passed in 0.20s.
+The proprietary game directory was mounted read-only and remains untracked. An
+initial smoke attempt mounted only `game/sqpack`; the world requires the sibling
+version file, so that setup failed closed and its shutdown crashed. Mounting the
+complete private game directory read-only corrected the deployment input, after
+which genuine login/idle/logout passed in 133.92s.
+
+The first strict nine-case Linux gate then reached eight passes but failed the
+creation case's world restart. Preserved diagnostics in
+`.e2e-artifacts/linux-ci/gameplay-ci-arnftlzr` show the replacement world finishing
+territory setup and then reporting `bind: Address already in use`; because
+`Acceptor` explicitly disabled address reuse, prior Linux client sockets in
+`TIME_WAIT` prevented the owned listener from restarting. The same log then
+recorded SIGSEGV/SIGABRT because an early initialization return still allowed the
+main update loop to enter partially initialized world state.
+
+Commit `4bbf7ec9a` keeps exclusive Windows bind behavior, enables POSIX
+`SO_REUSEADDR` for an owned listener restart, and publishes `m_bRunning` only after
+all update-loop services are ready. A deliberately invalid-data Windows startup
+then exited with status 1 after `Failed to open file`, without entering the update
+loop or producing a crash signal. The Linux creation/restart case passed in
+216.75s. The subsequent strict clean-source gate passed all nine cases in
+1009.57s with exact input identities and cleanup:
+
+- summary: `build-e2e/ci-summary-linux-gameplay.json`;
+- private diagnostics: `.e2e-artifacts/linux-ci/gameplay-ci-kekux1o4`;
+- revision: `4bbf7ec9a2aaaa9663cb54223cee52c68b35f69b`;
+- worker SHA-256:
+  `b24e9014926dc436aef4dd3ba5b4e667fb8b9c1058218262f7facddda1d6ed6d`;
+- creation artifact SHA-256:
+  `0be489b0557b670a494caa9e01e9161b892a5a74f84391cb277d228c4c1b36cf`.
+
+This verifies the current supported live suite on one local containerized Linux
+deployment. It does not establish hosted runner execution, other distributions,
+capacity, multi-process safety, leak-freedom or independent graphical-client
+compatibility.
 
 ## Next actions / boundaries
 
