@@ -1,6 +1,7 @@
 """Synthetic clock/state contracts; these are not sustained gameplay evidence."""
 from copy import deepcopy
 from types import SimpleNamespace
+import time
 
 import pytest
 
@@ -100,6 +101,98 @@ def synthetic_workload(plan=None):
                 "finished_monotonic": clock(), "duration_seconds": 0}
     work._execute = execute
     return work, clock
+
+
+class MovementWorker:
+    def __init__(self, route, drops):
+        self.route, self.drops = route, drops
+        self.position, self.visible = list(route[0]), True
+        self.last_dropped, self.walk_attempts = False, []
+
+    def snapshot(self, _name):
+        actors = {"100": {"position": list(self.position)}} if self.visible else {}
+        return {"actors": actors}
+
+    def wait_state(self, name, predicate, description, _timeout):
+        state = self.snapshot(name)
+        if description == "workload movement progress" and self.last_dropped:
+            self.last_dropped = False
+            raise WorkerError("synthetic observed movement stall")
+        if not predicate(state):
+            raise WorkerError(f"synthetic state did not satisfy {description}")
+        return state
+
+
+class MovementBot:
+    def __init__(self, name, worker, entity):
+        self.name, self.worker, self.entity = name, worker, entity
+        self.logouts = self.logins = 0
+
+    def walk_to(self, point, **_kwargs):
+        self.worker.walk_attempts.append(list(point))
+        if self.worker.drops:
+            self.worker.drops -= 1
+            self.worker.last_dropped = True
+        else:
+            self.worker.position = list(point)
+
+    def logout(self, **_kwargs):
+        self.logouts += 1
+        self.worker.visible = False
+
+    def close(self):
+        pass
+
+    def login_via_lobby(self, _auth, _name, **_kwargs):
+        self.logins += 1
+        self.worker.visible = True
+        return {"entity_id": self.entity, "observed_position": list(self.worker.position)}
+
+
+def movement_workload(mode, drops):
+    plan = build_plan(catalog(), mode, 7, 2, 2)
+    plan["actions"] = [{"kind": "walk", "bot": 0, "waypoint": 2},
+                       {"kind": "say", "bot": 1}]
+    worker = MovementWorker(catalog()["route"], drops)
+    environment = SimpleNamespace(api=lambda *_args, **_kwargs: {"sId": "synthetic"})
+    work = Workload(environment, worker, catalog(), plan)
+    actor = MovementBot("0", worker, 100)
+    observer = MovementBot("1", worker, 101)
+    work.bots = [actor, observer]
+    work.fixtures = [{"username": "u", "password": "p", "name": "n"}, {}]
+    work.entities = [100, 101]
+    return work, worker, actor
+
+
+def test_exploration_stall_has_one_received_state_replan_and_retains_diagnostic():
+    work, worker, actor = movement_workload("explore", drops=1)
+    outcome = work._execute(0, work.plan["actions"][0], time.monotonic() + 30)
+    assert outcome["status"] == "passed" and len(outcome["recoveries"]) == 1
+    recovery = outcome["recoveries"][0]
+    assert recovery["kind"] == "fresh_session_replan"
+    assert recovery["failed_waypoint"] == 1 and recovery["resume_waypoint"] == 0
+    assert recovery["witnessed_position"] == recovery["reloaded_position"] == catalog()["route"][0]
+    assert "synthetic observed movement stall" in recovery["error"]
+    assert actor.logouts == actor.logins == 1
+    assert worker.walk_attempts == [catalog()["route"][1], catalog()["route"][1], catalog()["route"][2]]
+
+
+def test_soak_stall_fails_without_recovery_or_automatic_retry():
+    work, worker, actor = movement_workload("soak", drops=1)
+    outcome = work._execute(0, work.plan["actions"][0], time.monotonic() + 30)
+    assert outcome["status"] == "failed"
+    assert "synthetic observed movement stall" in outcome["error"]
+    assert "recoveries" not in outcome and actor.logouts == actor.logins == 0
+    assert worker.walk_attempts == [catalog()["route"][1]]
+
+
+def test_exploration_recovery_is_bounded_to_one_attempt():
+    work, worker, actor = movement_workload("explore", drops=2)
+    outcome = work._execute(0, work.plan["actions"][0], time.monotonic() + 30)
+    assert outcome["status"] == "failed" and len(outcome["recoveries"]) == 1
+    assert "synthetic state did not satisfy movement progress after bounded recovery" in outcome["error"]
+    assert actor.logouts == actor.logins == 1
+    assert worker.walk_attempts == [catalog()["route"][1], catalog()["route"][1]]
 
 
 def test_sustained_span_is_between_actions_not_setup_or_postrun_sleep():

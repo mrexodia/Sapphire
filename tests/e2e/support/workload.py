@@ -193,6 +193,46 @@ class Workload:
             if remaining > 0:
                 self._sleep(remaining)  # Deliberate workload think-time, not an outcome assertion.
 
+    def _recover_walk(self, actor, observer, entity, start, target, failed_index, error, deadline):
+        """One exploration-only reconnect/replan from authoritative received state."""
+        if self.plan["mode"] != "explore":
+            raise error
+        witnessed = self.worker.snapshot(observer.name)
+        actor_state = witnessed.get("actors", {}).get(str(entity))
+        position = actor_state.get("position") if actor_state else None
+        if (not isinstance(position, list) or len(position) != 3 or
+                any(type(value) not in (int, float) or not math.isfinite(value) for value in position)):
+            raise WorkerError("movement stall has no finite observer position") from error
+        allowed = range(min(start, target), max(start, target) + 1)
+        nearest = min(allowed, key=lambda route_index: math.dist(position, self.catalog["route"][route_index]))
+        if math.dist(position, self.catalog["route"][nearest]) > 0.75:
+            raise WorkerError("movement stall left the curated recovery corridor") from error
+
+        bot = self.bots[actor]
+        remaining = deadline - self._clock()
+        if remaining <= 0:
+            raise WorkerError("movement recovery exceeded the workload budget") from error
+        bot.logout(timeout=min(10, remaining))
+        self.worker.wait_state(observer.name, lambda s: str(entity) not in s["actors"],
+                               "stalled session removed before recovery",
+                               min(10, max(0.01, deadline - self._clock())))
+        bot.close()
+        fixture = self.fixtures[actor]
+        auth = self.environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+        state = bot.login_via_lobby(auth, fixture["name"],
+                                    timeout=min(30, max(0.01, deadline - self._clock())))
+        if state["entity_id"] != entity:
+            raise WorkerError("movement recovery changed actor identity")
+        recovered = state["observed_position"]
+        nearest = min(allowed, key=lambda route_index: math.dist(recovered, self.catalog["route"][route_index]))
+        if math.dist(recovered, self.catalog["route"][nearest]) > 0.75:
+            raise WorkerError("movement recovery reloaded outside the curated corridor")
+        self.worker.wait_state(observer.name, lambda s: str(entity) in s["actors"],
+                               "recovered actor visible", min(10, max(0.01, deadline - self._clock())))
+        return {"kind": "fresh_session_replan", "failed_waypoint": failed_index,
+                "error": str(error), "witnessed_position": position,
+                "reloaded_position": recovered, "resume_waypoint": nearest}
+
     def _execute(self, index, action, deadline):
         started = self._clock()
         outcome = {"index": index, "action": action, "started_monotonic": started, "status": "failed"}
@@ -207,12 +247,38 @@ class Workload:
             if kind == "walk":
                 start, target = self.positions[actor], action["waypoint"]
                 step = 1 if target >= start else -1
-                route = [self.catalog["route"][i] for i in range(start + step, target + step, step)]
-                if route:
-                    bot.walk_route(route, speed=2, timeout=min(remaining, 30))
-                self.worker.wait_state(observer.name,
-                    lambda s: str(entity) in s["actors"] and math.dist(s["actors"][str(entity)]["position"], self.catalog["route"][target]) < 0.15,
-                    "workload movement observed", min(10, max(0.01, deadline - self._clock())))
+                route_indices = list(range(start + step, target + step, step))
+                recoveries = []
+                resume_boundary = start
+                for route_index in route_indices:
+                    if ((step > 0 and route_index <= resume_boundary) or
+                            (step < 0 and route_index >= resume_boundary)):
+                        continue
+                    point = self.catalog["route"][route_index]
+                    bot.walk_to(point, speed=2, timeout=min(10, max(0.01, deadline - self._clock())))
+                    try:
+                        self.worker.wait_state(observer.name,
+                            lambda s, p=point: str(entity) in s["actors"] and
+                                math.dist(s["actors"][str(entity)]["position"], p) < 0.15,
+                            "workload movement progress", min(5, max(0.01, deadline - self._clock())))
+                    except WorkerError as error:
+                        if recoveries:
+                            raise WorkerError("movement remained stalled after bounded recovery") from error
+                        recovery = self._recover_walk(actor, observer, entity, start, target,
+                                                      route_index, error, deadline)
+                        recoveries.append(recovery)
+                        outcome["recoveries"] = recoveries
+                        reached = recovery["resume_waypoint"]
+                        resume_boundary = reached
+                        if (step > 0 and reached < route_index) or (step < 0 and reached > route_index):
+                            bot.walk_to(point, speed=2,
+                                        timeout=min(10, max(0.01, deadline - self._clock())))
+                            self.worker.wait_state(observer.name,
+                                lambda s, p=point: str(entity) in s["actors"] and
+                                    math.dist(s["actors"][str(entity)]["position"], p) < 0.15,
+                                "movement progress after bounded recovery",
+                                min(5, max(0.01, deadline - self._clock())))
+                            resume_boundary = route_index
                 self.positions[actor] = target
             elif kind == "say":
                 message = f"E2E workload step {index} bot {actor}"
