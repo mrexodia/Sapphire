@@ -167,11 +167,33 @@ def test_observed_fast_blade_damage(environment, live_worker):
     pugilist_witness.login_via_lobby(pugilist_witness_fixture["auth"], pugilist_witness_fixture["name"])
     pugilist_entity = pugilist_state["entity_id"]
 
-    def pugilist_candidates(s):
+    def pugilist_candidates(s, maximum=2):
         return [(key, actor) for key, actor in s["actors"].items()
                 if actor["kind"] == 2 and actor["base_id"] == 351 and actor["level"] == 1
                 and actor["hp"] == actor["hp_max"] > 0
-                and math.dist(actor["position"], s["predicted_position"]) < 2]
+                and math.dist(actor["position"], s["predicted_position"]) < maximum]
+
+    # Natural populations can roam while the preceding defeat scenario runs. Use
+    # only received positions for a bounded ordinary approach, with the witness
+    # verifying every reached point; never relocate the enemy or inject movement.
+    pugilist_approach = []
+    for _ in range(6):
+        pugilist_state = live_worker.snapshot(pugilist.name)
+        nearby = pugilist_candidates(pugilist_state, 20)
+        assert nearby, "no bounded observed natural target for Pugilist approach"
+        pugilist_target, approaching = min(nearby,
+            key=lambda row: math.dist(row[1]["position"], pugilist_state["predicted_position"]))
+        if math.dist(approaching["position"], pugilist_state["predicted_position"]) < 2:
+            break
+        destination = list(approaching["position"])
+        pugilist.walk_to(destination, 2.0, 15)
+        live_worker.wait_state(pugilist_witness.name,
+            lambda s: str(pugilist_entity) in s["actors"]
+                      and math.dist(s["actors"][str(pugilist_entity)]["position"], destination) < 0.15,
+            "witness sees bounded Pugilist approach", 15)
+        pugilist_approach.append(destination)
+    else:
+        raise AssertionError("bounded Pugilist approach did not reach a natural target")
 
     pugilist_state = live_worker.wait_state(pugilist.name,
         lambda s: bool(pugilist_candidates(s)) and s["actors"][str(pugilist_entity)]["tp"] >= 60,
@@ -204,6 +226,7 @@ def test_observed_fast_blade_damage(environment, live_worker):
         "reward_delta": reward_delta, "rewards_after_fresh_login": after_rewards,
         "inventory_after_fresh_login": after_inventory, "both_clients_verified": True,
         "bootshine": {"class_job": 2, "action_metadata": pugilist_meta, "effect": bootshine,
-                      "target_before": pugilist_before, "both_clients_verified": True},
+                      "target_before": pugilist_before, "observed_approach": pugilist_approach,
+                      "both_clients_verified": True},
         "scope": "one natural level-one Fast Blade enemy defeat with current testTable loot/EXP plus one independently observed natural-target Bootshine effect; no combo or general combat claim"
     }, indent=2), encoding="utf-8")
