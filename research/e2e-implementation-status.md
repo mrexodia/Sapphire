@@ -30,10 +30,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say and a received two-client party join/leave lifecycle; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, broader social/group policy, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say and a received two-client party join/leave lifecycle with exact bidirectional same-zone and cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, broader social/group policy, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and source-LGB Central Thanalan map discovery | One path in each category is verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
-| Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
+| Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
@@ -73,7 +73,7 @@ a nearby passing test does not close them.
 | Ordered journal and race-safe waits | sequenced bounded worker events; Python state/event versions registered before triggers | Verified |
 | Base/layout/runtime identity separation | versioned catalogs bind source actor/event IDs and resolve received runtime entities | Verified for catalogued content |
 | Core semantic API | login/select/world-ready/logout, movement, interaction, scene choice, quest/reward expectations are wrapped above raw packets | Verified for supported subset |
-| Later combat/social/transition/instance API | natural combat, Say, a two-client party lifecycle and one physical zone transition are live | **Partial:** instance entry is absent; combat/social/transition breadth is narrow |
+| Later combat/social/transition/instance API | natural combat, Say, a two-client party lifecycle, exact same-/cross-zone party chat and one physical zone transition are live | **Partial:** instance entry is absent; combat/social/transition breadth is narrow |
 | Action preconditions/transitions/deadlines/diagnostics | native guards, Python predicates, per-action timeouts and journals | Verified for enabled methods |
 | Scene adapter: approach→interact→observe→choose→finish→state | live quest, shop and opening scenarios use explicit catalogs and received identities | Verified for supported one/two-result and opening chains |
 | Unknown scenes fail closed | worker/policy contracts; workload invariant rejects any unexpected scene | Verified |
@@ -381,8 +381,29 @@ The clean case passed in **55.97s** at
 `bb67ef03eb5216b03d5d41ae05dcd51bf2978d28ceeb1c28157daf071a42c546`, event
 journal SHA-256 is
 `9dfaa593eb0cf57c5b83a8b6af6899258805b85fa09989ba3a6a7fac44fcb856`,
-`dirty=false`, and runtime cleanup is confirmed. This remains one local party
-join/leave and cross-zone path, not broad party, party-chat or instance evidence.
+`dirty=false`, and runtime cleanup is confirmed.
+
+At `5758d9208`, party state also retains the exact nonzero chat-channel identity.
+The sender may construct a normal chat-channel request only from received self
+membership and that exact channel; empty, oversized, non-printable, debug-command,
+zero-channel and non-member requests fail closed. The receiver decodes the separate
+chat connection and accepts a message only when channel, party ID and the sender's
+entity/character/name all match its own received roster. Both directions are
+independently received in the local lifecycle and again after the clients occupy
+territories 130 and 141. Exact request bytes and rejection contracts pass under
+Clang, MSVC and GNU. One MSVC exact-byte failure exposed unspecified structure
+padding in the character-deletion helper; explicitly zeroing the complete sent
+wire object made the existing fixture deterministic rather than weakening it.
+The combined clean cases passed 2/2 in **55.60s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-rqiisz2h`; manifest SHA-256 is
+`ad4f6872670ebe34491c9102a64b11d2d56a4ae78410a07dbb8b8e3b1c8bfa94`, local
+party journal SHA-256 is
+`f5a8ea88b1566b38f17bd9c63e7975eecb49a21bd7aee927d250973a36b91291`, and
+cross-zone journal SHA-256 is
+`6f338e2aad4bd137931a8055456eb44412f1df315f27f15dfdc66a7b0b9579dd`.
+The source is clean and runtime removal is confirmed. This remains one two-client
+party and channel path, not broader party policy, alliance, instance or arbitrary
+chat-channel evidence.
 
 ## Repeated combat and first retaliation
 
