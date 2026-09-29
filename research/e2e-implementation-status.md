@@ -225,11 +225,11 @@ a nearby passing test does not close them.
   a second stall, identity change or off-corridor position fails. Soak never
   retries. Three dedicated contracts cover successful one-shot recovery, zero-retry
   soak failure and second-stall failure. **255** Python contracts pass with Clang,
-  MSVC and network-isolated GNU workers. A normal two-bot/12-action exploration
-  exercised the per-waypoint watchdog without recovery and passed in 29.766s of
-  action span with runtime removal (`sapphire-e2e-il0bl6zg`); its `result.json`
-  SHA-256 is
-  `649d34fa18cd8b23be4a8a1b646975633a6dd73796dcd9d4a20960df7f8031ae`.
+  MSVC and network-isolated GNU workers. At clean revision `fa5261ef2`, a normal
+  two-bot/12-action exploration exercised the per-waypoint watchdog without recovery
+  and passed in 30.343s of action span with `dirty=false` and runtime removal
+  (`sapphire-e2e-5txfcfcn`); its `result.json` SHA-256 is
+  `94335064b37888ccadfe4df42c96fe488b82f86865ff1ff563a55eed6924c2c8`.
   The bounded recovery path is contract-verified, not claimed as a live injected
   network-fault result.
 - Version-2 plans add an explicit round-start interval and minimum successful
