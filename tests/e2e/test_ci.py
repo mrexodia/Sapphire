@@ -88,7 +88,15 @@ def profile(tmp_path):
                "approach_route": opening_route,
                "approach_route_length": sum(math.dist(a, b) for a, b in zip(opening_route, opening_route[1:])),
                "completion_route_supported": False,
-               "completion_route_blocker": "incomplete navigation corridor", "navigation": nav}
+               "completion_route_blocker": "incomplete navigation corridor",
+               "opening_event_ranges": [
+                   {"id": 4101525, "enabled": False, "shape": 1, "position": [91.77615, 4, -108.8433]},
+                   {"id": 4101535, "enabled": False, "shape": 1, "position": [8.53425, 4, -143.5217]},
+                   {"id": 4101537, "enabled": False, "shape": 1, "position": [42.22482, 4.1983, -160.709]}],
+               "supported_range": {"event_id": 1245187, "param": 4101537, "expected_scene": 20,
+                                   "route": [[42, 4.337, -157.6], [42.11241, 4.26765, -159.1545],
+                                             [42.22482, 4.1983, -160.709]], "route_length": 3.12},
+               "navigation": nav}
     Path(p["opening_quest_catalog"]).write_text(json.dumps(opening))
     return p
 
