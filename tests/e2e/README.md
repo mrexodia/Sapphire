@@ -368,9 +368,9 @@ verified after another restart, and the character walks a source-derived route t
 an observed gil-shop actor. An independent client verifies arrival. The worker
 opens only the matching received shop scenes, sells the observed one-item ordinary-
 bag stack, and requires the exact item decrease and 28-gil increase. From the
-refreshed received shop scene it then buys source-listed item 5890 for exactly eight
-gil, requiring the new item and 20-gil balance immediately and after fresh
-authentication plus a world restart. `gil-shop-sale.json` records those snapshots;
+refreshed received shop scene it then buys three source-listed item 5890 at eight
+gil each, requiring the exact three-item stack and four-gil balance immediately and
+after fresh authentication plus a world restart. `gil-shop-sale.json` records those snapshots;
 the operation-10 acknowledgement remains explicitly separate
 from mutation evidence. The server split implementation creates the new persistent
 item directly at the requested slot; it no longer aliases an `addItem()` auto-slot
@@ -382,8 +382,8 @@ server response supplies gameplay evidence.
 
 This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
 swap, one partial split, one no-overflow same-item merge, discard, one exact
-single-item sale and one exact single-item purchase—not equipment or currency-
-container moves, overflow merges, item use, arbitrary shops/items or quantities,
+single-item sale and one exact three-item purchase—not equipment or currency-
+container moves, overflow merges, item use, arbitrary shops/items or general quantities,
 immediate operation publication, crash
 consistency or independent real-client inventory presentation.
 
@@ -439,8 +439,9 @@ bin/sapphire_test_shop_catalog <game/sqpack> .e2e-assets/uldah-v2/navi build-e2e
 Use `.exe` on Windows and set `shop_catalog` to the absolute output path. The
 verified private catalog binds potion 4551 to one sale for 28 gil, ENpc base
 1009247/layout 4757046/event 262468, a 641-point route of approximately 302.30m,
-and that shop's source-listed index-zero item 5890 for an eight-gil purchase.
-Python validates both exact transactions, the event family, route continuity, and
+and that shop's source-listed index-zero item 5890 at eight gil each. The catalog
+derives the exact bounded quantity three from the source stack cap and sale proceeds,
+for a 24-gil purchase. Python validates both exact transactions, the event family, route continuity, and
 endpoint range. This does not establish arbitrary quantities/items, other shops,
 currency-container manipulation, concurrent transactions, or real-client shop UI.
 
