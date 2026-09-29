@@ -31,7 +31,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
 | More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands and all four source-defined Ring1 choices plus one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessories/off-hand/head/waist/later equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
-| Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
+| Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, and source-LGB opening WithinRange scene 20 | Exit plus one enter-territory and one within-range subset verified; discovery/general adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
@@ -78,7 +78,7 @@ a nearby passing test does not close them.
 | Scene adapter: approach→interact→observe→choose→finish→state | live quest, shop and opening scenarios use explicit catalogs and received identities | Verified for supported one/two-result and opening chains |
 | Unknown scenes fail closed | worker/policy contracts; workload invariant rejects any unexpected scene | Verified |
 | Yield/resume scene exchange | Server logs prove quest yield is unimplemented and no established resume packet/result exists | **Blocked; unsupported capability is explicit** |
-| Range/discovery/territory triggers | physical ExitRange crossing and one source-bound enter-territory operation | **Partial:** general range/discovery adapters are absent |
+| Range/discovery/territory triggers | physical ExitRange crossing plus source-bound enter-territory and opening WithinRange operations | **Partial:** one range path is verified, but discovery and general adapters are absent |
 | Curated waypoint stage | independently observed quest/shop/transition/pursuit routes | Verified |
 | Navmesh routing for selected territories | matching TSET catalogs/meshes for territories 130 and 141; disconnected/off-mesh routes fail closed | Verified for selected corridors only |
 | Content-aware transitions/doors/dynamic obstacles | one source-defined exit volume is crossed | **Partial:** general transitions, doors and dynamic obstacles are absent |
@@ -813,6 +813,18 @@ worker SHA-256 is
 `954a26161dc8ecfe6995289fee7bebfca2dea47f2c9fed721cb41df8577809a8`,
 and server SHA-256 is
 `ab48e771c1d467f8d1dc243e838ce1fdd6260e01e0974611ffbc4b9ad637c5e8`.
+
+At `e5b6c6579`, the same read-only generator inspects opening-territory LGB layers
+and resolves all three source-script event ranges. It selects box 4101537, generates
+a complete eight-point ~3.123m navmesh route into its transformed volume, and binds
+event 1245187 to expected scene 20. The worker accepts only territory 182, that exact
+event/parameter, finite coordinates and a predicted endpoint within 0.15m. All four
+normal creation branches walk the route, receive scene 20, finish it explicitly and
+then prove the endpoint through fresh authentication. The clean targeted case passed
+in **144.87s** (`sapphire-e2e-va9arwo0`); artifact SHA-256 is
+`d17450875ddb8d8f9ad716f5fe7832d8b6d6db91641da8339db92a8130da630c`.
+Protocol fixtures pass with Clang, MSVC and GNU; 255 Python contracts pass on all
+three workers. This is one source-defined range, not general discovery evaluation.
 
 At `86c096912`, a read-only catalog binds Coming to Ul'dah 66130, Wymond layout
 3969639, Momodi layout 3969632, source reward metadata (50 EXP/103 gil) and a

@@ -58,7 +58,10 @@ lobby, world and MariaDB processes with matching game data:
   equipped from its exact freshly observed bag slot into Ring1; restart proves all
   seven starter-gear restores and all four ring equips. A reverse ring operation is
   proved by another fresh login returning it to the exact original bag slot.
-  Receipts are never treated as mutation proof. The first character then walks a
+  Receipts are never treated as mutation proof. Each branch also walks a generated
+  eight-point route into source-LGB opening range 4101537, receives exact scene 20,
+  and proves the endpoint after fresh authentication. This is one bounded
+  WithinRange adapter, not general trigger evaluation. The first character then walks a
   source-generated ~9.84m route to Wymond and accepts Coming to Ul'dah (66130)
   through explicit scenes 0/1/2. Active sequence 255, position and opening sequence
   2 (scene 40→30) survive restart. The generated giver-to-Momodi route fails closed
