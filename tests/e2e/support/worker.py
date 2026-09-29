@@ -554,6 +554,13 @@ class Bot:
         return self.worker.request("tell", self.name, target=target_entity,
                                    name=target_name, message=message)
 
+    def tell_offline(self, target_entity, target_name, message, timeout=10):
+        self.worker.request("tell_offline", self.name, target=target_entity,
+                            name=target_name, message=message)
+        return self.worker.wait_state(self.name,
+            lambda s: s["tell_not_found"] == {"name": target_name},
+            "exact unavailable Tell target result", timeout)["tell_not_found"]
+
     def expect_tell(self, sender_state, message, timeout=10):
         expected_entity = sender_state["entity_id"]
         def matches(state, row):

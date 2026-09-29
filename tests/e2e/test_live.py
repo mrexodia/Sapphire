@@ -150,6 +150,11 @@ def test_received_party_join_and_leave(environment, live_worker):
                                if row["entity_id"] == rejoin_before["entity_id"])["territory"] == 0,
             "received offline full-party member identity")
         assert {(row["entity_id"], row["name"]) for row in offline["party"]["members"]} == expected_full
+    live_worker.wait_state(member.name,
+        lambda s: str(rejoin_before["entity_id"]) not in s["actors"],
+        "offline tell target despawned")
+    assert member.tell_offline(rejoin_before["entity_id"], rejoin_fixture["name"],
+                               "offline member exact tell") == {"name": rejoin_fixture["name"]}
     rejoin_auth = environment.api("login", {"username": rejoin_fixture["username"],
                                              "pass": rejoin_fixture["password"]})
     rejoined = Bot(live_worker, "party-extra-rejoined")

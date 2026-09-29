@@ -101,6 +101,7 @@ namespace Sapphire::Testing
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
       {"chat", Json::array()}, {"party_chat", Json::array()}, {"tells", Json::array()},
+      {"tell_not_found", nullptr}, {"offline_tell_pending", false},
       {"created_via_lobby", false}, {"deleted_via_lobby", false},
       {"scene", nullptr}, {"event_id", nullptr}, {"name_rejection", nullptr}, {"pending_party_invite", nullptr},
       {"party_invite_result", nullptr}, {"party_invite_reply", nullptr}, {"party_invite_update", nullptr},
@@ -448,6 +449,15 @@ namespace Sapphire::Testing
     constexpr size_t off = sizeof(Wire::FFXIVARR_IPC_HEADER);
     if(name == "chat")
     {
+      if(h.type == Wire::Server::FFXIVIpcTellNotFound::_ServerIpcType &&
+         m_state["offline_tell_pending"].get<bool>())
+      {
+        const auto p = readObject<Wire::Server::FFXIVIpcTellNotFound>(segment.data, off);
+        m_state["tell_not_found"] = {{"name", receivedName(p.toName, sizeof(p.toName))}};
+        m_state["offline_tell_pending"] = false;
+        event("tell_not_found", m_state["tell_not_found"]);
+        return;
+      }
       if(h.type == Wire::Server::FFXIVChatFrom::_ServerIpcType)
       {
         const auto p = readObject<Wire::Server::FFXIVChatFrom>(segment.data, off);
@@ -1146,17 +1156,19 @@ namespace Sapphire::Testing
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};
     }
-    if(method == "tell")
+    if(method == "tell" || method == "tell_offline")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("tell requires an idle character");
       const auto target = args.at("target").get<uint32_t>();
       const auto targetName = args.at("name").get<std::string>();
-      if(m_state["party"].value("count", 0) < 2 ||
-         std::none_of(m_state["party"].at("members").begin(), m_state["party"].at("members").end(),
-           [&](const auto& member) { return member.value("entity_id", 0u) == target &&
-                                             member.value("name", "") == targetName; }))
-        throw ProtocolError("tell requires exact received party membership for the target");
-      auto payload = tellRequest(m_state["actors"], target, targetName, args.at("message"));
+      const auto expectOffline = method == "tell_offline";
+      auto payload = tellRequest(m_state["actors"], m_state["party"], target, targetName,
+                                 args.at("message"), expectOffline);
+      if(expectOffline)
+      {
+        m_state["tell_not_found"] = nullptr;
+        m_state["offline_tell_pending"] = true;
+      }
       sendChat(WC::FFXIVIpcChatTo::_ServerIpcType, payload);
       return Json::object();
     }
