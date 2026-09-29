@@ -48,14 +48,18 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     live_worker.wait_state(observer.name, lambda s: str(entity) in s["actors"], "fighter visible", 20)
     state = live_worker.wait_state(fighter.name,
         lambda s: any(actor["kind"] == 2 and actor["base_id"] == 302 and actor["level"] == 14
-                      and actor["hp"] == actor["hp_max"] > 0
-                      and math.dist(actor["position"], s["observed_position"]) < 3
+                      and actor["layout_id"] == int(layout_id) and actor["hp"] == actor["hp_max"] > 0
+                      and math.dist(actor["position"], s["observed_position"]) < 20
                       for actor in s["actors"].values()),
-        "nearby natural level-14 enemy and received state", 20)
+        "bounded source-layout level-14 enemy and received state", 20)
     target = next(int(key) for key, actor in state["actors"].items()
                   if actor["kind"] == 2 and actor["base_id"] == 302 and actor["level"] == 14
-                  and actor["hp"] == actor["hp_max"] > 0
-                  and math.dist(actor["position"], state["observed_position"]) < 3)
+                  and actor["layout_id"] == int(layout_id) and actor["hp"] == actor["hp_max"] > 0
+                  and math.dist(actor["position"], state["observed_position"]) < 20)
+    live_worker.wait_state(observer.name,
+        lambda s: s["actors"].get(str(target), {}).get("layout_id") == int(layout_id)
+                  and s["actors"][str(target)]["hp"] == s["actors"][str(target)]["hp_max"] > 0,
+        "observer independently receives bounded opening target", 20)
     live_worker.wait_state(fighter.name,
         lambda s: s["actors"].get(str(entity), {}).get("tp", 0) >= 60,
         "naturally regenerated opening TP", 10)
