@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     if(!data.init(argv[1])) throw std::runtime_error("cannot initialize game data");
     auto metadata = [&](uint32_t actionId)
     {
-      if(actionId != 3 && actionId != 9 && actionId != 53 && actionId != 142)
+      if(actionId != 3 && actionId != 6 && actionId != 9 && actionId != 53 && actionId != 142)
         throw std::runtime_error("action is not an enabled level-one ability");
       auto row = data.getRow<Excel::Action>(actionId);
       if(!row) throw std::runtime_error("starting-class action missing");
@@ -36,6 +36,7 @@ int main(int argc, char** argv)
     if(argc == 3)
     {
       output["sprint"] = metadata(3);
+      output["return"] = metadata(6);
       output["bootshine"] = metadata(53);
       output["blizzard"] = metadata(142);
     }

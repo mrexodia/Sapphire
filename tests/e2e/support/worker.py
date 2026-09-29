@@ -349,6 +349,27 @@ class Bot:
             raise UnsupportedScene("scene catalog profile mismatch")
         self.worker.request("choose_scene", self.name, **scene_arguments(scene), results=results)
 
+    def cast_return(self, timeout=30):
+        entity = self.worker.snapshot(self.name)["entity_id"]
+        request = self.worker.request("cast_return", self.name)["request"]
+        casting = self.worker.wait_state(self.name,
+            lambda s: any(row["source"] == entity and row["action"] == 6
+                          for row in s["combat"]["casts"])
+                      and any(row["source"] == entity and row["action"] == 6
+                              for row in s["combat"]["starts"]),
+            "received living Return cast and recast", timeout)
+        cast = [row for row in casting["combat"]["casts"]
+                if row["source"] == entity and row["action"] == 6]
+        start = [row for row in casting["combat"]["starts"]
+                 if row["source"] == entity and row["action"] == 6]
+        if len(cast) != 1 or len(start) != 1:
+            raise WorkerError("living Return did not produce one exact cast/recast pair")
+        state = self.worker.wait_state(self.name,
+            lambda s: s["phase"] == "ready" and s["territory"] == 130
+                      and not s["between_areas"],
+            "living Return destination ready", timeout)
+        return state, request, cast[0], start[0]
+
     def wait_sprint_ready(self, timeout=30):
         return self.worker.wait_state(self.name, sprint_ready, "received Sprint-ready state", timeout)
 

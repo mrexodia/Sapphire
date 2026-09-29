@@ -47,6 +47,15 @@ int main()
     auto wrongKindSprint = actors; wrongKindSprint["7"]["kind"] = 2;
     rejects([&] { sprintRequest(7, 4, wrongKindSprint); });
     rejects([&] { sprintRequest(7, 0, actors); });
+    auto livingReturn = livingReturnRequest(7, 5, 141, 9, actors);
+    Bytes expectedReturn(32, 0); expectedReturn[1] = 1; expectedReturn[4] = 6;
+    expectedReturn[8] = 5; expectedReturn[16] = 7;
+    require(livingReturn == expectedReturn);
+    rejects([&] { livingReturnRequest(7, 5, 130, 9, actors); });
+    rejects([&] { livingReturnRequest(7, 5, 141, 8, actors); });
+    auto deadReturn = actors; deadReturn["7"]["hp"] = 0;
+    rejects([&] { livingReturnRequest(7, 5, 141, 9, deadReturn); });
+    rejects([&] { livingReturnRequest(7, 0, 141, 9, actors); });
     auto bootshine = bootshineRequest(7, 2, 8, {0,0,0}, actors, {{"class_job", 2}});
     expected[4] = 53; expected[8] = 2;
     require(bootshine == expected);
@@ -81,6 +90,15 @@ int main()
     require(state.receive(result._ServerIpcType, 7, packet(result)));
     require(state.state()["effects"].back()["effects"][0]["value"] == 7);
     require(state.state()["effects"].back()["source"] == 7);
+    WS::FFXIVIpcActorCast cast{};
+    cast.Action = 6; cast.ActionKey = 6; cast.ActionKind = 1;
+    cast.CastTime = 5.0f; cast.Target = 7;
+    require(state.receive(cast._ServerIpcType, 7, packet(cast)));
+    const Json expectedCast{{"source", 7}, {"action", 6}, {"action_key", 6},
+                            {"kind", 1}, {"cast_seconds", 5.0f}, {"target", 7}};
+    require(state.state()["casts"].back() == expectedCast);
+    cast.CastTime = std::numeric_limits<float>::quiet_NaN();
+    rejects([&] { state.receive(cast._ServerIpcType, 7, packet(cast)); });
     require(state.state()["integrities"].empty()); // Effect alone must not invent HP.
     WS::FFXIVIpcActionIntegrity integrity{};
     integrity.Target = 8; integrity.ResultId = 42; integrity.Hp = 13; integrity.HpMax = 20; integrity.Tp = 40;

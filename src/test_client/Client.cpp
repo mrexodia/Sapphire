@@ -545,6 +545,8 @@ namespace Sapphire::Testing
           for(const auto* field : {"hp", "hp_max", "mp", "tp"}) m_state["actors"][key][field] = integrity[field];
         detail["integrity"] = integrity;
       }
+      else if(h.type == WS::FFXIVIpcActorCast::_ServerIpcType)
+        detail["cast"] = m_combat.state()["casts"].back();
       else if(h.type == WS::FFXIVIpcHudParam::_ServerIpcType)
       {
         const auto& hud = m_combat.state()["hud_params"].back();
@@ -1049,6 +1051,18 @@ namespace Sapphire::Testing
       sendChat(WC::FFXIVIpcChatToChannel::_ServerIpcType, payload);
       return {{"party_id", m_state["party"].at("id")},
               {"channel", m_state["party"].at("chat_channel")}};
+    }
+    if(method == "cast_return")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("living Return requires an idle character");
+      if(std::chrono::steady_clock::now() < m_startingActionReady) throw ProtocolError("starting-action recast pending");
+      if(m_actionRequest >= 65535) throw ProtocolError("action request budget exhausted");
+      auto payload = livingReturnRequest(m_entity, ++m_actionRequest,
+                                         m_state.at("territory"), m_state.at("homepoint"),
+                                         m_state["actors"]);
+      sendZone(WC::FFXIVIpcActionRequest::_ServerIpcType, payload);
+      m_startingActionReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(5000);
+      return {{"request", m_actionRequest}};
     }
     if(method == "sprint")
     {

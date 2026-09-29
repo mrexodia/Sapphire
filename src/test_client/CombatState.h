@@ -21,6 +21,8 @@ namespace Sapphire::Testing
   // Deliberately narrow profiles for source-defined level-one actions.
   // No arbitrary ability/raw-packet API.
   Bytes sprintRequest(uint32_t entity, uint32_t request, const nlohmann::json& actors);
+  Bytes livingReturnRequest(uint32_t entity, uint32_t request, uint16_t territory,
+                            uint8_t homepoint, const nlohmann::json& actors);
   Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position,
                          const nlohmann::json& actors, const nlohmann::json& rewards);

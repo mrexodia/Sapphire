@@ -15,6 +15,7 @@ def test_capabilities(worker):
     assert caps["scope"] == "loopback-only"
     assert "general_navigation" in caps["unsupported"]
     assert "general_combat" in caps["unsupported"]
+    assert "cast_return" in caps["methods"]
     assert "sprint" in caps["methods"]
     assert "fast_blade" in caps["methods"]
     assert "bootshine" in caps["methods"]
@@ -103,6 +104,8 @@ def test_action_before_readiness_is_rejected(worker):
                 worker.request("buy_shop_equipment", "test", token=1, event_id=262468)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("use_shop_vfx_item", "test", storage=0, slot=0, expected_count=3)
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("cast_return", "test")
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("sprint", "test")
             with pytest.raises(WorkerError, match="world-ready"):

@@ -9,7 +9,8 @@ namespace Sapphire::Testing
   using Json = nlohmann::json;
   namespace WS = Wire::WorldPackets::Server;
   CombatState::CombatState() : m_state{{"effects", Json::array()}, {"integrities", Json::array()},
-                                           {"starts", Json::array()}, {"hud_params", Json::array()}} {}
+                                           {"starts", Json::array()}, {"casts", Json::array()},
+                                           {"hud_params", Json::array()}} {}
   static void append(Json& array, Json value)
   {
     array.push_back(std::move(value));
@@ -39,6 +40,16 @@ namespace Sapphire::Testing
       for(size_t i = 0; i < p.TargetCount; ++i)
         append(m_state["effects"], {{"source", source}, {"target", p.Target[i]}, {"action", p.ActionKey},
           {"kind", p.ActionKind}, {"request", p.RequestId}, {"result", p.ResultId}, {"effects", effects(p.CalcResult[i])}});
+    }
+    else if(opcode == WS::FFXIVIpcActorCast::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcActorCast>(data, off);
+      if(!source || !p.Action || !p.ActionKey || !p.Target || !std::isfinite(p.CastTime) ||
+         p.CastTime < 0 || p.CastTime > 60)
+        throw ProtocolError("invalid received actor cast");
+      append(m_state["casts"], {{"source", source}, {"action", p.Action},
+                                 {"action_key", p.ActionKey}, {"kind", p.ActionKind},
+                                 {"cast_seconds", p.CastTime}, {"target", p.Target}});
     }
     else if(opcode == WS::FFXIVIpcHudParam::_ServerIpcType)
     {
@@ -75,6 +86,20 @@ namespace Sapphire::Testing
     // Round UP: truncating a positive fractional millisecond could expose zero
     // while the command-side steady-clock guard still correctly rejects a request.
     return static_cast<uint32_t>(std::chrono::ceil<std::chrono::milliseconds>(ready - now).count());
+  }
+  Bytes livingReturnRequest(uint32_t entity, uint32_t request, uint16_t territory,
+                            uint8_t homepoint, const Json& actors)
+  {
+    const auto self = std::to_string(entity);
+    if(!entity || !request || request > 65535 || territory != 141 || homepoint != 9 ||
+       !actors.contains(self) || actors.at(self).value("kind", 0) != 1 ||
+       actors.at(self).value("hp", 0) == 0)
+      throw ProtocolError("living Return requires exact received Central Thanalan/homepoint state");
+    Wire::WorldPackets::Client::FFXIVIpcActionRequest p{};
+    std::memset(&p, 0, sizeof(p));
+    p.ActionKind = Common::ACTION_KIND_NORMAL; p.ActionKey = 6;
+    p.RequestId = request; p.Target = entity;
+    return objectBytes(p);
   }
   Bytes sprintRequest(uint32_t entity, uint32_t request, const Json& actors)
   {

@@ -4,10 +4,86 @@ import math
 from copy import deepcopy
 import pytest
 
-from .support.catalog import load_transition_catalog
+from .support.catalog import load_combat_catalog, load_respawn_catalog, load_transition_catalog
 from .support.worker import Bot
 
 pytestmark = pytest.mark.live
+
+
+def test_observed_living_return_action(environment, live_worker):
+    transition_path = environment.profile.get("transition_catalog")
+    respawn_path = environment.profile.get("respawn_catalog")
+    combat_path = environment.profile.get("combat_catalog")
+    assert transition_path and respawn_path and combat_path
+    transition = load_transition_catalog(transition_path)["transition"]
+    start = transition["destinations"][0]
+    respawn = load_respawn_catalog(respawn_path)
+    metadata = load_combat_catalog(combat_path)["return"]
+    assert metadata["action"] == 6 and metadata["class_job"] == 0 and metadata["level"] == 0
+    assert metadata["cast_ms"] == 5000 and metadata["recast_ms"] == 900000
+    assert metadata["recast_group"] == 57 and metadata["target_enemy"] is False
+
+    fixture = environment.fresh_character(start["position"], start["territory"])
+    source_fixture = environment.fresh_character(start["position"], start["territory"])
+    destination_fixture = environment.fresh_character(respawn["pop_range"]["position"],
+                                                      respawn["territory"])
+    player = Bot(live_worker, "living-returner")
+    source = Bot(live_worker, "living-return-source")
+    destination = Bot(live_worker, "living-return-destination")
+    state = player.login_via_lobby(fixture["auth"], fixture["name"])
+    entity = state["entity_id"]
+    assert state["territory"] == 141 and state["homepoint"] == respawn["homepoint"] == 9
+    source.login_via_lobby(source_fixture["auth"], source_fixture["name"])
+    destination_state = destination.login_via_lobby(destination_fixture["auth"],
+                                                     destination_fixture["name"])
+    live_worker.wait_state(source.name,
+        lambda s: str(entity) in s["actors"]
+                  and math.dist(s["actors"][str(entity)]["position"], start["position"]) < 0.15,
+        "living Return source independently observed")
+    assert str(entity) not in destination_state["actors"]
+
+    returned, request, received_cast, received_start = player.cast_return()
+    assert request > 0 and returned["territory"] == respawn["territory"]
+    assert math.dist(returned["observed_position"], respawn["pop_range"]["position"]) < 0.15
+    assert received_cast == {"source": entity, "action": 6, "action_key": 6, "kind": 1,
+                             "cast_seconds": metadata["cast_ms"] / 1000, "target": entity}
+    assert received_start == {"source": entity, "action": 6,
+                              "group": metadata["recast_group"],
+                              "recast_centiseconds": metadata["recast_ms"] // 10}
+    source_after = live_worker.wait_state(source.name,
+        lambda s: received_cast in s["combat"]["casts"] and str(entity) not in s["actors"],
+        "independently received living Return cast and source departure")
+    assert source_after["combat"]["casts"].count(received_cast) == 1
+    destination_arrival = live_worker.wait_state(destination.name,
+        lambda s: str(entity) in s["actors"]
+                  and math.dist(s["actors"][str(entity)]["position"],
+                                respawn["pop_range"]["position"]) < 0.15,
+        "living Return destination independently observed")
+
+    player.logout()
+    live_worker.wait_state(destination.name, lambda s: str(entity) not in s["actors"],
+                           "living Return destination cleanup")
+    player.close()
+    for bot in (source, destination):
+        bot.logout()
+        bot.close()
+    environment.restart_world()
+    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    reloaded = Bot(live_worker, "living-return-reloaded")
+    persisted = reloaded.login_via_lobby(auth, fixture["name"])
+    assert persisted["territory"] == respawn["territory"]
+    assert math.dist(persisted["observed_position"], respawn["pop_range"]["position"]) < 0.15
+    (environment.artifacts / "living-return.json").write_text(json.dumps({
+        "action": metadata, "request": request,
+        "source_position": start["position"],
+        "destination_witness": destination_arrival["actors"][str(entity)]["position"],
+        "received_cast": received_cast, "received_start": received_start,
+        "source_observer_received_same_cast": True,
+        "fresh_login_territory": persisted["territory"],
+        "fresh_login_position": persisted["observed_position"]
+    }, indent=2), encoding="utf-8")
+    reloaded.logout()
+    reloaded.close()
 
 
 def test_observed_exit_crossing_and_territory_persistence(environment, live_worker):
