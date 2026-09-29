@@ -33,10 +33,13 @@ lobby, world and MariaDB processes with matching game data:
   quest active, walks another 86.8m, cancels/acknowledges a hand-over, then chooses
   three ethers rather than the alternative potions. Both completions and cumulative
   rewards survive world restart.
-- Two normal clients receive each other's exact spawn entity/name, complete a
-  bounded party invite/decline/reinvite/accept flow, independently receive the same nonzero party
-  ID and exact two-member roster, then both receive an empty party after the member
-  leaves. The zoning scenario additionally keeps that party across a physical
+- Three normal clients receive exact spawn identities. Two complete a bounded
+  invite/decline/reinvite/accept flow and exact initial roster; the received leader
+  then adds the third client while preserving party/channel identity. All three
+  receive the exact expanded roster, both existing members receive the newcomer's
+  party chat, and the newcomer leaves while the original two receive their exact
+  remaining roster before disband. The zoning scenario additionally keeps the
+  two-client form of that party across a physical
   130→141 crossing and checks each client's exact self-territory plus the protocol's
   zeroed-detail representation for its remote-zone member. In both same-zone and
   cross-zone states, each direction sends through the exact received party channel;
