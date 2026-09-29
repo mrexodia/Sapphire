@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed starter main-hand unequip/re-equip round trip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash/reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed starter main-hand unequip/re-equip round trip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -54,10 +54,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 - 252 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `77abdae02` took 676.69s with zero skips/errors/failures and verified
+  rehearsal at `3b94d9150` took 647.79s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-qdi9rcb4` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-blizzard-follow.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-9avpxoit` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-health-reset.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -520,9 +520,23 @@ Pursuit catalog SHA-256 is
 `0250dc0c893692ff47dbeb311ea6dedef3f0f1e165f4c19963ac28274ee56a35`.
 The four preceding targeted attempts remain privately under
 `.e2e-artifacts/leash-live{,2,3,4}` and respectively show an unsupported worker
-method, coarse peak observation, variable pursuit lag, and the disproven full-health
-assumption; none is success evidence. This remains one source-bound enemy/route,
-not general pathfinding, automatic proximity aggro or universal leash policy.
+method, coarse peak observation, variable pursuit lag, and the then-unobservable
+full-health assumption; none is success evidence.
+
+`3b94d9150` adds bounded decoding of the server's ordinary HUD-parameter update
+rather than inferring retreat healing from position or logs. Native contracts reject
+invalid HP/MP bounds and source zero and cap the journal at 128 updates. After the
+same enemy arrives at spawn, both clients must receive its restoration to exactly
+237/237 HP before re-engagement. The targeted case passed in 161.90s; its artifact
+SHA-256 is
+`6fc4313f5b591d1d6c0b013c3cbd1d8c3864b1cedeba83ca43679359f9633911`.
+The clean nine-case gate at that commit passed in **647.79s**, with player defeat
+at **124.873s**, exact collection/input identities and cleanup. Evidence:
+`build-e2e/ci-summary-health-reset.json`,
+`.e2e-artifacts/ci/gameplay-ci-9avpxoit`, and clean artifact SHA-256
+`63a3bfca2c8bb0d63ab528043dc1225849031c56eebebc4e0dedf421c35b8863`.
+This remains one source-bound enemy/route, not general pathfinding, automatic
+proximity aggro or universal leash/health-reset policy.
 
 ## Persisted ordinary-bag move and swap
 
@@ -894,7 +908,7 @@ leak-freedom.
    code paths. Generator histories/allocator retention also remain distinct from
    server resource behavior.
 2. Extend combat beyond the now-verified enemy/player defeat, homepoint return and persisted
-   current-test-table rewards: broader aggro/leash policy, health reset, raises, combos, broader abilities/Thaumaturge casting
+   current-test-table rewards: broader aggro/leash and enemy-reset policy, raises, combos and broader abilities
    and production loot selection remain uncovered. Preserve observed resource/range
    checks and require genuine navigation for any pursuit.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond

@@ -83,8 +83,9 @@ lobby, world and MariaDB processes with matching game data:
   stationary observer receive every retaliation effect and exact committed HP
   through zero. The defeated fighter then sends the bounded return command, reaches
   its source-bound Ul'dah homepoint at full HP, is observed there by a third client,
-  and preserves that position/HP after restart. This proves one leash/position reset,
-  not a health reset, general aggro policy, raises or death penalties.
+  and preserves that position/HP after restart. Both clients also receive the
+  leashed enemy's ordinary HUD update restoring 237/237 HP. This proves one
+  leash/position/health reset, not general aggro policy, raises or death penalties.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -518,9 +519,11 @@ canonical homepoint 9 to send `REVIVE/Return`; it does not expose arbitrary revi
 or teleport arguments. The fighter must transition to the generated homepoint-9
 pop range in Ul'dah with full HP, disappear from the old observer, appear alive to a
 pre-positioned destination observer, and reload the same position/full HP after
-logout and world restart. The scenario proves one position leash/reset, but the
-observed enemy did not restore full HP. It does not claim automatic aggro, raises,
-death penalties, general pursuit/leash policy or general combat.
+logout and world restart. The worker decodes bounded ordinary HUD-parameter updates;
+after the retreat both clients must receive the same enemy HP restoration to
+237/237 before re-engagement. It does not infer healing from position or server
+logs. This proves one position-and-health leash reset, but does not claim automatic
+aggro, raises, death penalties, general pursuit/leash policy or general combat.
 
 Generate the private binding from matching game data:
 
@@ -545,8 +548,8 @@ bin/sapphire_test_pursuit_catalog <mesh-root> data/bnpcs/w1f2/w1f2.json build-e2
 The validator fixes natural layout 3749193/base 302/level 14, requires complete
 continuous ten-metre pursuit and 45..70m leash routes starting beside it, and
 preflight requires their mesh to match the staged server mesh. This proves one
-observed pursuit/retreat/reset response, not general pathfinding, health reset or
-aggro/leash policy.
+observed pursuit/retreat/position-and-health reset response, not general pathfinding
+or aggro/leash policy.
 
 The artifact manifest hashes the action catalog and staged player-action/population
 files. Bounded event journals include decoded effects, HP integrity and action-start

@@ -115,14 +115,14 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `77abdae02` passed the nine-case strict
-gate in 676.69 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and verified private-runtime cleanup. The combat case took
-80.075s and added independently observed natural-target Thaumaturge Blizzard;
-Bootshine, opening acceptance, the leash cycle, equipment round trip and sale/
-purchase remained covered. Evidence is
-`build-e2e/ci-summary-blizzard-follow.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-qdi9rcb4`. The preceding clean gate is retained at
+Latest local evidence: clean revision `3b94d9150` passed the nine-case strict
+gate in 647.79 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and verified private-runtime cleanup. Player defeat took
+124.873s and now verifies independently received 237/237 enemy health restoration
+following the existing leash-position reset; Blizzard, Bootshine, opening acceptance,
+equipment round trip and sale/purchase remained covered. Evidence is
+`build-e2e/ci-summary-health-reset.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-9avpxoit`. The preceding failed gate is retained at
 `.e2e-artifacts/ci/gameplay-ci-lfghcvlf`: eight cases passed, but player-defeat
 correctly failed when its natural target roamed beyond melee range during TP wait.
 The fix follows only bounded received positions with witness verification. This
