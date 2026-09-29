@@ -40,8 +40,11 @@ lobby, world and MariaDB processes with matching game data:
   party chat, and all three receive an exact leadership transfer. The former leader
   then fails closed on a further invite and kick. The transferred leader normally
   kicks the newcomer; the removed client receives empty state while the original
-  two retain the leader and exact remaining roster before the transferred leader
-  explicitly disbands; the former leader cannot construct either operation. The
+  two retain the leader and exact remaining roster. The leader then re-expands the
+  party through exact received rosters up to eight members; the eighth member's
+  message reaches all seven peers, a ninth invite fails closed at the protocol
+  limit, and explicit disband reaches all eight. The former leader cannot construct
+  restricted operations. The
   zoning scenario additionally keeps the
   two-client form of that party across a physical
   130→141 crossing and checks each client's exact self-territory plus the protocol's
