@@ -38,6 +38,10 @@ int main()
     Bytes expected(32, 0);
     expected[1] = 1; expected[4] = 9; expected[8] = 1; expected[13] = expected[15] = 0x80; expected[16] = 8;
     require(body == expected);
+    auto bootshine = bootshineRequest(7, 2, 8, {0,0,0}, actors, {{"class_job", 2}});
+    expected[4] = 53; expected[8] = 2;
+    require(bootshine == expected);
+    rejects([&] { bootshineRequest(7, 2, 8, {0,0,0}, actors, rewards); });
     rejects([&] { fastBladeRequest(7, 1, 8, {0,0,-2}, actors, rewards); });
     rejects([&] { fastBladeRequest(7, 1, 9, {0,0,0}, actors, rewards); });
     rejects([&] { fastBladeRequest(7, 65536, 8, {0,0,0}, actors, rewards); });

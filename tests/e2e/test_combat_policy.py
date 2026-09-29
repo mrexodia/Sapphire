@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import pytest
 
-from .support.combat import committed_damage, damage_value, fast_blade_ready
+from .support.combat import bootshine_ready, committed_damage, damage_value, fast_blade_ready
 from .support.worker import Bot
 
 
@@ -75,6 +75,15 @@ def test_profile_death_and_estimated_range_guards():
     state["rewards"]["class_job"] = 2
     with pytest.raises(ValueError, match="Gladiator"):
         fast_blade_ready(state, 8)
+
+
+def test_bootshine_readiness_requires_received_pugilist_state():
+    state = ready_state()
+    state["rewards"]["class_job"] = 2
+    assert bootshine_ready(state, 8)
+    state["rewards"]["class_job"] = 1
+    with pytest.raises(ValueError, match="Pugilist"):
+        bootshine_ready(state, 8)
 
 
 def example_hit():

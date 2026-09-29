@@ -67,16 +67,18 @@ namespace Sapphire::Testing
     // while the command-side steady-clock guard still correctly rejects a request.
     return static_cast<uint32_t>(std::chrono::ceil<std::chrono::milliseconds>(ready - now).count());
   }
-  Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
-                         const std::array<float, 3>& position, const Json& actors, const Json& rewards)
+  static Bytes startingMeleeRequest(uint32_t action, uint32_t classJob, const char* name,
+                                    uint32_t entity, uint32_t request, uint32_t target,
+                                    const std::array<float, 3>& position, const Json& actors,
+                                    const Json& rewards)
   {
     const auto key = std::to_string(target), self = std::to_string(entity);
-    if(!request || request > 65535 || target == entity || rewards.at("class_job") != 1 ||
+    if(!request || request > 65535 || target == entity || rewards.at("class_job") != classJob ||
        !actors.contains(self) || actors.at(self).at("hp") == 0 ||
        !actors.contains(key) || actors.at(key).at("kind") != 2 || actors.at(key).at("hp") == 0)
-      throw ProtocolError("Fast Blade requires a living Gladiator and observed battle NPC");
+      throw ProtocolError(std::string(name) + " requires the matching living starter class and observed battle NPC");
     if(actors.at(self).at("tp").get<uint16_t>() < 60)
-      throw ProtocolError("Fast Blade requires at least 60 received TP");
+      throw ProtocolError(std::string(name) + " requires at least 60 received TP");
     auto destination = actors.at(key).at("position").get<std::array<float, 3>>();
     float squared = 0;
     for(size_t i = 0; i < 3; ++i)
@@ -86,12 +88,21 @@ namespace Sapphire::Testing
     }
     if(squared > 9) throw ProtocolError("combat target outside three-unit range");
     Wire::WorldPackets::Client::FFXIVIpcActionRequest p{};
-    std::memset(&p, 0, sizeof(p)); // Include ABI tail padding in the zeroed wire body.
-    p.ActionKind = Common::ACTION_KIND_NORMAL; p.ActionKey = 9; p.RequestId = request; p.Target = target;
-    // Facing the observed target, in the same unsigned rotation encoding as the profile.
+    std::memset(&p, 0, sizeof(p));
+    p.ActionKind = Common::ACTION_KIND_NORMAL; p.ActionKey = action; p.RequestId = request; p.Target = target;
     const auto angle = std::atan2(destination[0] - position[0], destination[2] - position[2]);
     p.Dir = p.DirTarget = static_cast<uint16_t>(static_cast<uint32_t>(std::lround(
       (angle + 3.14159265358979323846) * (32768.0 / 3.14159265358979323846))) & 0xffffu);
     return objectBytes(p);
+  }
+  Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
+                         const std::array<float, 3>& position, const Json& actors, const Json& rewards)
+  {
+    return startingMeleeRequest(9, 1, "Fast Blade", entity, request, target, position, actors, rewards);
+  }
+  Bytes bootshineRequest(uint32_t entity, uint32_t request, uint32_t target,
+                         const std::array<float, 3>& position, const Json& actors, const Json& rewards)
+  {
+    return startingMeleeRequest(53, 2, "Bootshine", entity, request, target, position, actors, rewards);
   }
 }

@@ -149,6 +149,53 @@ def test_observed_fast_blade_damage(environment, live_worker):
     assert persisted["gm_rank"] == 0 and persisted["territory"] == 141
     reloaded.logout()
     observer.logout()
+
+    # Independently exercise the other level-one melee starter action against a
+    # second unchanged natural population, without granting class/resources.
+    pugilist_meta = catalog["bootshine"]
+    pugilist_spawn = population["LVD_BNPC_01"]["bnpcs"]["3746475"]
+    assert pugilist_spawn["baseInfo"]["baseId"] == 351 and pugilist_spawn["baseInfo"]["level"] == 1
+    pugilist_position = list(pugilist_spawn["baseInfo"]["position"])
+    pugilist_position[0] += 1.0
+    pugilist_fixture = environment.fresh_character(pugilist_position, 141, class_job=2)
+    pugilist_witness_fixture = environment.fresh_character(pugilist_position, 141)
+    pugilist = Bot(live_worker, "pugilist-fighter")
+    pugilist_witness = Bot(live_worker, "pugilist-witness")
+    pugilist_state = pugilist.login_via_lobby(pugilist_fixture["auth"], pugilist_fixture["name"])
+    assert pugilist_state["rewards"]["class_job"] == pugilist_meta["class_job"]
+    assert pugilist_state["actors"][str(pugilist_state["entity_id"])]["level"] == pugilist_meta["level"]
+    pugilist_witness.login_via_lobby(pugilist_witness_fixture["auth"], pugilist_witness_fixture["name"])
+    pugilist_entity = pugilist_state["entity_id"]
+
+    def pugilist_candidates(s):
+        return [(key, actor) for key, actor in s["actors"].items()
+                if actor["kind"] == 2 and actor["base_id"] == 351 and actor["level"] == 1
+                and actor["hp"] == actor["hp_max"] > 0
+                and math.dist(actor["position"], s["predicted_position"]) < 2]
+
+    pugilist_state = live_worker.wait_state(pugilist.name,
+        lambda s: bool(pugilist_candidates(s)) and s["actors"][str(pugilist_entity)]["tp"] >= 60,
+        "nearby natural target and Pugilist TP", 30)
+    pugilist_target, pugilist_before = pugilist_candidates(pugilist_state)[0]
+    live_worker.wait_state(pugilist_witness.name,
+        lambda s: pugilist_target in s["actors"] and str(pugilist_entity) in s["actors"]
+                  and s["actors"][pugilist_target]["hp"] == pugilist_before["hp"],
+        "witness sees Pugilist and target before Bootshine", 20)
+    pugilist.wait_bootshine_ready(int(pugilist_target))
+    bootshine = pugilist.bootshine(int(pugilist_target))
+    assert bootshine["action"] == 53 and damage_value(bootshine) > 0
+    for bot in (pugilist, pugilist_witness):
+        live_worker.wait_state(bot.name, lambda s: committed_damage(s, bootshine, pugilist_before),
+                               "Bootshine matching effect and committed HP", 10)
+    bootshine_start = live_worker.wait_state(pugilist.name,
+        lambda s: any(row["source"] == pugilist_entity and row["action"] == 53
+                      and row["group"] == 58 and row["recast_centiseconds"] == 250
+                      for row in s["combat"]["starts"]),
+        "received Bootshine action start", 10)
+    assert bootshine_start["rewards"]["class_job"] == 2
+    pugilist.logout()
+    pugilist_witness.logout()
+
     (environment.artifacts / "combat-defeat-rewards.json").write_text(json.dumps({
         "attacks": evidence, "attempt_monotonic": attempts, "retaliation": retaliation,
         "fighter_hp_before_combat": fighter_before["hp"], "target_hp_after": 0,
@@ -156,5 +203,7 @@ def test_observed_fast_blade_damage(environment, live_worker):
         "rewards_after_received": after_rewards, "inventory_after_received": after_inventory,
         "reward_delta": reward_delta, "rewards_after_fresh_login": after_rewards,
         "inventory_after_fresh_login": after_inventory, "both_clients_verified": True,
-        "scope": "one naturally populated level-one enemy defeat, current testTable loot and EXP; no pursuit or general combat claim"
+        "bootshine": {"class_job": 2, "action_metadata": pugilist_meta, "effect": bootshine,
+                      "target_before": pugilist_before, "both_clients_verified": True},
+        "scope": "one natural level-one Fast Blade enemy defeat with current testTable loot/EXP plus one independently observed natural-target Bootshine effect; no combo or general combat claim"
     }, indent=2), encoding="utf-8")

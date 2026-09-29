@@ -47,7 +47,11 @@ def profile(tmp_path):
     combat = {"version": 1, "profile": "sapphire-3.3", "action": 9, "class_job": 1,
               "work_index": 1, "level": 1, "base_exp": 50,
               "category": 3, "cost_type": 5, "cost": 60, "range": -1, "cast_ms": 0,
-              "recast_ms": 2500, "recast_group": 58, "effect_type": 1, "target_enemy": True}
+              "recast_ms": 2500, "recast_group": 58, "effect_type": 1, "target_enemy": True,
+              "bootshine": {"action": 53, "class_job": 2, "work_index": 0, "level": 1,
+                            "base_exp": 50, "category": 3, "cost_type": 5, "cost": 60,
+                            "range": -1, "cast_ms": 0, "recast_ms": 2500,
+                            "recast_group": 58, "effect_type": 1, "target_enemy": True}}
     Path(p["combat_catalog"]).write_text(json.dumps(combat))
     shop = {"version": 1, "profile": "sapphire-3.3", "territory": 130,
             "start_actor": 1001289, "navigation": nav,

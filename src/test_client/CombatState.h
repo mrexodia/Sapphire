@@ -18,9 +18,12 @@ namespace Sapphire::Testing
   // Local conservative pacing guard, not a received server-ready acknowledgement.
   uint32_t fastBladeGuardRemainingMs(std::chrono::steady_clock::time_point ready,
                                     std::chrono::steady_clock::time_point now);
-  // Deliberately narrow combat profile: living Gladiator, Fast Blade and an
-  // observed nearby battle NPC. No arbitrary ability/raw-packet API.
+  // Deliberately narrow combat profiles for source-defined level-one melee actions.
+  // No arbitrary ability/raw-packet API.
   Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
+                         const std::array<float, 3>& position,
+                         const nlohmann::json& actors, const nlohmann::json& rewards);
+  Bytes bootshineRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position,
                          const nlohmann::json& actors, const nlohmann::json& rewards);
 }

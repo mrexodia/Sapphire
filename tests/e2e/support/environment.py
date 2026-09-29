@@ -268,9 +268,11 @@ class Environment:
         auth = self.api("createAccount", {"username": username, "pass": password})
         return {"username": username, "password": password, "name": name, "auth": auth}
 
-    def fresh_character(self, position=None, territory=130):
+    def fresh_character(self, position=None, territory=130, class_job=1):
         if type(territory) is not int or territory not in {130, 131, 140, 141}:
             raise SetupError("unsupported public fixture territory")
+        if class_job not in {1, 2, 7}:
+            raise SetupError("unsupported source-defined Ul'dah fixture class")
         if territory != 130 and position is None:
             raise SetupError("nondefault fixture territory requires an explicit position")
         if position is not None and (len(position) != 3 or not all(math.isfinite(v) and abs(v) < 1000 for v in position)):
@@ -279,7 +281,7 @@ class Environment:
         username, password, name, auth = (account[key] for key in ("username", "password", "name", "auth"))
         # Alphabetic fixture names, valid starter class, 26 customization bytes.
         appearance = [1, 0, 1, 50, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
-        content = [[str(v) for v in appearance], "1", "1", "1", "1", "1", "1"]
+        content = [[str(v) for v in appearance], "1", "1", "1", "1", str(class_job), "1"]
         info = json.dumps({"content": content}, separators=(",", ":"))
         # The fixture API accepts the same base64-encoded character description as the lobby.
         result = self.api("createCharacter", {"sId": auth["sId"], "secret": self.secret, "name": name,
