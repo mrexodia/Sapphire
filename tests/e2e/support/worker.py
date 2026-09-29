@@ -550,6 +550,24 @@ class Bot:
             lambda s: any(m["actor"] == actor and m["message"] == message for m in s["chat"]),
             "say received from expected actor", timeout)
 
+    def tell(self, target_entity, target_name, message):
+        return self.worker.request("tell", self.name, target=target_entity,
+                                   name=target_name, message=message)
+
+    def expect_tell(self, sender_state, message, timeout=10):
+        expected_entity = sender_state["entity_id"]
+        def matches(state, row):
+            members = [member for member in state["party"]["members"]
+                       if member["entity_id"] == expected_entity]
+            return (len(members) == 1 and row["actor"] == expected_entity
+                    and row["character_id"] == members[0]["character_id"]
+                    and row["name"] == members[0]["name"] and row["message"] == message
+                    and row["party_id"] == state["party"]["id"])
+        state = self.worker.wait_state(self.name,
+            lambda s: any(matches(s, row) for row in s["tells"]),
+            "exact received tell", timeout)
+        return next(row for row in reversed(state["tells"]) if matches(state, row))
+
     def wait_event_finished(self, timeout=10):
         return self.worker.wait_state(self.name, lambda s: s["event_id"] is None and s["scene"] is None,
                                       "event finished", timeout)

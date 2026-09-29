@@ -23,6 +23,7 @@ add_library(sapphire_test_protocol STATIC
   RespawnActions.cpp
   TransitionActions.cpp
   PartyActions.cpp
+  ChatActions.cpp
   CombatState.cpp
   "${SAPPHIRE_ROOT}/src/common/Crypt/blowfish.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/md5.cpp"

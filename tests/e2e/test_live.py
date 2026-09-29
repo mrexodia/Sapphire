@@ -78,6 +78,12 @@ def test_received_party_join_and_leave(environment, live_worker):
     sent = member.party_chat("member to leader party message")
     received = leader.expect_party_chat(member_party, "member to leader party message")
     assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
+    leader.tell(member_id, member_fixture["name"], "leader to member exact tell")
+    received_tell = member.expect_tell(leader_party, "leader to member exact tell")
+    assert received_tell["party_id"] == leader_party["party"]["id"]
+    member.tell(leader_id, leader_fixture["name"], "member to leader exact tell")
+    received_tell = leader.expect_tell(member_party, "member to leader exact tell")
+    assert received_tell["party_id"] == member_party["party"]["id"]
 
     original_party = (leader_party["party"]["id"], leader_party["party"]["chat_channel"])
     leader.invite_party(third_id, third_fixture["name"])

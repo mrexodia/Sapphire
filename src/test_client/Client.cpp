@@ -5,6 +5,7 @@
 #include "RespawnActions.h"
 #include "TransitionActions.h"
 #include "PartyActions.h"
+#include "ChatActions.h"
 #include <Network/CommonActorControl.h>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
 #include <Network/PacketDef/Lobby/ServerLobbyDef.h>
@@ -99,7 +100,7 @@ namespace Sapphire::Testing
   {
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
-      {"chat", Json::array()}, {"party_chat", Json::array()},
+      {"chat", Json::array()}, {"party_chat", Json::array()}, {"tells", Json::array()},
       {"created_via_lobby", false}, {"deleted_via_lobby", false},
       {"scene", nullptr}, {"event_id", nullptr}, {"name_rejection", nullptr}, {"pending_party_invite", nullptr},
       {"party_invite_result", nullptr}, {"party_invite_reply", nullptr}, {"party_invite_update", nullptr},
@@ -447,6 +448,28 @@ namespace Sapphire::Testing
     constexpr size_t off = sizeof(Wire::FFXIVARR_IPC_HEADER);
     if(name == "chat")
     {
+      if(h.type == Wire::Server::FFXIVChatFrom::_ServerIpcType)
+      {
+        const auto p = readObject<Wire::Server::FFXIVChatFrom>(segment.data, off);
+        const auto sender = receivedName(p.fromName, sizeof(p.fromName));
+        const auto message = text(p.message);
+        const auto& party = m_state["party"];
+        auto matches = Json::array();
+        for(const auto& member : party.at("members"))
+          if(member.value("character_id", uint64_t{0}) == p.fromCharacterID && member.value("name", "") == sender)
+            matches.push_back(member);
+        if(p.type != 0 || matches.size() != 1 ||
+           !m_state["actors"].contains(std::to_string(matches[0].value("entity_id", 0u))) ||
+           m_state["actors"].at(std::to_string(matches[0].value("entity_id", 0u))).value("name", "") != sender)
+          throw ProtocolError("tell sender does not match exact received party and spawn identity");
+        Json received{{"party_id", party.at("id")}, {"actor", matches[0].at("entity_id")},
+                      {"character_id", p.fromCharacterID}, {"name", sender},
+                      {"message", message}, {"token", m_seq + 1}};
+        m_state["tells"].push_back(received);
+        if(m_state["tells"].size() > 64) m_state["tells"].erase(m_state["tells"].begin());
+        event("tell", received);
+        return;
+      }
       if(h.type != Wire::Server::FFXIVChatToChannel::_ServerIpcType) return;
       const auto p = readObject<Wire::Server::FFXIVChatToChannel>(segment.data, off);
       const auto speaker = receivedName(p.speakerName, sizeof(p.speakerName));
@@ -1122,6 +1145,20 @@ namespace Sapphire::Testing
           args.at("destination_storage"), args.at("destination_slot"), args.at("expected_destination_count"));
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};
+    }
+    if(method == "tell")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("tell requires an idle character");
+      const auto target = args.at("target").get<uint32_t>();
+      const auto targetName = args.at("name").get<std::string>();
+      if(m_state["party"].value("count", 0) < 2 ||
+         std::none_of(m_state["party"].at("members").begin(), m_state["party"].at("members").end(),
+           [&](const auto& member) { return member.value("entity_id", 0u) == target &&
+                                             member.value("name", "") == targetName; }))
+        throw ProtocolError("tell requires exact received party membership for the target");
+      auto payload = tellRequest(m_state["actors"], target, targetName, args.at("message"));
+      sendChat(WC::FFXIVIpcChatTo::_ServerIpcType, payload);
+      return Json::object();
     }
     if(method == "say")
     {

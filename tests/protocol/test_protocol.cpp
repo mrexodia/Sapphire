@@ -4,6 +4,7 @@
 #include "ShopActions.h"
 #include "TransitionActions.h"
 #include "PartyActions.h"
+#include "ChatActions.h"
 #include <Crypt/Random.h>
 #include <algorithm>
 #include <set>
@@ -166,6 +167,15 @@ int main()
     require(invite == expectedInvite, "party invite exact byte fixture");
     rejects([&] { partyInviteRequest(partyActors, 2097153, "E2E Target"); });
     rejects([&] { partyInviteRequest(partyActors, 2097154, "Wrong Target"); });
+    auto tell = tellRequest(partyActors, 2097154, "E2E Target", "Exact tell message");
+    Bytes expectedTell(1057, 0); expectedTell[0] = 12;
+    std::copy(inviteName.begin(), inviteName.end(), expectedTell.begin() + 1);
+    const std::string tellMessage = "Exact tell message";
+    std::copy(tellMessage.begin(), tellMessage.end(), expectedTell.begin() + 33);
+    require(tell == expectedTell, "tell exact target/message byte fixture");
+    rejects([&] { tellRequest(partyActors, 2097153, "E2E Target", "Exact tell message"); });
+    rejects([&] { tellRequest(partyActors, 2097154, "Wrong Target", "Exact tell message"); });
+    rejects([&] { tellRequest(partyActors, 2097154, "E2E Target", "!debug"); });
     auto accept = partyAcceptRequest({{"character_id", uint64_t{0x0102030405060708}},
                                       {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}});
     const Bytes expectedAccept{8,7,6,5,4,3,2,1, 1,1,0,0,0,0,0,0};
