@@ -542,6 +542,103 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     reloaded, state = restart_shop_bot(reloaded, "shop-second-gear-equipped",
                                       final_rewards, final_inventory)
 
+    feet_sale_key = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
+                                         for slot in reversed(range(25)))
+                         if key not in final_inventory)
+    feet_sale_storage, feet_sale_slot = map(int, feet_sale_key.split(":"))
+    feet_unequip_receipt = reloaded.request_item_unequip(
+        second["gear_slot"], feet_sale_storage, feet_sale_slot, second["item"])
+    feet_sale_inventory = deepcopy(final_inventory)
+    del feet_sale_inventory[second_gear_key]
+    feet_sale_inventory[feet_sale_key] = {"storage": feet_sale_storage, "slot": feet_sale_slot,
+                                          "id": second["item"], "count": 1}
+    feet_sale_rewards = deepcopy(final_rewards)
+    feet_sale_rewards["items"][str(second["item"])] = 1
+    reloaded, state = restart_shop_bot(reloaded, "shop-purchased-feet-unequipped",
+                                      feet_sale_rewards, feet_sale_inventory)
+    reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
+    reloaded.sell_shop_item(feet_sale_storage, feet_sale_slot, second["item"])
+    feet_resale_rewards = deepcopy(feet_sale_rewards)
+    del feet_resale_rewards["items"][str(second["item"])]
+    feet_resale_rewards["currencies"]["1"] += second["resale_gil"]
+    feet_resale_inventory = deepcopy(feet_sale_inventory)
+    del feet_resale_inventory[feet_sale_key]
+    feet_resale_inventory["2000:0"]["count"] = feet_resale_rewards["currencies"]["1"]
+    state = reloaded.expect_rewards(feet_resale_rewards, work_index)
+    assert state["rewards"]["inventory"] == feet_resale_inventory
+    reloaded, state = restart_shop_bot(reloaded, "shop-purchased-feet-sold",
+                                      feet_resale_rewards, feet_resale_inventory)
+    assert feet_resale_rewards["currencies"]["1"] == 56
+
+    starter_sale = catalog["starter_liquidation"]
+    starter_sale_matches = [(key, item) for key, item in feet_resale_inventory.items()
+                            if item["storage"] in range(4) and item["id"] == starter_sale["item"]]
+    assert len(starter_sale_matches) == 1 and starter_sale_matches[0][1]["count"] == 1
+    starter_sale_key, starter_sale_item = starter_sale_matches[0]
+    reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
+    reloaded.sell_shop_item(starter_sale_item["storage"], starter_sale_item["slot"],
+                            starter_sale["item"])
+    third_funds_rewards = deepcopy(feet_resale_rewards)
+    del third_funds_rewards["items"][str(starter_sale["item"])]
+    third_funds_rewards["currencies"]["1"] += starter_sale["gil"]
+    third_funds_inventory = deepcopy(feet_resale_inventory)
+    del third_funds_inventory[starter_sale_key]
+    third_funds_inventory["2000:0"]["count"] = third_funds_rewards["currencies"]["1"]
+    state = reloaded.expect_rewards(third_funds_rewards, work_index)
+    assert state["rewards"]["inventory"] == third_funds_inventory
+    reloaded, state = restart_shop_bot(reloaded, "shop-starter-leg-sold",
+                                      third_funds_rewards, third_funds_inventory)
+    assert third_funds_rewards["currencies"]["1"] == 101
+
+    third = catalog["third_equipment_purchase"]
+    reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
+    reloaded.buy_shop_third_equipment(catalog["shop"]["event_id"])
+    third_rewards = deepcopy(third_funds_rewards)
+    third_rewards["items"][str(third["item"])] = 1
+    third_rewards["currencies"]["1"] -= third["gil"]
+    state = reloaded.expect_rewards(third_rewards, work_index)
+    third_inventory = deepcopy(state["rewards"]["inventory"])
+    third_expected = deepcopy(third_funds_inventory)
+    third_expected["2000:0"]["count"] = third_rewards["currencies"]["1"]
+    third_added = set(third_inventory) - set(third_expected)
+    assert len(third_added) == 1
+    third_key = next(iter(third_added))
+    assert third_inventory[third_key]["id"] == third["item"]
+    assert third_inventory[third_key]["count"] == 1
+    assert {key: value for key, value in third_inventory.items() if key != third_key} == third_expected
+    reloaded.exit_gil_shop(catalog["shop"]["event_id"])
+    reloaded, state = restart_shop_bot(reloaded, "shop-third-equipment-purchased",
+                                      third_rewards, third_inventory)
+
+    third_gear_key = f"1000:{third['gear_slot']}"
+    assert third_inventory[third_gear_key] == {"storage": 1000, "slot": third["gear_slot"],
+                                               "id": 2983, "count": 1}
+    third_empty = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
+                                       for slot in reversed(range(25)))
+                       if key not in third_inventory)
+    third_empty_storage, third_empty_slot = map(int, third_empty.split(":"))
+    third_unequip_receipt = reloaded.request_item_unequip(
+        third["gear_slot"], third_empty_storage, third_empty_slot, 2983)
+    third_unequipped_inventory = deepcopy(third_inventory)
+    del third_unequipped_inventory[third_gear_key]
+    third_unequipped_inventory[third_empty] = {
+        "storage": third_empty_storage, "slot": third_empty_slot, "id": 2983, "count": 1}
+    third_unequipped_rewards = deepcopy(third_rewards)
+    third_unequipped_rewards["items"]["2983"] = 1
+    reloaded, state = restart_shop_bot(reloaded, "shop-third-gear-empty",
+                                      third_unequipped_rewards, third_unequipped_inventory)
+    third_item = third_unequipped_inventory[third_key]
+    third_equip_receipt = reloaded.request_shop_item_equip(
+        third_item["storage"], third_item["slot"], third["item"], third["gear_slot"])
+    third_final_inventory = deepcopy(third_unequipped_inventory)
+    del third_final_inventory[third_key]
+    third_final_inventory[third_gear_key] = {"storage": 1000, "slot": third["gear_slot"],
+                                             "id": third["item"], "count": 1}
+    third_final_rewards = deepcopy(third_unequipped_rewards)
+    del third_final_rewards["items"][str(third["item"])]
+    reloaded, state = restart_shop_bot(reloaded, "shop-third-gear-equipped",
+                                      third_final_rewards, third_final_inventory)
+
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
@@ -574,6 +671,19 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "second_shop_equip_receipt": second_equip_receipt,
         "rewards_after_second_shop_equip_restart": final_rewards,
         "inventory_after_second_shop_equip_restart": final_inventory,
+        "purchased_feet_unequip_receipt": feet_unequip_receipt,
+        "rewards_after_purchased_feet_resale_restart": feet_resale_rewards,
+        "inventory_after_purchased_feet_resale_restart": feet_resale_inventory,
+        "starter_liquidation": starter_sale,
+        "rewards_after_starter_liquidation_restart": third_funds_rewards,
+        "inventory_after_starter_liquidation_restart": third_funds_inventory,
+        "third_equipment_purchase": third,
+        "rewards_after_third_equipment_purchase_restart": third_rewards,
+        "inventory_after_third_equipment_purchase_restart": third_inventory,
+        "third_starter_unequip_receipt": third_unequip_receipt,
+        "third_shop_equip_receipt": third_equip_receipt,
+        "rewards_after_third_shop_equip_restart": third_final_rewards,
+        "inventory_after_third_shop_equip_restart": third_final_inventory,
         "arrival_observed": True,
         "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")

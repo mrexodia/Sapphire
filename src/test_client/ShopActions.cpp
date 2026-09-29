@@ -68,4 +68,20 @@ namespace Sapphire::Testing
     packet.results[6] = 3748;
     return objectBytes(packet);
   }
+
+  Bytes shopThirdEquipmentPurchaseReturn(uint32_t eventId)
+  {
+    constexpr uint32_t supportedShop = 262468;
+    if(eventId != supportedShop) throw ProtocolError("unsupported bounded third equipment purchase");
+    Wire::WorldPackets::Client::FFXIVIpcReturnEventScene255 packet{};
+    packet.handlerId = eventId;
+    packet.sceneId = 40;
+    packet.numOfResults = 255;
+    packet.results[0] = 0;
+    packet.results[1] = 1;
+    packet.results[4] = supportedShop;
+    packet.results[5] = 1;
+    packet.results[6] = 2967;
+    return objectBytes(packet);
+  }
 }

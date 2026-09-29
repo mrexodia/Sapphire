@@ -129,6 +129,19 @@ int main()
                                Sapphire::Common::GearSetSlot::Legs); }
     catch(const ProtocolError&) { rejected = true; }
     check(rejected, "shop foot item rejects mismatched leg destination");
+    auto shopBodyState = shopEquipState;
+    shopBodyState["inventory"]["3:24"]["id"] = 2967;
+    auto shopBody = equipShopItemRequest(shopBodyState, 0x12345678, 0x0102030a,
+                                         3, 24, 2967, Sapphire::Common::GearSetSlot::Body);
+    auto shopBodyExpected = shopEquipExpected;
+    shopBodyExpected[24] = 0x97; shopBodyExpected[25] = 0x0b;
+    shopBodyExpected[36] = Sapphire::Common::GearSetSlot::Body;
+    check(shopBody == shopBodyExpected, "shop body equip must match exact bag-to-gear wire fixture");
+    rejected = false;
+    try { equipShopItemRequest(shopBodyState, 1, 1, 3, 24, 2967,
+                               Sapphire::Common::GearSetSlot::Feet); }
+    catch(const ProtocolError&) { rejected = true; }
+    check(rejected, "shop body item rejects mismatched foot destination");
     for(int fault = 0; fault < 5; ++fault)
     {
       auto invalid = shopEquipState;

@@ -25,7 +25,10 @@ int main(int argc, char** argv)
     Sapphire::Data::ExdData data;
     if(!data.init(argv[1])) throw std::runtime_error("cannot initialize game data");
     auto reward = data.getRow<Excel::Item>(4551);
+    auto starterLegs = data.getRow<Excel::Item>(3296);
     if(!reward || !reward->data().Price) throw std::runtime_error("supported sale item has no gil value");
+    if(!starterLegs || !starterLegs->data().Price)
+      throw std::runtime_error("supported starter-leg liquidation has no gil value");
     Sapphire::Common::Navi::NaviProvider finder("w1t1");
     if(!finder.init(argv[2])) throw std::runtime_error("Ul'dah tile-cache navmesh unavailable");
 
@@ -92,7 +95,7 @@ int main(int argc, char** argv)
       auto shopItem = data.getRow<Excel::ShopItem>(shopItemId);
       if(!shopItem) continue;
       auto item = data.getRow<Excel::Item>(shopItem->data().ItemId);
-      if(item && item->data().Price && item->data().Price <= reward->data().Price * 2u &&
+      if(item && item->data().Price && item->data().Price <= reward->data().Price * 4u &&
          item->data().StackMax == 1 && item->data().Slot > 0 && item->data().Slot <= 13 &&
          item->data().EquipLevel <= 1 && item->data().Class == 0 &&
          std::find(starterItems.begin(), starterItems.end(), shopItem->data().ItemId) == starterItems.end())
@@ -123,6 +126,17 @@ int main(int argc, char** argv)
     if(!secondEquipment.item || secondEquipment.sourceSlot < 2 ||
        secondEquipment.price > reward->data().Price * 2u)
       throw std::runtime_error("selected gil shop has no second affordable equipment slot");
+    EquipmentCandidate thirdEquipment{};
+    const auto thirdFunds = reward->data().Price * 2u - secondEquipment.price +
+                            secondEquipment.price + starterLegs->data().Price;
+    for(const auto& candidate : equipmentCandidates)
+      if(candidate.sourceSlot != equipmentSourceSlot &&
+         candidate.sourceSlot != secondEquipment.sourceSlot && candidate.price <= thirdFunds &&
+         (!thirdEquipment.item || candidate.price < thirdEquipment.price ||
+          (candidate.price == thirdEquipment.price && candidate.item < thirdEquipment.item)))
+        thirdEquipment = candidate;
+    if(!thirdEquipment.item || thirdEquipment.sourceSlot < 2)
+      throw std::runtime_error("selected gil shop has no third affordable equipment slot");
     auto selectedItem = data.getRow<Excel::Item>(purchaseItem);
     if(!selectedItem || !selectedItem->data().StackMax)
       throw std::runtime_error("selected gil-shop item has no stack metadata");
@@ -136,6 +150,8 @@ int main(int argc, char** argv)
       {"start_actor", 1001289}, {"shop", {{"layout_id", selected.layout}, {"base_id", selected.base},
         {"event_id", selected.event}, {"position", {selected.position.x, selected.position.y, selected.position.z}}}},
       {"sale", {{"item", 4551}, {"quantity", 1}, {"gil", reward->data().Price}}},
+      {"starter_liquidation", {{"item", 3296}, {"quantity", 1},
+                                {"gil", starterLegs->data().Price}}},
       {"purchase", {{"shop_id", selected.event}, {"index", purchaseIndex}, {"item", purchaseItem},
                     {"quantity", purchaseQuantity}, {"unit_gil", purchasePrice},
                     {"gil", purchasePrice * purchaseQuantity},
@@ -149,9 +165,14 @@ int main(int argc, char** argv)
                               {"gear_slot", equipmentSourceSlot - 1}}},
       {"second_equipment_purchase", {{"shop_id", selected.event}, {"index", secondEquipment.index},
                                      {"item", secondEquipment.item}, {"quantity", 1},
-                                     {"gil", secondEquipment.price},
+                                     {"gil", secondEquipment.price}, {"resale_gil", secondEquipment.price},
                                      {"source_slot", secondEquipment.sourceSlot},
                                      {"gear_slot", secondEquipment.sourceSlot - 1}}},
+      {"third_equipment_purchase", {{"shop_id", selected.event}, {"index", thirdEquipment.index},
+                                    {"item", thirdEquipment.item}, {"quantity", 1},
+                                    {"gil", thirdEquipment.price},
+                                    {"source_slot", thirdEquipment.sourceSlot},
+                                    {"gear_slot", thirdEquipment.sourceSlot - 1}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

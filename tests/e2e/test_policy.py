@@ -114,14 +114,18 @@ def test_shop_catalog_binds_route_actor_and_exact_sale():
             "start_actor": 1001289, "route": [[0, 0, 0], [1, 0, 0]], "route_length": 1,
             "shop": {"layout_id": 3, "base_id": 4, "event_id": 262468, "position": [1, 0, 0]},
             "sale": {"item": 4551, "quantity": 1, "gil": 28},
+            "starter_liquidation": {"item": 3296, "quantity": 1, "gil": 45},
             "purchase": {"shop_id": 262468, "index": 0, "item": 5890, "quantity": 3, "unit_gil": 8, "gil": 24,
                          "item_action": {"row": 232, "type": 852, "arg": 235}},
             "equipment_purchase": {"shop_id": 262468, "index": 11, "item": 3286,
                                    "quantity": 1, "gil": 39, "resale_gil": 39,
                                    "source_slot": 7, "gear_slot": 6},
             "second_equipment_purchase": {"shop_id": 262468, "index": 9, "item": 3748,
-                                          "quantity": 1, "gil": 54,
-                                          "source_slot": 8, "gear_slot": 7}}
+                                          "quantity": 1, "gil": 54, "resale_gil": 54,
+                                          "source_slot": 8, "gear_slot": 7},
+            "third_equipment_purchase": {"shop_id": 262468, "index": 3, "item": 2967,
+                                         "quantity": 1, "gil": 59,
+                                         "source_slot": 4, "gear_slot": 3}}
     assert validate_shop_catalog(data) == data
     for changed in ({**data, "territory": 141}, {**data, "sale": {"item": 4551, "quantity": 2, "gil": 56}},
                     {**data, "purchase": {**data["purchase"], "item": 1}},
