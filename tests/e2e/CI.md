@@ -115,15 +115,18 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this nine-scenario headless suite only.
 
-Latest local evidence: clean revision `2b9dfaf1e` passed the nine-case strict
-gate in 614.955 seconds with no skips/errors/failures, exact collection and staged-
-input identities, and removed private runtime. The combat case took 72.673s and
-added independently observed natural-target Pugilist Bootshine after a bounded
-received-position approach; the opening acceptance, leash cycle, equipment round
-trip and sale/purchase remained covered. Evidence is
-`build-e2e/ci-summary-bootshine.json` with private diagnostics under
-`.e2e-artifacts/ci/gameplay-ci-bufnr5w5`. This remains a local rehearsal, not a
-hosted protected-runner execution.
+Latest local evidence: clean revision `77abdae02` passed the nine-case strict
+gate in 676.69 seconds with no skips/errors/failures, exact collection and staged-
+input identities, and verified private-runtime cleanup. The combat case took
+80.075s and added independently observed natural-target Thaumaturge Blizzard;
+Bootshine, opening acceptance, the leash cycle, equipment round trip and sale/
+purchase remained covered. Evidence is
+`build-e2e/ci-summary-blizzard-follow.json` with private diagnostics under
+`.e2e-artifacts/ci/gameplay-ci-qdi9rcb4`. The preceding clean gate is retained at
+`.e2e-artifacts/ci/gameplay-ci-lfghcvlf`: eight cases passed, but player-defeat
+correctly failed when its natural target roamed beyond melee range during TP wait.
+The fix follows only bounded received positions with witness verification. This
+remains a local rehearsal, not a hosted protected-runner execution.
 
 Original local evidence: the fresh `build-e2e-ci` target and four native suites passed; its
 rebuilt binaries passed all seven live cases in 245.450 seconds with no skips,

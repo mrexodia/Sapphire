@@ -70,7 +70,11 @@ lobby, world and MariaDB processes with matching game data:
   The same case creates a normal level-one Pugilist fixture, follows a roaming
   natural target through bounded received-position movement observed by a witness,
   and verifies Bootshine (53), its committed damage and action-start metadata on
-  both clients. Enemies, skills and resources are not granted or modified.
+  both clients. A normal Thaumaturge then casts source-defined Blizzard (142) from
+  independently observed range with received MP; both clients verify its damage,
+  committed HP and status effect, while the caster receives matching source
+  integrity and cast/recast metadata. Enemies, skills and resources are not granted
+  or modified.
 - A separate fresh level-one Gladiator uses ordinary Fast Blade against an observed
   natural level-14 enemy and runs a complete ~50.69m source-navmesh route. Both
   clients observe pursuit beyond 35m and the enemy's natural retreat to its bound
@@ -440,9 +444,9 @@ bin/sapphire_test_combat_catalog <game/sqpack> build-e2e/combat-catalog.json
 ```
 
 Use `.exe` on Windows and set `combat_catalog` to the absolute output path. The
-validator requires supported level-one Gladiator/Fast Blade and Pugilist/Bootshine
-metadata (60 TP, 2.5-second recast, class-default melee range). This is not
-independent client evidence.
+validator requires supported level-one Gladiator/Fast Blade, Pugilist/Bootshine
+and Thaumaturge/Blizzard metadata (received TP or MP, exact cast/recast and source-
+defined range). This is not independent client evidence.
 
 `test_live_combat.py` places fresh characters one metre laterally from a spawn in
 the unchanged staged Central Thanalan population before their first connection.
@@ -474,8 +478,17 @@ A second source-defined population binding is used for Bootshine. Because the
 natural target may roam during the preceding defeat flow, the Pugilist follows at
 most six received positions within 20m using ordinary movement; a witness verifies
 each reached point. Both clients then require action 53's identical effect and exact
-committed HP decrease, plus group-58/250-centisecond start metadata. This is one
-additional ability, not combo, positional-bonus or general Pugilist coverage.
+committed HP decrease, plus group-58/250-centisecond start metadata.
+
+A third normal fixture uses source-defined Thaumaturge work index 5 and Blizzard
+142 (cost type 3/value 4, 2.5s cast/recast, 25-unit range). The request requires a
+living received target, at least four received MP and bounded estimated range; the
+witness independently observes actual range. Both clients require the identical
+18/19-damage result and exact committed HP. The caster additionally receives the
+matching source integrity, action start and Blizzard's status-176 effect. Natural
+MP regeneration can overlap the cast, so this does not claim an exact committed MP
+cost. These are two additional starter abilities, not combo, positional-bonus,
+interrupt, elemental-state or general combat coverage.
 
 The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
 Received rewards must be exactly 50 EXP, no level/currency change, one five-item
@@ -487,7 +500,9 @@ serializes monotonic IDs; a 64-thread native contract and the fresh-login assert
 cover the fix. This does not claim collision safety across multiple world processes.
 
 `test_live_player_defeat.py` uses unchanged natural population layout 3749193
-(base 302, level 14). One received/range-checked Fast Blade establishes ordinary
+(base 302, level 14). If that natural target roams while TP regenerates, the
+fighter follows at most six received positions within 20m and the witness verifies
+each reached point. One received/range-checked Fast Blade establishes ordinary
 hostility. The fighter follows a source-generated ~50.69m navmesh route; the
 stationary witness verifies arrival, the received enemy position exceeds 35m from
 spawn, and the enemy must naturally return within two metres of its bound spawn

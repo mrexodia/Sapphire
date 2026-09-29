@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed starter main-hand unequip/re-equip round trip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; one independently observed Pugilist Bootshine; one pursuit/leash/reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, one observed starter main-hand unequip/re-equip round trip and one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash/reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -51,14 +51,13 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: standalone build and the same six CTest executables pass.
-- 251 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
-  network-isolated Linux container. This WSL instance refuses even Python-only
-  loopback connections; that check was not skipped or rewritten to make it pass.
+- 252 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+  network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes all nine cases. The latest clean-checkout
-  rehearsal at `2b9dfaf1e` took 614.955s with zero skips/errors/failures and verified
+  rehearsal at `77abdae02` took 676.69s with zero skips/errors/failures and verified
   exact collection, staged-input identities and normal cleanup
-  (`gameplay-ci-bufnr5w5` under `.e2e-artifacts/ci`, summary
-  `build-e2e/ci-summary-bootshine.json`). `--require-clean` passed and `source_dirty`
+  (`gameplay-ci-qdi9rcb4` under `.e2e-artifacts/ci`, summary
+  `build-e2e/ci-summary-blizzard-follow.json`). `--require-clean` passed and `source_dirty`
   is false. Earlier dirty implementation rehearsals are explicitly labeled as such.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
@@ -80,8 +79,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
   That original slice did not establish repeated actions or retaliation; the
   first extension below covered three paced strikes and the first retaliation hit.
   The later defeat/reward extension now covers one complete level-one defeat and
-  persisted current-test-table loot/EXP. Combos, general cooldown scheduling,
-  general aggro/leash policy and production loot selection remain uncovered. Later increments
+  persisted current-test-table loot/EXP, independently observed Pugilist Bootshine
+  and independently observed Thaumaturge Blizzard. Combos, broader abilities,
+  general cooldown scheduling, general aggro/leash policy and production loot
+  selection remain uncovered. Later increments
   below cover one player defeat and homepoint return, but not raises or death penalties.
   Initial position is fixture setup.
   The decoded `sapphire-e2e-wd3lpulz` journal records nine damage, NPC HP 94 → 85 on both clients,
@@ -373,7 +374,36 @@ worker SHA-256 is
 and `combat-defeat-rewards.json` SHA-256 is
 `94357d8c24fbdda0184f57033d6c561b03e11b92c9bc117a587603d23af9d1c5`.
 This proves one additional starting-class ability, not positional bonuses, combos,
-Thaumaturge casting, general abilities or general combat.
+general abilities or general combat.
+
+At `569a02898`, the same case adds source-defined Thaumaturge Blizzard 142
+(`WorkIndex=5`, MP cost metadata 3/4, 2.5s cast/recast and 25-unit range). A fresh
+normal class-7 fixture selects a living natural level-one marmot within 20m using
+received state; its witness independently observes both actors within spell range.
+The bounded request requires at least four received MP. Both clients receive the
+same 18-damage Blizzard result in the clean gate, including status 176, and exact
+matching-result committed HP 94→76. The caster also receives source integrity and
+group-58/250-centisecond start metadata. Natural MP regeneration overlaps the cast,
+so this does not prove the exact MP debit, elemental-state behavior or interruption.
+
+The first post-change broad gate is retained at
+`.e2e-artifacts/ci/gameplay-ci-lfghcvlf`: eight cases passed, while player-defeat
+failed because its selected natural enemy roamed beyond melee range during the TP
+wait. `77abdae02` applies the same bounded received-position rule: at most six
+positions within 20m, each independently observed. The targeted player-defeat case
+then passed in 160.10s. The clean nine-case gate at `77abdae02` passed in
+**676.69s** with zero skips/errors/failures; combat took **80.075s** and player
+defeat took **124.522s**. Exact collection/input identities and runtime cleanup
+were verified. Evidence:
+`build-e2e/ci-summary-blizzard-follow.json`,
+`.e2e-artifacts/ci/gameplay-ci-qdi9rcb4`, combat artifact SHA-256
+`ac9596e01cb5490c8b47fffb16b574e0c82ebba476d82f967a7e62725baa38ff`,
+combat catalog SHA-256
+`2f8cb733628aeae9140e61ba9bb81a3ab00a1871c49724ffa73976bb6f8d84bf`
+and worker SHA-256
+`68c0a18c9c32e8aa103900239c25a617089165a64c1eaa4ad461d142a4b939d9`.
+This proves one natural Blizzard path, not general magic/combat or independent
+real-client presentation.
 
 ## Independently observed player defeat
 
