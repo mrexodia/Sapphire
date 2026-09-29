@@ -19,6 +19,7 @@ def test_capabilities(worker):
     assert "fast_blade" in caps["methods"]
     assert "bootshine" in caps["methods"]
     assert "blizzard" in caps["methods"]
+    assert "use_shop_vfx_item" in caps["methods"]
     assert "request_item_move" in caps["methods"]
     assert "request_item_swap" in caps["methods"]
     assert "request_item_split" in caps["methods"]
@@ -93,6 +94,8 @@ def test_action_before_readiness_is_rejected(worker):
         try:
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("walk_to", "test", position=[0, 0, 0])
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("use_shop_vfx_item", "test", storage=0, slot=0, expected_count=3)
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("sprint", "test")
             with pytest.raises(WorkerError, match="world-ready"):

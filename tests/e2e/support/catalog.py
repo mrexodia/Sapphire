@@ -210,7 +210,8 @@ def validate_shop_catalog(data):
     if data.get("start_actor") != 1001289 or data.get("sale") != {"item": 4551, "quantity": 1, "gil": 28}:
         raise WorkerError("unsupported shop sale binding")
     if data.get("purchase") != {"shop_id": 262468, "index": 0, "item": 5890,
-                               "quantity": 3, "unit_gil": 8, "gil": 24}:
+                               "quantity": 3, "unit_gil": 8, "gil": 24,
+                               "item_action": {"row": 232, "type": 852, "arg": 235}}:
         raise WorkerError("unsupported shop purchase binding")
     shop = data.get("shop", {})
     if (set(shop) != {"layout_id", "base_id", "event_id", "position"}

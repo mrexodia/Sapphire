@@ -481,6 +481,23 @@ class Bot:
                                                 "part_id": binding["discovery_index"]},
             "source-bound discovery reply", timeout)
 
+    def use_shop_vfx_item(self, storage, slot, expected_count=3, timeout=10):
+        before = self.worker.snapshot(self.name)
+        entity = before["entity_id"]
+        old = [row for row in before["combat"]["effects"]
+               if row["source"] == entity and row["target"] == entity and row["action"] == 5890]
+        request = self.worker.request("use_shop_vfx_item", self.name, storage=storage,
+                                      slot=slot, expected_count=expected_count)["request"]
+        state = self.worker.wait_state(self.name,
+            lambda s: len([row for row in s["combat"]["effects"]
+                           if row["source"] == entity and row["target"] == entity
+                           and row["action"] == 5890]) > len(old),
+            "exact source-bound shop VFX item effect", timeout)
+        effect = [row for row in state["combat"]["effects"]
+                  if row["source"] == entity and row["target"] == entity
+                  and row["action"] == 5890][-1]
+        return state, effect, request
+
     def discard_item(self, storage, slot, expected_item, timeout=10):
         self.worker.request("discard_item", self.name, storage=storage, slot=slot, expected_item=expected_item)
         key = f"{storage}:{slot}"

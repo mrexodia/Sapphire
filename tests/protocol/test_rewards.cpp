@@ -2,6 +2,7 @@
 #include "InventoryActions.h"
 #include <Network/PacketDef/Zone/ServerZoneDef.h>
 #include <Network/CommonActorControl.h>
+#include <array>
 #include <iostream>
 
 using namespace Sapphire::Testing;
@@ -268,6 +269,27 @@ int main()
     check(fresh.state()["inventory_ready"] && fresh.state()["inventory"].size() == 1 &&
           fresh.state()["inventory"]["3:24"]["count"] == 2 && !fresh.state()["inventory"].contains("1:2"),
           "received fresh snapshots establish source absence and exact destination stack");
+
+    auto vfxRewards = state.state();
+    vfxRewards["inventory"]["3:24"] = {{"storage", 3}, {"slot", 24}, {"id", 5890}, {"count", 3}};
+    auto vfx = shopVfxItemRequest(vfxRewards, 0x12345678, 5, 3, 24, 3);
+    Bytes expectedVfx(32, 0); expectedVfx[1] = 2; expectedVfx[4] = 0x02; expectedVfx[5] = 0x17;
+    expectedVfx[8] = 5; expectedVfx[16] = 0x78; expectedVfx[17] = 0x56;
+    expectedVfx[18] = 0x34; expectedVfx[19] = 0x12;
+    expectedVfx[24] = 24; expectedVfx[26] = 3;
+    check(vfx == expectedVfx, "shop VFX item exact action request fixture");
+    for(auto invalid : {std::array<uint32_t,3>{4,24,3}, {3,25,3}, {3,24,2}})
+    {
+      bool rejected = false;
+      try { shopVfxItemRequest(vfxRewards, 1, 1, invalid[0], invalid[1], invalid[2]); }
+      catch(const ProtocolError&) { rejected = true; }
+      check(rejected, "invalid shop VFX item source/count must fail");
+    }
+    auto wrongVfx = vfxRewards; wrongVfx["inventory"]["3:24"]["id"] = 5891;
+    bool wrongVfxRejected = false;
+    try { shopVfxItemRequest(wrongVfx, 1, 1, 3, 24, 3); }
+    catch(const ProtocolError&) { wrongVfxRejected = true; }
+    check(wrongVfxRejected, "wrong shop VFX item identity must fail");
 
     auto discard = discardItemRequest(state.state(), 0x12345678, 0x01020304, 1, 2, 4551);
     check(discard.size() == 48 && discard[0] == 4 && discard[3] == 1 && discard[4] == 7,

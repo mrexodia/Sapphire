@@ -4,6 +4,9 @@
 
 namespace Sapphire::Testing
 {
+  // Source-bound non-consuming VFX item action from an exact observed purchased stack.
+  Bytes shopVfxItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t request,
+                           uint32_t storage, uint32_t slot, uint32_t expectedCount);
   // Full-stack discard from an observed ordinary bag slot only. No state prediction.
   Bytes discardItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                            uint32_t storage, uint32_t slot, uint32_t expectedItem);

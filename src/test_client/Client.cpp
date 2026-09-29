@@ -1084,6 +1084,18 @@ namespace Sapphire::Testing
       });
       return Json::object();
     }
+    if(method == "use_shop_vfx_item")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("item action requires an idle character");
+      for(const auto* key : {"storage", "slot", "expected_count"})
+        if(!args.at(key).is_number_unsigned() || args.at(key) > uint64_t{0xffffffff})
+          throw ProtocolError("item action arguments must be unsigned 32-bit integers");
+      if(m_actionRequest >= 65535) throw ProtocolError("action request budget exhausted");
+      auto payload = shopVfxItemRequest(m_rewards.state(), m_entity, ++m_actionRequest,
+                                        args.at("storage"), args.at("slot"), args.at("expected_count"));
+      sendZone(WC::FFXIVIpcActionRequest::_ServerIpcType, payload);
+      return {{"request", m_actionRequest}};
+    }
     if(method == "discard_item")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");

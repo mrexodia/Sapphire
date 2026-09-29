@@ -1,8 +1,27 @@
 #include "InventoryActions.h"
 #include <Network/PacketDef/Zone/ClientZoneDef.h>
+#include <cstring>
 
 namespace Sapphire::Testing
 {
+  Bytes shopVfxItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t request,
+                           uint32_t storage, uint32_t slot, uint32_t expectedCount)
+  {
+    constexpr uint32_t supportedItem = 5890;
+    if(!entity || !request || request > 65535 || storage > 3 || slot >= 25 ||
+       expectedCount != 3 || !rewards.at("inventory_ready").get<bool>())
+      throw ProtocolError("shop VFX item requires the exact received purchased stack");
+    const auto key = std::to_string(storage) + ":" + std::to_string(slot);
+    const auto& inventory = rewards.at("inventory");
+    if(!inventory.contains(key) || inventory.at(key).at("id") != supportedItem ||
+       inventory.at(key).at("count") != expectedCount)
+      throw ProtocolError("shop VFX item identity/count does not match received inventory");
+    Wire::WorldPackets::Client::FFXIVIpcActionRequest p{};
+    std::memset(&p, 0, sizeof(p));
+    p.ActionKind = Common::ACTION_KIND_ITEM; p.ActionKey = supportedItem;
+    p.RequestId = request; p.Target = entity; p.Arg = (storage << 16) | slot;
+    return objectBytes(p);
+  }
   Bytes discardItemRequest(const nlohmann::json& rewards, uint32_t entity, uint32_t context,
                            uint32_t storage, uint32_t slot, uint32_t expectedItem)
   {

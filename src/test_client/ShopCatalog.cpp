@@ -101,13 +101,18 @@ int main(int argc, char** argv)
                                                       reward->data().Price / purchasePrice);
     if(purchaseQuantity < 2 || purchaseQuantity > 99)
       throw std::runtime_error("selected gil-shop item lacks a bounded multi-quantity purchase");
+    auto itemAction = data.getRow<Excel::ItemAction>(selectedItem->data().Action);
+    if(!itemAction) throw std::runtime_error("selected gil-shop item has no source action metadata");
     nlohmann::json output{{"version", 1}, {"profile", "sapphire-3.3"}, {"territory", 130},
       {"start_actor", 1001289}, {"shop", {{"layout_id", selected.layout}, {"base_id", selected.base},
         {"event_id", selected.event}, {"position", {selected.position.x, selected.position.y, selected.position.z}}}},
       {"sale", {{"item", 4551}, {"quantity", 1}, {"gil", reward->data().Price}}},
       {"purchase", {{"shop_id", selected.event}, {"index", purchaseIndex}, {"item", purchaseItem},
                     {"quantity", purchaseQuantity}, {"unit_gil", purchasePrice},
-                    {"gil", purchasePrice * purchaseQuantity}}},
+                    {"gil", purchasePrice * purchaseQuantity},
+                    {"item_action", {{"row", selectedItem->data().Action},
+                                     {"type", itemAction->data().Action},
+                                     {"arg", itemAction->data().Calcu0Arg[0]}}}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

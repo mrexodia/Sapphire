@@ -316,6 +316,21 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert purchased_inventory[added_key]["count"] == catalog["purchase"]["quantity"]
     assert {key: value for key, value in purchased_inventory.items() if key != added_key} == expected_existing
     player.exit_gil_shop(catalog["shop"]["event_id"])
+    item_storage, item_slot = map(int, added_key.split(":"))
+    used_state, used_effect, request = player.use_shop_vfx_item(item_storage, item_slot)
+    assert request > 0
+    assert used_effect == {"source": state["entity_id"], "target": state["entity_id"],
+                           "action": catalog["purchase"]["item"], "kind": 1,
+                           "request": 0, "result": 0,
+                           "effects": [{"type": 54,
+                                        "value": catalog["purchase"]["item_action"]["arg"],
+                                        "flag": 0, "args": [0, 0, 0]}]}
+    observer_effect = worker.wait_state(observer.name,
+        lambda s: used_effect in s["combat"]["effects"],
+        "independently received exact shop VFX item effect")
+    assert observer_effect["phase"] == "ready" and observer_effect["gm_rank"] == 0
+    unchanged = player.expect_rewards(purchased_rewards, work_index)
+    assert unchanged["rewards"]["inventory"] == purchased_inventory
     for quest in quests:
         player.expect_quest_complete(quest)
     player.logout()
@@ -336,7 +351,10 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "split_receipt": receipt, "rewards_before": before_rewards,
         "inventory_after_split_restart": split_inventory,
         "rewards_after_sale": after_rewards, "inventory_after_sale": sold_inventory,
-        "purchase": catalog["purchase"], "rewards_after_purchase_restart": purchased_rewards,
+        "purchase": catalog["purchase"], "item_use_request": request,
+        "item_use_effect": used_effect, "item_use_observer_received": True,
+        "inventory_after_item_use": unchanged["rewards"]["inventory"],
+        "rewards_after_purchase_restart": purchased_rewards,
         "inventory_after_purchase_restart": purchased_inventory, "arrival_observed": True,
         "scope": "one normally earned potion sold, then one bounded multi-quantity source-listed stack bought through one source-bound gil shop"
     }, indent=2), encoding="utf-8")
