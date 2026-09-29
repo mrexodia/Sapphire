@@ -9,4 +9,5 @@ namespace Sapphire::Testing
   Bytes shopSecondEquipmentPurchaseReturn(uint32_t eventId);
   Bytes shopThirdEquipmentPurchaseReturn(uint32_t eventId);
   Bytes shopHeadEquipmentPurchaseReturn(uint32_t eventId);
+  Bytes shopEarEquipmentPurchaseReturn(uint32_t eventId);
 }

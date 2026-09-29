@@ -707,6 +707,69 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     reloaded, state = restart_shop_bot(reloaded, "shop-head-equipment-equipped",
                                       head_final_rewards, head_final_inventory)
 
+    starter_feet_sale = catalog["starter_feet_liquidation"]
+    starter_feet_matches = [(key, item) for key, item in head_final_inventory.items()
+                            if item["storage"] in range(4) and item["id"] == starter_feet_sale["item"]]
+    assert len(starter_feet_matches) == 1 and starter_feet_matches[0][1]["count"] == 1
+    starter_feet_key, starter_feet_item = starter_feet_matches[0]
+    reloaded.open_gil_shop(head["shop"]["layout_id"], head["shop"]["event_id"])
+    reloaded.sell_shop_item(starter_feet_item["storage"], starter_feet_item["slot"],
+                            starter_feet_sale["item"])
+    ear_funds_rewards = deepcopy(head_final_rewards)
+    del ear_funds_rewards["items"][str(starter_feet_sale["item"])]
+    ear_funds_rewards["currencies"]["1"] += starter_feet_sale["gil"]
+    ear_funds_inventory = deepcopy(head_final_inventory)
+    del ear_funds_inventory[starter_feet_key]
+    ear_funds_inventory["2000:0"]["count"] = ear_funds_rewards["currencies"]["1"]
+    state = reloaded.expect_rewards(ear_funds_rewards, work_index)
+    assert state["rewards"]["inventory"] == ear_funds_inventory
+    reloaded, state = restart_shop_bot(reloaded, "shop-starter-feet-sold",
+                                      ear_funds_rewards, ear_funds_inventory)
+    assert ear_funds_rewards["currencies"]["1"] == 102
+
+    ear = catalog["ear_purchase"]
+    ear_observer_fixture = environment.fresh_character(ear["route"][-1])
+    ear_observer = Bot(worker, "ear-shop-observer")
+    ear_observer.login_via_lobby(ear_observer_fixture["auth"], ear_observer_fixture["name"])
+    actor = str(state["entity_id"])
+    reloaded.walk_route(ear["route"], 6.0, 90)
+    ear_arrival = worker.wait_state(ear_observer.name,
+        lambda s: actor in s["actors"]
+                  and math.dist(s["actors"][actor]["position"], ear["route"][-1]) < 0.15,
+        "ear-shop arrival independently observed", 30)
+    ear_observer.logout()
+    ear_observer.close()
+    reloaded.open_gil_shop(ear["shop"]["layout_id"], ear["shop"]["event_id"])
+    reloaded.buy_shop_ear_equipment(ear["shop"]["event_id"])
+    ear_rewards = deepcopy(ear_funds_rewards)
+    ear_rewards["items"][str(ear["item"])] = 1
+    ear_rewards["currencies"]["1"] -= ear["gil"]
+    state = reloaded.expect_rewards(ear_rewards, work_index)
+    ear_inventory = deepcopy(state["rewards"]["inventory"])
+    ear_expected = deepcopy(ear_funds_inventory)
+    ear_expected["2000:0"]["count"] = ear_rewards["currencies"]["1"]
+    ear_added = set(ear_inventory) - set(ear_expected)
+    assert len(ear_added) == 1
+    ear_key = next(iter(ear_added))
+    assert ear_inventory[ear_key]["id"] == ear["item"] and ear_inventory[ear_key]["count"] == 1
+    assert {key: value for key, value in ear_inventory.items() if key != ear_key} == ear_expected
+    reloaded.exit_gil_shop(ear["shop"]["event_id"])
+    reloaded, state = restart_shop_bot(reloaded, "shop-ear-equipment-purchased",
+                                      ear_rewards, ear_inventory)
+    ear_gear_key = f"1000:{ear['gear_slot']}"
+    assert ear_gear_key not in ear_inventory
+    ear_item = ear_inventory[ear_key]
+    ear_equip_receipt = reloaded.request_shop_item_equip(
+        ear_item["storage"], ear_item["slot"], ear["item"], ear["gear_slot"])
+    ear_final_inventory = deepcopy(ear_inventory)
+    del ear_final_inventory[ear_key]
+    ear_final_inventory[ear_gear_key] = {"storage": 1000, "slot": ear["gear_slot"],
+                                         "id": ear["item"], "count": 1}
+    ear_final_rewards = deepcopy(ear_rewards)
+    del ear_final_rewards["items"][str(ear["item"])]
+    reloaded, state = restart_shop_bot(reloaded, "shop-ear-equipment-equipped",
+                                      ear_final_rewards, ear_final_inventory)
+
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
@@ -765,6 +828,17 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "head_equip_receipt": head_equip_receipt,
         "rewards_after_head_equip_restart": head_final_rewards,
         "inventory_after_head_equip_restart": head_final_inventory,
+        "starter_feet_liquidation": starter_feet_sale,
+        "rewards_after_starter_feet_liquidation_restart": ear_funds_rewards,
+        "inventory_after_starter_feet_liquidation_restart": ear_funds_inventory,
+        "ear_purchase": {key: value for key, value in ear.items() if key != "route"},
+        "ear_route_points": len(ear["route"]),
+        "ear_arrival_witness": ear_arrival["actors"][actor]["position"],
+        "rewards_after_ear_purchase_restart": ear_rewards,
+        "inventory_after_ear_purchase_restart": ear_inventory,
+        "ear_equip_receipt": ear_equip_receipt,
+        "rewards_after_ear_equip_restart": ear_final_rewards,
+        "inventory_after_ear_equip_restart": ear_final_inventory,
         "arrival_observed": True,
         "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")

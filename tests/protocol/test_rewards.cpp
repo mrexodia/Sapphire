@@ -182,6 +182,19 @@ int main()
                                Sapphire::Common::GearSetSlot::Body); }
     catch(const ProtocolError&) { rejected = true; }
     check(rejected, "shop head item rejects mismatched body destination");
+    auto shopEarState = shopEquipState;
+    shopEarState["inventory"]["3:24"]["id"] = 4200;
+    auto shopEar = equipShopItemRequest(shopEarState, 0x12345678, 0x0102030a,
+                                        3, 24, 4200, Sapphire::Common::GearSetSlot::Ear);
+    auto shopEarExpected = shopEquipExpected;
+    shopEarExpected[24] = 0x68; shopEarExpected[25] = 0x10;
+    shopEarExpected[36] = Sapphire::Common::GearSetSlot::Ear;
+    check(shopEar == shopEarExpected, "shop ear equip must match exact bag-to-gear wire fixture");
+    rejected = false;
+    try { equipShopItemRequest(shopEarState, 1, 1, 3, 24, 4200,
+                               Sapphire::Common::GearSetSlot::Head); }
+    catch(const ProtocolError&) { rejected = true; }
+    check(rejected, "shop ear item rejects mismatched head destination");
     for(int fault = 0; fault < 5; ++fault)
     {
       auto invalid = shopEquipState;
