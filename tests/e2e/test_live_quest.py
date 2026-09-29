@@ -770,6 +770,81 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     reloaded, state = restart_shop_bot(reloaded, "shop-ear-equipment-equipped",
                                       ear_final_rewards, ear_final_inventory)
 
+    liquidation_rewards = deepcopy(ear_final_rewards)
+    liquidation_inventory = deepcopy(ear_final_inventory)
+    liquidation_receipts = []
+    liquidation_sources = [
+        (ear["gear_slot"], ear["item"], ear["gil"], 24),
+        (head["gear_slot"], head["item"], head["gil"], 23),
+        (third["gear_slot"], third["item"], third["gil"], 22),
+    ]
+    for gear_slot, item_id, _, destination_slot in liquidation_sources:
+        receipt = reloaded.request_item_unequip(gear_slot, 1, destination_slot, item_id)
+        liquidation_receipts.append(receipt)
+        liquidation_rewards["items"][str(item_id)] = 1
+        del liquidation_inventory[f"1000:{gear_slot}"]
+        liquidation_inventory[f"1:{destination_slot}"] = {
+            "storage": 1, "slot": destination_slot, "id": item_id, "count": 1}
+        reloaded, state = restart_shop_bot(
+            reloaded, f"shop-liquidation-unequipped-{gear_slot}",
+            liquidation_rewards, liquidation_inventory)
+
+    reloaded.open_gil_shop(ear["shop"]["layout_id"], ear["shop"]["event_id"])
+    for _, item_id, sale_gil, destination_slot in liquidation_sources:
+        reloaded.sell_shop_item(1, destination_slot, item_id)
+        del liquidation_rewards["items"][str(item_id)]
+        liquidation_rewards["currencies"]["1"] += sale_gil
+        del liquidation_inventory[f"1:{destination_slot}"]
+        liquidation_inventory["2000:0"]["count"] = liquidation_rewards["currencies"]["1"]
+        state = reloaded.expect_rewards(liquidation_rewards, work_index)
+        assert state["rewards"]["inventory"] == liquidation_inventory
+    reloaded, state = restart_shop_bot(reloaded, "shop-later-equipment-sold",
+                                      liquidation_rewards, liquidation_inventory)
+    assert liquidation_rewards["currencies"]["1"] == 208
+
+    neck = catalog["neck_purchase"]
+    neck_observer_fixture = environment.fresh_character(neck["route"][-1])
+    neck_observer = Bot(worker, "neck-shop-observer")
+    neck_observer.login_via_lobby(neck_observer_fixture["auth"], neck_observer_fixture["name"])
+    actor = str(state["entity_id"])
+    reloaded.walk_route(neck["route"], 6.0, 60)
+    neck_arrival = worker.wait_state(neck_observer.name,
+        lambda s: actor in s["actors"]
+                  and math.dist(s["actors"][actor]["position"], neck["route"][-1]) < 0.15,
+        "neck-shop arrival independently observed", 30)
+    neck_observer.logout()
+    neck_observer.close()
+    reloaded.open_gil_shop(neck["shop"]["layout_id"], neck["shop"]["event_id"])
+    reloaded.buy_shop_neck_equipment(neck["shop"]["event_id"])
+    neck_rewards = deepcopy(liquidation_rewards)
+    neck_rewards["items"][str(neck["item"])] = 1
+    neck_rewards["currencies"]["1"] -= neck["gil"]
+    state = reloaded.expect_rewards(neck_rewards, work_index)
+    neck_inventory = deepcopy(state["rewards"]["inventory"])
+    neck_expected = deepcopy(liquidation_inventory)
+    neck_expected["2000:0"]["count"] = neck_rewards["currencies"]["1"]
+    neck_added = set(neck_inventory) - set(neck_expected)
+    assert len(neck_added) == 1
+    neck_key = next(iter(neck_added))
+    assert neck_inventory[neck_key]["id"] == neck["item"] and neck_inventory[neck_key]["count"] == 1
+    assert {key: value for key, value in neck_inventory.items() if key != neck_key} == neck_expected
+    reloaded.exit_gil_shop(neck["shop"]["event_id"])
+    reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-purchased",
+                                      neck_rewards, neck_inventory)
+    neck_gear_key = f"1000:{neck['gear_slot']}"
+    assert neck_gear_key not in neck_inventory
+    neck_item = neck_inventory[neck_key]
+    neck_equip_receipt = reloaded.request_shop_item_equip(
+        neck_item["storage"], neck_item["slot"], neck["item"], neck["gear_slot"])
+    neck_final_inventory = deepcopy(neck_inventory)
+    del neck_final_inventory[neck_key]
+    neck_final_inventory[neck_gear_key] = {"storage": 1000, "slot": neck["gear_slot"],
+                                           "id": neck["item"], "count": 1}
+    neck_final_rewards = deepcopy(neck_rewards)
+    del neck_final_rewards["items"][str(neck["item"])]
+    reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-equipped",
+                                      neck_final_rewards, neck_final_inventory)
+
     (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
@@ -839,6 +914,17 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "ear_equip_receipt": ear_equip_receipt,
         "rewards_after_ear_equip_restart": ear_final_rewards,
         "inventory_after_ear_equip_restart": ear_final_inventory,
+        "later_equipment_liquidation_unequip_receipts": liquidation_receipts,
+        "rewards_after_later_equipment_liquidation_restart": liquidation_rewards,
+        "inventory_after_later_equipment_liquidation_restart": liquidation_inventory,
+        "neck_purchase": {key: value for key, value in neck.items() if key != "route"},
+        "neck_route_points": len(neck["route"]),
+        "neck_arrival_witness": neck_arrival["actors"][actor]["position"],
+        "rewards_after_neck_purchase_restart": neck_rewards,
+        "inventory_after_neck_purchase_restart": neck_inventory,
+        "neck_equip_receipt": neck_equip_receipt,
+        "rewards_after_neck_equip_restart": neck_final_rewards,
+        "inventory_after_neck_equip_restart": neck_final_inventory,
         "arrival_observed": True,
         "scope": "source-bound sale, VFX stack purchase/action/liquidation, and later equipment purchase through one gil shop"
     }, indent=2), encoding="utf-8")

@@ -137,7 +137,12 @@ def test_shop_catalog_binds_route_actor_and_exact_sale():
                                          "event_id": 262425, "position": [3, 0, 0]},
                              "index": 0, "item": 4200, "quantity": 1, "gil": 66,
                              "source_slot": 9, "gear_slot": 8,
-                             "route": [[2, 0, 0], [3, 0, 0]], "route_length": 1}}
+                             "route": [[2, 0, 0], [3, 0, 0]], "route_length": 1},
+            "neck_purchase": {"shop": {"layout_id": 4067692, "base_id": 1004417,
+                                          "event_id": 262640, "position": [4, 0, 0]},
+                              "index": 1, "item": 15130, "quantity": 1, "gil": 168,
+                              "source_slot": 10, "gear_slot": 9,
+                              "route": [[3, 0, 0], [4, 0, 0]], "route_length": 1}}
     assert validate_shop_catalog(data) == data
     for changed in ({**data, "territory": 141}, {**data, "sale": {"item": 4551, "quantity": 2, "gil": 56}},
                     {**data, "purchase": {**data["purchase"], "item": 1}},

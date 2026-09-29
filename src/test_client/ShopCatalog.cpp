@@ -232,6 +232,48 @@ int main(int argc, char** argv)
     }
     if(!ear.item || ear.route.empty() || !std::isfinite(ear.routeLength) || ear.routeLength > 500)
       throw std::runtime_error("no complete affordable route to a source-listed ear shop");
+
+    HeadCandidate neck;
+    const auto neckFunds = earFunds - ear.price + thirdEquipment.price + head.price + ear.price;
+    for(const auto& candidate : candidates)
+    {
+      auto candidateShop = data.getRow<Excel::Shop>(candidate.event);
+      if(!candidateShop) continue;
+      for(uint32_t index = 0; index < 40; ++index)
+      {
+        auto shopItem = data.getRow<Excel::ShopItem>(candidateShop->data().Item[index]);
+        if(!shopItem) continue;
+        auto item = data.getRow<Excel::Item>(shopItem->data().ItemId);
+        if(!item || !item->data().Price || item->data().Price > neckFunds ||
+           item->data().StackMax != 1 || item->data().Slot != 10 ||
+           item->data().EquipLevel > 1 || item->data().Class != 0)
+          continue;
+        try
+        {
+          auto route = Sapphire::Testing::navigationRoute(*finder.getNavMesh(),
+            {ear.shop.position.x, ear.shop.position.y, ear.shop.position.z},
+            {candidate.position.x, candidate.position.y, candidate.position.z});
+          double length = 0;
+          for(size_t i = 1; i < route.size(); ++i)
+          {
+            const auto& a = route[i - 1]; const auto& b = route[i];
+            const double step = std::sqrt(std::pow(a[0]-b[0], 2) + std::pow(a[1]-b[1], 2) +
+                                          std::pow(a[2]-b[2], 2));
+            if(!std::isfinite(step) || step > 2)
+              throw std::runtime_error("neck-shop route contains unsupported jump");
+            length += step;
+          }
+          const auto itemId = static_cast<uint32_t>(shopItem->data().ItemId);
+          if(!neck.item || item->data().Price < neck.price ||
+             (item->data().Price == neck.price && length < neck.routeLength) ||
+             (item->data().Price == neck.price && length == neck.routeLength && itemId < neck.item))
+            neck = {candidate, itemId, item->data().Price, index, length, std::move(route)};
+        }
+        catch(const std::exception&) { /* A partial corridor is never selected. */ }
+      }
+    }
+    if(!neck.item || neck.route.empty() || !std::isfinite(neck.routeLength) || neck.routeLength > 500)
+      throw std::runtime_error("no complete affordable route to a source-listed neck shop");
     auto selectedItem = data.getRow<Excel::Item>(purchaseItem);
     if(!selectedItem || !selectedItem->data().StackMax)
       throw std::runtime_error("selected gil-shop item has no stack metadata");
@@ -286,6 +328,13 @@ int main(int argc, char** argv)
                           {"index", ear.index}, {"item", ear.item}, {"quantity", 1},
                           {"gil", ear.price}, {"source_slot", 9}, {"gear_slot", 8},
                           {"route_length", ear.routeLength}, {"route", ear.route}}},
+      {"neck_purchase", {{"shop", {{"layout_id", neck.shop.layout}, {"base_id", neck.shop.base},
+                                       {"event_id", neck.shop.event},
+                                       {"position", {neck.shop.position.x, neck.shop.position.y,
+                                                      neck.shop.position.z}}}},
+                           {"index", neck.index}, {"item", neck.item}, {"quantity", 1},
+                           {"gil", neck.price}, {"source_slot", 10}, {"gear_slot", 9},
+                           {"route_length", neck.routeLength}, {"route", neck.route}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

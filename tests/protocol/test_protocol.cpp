@@ -334,6 +334,14 @@ int main()
             earEquipmentPurchase[32] == 0x68 && earEquipmentPurchase[33] == 0x10,
             "ear shop equipment purchase return fixture");
     rejects([&] { shopEarEquipmentPurchaseReturn(262415); });
+    auto neckEquipmentPurchase = shopNeckEquipmentPurchaseReturn(262640);
+    require(neckEquipmentPurchase.size() == 1028 && neckEquipmentPurchase[0] == 0xf0 &&
+            neckEquipmentPurchase[1] == 0x01 && neckEquipmentPurchase[12] == 1 &&
+            neckEquipmentPurchase[24] == 0xf0 && neckEquipmentPurchase[25] == 0x01 &&
+            neckEquipmentPurchase[26] == 0x04 && neckEquipmentPurchase[28] == 1 &&
+            neckEquipmentPurchase[32] == 0x1a && neckEquipmentPurchase[33] == 0x3b,
+            "neck shop equipment purchase return fixture");
+    rejects([&] { shopNeckEquipmentPurchaseReturn(262425); });
 
     LobbyCipher sender, receiver;
     auto hello = sender.initialize(42, "SapphireE2E");

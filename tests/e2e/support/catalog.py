@@ -263,6 +263,22 @@ def validate_shop_catalog(data):
     if math.dist(ear_route[0], head_shop["position"]) > 2 or \
        math.dist(ear_route[-1], ear_shop["position"]) > 2:
         raise WorkerError("ear-shop route endpoints do not bind both exact shop actors")
+    neck = data.get("neck_purchase", {})
+    if ({key: neck.get(key) for key in ("index", "item", "quantity", "gil", "source_slot", "gear_slot")} !=
+            {"index": 1, "item": 15130, "quantity": 1, "gil": 168,
+             "source_slot": 10, "gear_slot": 9}):
+        raise WorkerError("unsupported source neck-equipment purchase binding")
+    neck_shop = neck.get("shop", {})
+    if ({key: neck_shop.get(key) for key in ("layout_id", "base_id", "event_id")} !=
+            {"layout_id": 4067692, "base_id": 1004417, "event_id": 262640}
+            or len(neck_shop.get("position", [])) != 3
+            or not all(type(value) in (int, float) and math.isfinite(value)
+                       for value in neck_shop["position"])):
+        raise WorkerError("unsupported source neck-shop actor binding")
+    neck_route = validated_route(neck)
+    if math.dist(neck_route[0], ear_shop["position"]) > 2 or \
+       math.dist(neck_route[-1], neck_shop["position"]) > 2:
+        raise WorkerError("neck-shop route endpoints do not bind both exact shop actors")
     shop = data.get("shop", {})
     if (set(shop) != {"layout_id", "base_id", "event_id", "position"}
             or any(type(shop.get(key)) is not int or shop[key] <= 0

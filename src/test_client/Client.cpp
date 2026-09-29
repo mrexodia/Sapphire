@@ -1084,6 +1084,29 @@ namespace Sapphire::Testing
       m_state["scene"] = nullptr;
       return Json::object();
     }
+    if(method == "buy_shop_neck_equipment")
+    {
+      constexpr uint32_t shop = 262640, item = 15130, gil = 208;
+      const auto& scene = m_state["scene"];
+      const auto& inventory = m_rewards.state().at("inventory");
+      if(!scene.is_object() || scene.value("token", uint64_t{0}) != args.at("token") ||
+         scene.value("event_id", 0u) != args.at("event_id") ||
+         scene.value("event_id", 0u) != shop || scene.value("scene_id", 0u) != 40 ||
+         !inventory.contains("2000:0") || inventory.at("2000:0").value("id", 0u) != 1 ||
+         inventory.at("2000:0").value("count", 0u) != gil)
+        throw ProtocolError("neck equipment purchase requires exact received shop/funds state");
+      for(const auto& entry : inventory)
+        if(entry.value("id", 0u) == item || entry.value("id", 0u) == 2967 ||
+           entry.value("id", 0u) == 2638 || entry.value("id", 0u) == 4200)
+          throw ProtocolError("neck equipment purchase requires exact post-liquidation inventory");
+      for(const auto slot : {3u, 2u, 8u, 9u})
+        if(inventory.contains("1000:" + std::to_string(slot)))
+          throw ProtocolError("neck equipment purchase requires exact empty supported equipment slots");
+      sendZone(WC::FFXIVIpcReturnEventScene255::_ServerIpcType,
+               shopNeckEquipmentPurchaseReturn(shop));
+      m_state["scene"] = nullptr;
+      return Json::object();
+    }
     if(method == "invite_party")
     {
       const auto& party = m_state["party"];
