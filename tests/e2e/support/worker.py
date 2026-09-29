@@ -396,6 +396,24 @@ class Bot:
         return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 0,
                                       "received empty party state", timeout)
 
+    def party_chat(self, message):
+        return self.worker.request("party_chat", self.name, message=message)
+
+    def expect_party_chat(self, sender_state, message, timeout=10):
+        expected = (sender_state["entity_id"], message)
+        def matches(state, row):
+            members = [member for member in state["party"]["members"]
+                       if member["entity_id"] == expected[0]]
+            return (len(members) == 1 and row["actor"] == expected[0]
+                    and row["character_id"] == members[0]["character_id"]
+                    and row["name"] == members[0]["name"] and row["message"] == expected[1]
+                    and row["party_id"] == state["party"]["id"]
+                    and row["channel"] == state["party"]["chat_channel"])
+        state = self.worker.wait_state(self.name,
+            lambda s: any(matches(s, row) for row in s["party_chat"]),
+            "exact received party chat", timeout)
+        return next(row for row in reversed(state["party_chat"]) if matches(state, row))
+
     def fast_blade(self, target, timeout=10):
         request = self.worker.request("fast_blade", self.name, target=target)["request"]
         state = self.worker.wait_state(self.name,

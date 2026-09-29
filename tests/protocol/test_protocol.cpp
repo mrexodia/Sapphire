@@ -120,7 +120,8 @@ int main()
     const Bytes deletionPrefix{3,0,0,0, 0x88,0x77,0x66,0x55, 8,7,6,5,4,3,2,1,
                                0x44,0x33,0x22,0x11,0,0,0,0, 2,4,67,0};
     std::copy(deletionPrefix.begin(), deletionPrefix.end(), expectedDeletion.begin());
-    std::copy_n(std::string("Tester Delete").begin(), 13, expectedDeletion.begin() + 28);
+    const std::string deletionName = "Tester Delete";
+    std::copy(deletionName.begin(), deletionName.end(), expectedDeletion.begin() + 28);
     require(deletion == expectedDeletion, "character deletion exact byte fixture");
     rejects([&] { characterDeleteRequest(3, 1, lobbyCharacter, "Other Name"); });
     auto ambiguousCharacter = lobbyCharacter; ambiguousCharacter["character_id"] = 0;
@@ -152,7 +153,8 @@ int main()
     nlohmann::json partyActors = {{"2097154", {{"kind", 1}, {"name", "E2E Target"}}}};
     auto invite = partyInviteRequest(partyActors, 2097154, "E2E Target");
     Bytes expectedInvite(33, 0); expectedInvite[0] = 1;
-    std::copy_n(std::string("E2E Target").begin(), 10, expectedInvite.begin() + 1);
+    const std::string inviteName = "E2E Target";
+    std::copy(inviteName.begin(), inviteName.end(), expectedInvite.begin() + 1);
     require(invite == expectedInvite, "party invite exact byte fixture");
     rejects([&] { partyInviteRequest(partyActors, 2097153, "E2E Target"); });
     rejects([&] { partyInviteRequest(partyActors, 2097154, "Wrong Target"); });
@@ -162,10 +164,21 @@ int main()
     require(accept == expectedAccept, "party acceptance exact byte fixture");
     rejects([&] { partyAcceptRequest({{"character_id", 1}, {"auth_type", 2}, {"result", 1},
                                       {"name", "E2E Leader"}}); });
-    nlohmann::json party{{"id", 1}, {"count", 2},
+    nlohmann::json party{{"id", 1}, {"chat_channel", uint64_t{0x0102030405060708}}, {"count", 2},
                          {"members", {{{"entity_id", 2097153}}, {{"entity_id", 2097154}}}}};
     require(partyLeaveRequest(party, 2097153) == Bytes(4, 0), "party leave exact byte fixture");
     rejects([&] { partyLeaveRequest(party, 2097155); });
+    auto partyChat = partyChatRequest(party, 2097153, "Received party message");
+    Bytes expectedPartyChat(1032, 0);
+    const Bytes expectedChannel{8,7,6,5,4,3,2,1};
+    std::copy(expectedChannel.begin(), expectedChannel.end(), expectedPartyChat.begin());
+    const std::string partyMessage = "Received party message";
+    std::copy(partyMessage.begin(), partyMessage.end(), expectedPartyChat.begin() + 8);
+    require(partyChat == expectedPartyChat, "party chat exact channel/message byte fixture");
+    rejects([&] { partyChatRequest(party, 2097155, "Received party message"); });
+    auto missingChannel = party; missingChannel["chat_channel"] = 0;
+    rejects([&] { partyChatRequest(missingChannel, 2097153, "Received party message"); });
+    rejects([&] { partyChatRequest(party, 2097153, "!debug"); });
 
     nlohmann::json defeatedActors = {{"2097153", {{"hp", 0}}}};
     auto homepoint = returnHomepointRequest(2097153, 141, 9, defeatedActors);

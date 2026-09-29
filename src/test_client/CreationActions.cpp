@@ -52,6 +52,8 @@ namespace Sapphire::Testing
        character.value("world", 0u) == 0 || character.value("world", 0u) > 0xffff)
       throw ProtocolError("character deletion requires one exact received lobby identity");
     Wire::LobbyPackets::Client::FFXIVIpcCharaMake packet{};
+    // Value-initialization does not specify padding bytes; the full wire object is sent.
+    std::memset(&packet, 0, sizeof(packet));
     packet.requestNumber = requestNumber; packet.clientTimeValue = clientTime;
     packet.characterId = character.at("character_id"); packet.playerId = character.at("entity_id");
     packet.characterIndex = character.at("index");

@@ -43,14 +43,36 @@ namespace Sapphire::Testing
     return objectBytes(packet);
   }
 
-  Bytes partyLeaveRequest(const nlohmann::json& party, uint32_t selfEntity)
+  static void requireMembership(const nlohmann::json& party, uint32_t selfEntity,
+                                const char* operation)
   {
     if(!party.is_object() || party.value("id", uint64_t{0}) == 0 || party.value("count", 0) < 2 ||
        !party.contains("members") || !party.at("members").is_array() ||
        std::none_of(party.at("members").begin(), party.at("members").end(),
          [selfEntity](const auto& member) { return member.value("entity_id", 0u) == selfEntity; }))
-      throw ProtocolError("party leave requires received membership for this player");
+      throw ProtocolError(std::string(operation) + " requires received membership for this player");
+  }
+
+  Bytes partyLeaveRequest(const nlohmann::json& party, uint32_t selfEntity)
+  {
+    requireMembership(party, selfEntity, "party leave");
     Wire::WorldPackets::Client::FFXIVIpcPcPartyLeave packet{};
+    return objectBytes(packet);
+  }
+
+  Bytes partyChatRequest(const nlohmann::json& party, uint32_t selfEntity,
+                         const std::string& message)
+  {
+    requireMembership(party, selfEntity, "party chat");
+    if(!party.contains("chat_channel") || !party.at("chat_channel").is_number_unsigned() ||
+       party.at("chat_channel").get<uint64_t>() == 0)
+      throw ProtocolError("party chat requires the exact received channel");
+    if(message.empty() || message.size() > 128 || message[0] == '!' ||
+       !std::all_of(message.begin(), message.end(), [](unsigned char c) { return c >= 32 && c <= 126; }))
+      throw ProtocolError("party chat requires 1..128 printable ASCII characters, not a debug command");
+    Wire::WorldPackets::Client::FFXIVIpcChatToChannel packet{};
+    packet.channelID = party.at("chat_channel");
+    copyText(packet.message, message);
     return objectBytes(packet);
   }
 }

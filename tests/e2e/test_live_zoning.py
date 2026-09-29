@@ -59,6 +59,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     expected_territories = {
         player.name: {state["entity_id"]: 141, source_state["entity_id"]: 0},
         source.name: {state["entity_id"]: 0, source_state["entity_id"]: 130}}
+    party_states = {}
     for bot in (player, source):
         party_state = live_worker.wait_state(bot.name,
             lambda s: s["party"]["count"] == 2
@@ -66,6 +67,14 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
                           == expected_territories[bot.name],
             "cross-territory party roster update")
         assert party_state["party"]["leader_index"] == 0
+        party_states[bot.name] = party_state
+    assert party_states[player.name]["party"]["chat_channel"] == party_states[source.name]["party"]["chat_channel"]
+    sent = source.party_chat("source to remote traveler party message")
+    received = player.expect_party_chat(source_state, "source to remote traveler party message")
+    assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
+    sent = player.party_chat("traveler to remote source party message")
+    received = source.expect_party_chat(state, "traveler to remote source party message")
+    assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
     player.expect_rewards(before, 1)
     player.discover_central_thanalan(discovery)
     after_discovery = deepcopy(before)

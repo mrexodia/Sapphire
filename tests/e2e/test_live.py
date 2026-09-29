@@ -44,8 +44,15 @@ def test_received_party_join_and_leave(environment, live_worker):
     expected = {(leader_id, leader_fixture["name"]), (member_id, member_fixture["name"])}
     for state in (leader_party, member_party):
         party = state["party"]
-        assert party["id"] != 0 and party["leader_index"] == 0
+        assert party["id"] != 0 and party["chat_channel"] != 0 and party["leader_index"] == 0
         assert {(row["entity_id"], row["name"]) for row in party["members"]} == expected
+    assert leader_party["party"]["chat_channel"] == member_party["party"]["chat_channel"]
+    sent = leader.party_chat("leader to member party message")
+    received = member.expect_party_chat(leader_party, "leader to member party message")
+    assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
+    sent = member.party_chat("member to leader party message")
+    received = leader.expect_party_chat(member_party, "member to leader party message")
+    assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
     member.leave_party()
     live_worker.wait_state(leader.name, lambda s: s["party"]["count"] == 0,
                            "leader received party disband")

@@ -8,6 +8,7 @@
 #include <Network/CommonActorControl.h>
 #include <Network/PacketDef/Lobby/ClientLobbyDef.h>
 #include <Network/PacketDef/Lobby/ServerLobbyDef.h>
+#include <Network/PacketDef/Chat/ServerChatDef.h>
 #include <Network/PacketDef/Zone/ClientZoneDef.h>
 #include <Network/PacketDef/Zone/ServerZoneDef.h>
 #include <cmath>
@@ -98,9 +99,11 @@ namespace Sapphire::Testing
   {
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
-      {"chat", Json::array()}, {"created_via_lobby", false}, {"deleted_via_lobby", false},
+      {"chat", Json::array()}, {"party_chat", Json::array()},
+      {"created_via_lobby", false}, {"deleted_via_lobby", false},
       {"scene", nullptr}, {"event_id", nullptr}, {"name_rejection", nullptr}, {"pending_party_invite", nullptr},
-      {"party_invite_result", nullptr}, {"party", {{"id", 0}, {"count", 0}, {"leader_index", 0}, {"members", Json::array()}}},
+      {"party_invite_result", nullptr}, {"party", {{"id", 0}, {"chat_channel", 0}, {"count", 0},
+                                                            {"leader_index", 0}, {"members", Json::array()}}},
       {"discovery_reply", nullptr},
       {"discovery_request_sent", false}, {"central_thanalan_discovery", false}, {"heartbeat_replies", 0},
       {"heartbeats", {{"zone", 0}, {"chat", 0}}}, {"packets_received", 0}};
@@ -194,6 +197,11 @@ namespace Sapphire::Testing
   {
     if(!m_zone) throw ProtocolError("zone channel not initialized");
     m_zone->send(frame(1, 3, ipc(opcode, payload), m_entity));
+  }
+  void Bot::sendChat(uint16_t opcode, const Bytes& payload)
+  {
+    if(!m_chat) throw ProtocolError("chat channel not initialized");
+    m_chat->send(frame(2, 3, ipc(opcode, payload), m_entity));
   }
   void Bot::receive(const std::string& name, Segment segment)
   {
@@ -431,10 +439,34 @@ namespace Sapphire::Testing
       else if(name == "chat" && !m_chatAck) { m_chatAck = true; worldLogin(); }
       return;
     }
-    if(segment.header.type != 3 || name != "zone") return;
+    if(segment.header.type != 3) return;
     const auto h = readObject<Wire::FFXIVARR_IPC_HEADER>(segment.data);
     event("packet", {{"channel", name}, {"opcode", h.type}, {"source", segment.header.source_actor}});
     constexpr size_t off = sizeof(Wire::FFXIVARR_IPC_HEADER);
+    if(name == "chat")
+    {
+      if(h.type != Wire::Server::FFXIVChatToChannel::_ServerIpcType) return;
+      const auto p = readObject<Wire::Server::FFXIVChatToChannel>(segment.data, off);
+      const auto speaker = receivedName(p.speakerName, sizeof(p.speakerName));
+      const auto message = text(p.message);
+      const auto& party = m_state["party"];
+      if(p.channelID == 0 || p.channelID != party.value("chat_channel", uint64_t{0}) ||
+         party.value("count", 0) < 2 || p.speakerEntityID == m_entity ||
+         std::none_of(party.at("members").begin(), party.at("members").end(), [&](const auto& member) {
+           return member.value("entity_id", 0u) == p.speakerEntityID &&
+                  member.value("character_id", uint64_t{0}) == p.speakerCharacterID &&
+                  member.value("name", "") == speaker;
+         }))
+        throw ProtocolError("party chat sender/channel does not match received membership");
+      Json received{{"party_id", party.at("id")}, {"channel", p.channelID},
+                    {"actor", p.speakerEntityID}, {"character_id", p.speakerCharacterID},
+                    {"name", speaker}, {"message", message}, {"token", m_seq + 1}};
+      m_state["party_chat"].push_back(received);
+      if(m_state["party_chat"].size() > 64) m_state["party_chat"].erase(m_state["party_chat"].begin());
+      event("party_chat", received);
+      return;
+    }
+    if(name != "zone") return;
     if(segment.header.source_actor == m_entity && m_rewards.receive(h.type, segment.data))
     {
       Json detail{{"opcode", h.type}};
@@ -527,6 +559,7 @@ namespace Sapphire::Testing
     {
       const auto p = readObject<WS::FFXIVIpcUpdateParty>(segment.data, off);
       if(p.PartyCount > 8 || (p.PartyCount == 0) != (p.PartyID == 0) ||
+         (p.PartyCount == 0) != (p.ChatChannel == 0) ||
          (p.PartyCount && p.LeaderIndex >= p.PartyCount))
         throw ProtocolError("malformed received party state");
       Json members = Json::array();
@@ -539,8 +572,9 @@ namespace Sapphire::Testing
                            {"territory", member.TerritoryType}, {"level", member.Lv},
                            {"class_job", member.ClassJob}});
       }
-      m_state["party"] = {{"id", p.PartyID}, {"count", p.PartyCount},
-                          {"leader_index", p.LeaderIndex}, {"members", members}};
+      m_state["party"] = {{"id", p.PartyID}, {"chat_channel", p.ChatChannel},
+                          {"count", p.PartyCount}, {"leader_index", p.LeaderIndex},
+                          {"members", members}};
       event("party_state", m_state["party"]);
     }
     if(h.type == WS::FFXIVIpcDiscoveryReply::_ServerIpcType)
@@ -870,6 +904,14 @@ namespace Sapphire::Testing
       auto payload = partyLeaveRequest(m_state["party"], m_entity);
       sendZone(WC::FFXIVIpcPcPartyLeave::_ServerIpcType, payload);
       return Json::object();
+    }
+    if(method == "party_chat")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("party chat requires an idle character");
+      auto payload = partyChatRequest(m_state["party"], m_entity, args.at("message"));
+      sendChat(WC::FFXIVIpcChatToChannel::_ServerIpcType, payload);
+      return {{"party_id", m_state["party"].at("id")},
+              {"channel", m_state["party"].at("chat_channel")}};
     }
     if(method == "fast_blade" || method == "bootshine" || method == "blizzard")
     {

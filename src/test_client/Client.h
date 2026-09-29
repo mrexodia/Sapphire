@@ -54,6 +54,7 @@ namespace Sapphire::Testing
     void moveStep();
     void sendLobby(uint16_t opcode, const Bytes& payload);
     void sendZone(uint16_t opcode, const Bytes& payload);
+    void sendChat(uint16_t opcode, const Bytes& payload);
     void event(const std::string& name, Json data = Json::object());
     void phase(const std::string& phase);
     void updateQuests();
