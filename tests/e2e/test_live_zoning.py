@@ -24,11 +24,19 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     state = player.login_via_lobby(fixture["auth"], fixture["name"])
     assert state["territory"] == 130 and state["scene"] is None
     actor = str(state["entity_id"])
-    source.login_via_lobby(source_fixture["auth"], source_fixture["name"])
+    source_state = source.login_via_lobby(source_fixture["auth"], source_fixture["name"])
     target_state = target.login_via_lobby(target_fixture["auth"], target_fixture["name"])
     assert target_state["territory"] == destination["territory"] and target_state["scene"] is None
     assert actor not in target_state["actors"]
     live_worker.wait_state(source.name, lambda s: actor in s["actors"], "traveler visible in source territory")
+    live_worker.wait_state(player.name,
+        lambda s: str(source_state["entity_id"]) in s["actors"]
+                  and s["actors"][str(source_state["entity_id"])]["name"] == source_fixture["name"],
+        "source observer visible by exact name")
+    player.invite_party(source_state["entity_id"], source_fixture["name"])
+    source.accept_party()
+    live_worker.wait_state(player.name, lambda s: s["party"]["count"] == 2,
+                           "traveler received source party membership")
     before = player.reward_snapshot(1)  # Gladiator fixture's observed class work index.
     # The source observer stays outside the trigger; it must not ignore its own
     # automatic-exit obligation merely to watch the traveler disappear.
@@ -45,6 +53,19 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
         lambda s: actor in s["actors"] and math.dist(s["actors"][actor]["position"], destination["position"]) < 0.15,
         "traveler arrived in destination territory")
     assert live_worker.snapshot(source.name)["territory"] == 130
+    # UpdateParty redacts detailed fields for a remote-zone member (territory 0),
+    # while retaining exact entity/name identity. Each side must receive its own
+    # current territory and the other's explicitly redacted remote detail.
+    expected_territories = {
+        player.name: {state["entity_id"]: 141, source_state["entity_id"]: 0},
+        source.name: {state["entity_id"]: 0, source_state["entity_id"]: 130}}
+    for bot in (player, source):
+        party_state = live_worker.wait_state(bot.name,
+            lambda s: s["party"]["count"] == 2
+                      and {member["entity_id"]: member["territory"] for member in s["party"]["members"]}
+                          == expected_territories[bot.name],
+            "cross-territory party roster update")
+        assert party_state["party"]["leader_index"] == 0
     player.expect_rewards(before, 1)
     player.discover_central_thanalan(discovery)
     after_discovery = deepcopy(before)
@@ -56,6 +77,9 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     live_worker.wait_state(player.name,
         lambda s: all(s["heartbeats"][channel] > heartbeats[channel] for channel in ("zone", "chat")),
         "both channels remain live after zoning")
+    source.leave_party()
+    live_worker.wait_state(player.name, lambda s: s["party"]["count"] == 0,
+                           "traveler received cross-zone party disband")
     player.logout()
     live_worker.wait_state(target.name, lambda s: actor not in s["actors"], "destination session cleanup", 30)
     for bot in (source, target):
