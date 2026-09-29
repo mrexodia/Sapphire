@@ -61,6 +61,10 @@ lobby, world and MariaDB processes with matching game data:
   the other client independently matches party/channel and sender entity/character/name.
   After each cross-zone party-chat receipt supplies bounded liveness evidence, both
   directions also exchange exact direct Tells using the remote redacted roster identity.
+  They then receive exact disband state and exchange both directions again as
+  nonparty clients: the first request requires the prior received spawn plus fresh
+  party-chat liveness, and the reply requires the exact incoming Tell as liveness.
+  Both resulting packets carry party ID zero.
   Both sides receive exact decline identities while remaining ungrouped; invite
   acknowledgements are not treated as membership evidence.
 - A four-client zoning test walks a verified approach into an actual exit volume,

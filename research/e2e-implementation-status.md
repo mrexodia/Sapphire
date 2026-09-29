@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/later-gear purchase/equip path; ordinary Say, exact same-zone nonparty and cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist, other later gear and currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/later-gear purchase/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist, other later gear and currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -134,15 +134,16 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
-  gate at `e3685631a` took **1041.29s**, adding independently observed living Return
-  to persisted later-equipment purchase/equip, the quantity-three VFX item
-  action/liquidation, exact same- and cross-zone Tell, observed Sprint, the
-  full-roster party/reconnect lifecycle, dual persisted discovery, Ring2,
-  duplicate-name rejection and normal character deletion (`gameplay-ci-up_vh_yf`,
-  summary `build-e2e/ci-summary-return.json`). Summary SHA-256 is
-  `550ecdcffff43e9015c03db1d5d52f5b715ecca080279e7223ba9aab65216a92`,
+  gate at `7504e7051` took **1022.22s**, including same- and cross-zone nonparty
+  Tell, cross-zone party Tell, independently observed living Return, persisted
+  later-equipment purchase/equip, the quantity-three VFX item action/liquidation,
+  observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
+  discovery, Ring2, duplicate-name rejection and normal character deletion
+  (`gameplay-ci-essl6m_d`, summary
+  `build-e2e/ci-summary-nonparty-direction.json`). Summary SHA-256 is
+  `61c404b53aac06488a5465ba4cc62f11e2e110bfa08c3ce913086e45c6d3ee69`,
   private manifest SHA-256 is
-  `95febb48b42968bb987459c4239724713b0306d33a10b23b5e93feac2348aa65`, and
+  `cf4a391a9ba7918243cf2d3330c63db298c69a16f9717421b7be91e93e4fcd64`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -601,9 +602,30 @@ The clean case passed in **305.27s** at
 `03accc4cd4d0fb78298590801f59e39ed11a5d577a5dda20cda93068e90c7a7f`, and event
 journal SHA-256 is
 `b6afafe3b4b39e563db7d2a2c14ad0beb8919a8cfe86a89ddbc083cc3dc277a2`.
-The source is clean and runtime removal is confirmed. Alliance, instance,
-linkshell/free-company, cross-zone nonparty Tell and other arbitrary chat-channel
-behavior remain uncovered.
+The source is clean and runtime removal is confirmed.
+
+At `4daabcaed`, the same physical zoning case then disbands the party and verifies
+bidirectional cross-zone **nonparty** Tell. Each client retains only an exact player
+entity/name identity actually received as a same-session spawn; zoning/despawn marks
+that identity remote rather than inventing a directory lookup. Immediately before
+disband, the traveler receives exact party-chat liveness from the source. The first
+nonparty Tell requires that exact identity/liveness no more than 16 worker events
+old; the reply requires the exact incoming Tell as equally fresh liveness. Both
+receivers resolve the packet to one unique current-or-prior received identity, while
+the scenario independently binds character ID/name/entity to the sender's encrypted
+lobby identity. Both exact texts arrive with party ID zero. Current-spawn, grouped,
+unknown, stale, absent-liveness, wrong-name and malformed-message contracts fail
+closed on Clang, MSVC and GNU with **257 passed, 12 live skips**. The clean focused
+case passed in **316.62s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-fvijo69m`; manifest SHA-256 is
+`548871a8100f1cb84216e27248b6511730c21443e502c6ffd9f6e6de6f3be4e3`,
+`cross-zone-social.json` SHA-256 is
+`b5106823f256d012e86f7aab7e1eaf84272e662a19825f2b6fc11195f485c94e`, and event
+journal SHA-256 is
+`c87b7215133ff63fcad4fcc5e6ae4658a8a74223731e603a4c5305e09d457728`.
+The source is clean and runtime removal is confirmed. This proves one same-session
+cross-zone nonparty exchange, not a general player directory, friend system,
+alliance, linkshell/free-company or arbitrary chat-channel behavior.
 
 ## Repeated combat and first retaliation
 
@@ -1255,6 +1277,18 @@ creation at **102.054s**, exact identities and cleanup. Evidence:
 `3fbaf24054645b9638460370168397b43e21e74c77b2e60b95241562559198e0`
 and worker SHA-256
 `b61fde96d4b6d3f786dddaf1e167f56cb6b5688d3984c4adb790e6dd493e7227`.
+
+Two later twelve-case diagnostics retained at `gameplay-ci-_x94ts6l` and
+`gameplay-ci-n4n73ly6` exposed a second invalid moving-target assumption. A pursuing
+enemy can pass the fighter endpoint between replicated snapshots, and a naturally
+roaming initial enemy position can make its vector to that endpoint only 1.075m.
+Commit `7504e7051` instead records the exact received enemy position immediately
+before the pursuit, requires the authored fighter route itself to exceed 5m, and
+requires each independent enemy snapshot to move at least 2m with at least 2m
+forward projection and cosine greater than 0.5 along that route. This accepts
+overshoot without accepting lateral or backwards roaming. The clean focused case
+passed in **149.93s**, followed by the clean 12/12 gate recorded above; combat
+results, leash/reset and exact defeat assertions are unchanged.
 
 This evidence remains deliberately narrow: it covers the three Ul'dah starting
 classes, one canonical appearance payload, all ring choices, all five Gladiator
