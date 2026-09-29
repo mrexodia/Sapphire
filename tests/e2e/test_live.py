@@ -131,6 +131,38 @@ def test_received_party_join_and_leave(environment, live_worker):
     for receiver in party_bots[:-1]:
         received = receiver.expect_party_chat(last_joined, "full roster party message")
         assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
+
+    # Ordinary logout retains exact offline membership, then a fresh HTTP/lobby/world
+    # session restores the same member identity and party channel without a retry.
+    rejoin_fixture, rejoin_before = extra_fixtures[-1], extra_states[-1]
+    extras[-1].logout()
+    extras[-1].close()
+    for receiver in party_bots[:-1]:
+        offline = live_worker.wait_state(receiver.name,
+            lambda s: s["party"]["count"] == 8
+                      and next(row for row in s["party"]["members"]
+                               if row["entity_id"] == rejoin_before["entity_id"])["territory"] == 0,
+            "received offline full-party member identity")
+        assert {(row["entity_id"], row["name"]) for row in offline["party"]["members"]} == expected_full
+    rejoin_auth = environment.api("login", {"username": rejoin_fixture["username"],
+                                             "pass": rejoin_fixture["password"]})
+    rejoined = Bot(live_worker, "party-extra-rejoined")
+    rejoined_state = rejoined.login_via_lobby(rejoin_auth, rejoin_fixture["name"])
+    assert rejoined_state["entity_id"] == rejoin_before["entity_id"]
+    rejoined_full = live_worker.wait_state(rejoined.name, lambda s: s["party"]["count"] == 8,
+                                            "rejoined client received full party")
+    assert (rejoined_full["party"]["id"], rejoined_full["party"]["chat_channel"]) == original_party
+    assert {(row["entity_id"], row["name"]) for row in rejoined_full["party"]["members"]} == expected_full
+    for receiver in party_bots[:-1]:
+        live_worker.wait_state(receiver.name,
+            lambda s: next(row for row in s["party"]["members"]
+                           if row["entity_id"] == rejoined_state["entity_id"])["territory"] == 130,
+            "received rejoined party member detail")
+    party_bots[-1] = rejoined
+    sent = rejoined.party_chat("rejoined full roster party message")
+    for receiver in party_bots[:-1]:
+        received = receiver.expect_party_chat(rejoined_full, "rejoined full roster party message")
+        assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
     live_worker.wait_state(member.name,
         lambda s: str(outsider_state["entity_id"]) in s["actors"]
                   and s["actors"][str(outsider_state["entity_id"])]["name"] == outsider_fixture["name"],

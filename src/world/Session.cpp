@@ -80,6 +80,9 @@ void Sapphire::World::Session::close()
     auto& partyMgr = Common::Service< World::Manager::PartyMgr >::ref();
     playerMgr.onLogout( *m_pPlayer );
     fcMgr.onFcLogout( m_pPlayer->getCharacterId() );
+    // Party snapshots must observe this member as offline. unload() also clears
+    // connected state, but it previously happened after the disconnect update.
+    m_pPlayer->setConnected( false );
     partyMgr.onMemberDisconnect( *m_pPlayer );
     m_pPlayer->unload();
   }
