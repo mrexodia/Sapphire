@@ -951,6 +951,15 @@ namespace Sapphire::Testing
       sendZone(WC::FFXIVIpcPcPartyLeave::_ServerIpcType, payload);
       return Json::object();
     }
+    if(method == "change_party_leader")
+    {
+      if(m_moving || !m_state["event_id"].is_null())
+        throw ProtocolError("party leader change requires an idle character");
+      auto payload = partyChangeLeaderRequest(m_state["party"], m_entity,
+                                               args.at("target"), args.at("name"));
+      sendZone(WC::FFXIVIpcPcPartyChangeLeader::_ServerIpcType, payload);
+      return Json::object();
+    }
     if(method == "party_chat")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("party chat requires an idle character");

@@ -1,7 +1,7 @@
 """Normal-network journeys against disposable servers, never synthetic peers."""
 import math
 import pytest
-from .support.worker import Bot
+from .support.worker import Bot, WorkerError
 
 pytestmark = pytest.mark.live
 
@@ -81,6 +81,14 @@ def test_received_party_join_and_leave(environment, live_worker):
                                         "received three-member party state")
         assert (joined["party"]["id"], joined["party"]["chat_channel"]) == original_party
         assert {(row["entity_id"], row["name"]) for row in joined["party"]["members"]} == expected_three
+    leader.change_party_leader(member_id, member_fixture["name"])
+    for bot in (leader, member, third):
+        changed = live_worker.wait_state(bot.name,
+            lambda s: s["party"]["members"][s["party"]["leader_index"]]["entity_id"] == member_id,
+            "received transferred party leadership")
+        assert changed["party"]["members"][changed["party"]["leader_index"]]["name"] == member_fixture["name"]
+    with pytest.raises(WorkerError, match="received party leadership"):
+        leader.invite_party(third_id, third_fixture["name"])
     sent = third.party_chat("third member party message")
     for receiver in (leader, member):
         received = receiver.expect_party_chat(third_party, "third member party message")
@@ -91,6 +99,7 @@ def test_received_party_join_and_leave(environment, live_worker):
                                             "received roster after third member leaves")
         assert (remaining["party"]["id"], remaining["party"]["chat_channel"]) == original_party
         assert {(row["entity_id"], row["name"]) for row in remaining["party"]["members"]} == expected
+        assert remaining["party"]["members"][remaining["party"]["leader_index"]]["entity_id"] == member_id
     member.leave_party()
     live_worker.wait_state(leader.name, lambda s: s["party"]["count"] == 0,
                            "leader received party disband")

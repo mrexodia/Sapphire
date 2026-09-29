@@ -409,6 +409,14 @@ class Bot:
         return self.worker.wait_state(self.name, lambda s: s["party"]["count"] == 0,
                                       "received empty party state", timeout)
 
+    def change_party_leader(self, target_entity, target_name, timeout=10):
+        self.worker.request("change_party_leader", self.name, target=target_entity, name=target_name)
+        return self.worker.wait_state(self.name,
+            lambda s: s["party"]["count"] >= 2
+                      and s["party"]["members"][s["party"]["leader_index"]]["entity_id"] == target_entity
+                      and s["party"]["members"][s["party"]["leader_index"]]["name"] == target_name,
+            "exact received party leader change", timeout)
+
     def party_chat(self, message):
         return self.worker.request("party_chat", self.name, message=message)
 

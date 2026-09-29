@@ -179,9 +179,17 @@ int main()
     rejects([&] { partyDeclineRequest({{"character_id", 1}, {"auth_type", 1}, {"result", 5},
                                        {"name", "E2E Leader"}}); });
     nlohmann::json party{{"id", 1}, {"chat_channel", uint64_t{0x0102030405060708}}, {"count", 2},
-                         {"members", {{{"entity_id", 2097153}}, {{"entity_id", 2097154}}}}};
+                         {"leader_index", 0},
+                         {"members", {{{"entity_id", 2097153}, {"name", "E2E Leader"}},
+                                      {{"entity_id", 2097154}, {"name", "E2E Target"}}}}};
     require(partyLeaveRequest(party, 2097153) == Bytes(4, 0), "party leave exact byte fixture");
     rejects([&] { partyLeaveRequest(party, 2097155); });
+    Bytes expectedLeaderChange(32, 0);
+    std::copy(inviteName.begin(), inviteName.end(), expectedLeaderChange.begin());
+    require(partyChangeLeaderRequest(party, 2097153, 2097154, "E2E Target") == expectedLeaderChange,
+            "party leader change exact byte fixture");
+    rejects([&] { partyChangeLeaderRequest(party, 2097154, 2097153, "E2E Leader"); });
+    rejects([&] { partyChangeLeaderRequest(party, 2097153, 2097154, "Wrong Target"); });
     auto partyChat = partyChatRequest(party, 2097153, "Received party message");
     Bytes expectedPartyChat(1032, 0);
     const Bytes expectedChannel{8,7,6,5,4,3,2,1};

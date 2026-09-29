@@ -28,7 +28,8 @@ def test_capabilities(worker):
     assert "buy_shop_item" in caps["methods"]
     assert "return_homepoint" in caps["methods"]
     assert all(method in caps["methods"] for method in
-               ("invite_party", "accept_party", "decline_party", "leave_party", "party_chat"))
+               ("invite_party", "accept_party", "decline_party", "leave_party",
+                "change_party_leader", "party_chat"))
 
 
 def test_unknown_bot_and_invalid_method(worker):

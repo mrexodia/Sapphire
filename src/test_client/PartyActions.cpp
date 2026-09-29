@@ -71,6 +71,24 @@ namespace Sapphire::Testing
     return objectBytes(packet);
   }
 
+  Bytes partyChangeLeaderRequest(const nlohmann::json& party, uint32_t selfEntity,
+                                 uint32_t targetEntity, const std::string& targetName)
+  {
+    requireMembership(party, selfEntity, "party leader change");
+    requireName(targetName);
+    const auto leaderIndex = party.value("leader_index", size_t{8});
+    const auto& members = party.at("members");
+    if(leaderIndex >= members.size() || members[leaderIndex].value("entity_id", 0u) != selfEntity ||
+       targetEntity == selfEntity ||
+       std::none_of(members.begin(), members.end(), [&](const auto& member) {
+         return member.value("entity_id", 0u) == targetEntity && member.value("name", "") == targetName;
+       }))
+      throw ProtocolError("party leader change requires received leadership and exact target membership");
+    Wire::WorldPackets::Client::FFXIVIpcPcPartyChangeLeader packet{};
+    copyText(packet.NextLeaderCharacterName, targetName);
+    return objectBytes(packet);
+  }
+
   Bytes partyChatRequest(const nlohmann::json& party, uint32_t selfEntity,
                          const std::string& message)
   {
