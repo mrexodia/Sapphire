@@ -67,6 +67,24 @@ def validate_transition_catalog(data):
         raise WorkerError("route must begin outside exit volume")
     if distance(route[-1]) > min(scale[0], scale[2]) * 0.5 or abs(route[-1][1] - center[1]) > scale[1] * 0.5:
         raise WorkerError("route must end inside conservative exit volume")
+    discovery = data.get("supported_discovery", {})
+    if (discovery.get("id") != 3643706 or discovery.get("territory") != 141
+            or discovery.get("kind") != "map_range" or discovery.get("enabled") is not True
+            or discovery.get("discovery_enabled") is not True or discovery.get("shape") != 3
+            or discovery.get("discovery_index") != 1 or discovery.get("map_id") != 21
+            or discovery.get("map_discovery_index") != 8 or discovery.get("uint16_storage") is not True
+            or discovery.get("map_discovery_flag") != 16382
+            or discovery.get("level_one_exp_reward") != 15):
+        raise WorkerError("unsupported source discovery binding")
+    for point in (discovery.get("position", []), discovery.get("scale", []), discovery.get("rotation", [])):
+        if len(point) != 3 or not all(type(x) in (int, float) and math.isfinite(x) and abs(x) < 1000 for x in point):
+            raise WorkerError("invalid discovery transform")
+    dcenter, dscale = discovery["position"], discovery["scale"]
+    arrival = destinations[0]["position"]
+    if (min(dscale[0], dscale[2]) <= 0
+            or math.hypot(arrival[0] - dcenter[0], arrival[2] - dcenter[2]) > min(dscale[0], dscale[2]) * 0.5
+            or abs(arrival[1] - dcenter[1]) > dscale[1] * 0.5):
+        raise WorkerError("arrival is outside supported discovery range")
     return data
 
 

@@ -34,4 +34,27 @@ namespace Sapphire::Testing
     packet.position.x = position[0]; packet.position.y = position[1]; packet.position.z = position[2];
     return objectBytes(packet);
   }
+
+  Bytes centralThanalanDiscoveryRequest(uint16_t territory, uint32_t layoutId,
+                                        const std::array<float, 3>& receivedPosition)
+  {
+    // Source LGB MapRange 3643706 is the sole enabled discovery sphere containing
+    // the supported territory-141 arrival pop. Its full diameters are 140/23.2278/140.
+    constexpr std::array<float, 3> center{-90.4246521f, 16.7652493f, 297.3623962f};
+    constexpr float horizontalRadius = 70.0f;
+    constexpr float verticalRadius = 11.6139154f;
+    for(float value : receivedPosition)
+      if(!std::isfinite(value)) throw ProtocolError("discovery requires a finite received position");
+    const auto horizontal = std::hypot(receivedPosition[0] - center[0],
+                                       receivedPosition[2] - center[2]);
+    if(territory != 141 || layoutId != 3643706 || horizontal > horizontalRadius ||
+       std::abs(receivedPosition[1] - center[1]) > verticalRadius)
+      throw ProtocolError("unsupported or unreached discovery range");
+    Wire::WorldPackets::Client::FFXIVIpcNewDiscovery packet{};
+    packet.LayoutId = layoutId;
+    packet.PositionX = receivedPosition[0];
+    packet.PositionY = receivedPosition[1];
+    packet.PositionZ = receivedPosition[2];
+    return objectBytes(packet);
+  }
 }

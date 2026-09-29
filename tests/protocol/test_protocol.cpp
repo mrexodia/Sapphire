@@ -10,6 +10,7 @@
 #include <Network/PacketDef/Zone/ClientZoneDef.h>
 #include <Network/PacketDef/Zone/ServerZoneDef.h>
 #include <iostream>
+#include <limits>
 
 using namespace Sapphire::Testing;
 void require(bool value, const char* message)
@@ -120,6 +121,19 @@ int main()
     rejects([&] { openingWithinRangeRequest(182, 1245187, 4101535, openingRange, openingRange); });
     auto unreachedRange = openingRange; unreachedRange[2] += 1;
     rejects([&] { openingWithinRangeRequest(182, 1245187, 4101537, unreachedRange, openingRange); });
+
+    const std::array<float, 3> discoveryArrival{-113.49019622802734f, 17.628820419311523f,
+                                                329.05810546875f};
+    const Bytes expectedDiscovery{0x3a,0x99,0x37,0, 0xfb,0xfa,0xe2,0xc2,
+                                  0xd3,0x07,0x8d,0x41, 0x70,0x87,0xa4,0x43};
+    require(centralThanalanDiscoveryRequest(141, 3643706, discoveryArrival) == expectedDiscovery,
+            "source-defined discovery byte fixture");
+    rejects([&] { centralThanalanDiscoveryRequest(140, 3643706, discoveryArrival); });
+    rejects([&] { centralThanalanDiscoveryRequest(141, 3643707, discoveryArrival); });
+    auto unreachedDiscovery = discoveryArrival; unreachedDiscovery[0] = 0;
+    rejects([&] { centralThanalanDiscoveryRequest(141, 3643706, unreachedDiscovery); });
+    auto malformedDiscovery = discoveryArrival; malformedDiscovery[1] = std::numeric_limits<float>::infinity();
+    rejects([&] { centralThanalanDiscoveryRequest(141, 3643706, malformedDiscovery); });
 
     nlohmann::json defeatedActors = {{"2097153", {{"hp", 0}}}};
     auto homepoint = returnHomepointRequest(2097153, 141, 9, defeatedActors);

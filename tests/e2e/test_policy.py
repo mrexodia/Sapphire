@@ -175,7 +175,14 @@ def test_transition_requires_physical_crossing_and_resolved_destination():
             "transition": {"id": 1, "territory": 130, "enabled": True, "shape": 1, "exit_type": 1,
                 "position": [6, 0, 0], "scale": [4, 4, 4], "rotation": [0, 0, 0],
                 "target_pop": 2, "target_territory": 141,
-                "destinations": [{"id": 2, "territory": 141, "position": [1, 2, 3]}]}}
+                "destinations": [{"id": 2, "territory": 141,
+                                  "position": [-113.490196, 17.62882, 329.058105]}]},
+            "supported_discovery": {"id": 3643706, "territory": 141, "kind": "map_range",
+                "enabled": True, "discovery_enabled": True, "shape": 3, "discovery_index": 1,
+                "map_id": 21, "map_discovery_index": 8, "uint16_storage": True,
+                "map_discovery_flag": 16382, "level_one_exp_reward": 15,
+                "position": [-90.424652, 16.765249, 297.362396], "scale": [140, 23.227831, 140],
+                "rotation": [0, -0.048542, 0]}}
     assert validate_transition_catalog(data) == data
     bad = deepcopy(data); bad["transition"]["destinations"] = []
     with pytest.raises(WorkerError, match="exactly one"):

@@ -1,5 +1,6 @@
 """A normal physical exit crossing, with independent observers on both sides."""
 import math
+from copy import deepcopy
 import pytest
 
 from .support.catalog import load_transition_catalog
@@ -13,6 +14,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     assert path, "zoning requires profile.transition_catalog generated from matching local assets"
     catalog = load_transition_catalog(path)
     transition = catalog["transition"]
+    discovery = catalog["supported_discovery"]
     destination = transition["destinations"][0]
     fixture = environment.fresh_character(catalog["route"][0])
     source_fixture = environment.fresh_character(catalog["route"][0])
@@ -36,6 +38,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
         "traveler physically reached exit")
     state = player.cross_exit(transition)
     assert state["scene"] is None and state["event_id"] is None and state["gm_rank"] == 0
+    assert state["central_thanalan_discovery"] is False
     assert math.dist(state["observed_position"], destination["position"]) < 0.15
     live_worker.wait_state(source.name, lambda s: actor not in s["actors"], "traveler left source territory")
     live_worker.wait_state(target.name,
@@ -43,6 +46,10 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
         "traveler arrived in destination territory")
     assert live_worker.snapshot(source.name)["territory"] == 130
     player.expect_rewards(before, 1)
+    player.discover_central_thanalan(discovery)
+    after_discovery = deepcopy(before)
+    after_discovery["exp"] += discovery["level_one_exp_reward"]
+    player.expect_rewards(after_discovery, 1)
     player.say("E2E destination chat after zoning")
     target.expect_say(state["entity_id"], "E2E destination chat after zoning")
     heartbeats = state["heartbeats"]
@@ -61,6 +68,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     state = reloaded.login_via_lobby(auth, fixture["name"])
     assert state["territory"] == destination["territory"]
     assert math.dist(state["observed_position"], destination["position"]) < 0.15
-    reloaded.expect_rewards(before, 1)
+    assert state["central_thanalan_discovery"] is True
+    reloaded.expect_rewards(after_discovery, 1)
     reloaded.logout()
     reloaded.close()

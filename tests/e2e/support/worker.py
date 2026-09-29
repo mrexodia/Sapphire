@@ -367,6 +367,13 @@ class Bot:
             lambda s: s["phase"] == "ready" and s["territory"] == transition["target_territory"]
                       and not s["between_areas"], "destination territory ready", timeout)
 
+    def discover_central_thanalan(self, binding, timeout=10):
+        self.worker.request("discover_central_thanalan", self.name, layout_id=binding["id"])
+        return self.worker.wait_state(self.name,
+            lambda s: s["discovery_reply"] == {"map_id": binding["map_id"],
+                                                "part_id": binding["discovery_index"]},
+            "source-bound discovery reply", timeout)
+
     def discard_item(self, storage, slot, expected_item, timeout=10):
         self.worker.request("discard_item", self.name, storage=storage, slot=slot, expected_item=expected_item)
         key = f"{storage}:{slot}"

@@ -88,7 +88,8 @@ namespace Sapphire::Testing
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
       {"chat", Json::array()}, {"created_via_lobby", false},
-      {"scene", nullptr}, {"event_id", nullptr}, {"heartbeat_replies", 0},
+      {"scene", nullptr}, {"event_id", nullptr}, {"discovery_reply", nullptr},
+      {"discovery_request_sent", false}, {"central_thanalan_discovery", false}, {"heartbeat_replies", 0},
       {"heartbeats", {{"zone", 0}, {"chat", 0}}}, {"packets_received", 0}};
   }
   void Bot::event(const std::string& name, Json data)
@@ -425,6 +426,15 @@ namespace Sapphire::Testing
     {
       const auto p = readObject<WS::FFXIVIpcPlayerStatus>(segment.data, off);
       m_state["homepoint"] = p.HomePoint;
+      m_state["central_thanalan_discovery"] = (p.Discovery16[16] & 0x02) != 0;
+    }
+    if(h.type == WS::FFXIVIpcDiscoveryReply::_ServerIpcType)
+    {
+      const auto p = readObject<WS::FFXIVIpcDiscoveryReply>(segment.data, off);
+      if(p.mapId != 21 || p.mapPartId != 1)
+        throw ProtocolError("unsupported discovery reply identity");
+      m_state["discovery_reply"] = {{"map_id", p.mapId}, {"part_id", p.mapPartId}};
+      event("discovery_reply", m_state["discovery_reply"]);
     }
     if(h.type == WS::FFXIVIpcInitZone::_ServerIpcType)
     {
@@ -636,6 +646,17 @@ namespace Sapphire::Testing
       auto payload = openingWithinRangeRequest(m_state["territory"], args.at("event_id"),
                                                args.at("param"), m_predicted, position);
       sendZone(WC::FFXIVIpcEventHandlerWithinRange::_ServerIpcType, payload);
+      return Json::object();
+    }
+    if(method == "discover_central_thanalan")
+    {
+      if(m_moving || !m_state["event_id"].is_null() || m_state["territory"] != 141 ||
+         m_state["discovery_request_sent"].get<bool>() || m_state["central_thanalan_discovery"].get<bool>())
+        throw ProtocolError("discovery requires an idle undiscovered character in territory 141");
+      const auto layout = args.at("layout_id").get<uint32_t>();
+      auto payload = centralThanalanDiscoveryRequest(m_state["territory"], layout, m_predicted);
+      m_state["discovery_request_sent"] = true;
+      sendZone(WC::FFXIVIpcNewDiscovery::_ServerIpcType, payload);
       return Json::object();
     }
     if(method == "choose_scene")

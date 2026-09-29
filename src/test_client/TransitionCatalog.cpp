@@ -187,6 +187,14 @@ int main(int argc, char** argv)
       discovery["map_id"] = territoryInfo->data().Map;
       discovery["map_discovery_index"] = mapInfo->data().DiscoveryIndex;
       discovery["uint16_storage"] = mapInfo->data().IsUint16Discovery != 0;
+      discovery["map_discovery_flag"] = mapInfo->data().DiscoveryFlag;
+      const auto part = discovery["discovery_index"].get<uint8_t>();
+      if(part >= 32 || (mapInfo->data().DiscoveryFlag & (uint32_t{1} << part)) == 0 ||
+         mapInfo->data().DiscoveryFlag == (uint32_t{1} << part))
+        throw std::runtime_error("supported discovery must be one source-required non-completing map part");
+      auto level = data.getRow<Excel::ParamGrow>(1);
+      if(!level) throw std::runtime_error("level-one discovery reward metadata unavailable");
+      discovery["level_one_exp_reward"] = level->data().NextExp * 5 / 100;
       result.erase("exits");
       result["transition"] = exit;
       result["supported_discovery"] = discovery;
