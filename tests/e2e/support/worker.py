@@ -9,7 +9,7 @@ import subprocess
 import threading
 import time
 
-from .combat import blizzard_ready, bootshine_ready, fast_blade_ready
+from .combat import blizzard_ready, bootshine_ready, fast_blade_ready, sprint_ready
 
 
 class WorkerError(RuntimeError):
@@ -341,6 +341,17 @@ class Bot:
         if catalog.get("profile") != "sapphire-3.3":
             raise UnsupportedScene("scene catalog profile mismatch")
         self.worker.request("choose_scene", self.name, **scene_arguments(scene), results=results)
+
+    def wait_sprint_ready(self, timeout=30):
+        return self.worker.wait_state(self.name, sprint_ready, "received Sprint-ready state", timeout)
+
+    def sprint(self, timeout=10):
+        request = self.worker.request("sprint", self.name)["request"]
+        return self.worker.wait_state(self.name,
+            lambda s: any(e["source"] == s["entity_id"] and e["target"] == s["entity_id"]
+                          and e["action"] == 3 and e["request"] == request
+                          for e in s["combat"]["effects"]),
+            "exact Sprint action effect", timeout), request
 
     def wait_fast_blade_ready(self, target, timeout=30):
         # Received TP/target plus the worker's LOCAL conservative pacing guard.

@@ -30,6 +30,7 @@ CASES = (
     "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[single]",
     "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[chain]",
     "tests/e2e/test_live_zoning.py::test_observed_exit_crossing_and_territory_persistence",
+    "tests/e2e/test_live_combat.py::test_observed_sprint_status_and_tp_debit",
     "tests/e2e/test_live_combat.py::test_observed_fast_blade_damage",
     "tests/e2e/test_live_player_defeat.py::test_natural_enemy_defeats_level_one_player",
     "tests/e2e/test_live_creation.py::test_lobby_character_creation_and_opening_persistence",

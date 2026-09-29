@@ -1018,6 +1018,16 @@ namespace Sapphire::Testing
       return {{"party_id", m_state["party"].at("id")},
               {"channel", m_state["party"].at("chat_channel")}};
     }
+    if(method == "sprint")
+    {
+      if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
+      if(std::chrono::steady_clock::now() < m_startingActionReady) throw ProtocolError("starting-action recast pending");
+      if(m_actionRequest >= 65535) throw ProtocolError("combat request budget exhausted");
+      auto payload = sprintRequest(m_entity, ++m_actionRequest, m_state["actors"]);
+      sendZone(WC::FFXIVIpcActionRequest::_ServerIpcType, payload);
+      m_startingActionReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(2500);
+      return {{"request", m_actionRequest}};
+    }
     if(method == "fast_blade" || method == "bootshine" || method == "blizzard")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");

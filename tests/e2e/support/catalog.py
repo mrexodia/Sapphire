@@ -232,6 +232,12 @@ def validate_combat_catalog(data):
                 "effect_type": 1, "target_enemy": True}
     if any(type(data.get(key)) is not type(value) or data[key] != value for key, value in expected.items()):
         raise WorkerError("combat catalog does not match the supported level-one Fast Blade profile")
+    sprint = {"action": 3, "class_job": 0, "work_index": -1, "level": 0, "base_exp": 45,
+              "category": 0, "cost_type": 18, "cost": 0, "range": 0,
+              "cast_ms": 0, "recast_ms": 30000, "recast_group": 56,
+              "effect_type": 1, "target_enemy": False}
+    if data.get("sprint") != sprint:
+        raise WorkerError("combat catalog does not match the supported level-zero Sprint profile")
     bootshine = {"action": 53, "class_job": 2, "work_index": 0, "level": 1, "base_exp": 50,
                  "category": 3, "cost_type": 5, "cost": 60, "range": -1,
                  "cast_ms": 0, "recast_ms": 2500, "recast_group": 58,

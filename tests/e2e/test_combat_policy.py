@@ -3,7 +3,8 @@ from copy import deepcopy
 
 import pytest
 
-from .support.combat import blizzard_ready, bootshine_ready, committed_damage, damage_value, fast_blade_ready
+from .support.combat import (blizzard_ready, bootshine_ready, committed_damage,
+                             damage_value, fast_blade_ready, sprint_ready)
 from .support.worker import Bot
 
 
@@ -14,6 +15,19 @@ def ready_state():
             "combat": {"starting_action_guard_remaining_ms": 0, "effects": [], "integrities": []},
             "actors": {"7": {"kind": 1, "hp": 94, "tp": 60},
                        "8": {"kind": 2, "level": 1, "hp": 94, "position": [0, 0, 2]}}}
+
+
+def test_sprint_readiness_requires_received_living_player_tp():
+    state = ready_state()
+    assert sprint_ready(state)
+    state["actors"]["7"]["tp"] = 49
+    assert not sprint_ready(state)
+    state["actors"]["7"]["tp"] = 50
+    state["combat"]["starting_action_guard_remaining_ms"] = 1
+    assert not sprint_ready(state)
+    state["actors"]["7"]["kind"] = 2
+    with pytest.raises(ValueError, match="defeated"):
+        sprint_ready(state)
 
 
 def test_readiness_requires_both_elapsed_local_guard_and_received_resources():

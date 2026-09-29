@@ -13,6 +13,60 @@ from .support.combat import combat_reward_delta, committed_damage, damage_value
 pytestmark = pytest.mark.live
 
 
+def test_observed_sprint_status_and_tp_debit(environment, live_worker):
+    path = environment.profile.get("combat_catalog")
+    assert path, "Sprint requires profile.combat_catalog generated from matching local assets"
+    sprint = load_combat_catalog(path)["sprint"]
+    assert sprint == {"action": 3, "base_exp": 45, "cast_ms": 0, "category": 0,
+                      "class_job": 0, "cost": 0, "cost_type": 18, "effect_type": 1,
+                      "level": 0, "range": 0, "recast_group": 56,
+                      "recast_ms": 30000, "target_enemy": False, "work_index": -1}
+    fixture, witness_fixture = environment.fresh_character(), environment.fresh_character()
+    player, observer = Bot(live_worker, "sprinter"), Bot(live_worker, "sprint-observer")
+    state = player.login_via_lobby(fixture["auth"], fixture["name"])
+    entity = state["entity_id"]
+    observer.login_via_lobby(witness_fixture["auth"], witness_fixture["name"])
+    live_worker.wait_state(observer.name,
+        lambda s: str(entity) in s["actors"] and s["actors"][str(entity)]["kind"] == 1,
+        "observer received exact Sprint actor")
+    ready = player.wait_sprint_ready()
+    received_tp = ready["actors"][str(entity)]["tp"]
+    assert received_tp >= 50
+    acted, request = player.sprint()
+
+    def matching_effect(s):
+        return [row for row in s["combat"]["effects"]
+                if row["source"] == entity and row["target"] == entity
+                and row["action"] == 3 and row["kind"] == 1 and row["request"] == request]
+
+    exact_effect = None
+    for bot in (player, observer):
+        observed = live_worker.wait_state(bot.name,
+            lambda s: len(matching_effect(s)) == 1,
+            "one exact independently received Sprint effect")
+        effect = matching_effect(observed)[0]
+        assert effect["effects"] == [{"type": 18, "value": 50, "flag": 128,
+                                      "args": [0, 0, 30]}]
+        if exact_effect is None:
+            exact_effect = effect
+        else:
+            assert effect == exact_effect
+        zero_tp = live_worker.wait_state(bot.name,
+            lambda s: any(row["target"] == entity and row["tp"] == 0
+                          for row in s["combat"]["hud_params"]),
+            "independently received zero-TP Sprint commit")
+        assert zero_tp["phase"] == "ready" and zero_tp["gm_rank"] == 0
+    started = live_worker.wait_state(player.name,
+        lambda s: any(row["source"] == entity and row["action"] == 3
+                      for row in s["combat"]["starts"]),
+        "received Sprint start metadata")
+    start = next(row for row in reversed(started["combat"]["starts"])
+                 if row["source"] == entity and row["action"] == 3)
+    assert start["group"] == sprint["recast_group"]
+    assert start["recast_centiseconds"] == sprint["recast_ms"] // 10
+    assert acted["phase"] == "ready"
+
+
 def test_observed_fast_blade_damage(environment, live_worker):
     path = environment.profile.get("combat_catalog")
     assert path, "combat requires profile.combat_catalog generated from matching local assets"

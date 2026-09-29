@@ -28,7 +28,7 @@ int main()
     require(startingActionGuardRemainingMs(now + std::chrono::microseconds(1001), now) == 2);
     require(startingActionGuardRemainingMs(now + std::chrono::milliseconds(2500), now) == 2500);
     require(startingActionGuardRemainingMs(now + std::chrono::milliseconds(2500), now + std::chrono::milliseconds(2499)) == 1);
-    Json actors{{"7", {{"hp", 100}, {"tp", 1000}}}, {"8", {{"hp", 20}, {"kind", 2}, {"level", 1}, {"position", {0, 0, 2}}}}};
+    Json actors{{"7", {{"hp", 100}, {"tp", 1000}, {"kind", 1}}}, {"8", {{"hp", 20}, {"kind", 2}, {"level", 1}, {"position", {0, 0, 2}}}}};
     Json rewards{{"class_job", 1}};
     auto body = fastBladeRequest(7, 1, 8, {0,0,0}, actors, rewards);
     // Independently authored request offsets, not round-tripped through a shared struct.
@@ -38,6 +38,15 @@ int main()
     Bytes expected(32, 0);
     expected[1] = 1; expected[4] = 9; expected[8] = 1; expected[13] = expected[15] = 0x80; expected[16] = 8;
     require(body == expected);
+    auto sprint = sprintRequest(7, 4, actors);
+    Bytes expectedSprint(32, 0); expectedSprint[1] = 1; expectedSprint[4] = 3;
+    expectedSprint[8] = 4; expectedSprint[16] = 7;
+    require(sprint == expectedSprint);
+    auto lowTpSprint = actors; lowTpSprint["7"]["tp"] = 49;
+    rejects([&] { sprintRequest(7, 4, lowTpSprint); });
+    auto wrongKindSprint = actors; wrongKindSprint["7"]["kind"] = 2;
+    rejects([&] { sprintRequest(7, 4, wrongKindSprint); });
+    rejects([&] { sprintRequest(7, 0, actors); });
     auto bootshine = bootshineRequest(7, 2, 8, {0,0,0}, actors, {{"class_job", 2}});
     expected[4] = 53; expected[8] = 2;
     require(bootshine == expected);

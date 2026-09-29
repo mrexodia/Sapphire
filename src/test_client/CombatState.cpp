@@ -76,6 +76,19 @@ namespace Sapphire::Testing
     // while the command-side steady-clock guard still correctly rejects a request.
     return static_cast<uint32_t>(std::chrono::ceil<std::chrono::milliseconds>(ready - now).count());
   }
+  Bytes sprintRequest(uint32_t entity, uint32_t request, const Json& actors)
+  {
+    const auto self = std::to_string(entity);
+    if(!entity || !request || request > 65535 || !actors.contains(self) ||
+       actors.at(self).value("kind", 0) != 1 || actors.at(self).value("hp", 0) == 0 ||
+       actors.at(self).value("tp", 0) < 50)
+      throw ProtocolError("Sprint requires exact received living player state with at least 50 TP");
+    Wire::WorldPackets::Client::FFXIVIpcActionRequest p{};
+    std::memset(&p, 0, sizeof(p));
+    p.ActionKind = Common::ACTION_KIND_NORMAL; p.ActionKey = 3;
+    p.RequestId = request; p.Target = entity;
+    return objectBytes(p);
+  }
   static Bytes startingMeleeRequest(uint32_t action, uint32_t classJob, const char* name,
                                     uint32_t entity, uint32_t request, uint32_t target,
                                     const std::array<float, 3>& position, const Json& actors,

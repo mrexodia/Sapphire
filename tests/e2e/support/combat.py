@@ -28,6 +28,22 @@ def starting_melee_ready(state, target, class_job, class_name):
     return remaining == 0 and own["tp"] >= 60 and math.dist(*positions) <= 2.5
 
 
+def sprint_ready(state):
+    remaining = state["combat"].get("starting_action_guard_remaining_ms")
+    if type(remaining) is not int or remaining < 0:
+        raise ValueError("worker must expose the conservative starting-action pacing guard")
+    if state["phase"] != "ready" or state["moving"] or state["event_id"] is not None or state["scene"] is not None:
+        return False
+    if state["gm_rank"] != 0:
+        raise ValueError("Sprint readiness requires a non-GM player")
+    own = state["actors"].get(str(state["entity_id"]))
+    if own is None:
+        return False
+    if own["kind"] != 1 or own["hp"] <= 0:
+        raise ValueError("player was defeated while waiting for Sprint readiness")
+    return remaining == 0 and own["tp"] >= 50
+
+
 def fast_blade_ready(state, target):
     return starting_melee_ready(state, target, 1, "Gladiator")
 

@@ -15,6 +15,7 @@ def test_capabilities(worker):
     assert caps["scope"] == "loopback-only"
     assert "general_navigation" in caps["unsupported"]
     assert "general_combat" in caps["unsupported"]
+    assert "sprint" in caps["methods"]
     assert "fast_blade" in caps["methods"]
     assert "bootshine" in caps["methods"]
     assert "blizzard" in caps["methods"]
@@ -92,6 +93,8 @@ def test_action_before_readiness_is_rejected(worker):
         try:
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("walk_to", "test", position=[0, 0, 0])
+            with pytest.raises(WorkerError, match="world-ready"):
+                worker.request("sprint", "test")
             with pytest.raises(WorkerError, match="world-ready"):
                 worker.request("fast_blade", "test", target=123)
             with pytest.raises(WorkerError, match="world-ready"):

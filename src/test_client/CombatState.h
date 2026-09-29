@@ -18,8 +18,9 @@ namespace Sapphire::Testing
   // Local conservative pacing guard, not a received server-ready acknowledgement.
   uint32_t startingActionGuardRemainingMs(std::chrono::steady_clock::time_point ready,
                                     std::chrono::steady_clock::time_point now);
-  // Deliberately narrow combat profiles for source-defined level-one melee actions.
+  // Deliberately narrow profiles for source-defined level-one actions.
   // No arbitrary ability/raw-packet API.
+  Bytes sprintRequest(uint32_t entity, uint32_t request, const nlohmann::json& actors);
   Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position,
                          const nlohmann::json& actors, const nlohmann::json& rewards);
