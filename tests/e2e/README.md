@@ -379,7 +379,9 @@ unchanged. After restart, two normal persisted splits create three one-item VFX
 stacks; each is normally sold, followed by the remaining potion, to establish exact
 absence and 56 gil. A refreshed source-bound purchase buys later equipment item
 3286 for 39 gil, and fresh authentication proves the exact bag item and 17-gil
-balance. `gil-shop-sale.json` records those snapshots and effect;
+balance. The starter leg item is then normally unequipped and restart-verified;
+item 3286 is equipped only into the source-derived empty leg slot, with a second
+restart proving both exact final locations. `gil-shop-sale.json` records those snapshots and effect;
 the operation-10 acknowledgement remains explicitly separate
 from mutation evidence. The server split implementation creates the new persistent
 item directly at the requested slot; it no longer aliases an `addItem()` auto-slot
@@ -391,8 +393,8 @@ server response supplies gameplay evidence.
 
 This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
 swap, one partial split, one no-overflow same-item merge, discard, one exact
-single-item sales, one exact three-item purchase and one later-equipment purchase—not
-later-equipment use, currency-container moves, overflow merges, consuming item
+single-item sales, one exact three-item purchase and one later-equipment purchase/equip—not
+other later equipment, currency-container moves, overflow merges, consuming item
 mutation, arbitrary shops/items or general quantities,
 immediate operation publication, crash
 consistency or independent real-client inventory presentation.
