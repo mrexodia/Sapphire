@@ -115,18 +115,18 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this twelve-scenario headless suite only.
 
-Latest local evidence: clean revision `2d7d9ef15` passed the twelve-case strict gate
-in 1084.07 seconds with zero skips/errors/failures, exact collection and staged-input
+Latest local evidence: clean revision `485ffee34` passed the twelve-case strict gate
+in 1138.66 seconds with zero skips/errors/failures, exact collection and staged-input
 identity, and removed private runtime. This includes same- and cross-zone nonparty
-Tell, cross-zone party Tell, independently observed living Return, persisted two-
+Tell, cross-zone party Tell, independently observed living Return, persisted three-
 stage later-equipment purchase/resale/equip, the quantity-three VFX
 action/liquidation, source-bound observed Sprint, the full eight-member party
 lifecycle, two persisted discovery parts/shapes, Ring2, duplicate-name rejection
 and normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-second-equipment.json` (SHA-256
-`fddb6980433362a4775b00914cf066f94771b6a0c181bcfbe9f4ae4848f3cc64`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-d46n56yp` and private manifest
-SHA-256 `19a8aa4f5d8fb7a8c1742f08faf6de5e9e4ec86cdacebb8efaed5f994c4494ec`;
+`build-e2e/ci-summary-affordable-gear.json` (SHA-256
+`d16c73f45ad5c5cd8be90f426329024e948352a33fade9c4fa25de661563ffcd`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-b4azh23b` and private manifest
+SHA-256 `72101f0695b0ffb365a5a7072dedaa6bd3e64571daaf2cdff14e2e83ee08c503`;
 this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict

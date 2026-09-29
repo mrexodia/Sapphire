@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/two-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist, other later gear and currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist, other later gear and currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -134,16 +134,16 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
-  gate at `2d7d9ef15` took **1084.07s**, including same- and cross-zone nonparty
+  gate at `485ffee34` took **1138.66s**, including same- and cross-zone nonparty
   Tell, cross-zone party Tell, independently observed living Return, persisted
-  two-stage later-equipment purchase/resale/equip, the quantity-three VFX item action/liquidation,
+  three-stage later-equipment purchase/resale/equip, the quantity-three VFX item action/liquidation,
   observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
   discovery, Ring2, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-d46n56yp`, summary
-  `build-e2e/ci-summary-second-equipment.json`). Summary SHA-256 is
-  `fddb6980433362a4775b00914cf066f94771b6a0c181bcfbe9f4ae4848f3cc64`,
+  (`gameplay-ci-b4azh23b`, summary
+  `build-e2e/ci-summary-affordable-gear.json`). Summary SHA-256 is
+  `d16c73f45ad5c5cd8be90f426329024e948352a33fade9c4fa25de661563ffcd`,
   private manifest SHA-256 is
-  `19a8aa4f5d8fb7a8c1742f08faf6de5e9e4ec86cdacebb8efaed5f994c4494ec`, and
+  `72101f0695b0ffb365a5a7072dedaa6bd3e64571daaf2cdff14e2e83ee08c503`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -1543,6 +1543,29 @@ journal SHA-256 is
 The source is clean and runtime removal is confirmed. This proves two exact later
 items across leg/feet slots and one resale cycle, not arbitrary listings or general
 equipment compatibility.
+
+At `485ffee34`, the source catalog completes the affordable distinct-slot sequence
+at this shop. After item 3748 is normally unequipped, fresh authentication proves
+its exact bag slot; scene-40 sale plus a separate restart prove its absence and 56
+gil. The already displaced starter legs 3296 have source price 45 and are then sold
+from their exact received bag identity; another restart proves exact absence and
+101 gil. From that state only, the catalog-derived cheapest third-slot listing is
+index 3, body item 2967, source slot 4 / equipment slot 3, costing 59 gil. Fresh
+authentication proves one exact bag item and 42 gil. Starter body 2983 is normally
+unequipped and restart-verified before item 2967 can move to empty `1000:3`; a final
+restart proves item 2967 there, starter body 2983 and feet 3750 in exact bag slots,
+42 gil and unchanged EXP/level. Exact third-purchase/body-equip bytes and wrong
+item/slot/class/count/state rejection pass on Clang, MSVC and GNU with **257 passed,
+12 live skips**. The clean chained case passed in **410.58s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-ynntgsuh`; manifest SHA-256 is
+`14ca7f17881df6b530a33a7c43cf6b03e50cb8770fe70e3ec60571b0477e90b6`,
+`gil-shop-sale.json` SHA-256 is
+`5bec82ae31fdbfa7484fccd2777a6b5b3f3c16535605e809014097046175988b`, and event
+journal SHA-256 is
+`75dfef3b156343039972e85f523a17aa650a97ea03e432ff1a58969b5b234162`.
+The source is clean and runtime removal is confirmed. This covers the affordable
+body/legs/feet slot types exposed by this source shop and earned-gil path, not every
+listing, other shops or general equipment compatibility.
 
 The first live attempt exposed two server defects rather than prompting weaker
 assertions. `addCurrency()` created a missing currency item with the generic

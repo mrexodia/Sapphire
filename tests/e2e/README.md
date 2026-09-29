@@ -396,8 +396,13 @@ restart proving both exact locations. It is then normally unequipped and sold fo
 39 gil; restart proves exact absence and 56 gil. Source-listed feet item 3748 is
 bought for 54 gil, restart-verified, and equipped only after the starter feet are
 normally unequipped and independently restart-verified. A final restart proves item
-3748 at `1000:7`, both displaced starter items in exact bag slots and 2 gil.
-`gil-shop-sale.json` records those snapshots and effect;
+3748 at `1000:7`, both displaced starter items in exact bag slots and 2 gil. Item
+3748 is then normally unequipped and resold, and restart proves 56 gil. Selling the
+exact displaced starter legs adds their source-defined 45 gil; restart proves 101.
+Source-selected body item 2967 is bought for 59 gil, restart-verified, and equipped
+only after starter body 2983 is normally unequipped and restart-verified. The final
+fresh session proves item 2967 at `1000:3`, displaced body/feet items in exact bags
+and 42 gil. `gil-shop-sale.json` records those snapshots and effect;
 the operation-10 acknowledgement remains explicitly separate
 from mutation evidence. The server split implementation creates the new persistent
 item directly at the requested slot; it no longer aliases an `addItem()` auto-slot
@@ -409,8 +414,8 @@ server response supplies gameplay evidence.
 
 This covers an ordinary empty-destination whole-stack move, a two-occupied-slot
 swap, one partial split, one no-overflow same-item merge, discard, one exact
-single-item sales, one exact three-item purchase and two later-equipment purchase/equip
-cycles with one resale—not other later equipment, currency-container moves, overflow merges, consuming item
+single-item sales, one exact three-item purchase and three later-equipment purchase/equip
+cycles with two resales—not other later equipment, currency-container moves, overflow merges, consuming item
 mutation, arbitrary shops/items or general quantities,
 immediate operation publication, crash
 consistency or independent real-client inventory presentation.
@@ -473,8 +478,10 @@ for a 24-gil purchase. It also binds ItemAction row 232, supported VFX type 852 
 argument 235. From the same source list it selects index 11 item 3286, a level-one
 all-class single-stack later leg item costing 39 gil, then derives index 9 item 3748
 as the cheapest affordable listing in a second slot after exact resale; it is a
-level-one all-class single-stack feet item costing 54 gil. Python validates all
-exact transactions, both action/equipment metadata bindings, event family, route continuity,
+level-one all-class single-stack feet item costing 54 gil. Reselling it and the
+source-priced starter legs makes index 3 item 2967 affordable; it is the cheapest
+listing in a third distinct slot, a level-one all-class body item costing 59 gil.
+Python validates all exact transactions, all three equipment metadata bindings, event family, route continuity,
 and endpoint range. This does not establish arbitrary quantities/items, other shops,
 consuming item mutation, currency-container manipulation, concurrent transactions,
 or real-client shop UI.
