@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say, exact bidirectional direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, alliances/free companies/other chat channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/purchase pair; ordinary Say, exact bidirectional direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -565,8 +565,24 @@ Clang, MSVC and GNU. The clean case passed in **36.86s** at
 `6404b607a66556800da6851d17487ee4c21d3723712097ed17acd07f89a1d04a` and event
 journal SHA-256 is
 `42ff16004682eafd4b565145e2d3f2176ee0d72d422b918005164a38c53353b3`.
+The source is clean and runtime removal is confirmed.
+
+At `1178e9735`, online Tell support is no longer party-bound. Before any invitation,
+two ordinary clients send both directions to the other's exact received player
+spawn. Each receiver matches one received actor entity/name and the test independently
+binds the packet's nonzero character ID/name/entity to the sender's own normal lobby
+identity; both exact texts arrive with party ID zero. The decoder retains non-GM,
+printable-message, unique-spawn and party-character-ID consistency checks. Offline
+Tell remains narrowly bound to an exact received offline party member. Exact nonparty
+bytes and unobserved/wrong-name/debug rejection pass on Clang, MSVC and GNU with
+**257 passed, 11 live skips**. The clean case passed in **36.17s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-irhz3e89`; manifest SHA-256 is
+`459f212ba5f0cc6c07d1d23d705d0dc002c3ac399907fef38a4b1dc13cb286ff` and event
+journal SHA-256 is
+`ff165d3c80b08445a8f7382a6c0424337b5c3adda928d0bc86109e64c0a24baa`.
 The source is clean and runtime removal is confirmed. Alliance, instance,
-linkshell/free-company and arbitrary nonparty Tell behavior remain uncovered.
+linkshell/free-company, cross-zone nonparty Tell and other arbitrary chat-channel
+behavior remain uncovered.
 
 ## Repeated combat and first retaliation
 
