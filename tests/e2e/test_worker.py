@@ -52,6 +52,16 @@ def test_creation_rejects_nonalphabetic_character_name(worker):
     assert worker.request("capabilities")["control_version"] == 1
 
 
+def test_character_lobby_modes_are_bounded(worker):
+    with pytest.raises(WorkerError, match="mutually exclusive"):
+        worker.request("login", "test", host="127.0.0.1", port=1, session="test-session",
+                       character="Test User", create_character=True, delete_character=True)
+    with pytest.raises(WorkerError, match="alphabetic ASCII"):
+        worker.request("login", "test", host="127.0.0.1", port=1, session="test-session",
+                       character="Bad_Name", delete_character=True)
+    assert worker.request("capabilities")["control_version"] == 1
+
+
 def test_failed_connect_is_observed_not_ready(worker):
     # Reserve an unlistening port so another process cannot bind it during the test.
     with socket.socket() as reserved:

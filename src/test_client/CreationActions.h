@@ -2,6 +2,7 @@
 #include "Protocol.h"
 #include <string>
 #include <array>
+#include <nlohmann/json.hpp>
 
 namespace Sapphire::Testing
 {
@@ -11,4 +12,6 @@ namespace Sapphire::Testing
                                   const std::array<float, 3>& position);
   Bytes centralThanalanDiscoveryRequest(uint16_t territory, uint32_t layoutId,
                                         const std::array<float, 3>& receivedPosition);
+  Bytes characterDeleteRequest(uint32_t requestNumber, uint32_t clientTime,
+                               const nlohmann::json& character, const std::string& expectedName);
 }

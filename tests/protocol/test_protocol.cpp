@@ -112,6 +112,19 @@ int main()
               "bounded Ul'dah creation payload fixture");
     }
     rejects([&] { canonicalUldahCreationPayload(3); });
+    nlohmann::json lobbyCharacter{{"name", "Tester Delete"},
+      {"character_id", uint64_t{0x0102030405060708}}, {"entity_id", 0x11223344u},
+      {"index", 2}, {"world", 67}};
+    auto deletion = characterDeleteRequest(3, 0x55667788, lobbyCharacter, "Tester Delete");
+    Bytes expectedDeletion(480, 0);
+    const Bytes deletionPrefix{3,0,0,0, 0x88,0x77,0x66,0x55, 8,7,6,5,4,3,2,1,
+                               0x44,0x33,0x22,0x11,0,0,0,0, 2,4,67,0};
+    std::copy(deletionPrefix.begin(), deletionPrefix.end(), expectedDeletion.begin());
+    std::copy_n(std::string("Tester Delete").begin(), 13, expectedDeletion.begin() + 28);
+    require(deletion == expectedDeletion, "character deletion exact byte fixture");
+    rejects([&] { characterDeleteRequest(3, 1, lobbyCharacter, "Other Name"); });
+    auto ambiguousCharacter = lobbyCharacter; ambiguousCharacter["character_id"] = 0;
+    rejects([&] { characterDeleteRequest(3, 1, ambiguousCharacter, "Tester Delete"); });
     const std::array<float, 3> openingRange{42.22481918334961f, 4.198298931121826f, -160.70899963378906f};
     const Bytes expectedOpeningRange{0xa1,0x95,0x3e,0, 3,0,0x13,0,
                                      0x37,0xe6,0x28,0x42, 0x77,0x58,0x86,0x40,

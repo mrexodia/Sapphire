@@ -98,7 +98,7 @@ namespace Sapphire::Testing
   {
     m_state = {{"phase", "disconnected"}, {"entity_id", 0}, {"territory", 0}, {"homepoint", nullptr},
       {"actors", Json::object()}, {"quests", Json::object()}, {"complete_quests", Json::object()},
-      {"chat", Json::array()}, {"created_via_lobby", false},
+      {"chat", Json::array()}, {"created_via_lobby", false}, {"deleted_via_lobby", false},
       {"scene", nullptr}, {"event_id", nullptr}, {"pending_party_invite", nullptr},
       {"party_invite_result", nullptr}, {"party", {{"id", 0}, {"count", 0}, {"leader_index", 0}, {"members", Json::array()}}},
       {"discovery_reply", nullptr},
@@ -153,12 +153,17 @@ namespace Sapphire::Testing
     const auto character = args.at("character").get<std::string>();
     if(session.empty() || session.size() >= 64) throw ProtocolError("invalid session length");
     if(character.empty() || character.size() >= 32) throw ProtocolError("invalid character name length");
-    if(args.value("create_character", false) &&
+    const auto createCharacter = args.value("create_character", false);
+    const auto deleteCharacter = args.value("delete_character", false);
+    const auto expectAbsent = args.value("expect_character_absent", false);
+    if(static_cast<int>(createCharacter) + static_cast<int>(deleteCharacter) + static_cast<int>(expectAbsent) > 1)
+      throw ProtocolError("character lobby modes are mutually exclusive");
+    if((createCharacter || deleteCharacter || expectAbsent) &&
        !std::all_of(character.begin(), character.end(), [](unsigned char c) {
          return c == ' ' || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
        }))
-      throw ProtocolError("created character name must contain only alphabetic ASCII and spaces");
-    if(args.value("create_character", false))
+      throw ProtocolError("character lobby operation name must contain only alphabetic ASCII and spaces");
+    if(createCharacter)
       canonicalUldahCreationPayload(args.value("creation_class", 1));
     else if(args.contains("creation_class"))
       throw ProtocolError("creation class is valid only for character creation");
@@ -228,9 +233,11 @@ namespace Sapphire::Testing
       sendLobby(request._ServerIpcType, objectBytes(request));
     }
     else if(h.type == LS::FFXIVIpcServiceLoginReply::_ServerIpcType &&
-            (m_state["phase"] == "character_list" || m_state["phase"] == "character_list_after_creation"))
+            (m_state["phase"] == "character_list" || m_state["phase"] == "character_list_after_creation" ||
+             m_state["phase"] == "character_list_after_deletion"))
     {
       const bool afterCreation = m_state["phase"] == "character_list_after_creation";
+      const bool afterDeletion = m_state["phase"] == "character_list_after_deletion";
       auto p = readObject<LS::FFXIVIpcServiceLoginReply>(segment.data, sizeof(h));
       if(p.count > 2) throw ProtocolError("invalid character list count");
       for(size_t i = 0; i < p.count; ++i)
@@ -242,9 +249,28 @@ namespace Sapphire::Testing
       }
       if(!p.endOfList) return;
       const std::string wanted = m_login.at("character");
-      for(const auto& c : m_state["characters"])
+      const auto found = std::find_if(m_state["characters"].begin(), m_state["characters"].end(),
+        [&](const auto& character) { return character.at("name") == wanted; });
+      if(afterDeletion || m_login.value("expect_character_absent", false))
       {
-        if(c["name"] != wanted) continue;
+        if(found != m_state["characters"].end()) throw ProtocolError("deleted character remains in refreshed lobby list");
+        m_deadline.cancel();
+        m_state["deleted_via_lobby"] = afterDeletion;
+        phase(afterDeletion ? "lobby_deleted" : "character_absent");
+        return;
+      }
+      if(m_login.value("delete_character", false))
+      {
+        if(found == m_state["characters"].end() || m_state["characters"].size() != 1)
+          throw ProtocolError("character deletion requires exactly one matching lobby character");
+        auto payload = characterDeleteRequest(3, timeSeconds(), *found, wanted);
+        phase("character_deleting");
+        sendLobby(LC::FFXIVIpcCharaMake::_ServerIpcType, payload);
+        return;
+      }
+      if(found != m_state["characters"].end())
+      {
+        const auto& c = *found;
         if(afterCreation) m_state["created_via_lobby"] = true;
         LC::FFXIVIpcGameLogin request{};
         request.requestNumber = afterCreation ? 6 : 3; request.clientTimeValue = timeSeconds();
@@ -266,6 +292,20 @@ namespace Sapphire::Testing
       }
       throw ProtocolError(afterCreation ? "created character absent from refreshed lobby list" :
                                            "requested character not found in lobby list");
+    }
+    else if(h.type == LS::FFXIVIpcCharaMakeReply::_ServerIpcType &&
+            m_state["phase"] == "character_deleting")
+    {
+      const auto p = readObject<LS::FFXIVIpcCharaMakeReply>(segment.data, sizeof(h));
+      if(p.optionParam != LC::CharacterOperation::CHARAOPE_DELETECHARA || p.count != 1 ||
+         text(p.chrArray[0].chrName) != m_login.at("character"))
+        throw ProtocolError("invalid character-deletion reply");
+      LC::FFXIVIpcServiceLogin request{};
+      request.requestNumber = 4; request.clientTimeValue = timeSeconds();
+      request.accountId = m_serviceAccountId; request.accountIndex = m_serviceAccountIndex;
+      m_state["characters"] = Json::array();
+      phase("character_list_after_deletion");
+      sendLobby(request._ServerIpcType, objectBytes(request));
     }
     else if(h.type == LS::FFXIVIpcCharaMakeReply::_ServerIpcType &&
             m_state["phase"] == "character_name_reservation")

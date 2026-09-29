@@ -1,7 +1,10 @@
 #include "CreationActions.h"
 #include <nlohmann/json.hpp>
 #include <Network/PacketDef/Zone/ClientZoneDef.h>
+#include <Network/PacketDef/Lobby/ClientLobbyDef.h>
 #include <cmath>
+#include <algorithm>
+#include <cstring>
 
 namespace Sapphire::Testing
 {
@@ -32,6 +35,29 @@ namespace Sapphire::Testing
     Wire::WorldPackets::Client::FFXIVIpcEventHandlerWithinRange packet{};
     packet.param1 = param; packet.eventId = eventId;
     packet.position.x = position[0]; packet.position.y = position[1]; packet.position.z = position[2];
+    return objectBytes(packet);
+  }
+
+  Bytes characterDeleteRequest(uint32_t requestNumber, uint32_t clientTime,
+                               const nlohmann::json& character, const std::string& expectedName)
+  {
+    if(requestNumber == 0 || expectedName.empty() || expectedName.size() >= 32 ||
+       !std::all_of(expectedName.begin(), expectedName.end(), [](unsigned char c) {
+         return c == ' ' || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+       }) || !character.is_object() || character.value("name", "") != expectedName ||
+       !character.contains("character_id") || !character.at("character_id").is_number_unsigned() ||
+       !character.contains("entity_id") || !character.at("entity_id").is_number_unsigned() ||
+       character.at("character_id").get<uint64_t>() == 0 || character.at("entity_id").get<uint32_t>() == 0 ||
+       character.value("index", 0u) > 7 ||
+       character.value("world", 0u) == 0 || character.value("world", 0u) > 0xffff)
+      throw ProtocolError("character deletion requires one exact received lobby identity");
+    Wire::LobbyPackets::Client::FFXIVIpcCharaMake packet{};
+    packet.requestNumber = requestNumber; packet.clientTimeValue = clientTime;
+    packet.characterId = character.at("character_id"); packet.playerId = character.at("entity_id");
+    packet.characterIndex = character.at("index");
+    packet.operation = Wire::LobbyPackets::Client::CharacterOperation::CHARAOPE_DELETECHARA;
+    packet.worldId = character.at("world");
+    std::memcpy(packet.chracterName, expectedName.data(), expectedName.size());
     return objectBytes(packet);
   }
 

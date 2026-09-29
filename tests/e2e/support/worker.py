@@ -223,6 +223,21 @@ class Bot:
             raise WorkerError("character creation was not confirmed by refreshed lobby list")
         return state
 
+    def delete_character_via_lobby(self, auth, character, timeout=30):
+        self.worker.request("login", self.name, host=auth["lobbyHost"], port=auth["lobbyPort"],
+                            session=auth["sId"], character=character, delete_character=True)
+        state = self.worker.wait_state(self.name, lambda s: s["phase"] == "lobby_deleted",
+                                       "refreshed lobby deletion", timeout)
+        if state.get("deleted_via_lobby") is not True or state.get("characters") != []:
+            raise WorkerError("character deletion was not confirmed by refreshed lobby list")
+        return state
+
+    def expect_character_absent(self, auth, character, timeout=30):
+        self.worker.request("login", self.name, host=auth["lobbyHost"], port=auth["lobbyPort"],
+                            session=auth["sId"], character=character, expect_character_absent=True)
+        return self.worker.wait_state(self.name, lambda s: s["phase"] == "character_absent",
+                                      "fresh lobby character absence", timeout)
+
     def wait_world_ready(self, timeout=30):
         state = self.worker.wait_state(self.name, lambda s: s["phase"] == "ready", "world ready", timeout)
         if state["gm_rank"] != 0:
