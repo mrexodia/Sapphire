@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase pair and source-bound VFX item action; ordinary Say, exact same-zone nonparty and cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist/later equipment and currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/later-gear purchase path; ordinary Say, exact same-zone nonparty and cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other accessory types/off-hand/head/waist and equipping later equipment or currency-container moves, alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -1361,7 +1361,7 @@ and binds index 0, item 5890 and source unit price eight gil. At `f6149ad6d`, th
 catalog derives a bounded quantity of three from the item's source stack cap and the
 28 gil earned by the preceding sale, for an exact 24-gil total. The current private
 catalog SHA-256 is
-`5ebeab7d4a1ca94bc7fc06e5bec90cbc00687e0ddd7118d7be89f3feec8980a0`.
+`73995f5f3e75336219784729f0e03b2e0efe5faf801afc560871d6858714df74`.
 
 The C++ worker accepts the sale only while holding the matching received scene-40
 token/event, with a complete received inventory containing exactly one potion in
@@ -1403,6 +1403,27 @@ Clang, MSVC and GNU. The clean chained case passed in **246.03s** at
 `ff522859187962794b77ded5ba67fbe79401ab7aeb9099b91ff6a8d8c69fd580`, and event
 journal SHA-256 is
 `f138c0002500b5f4c43a84404c9dd46cbe23713639a8b13921a53cfa523fd0f4`.
+The source is clean and runtime removal is confirmed.
+
+At `2a0b89391`, the same source catalog deterministically selects the cheapest
+non-starter, all-class, level-one, single-stack equipment listing affordable from
+two normally earned potion sales: index 11, item 3286, source slot 7 / equipment
+slot 6, and 39 gil. After the VFX stack survives restart, two ordinary split
+operations create three one-item stacks and two further fresh logins—not receipts—
+prove them. Normal scene-40 sales liquidate each exact stack for eight gil and the
+remaining potion for 28, yielding exact received inventory absence and 56 gil. A
+separately bounded purchase accepts only that post-sale state, item 3286 absent and
+the exact refreshed shop scene; received state becomes one ordinary-bag item 3286
+and 17 gil, then survives world restart and fresh authentication unchanged. This
+proves acquisition, not yet equipping the later item. Exact equipment-purchase bytes,
+source metadata and malformed-state rejection pass on Clang, MSVC and GNU. The
+clean chained case passed in **282.58s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-aymipk4v`; manifest SHA-256 is
+`79ee979320b234a84c894993afcfc21b93e9d667ebced3c79641a28b20cd3e87`,
+`gil-shop-sale.json` SHA-256 is
+`0c67f21cf253393fea59bf6d97575d7df506c4fe9160814768029484a418cbe9`, and event
+journal SHA-256 is
+`187f968b585e3adac8cce083113ea38afecd8ec914d46028ba697ef8ad0ab22d`.
 The source is clean and runtime removal is confirmed.
 
 The first live attempt exposed two server defects rather than prompting weaker
