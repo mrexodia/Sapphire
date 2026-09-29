@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 round trips, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Locally live-verified on Windows and containerized Ubuntu 22.04; hosted deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots and all three starter main hands plus one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, broader equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands and all four source-defined Ring1 choices plus one exact gil-shop sale/purchase pair; ordinary Say; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; item use, arbitrary shops/quantities, overflow merges, other accessories/off-hand/head/waist/later equipment and currency-container moves, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing and bounded source-defined Ul'dah enter-territory operation; no general quest-range/discovery adapter | Exit and one enter-territory subset verified; remaining adapters missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Nine allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -44,6 +44,79 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built Windows and Linux binaries; hosted execution/runner controls unverified, no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent lane live-verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
+
+## Explicit plan-to-artifact closure checklist
+
+This checklist maps the normative implementation and acceptance statements in
+`autonomous-testing-plan.md`, including requirements that are easy to lose in the
+higher-level table. **Partial** and **blocked** entries remain open requirements;
+a nearby passing test does not close them.
+
+| Plan area | Concrete evidence | Verdict |
+|---|---|---|
+| External architecture; no embedded/GM shortcut | `src/test_client`, `support/environment.py`; all journeys use loopback HTTP/TCP, encrypted lobby handoff and rank-zero sessions | Verified for supported actions |
+| C++ worker + Python/pytest + JSON-lines control | `sapphire_test_client`, `support/worker.py`, pytest scenarios; control version 1 with request and bot IDs | Verified |
+| One/two-bot start before scale-out | Authored one-to-three-client tests precede bounded 2..32-bot workload policy | Verified; maximum live evidence is 16 bots, not 32 |
+| Versioned wire schemas and explicit direction | `Protocol.h/.cpp`, profile `sapphire-3.3`, protocol CTest byte-offset/layout fixtures | Verified for decoded/encoded subset |
+| Split/coalesced TCP stream assembly and parser bounds | `sapphire_protocol_tests`; split/coalesced, malformed length, packet-count and frame-size cases | Verified; compressed frames explicitly unsupported |
+| HTTP, encrypted lobby selection and normal handoff | `Client.cpp`, rejected-login/live-login tests and creation journey | Verified |
+| Zone/chat startup, both keepalives, logout and reconnect | live smoke, zoning, workload reconnect and fresh-login scenarios | Verified |
+| Explicit disconnected/loading/ready/zoning/closing lifecycle | worker state snapshots and phase guards; live zoning/logout assertions | Verified for represented phases |
+| Bounded queues, deadlines and cancellation | 64 KiB control limit, two-frame send-queue cap, bounded journals, monotonic Python/native timers, and explicit `close`/`remove` cancellation of timers/sockets | Verified; timed-out operations are never retried and owned teardown cancels the worker |
+| Useful error classes | protocol/invalid-request worker errors; setup, assertion, worker-death and owned-process crash distinctions in harness contracts | Verified at harness boundary; not a universal server error taxonomy |
+| Do not copy authoritative server gameplay | Worker uses shared low-level definitions/crypto only and has no world-service linkage or handler calls | Verified |
+| Identity, territory/loading, conditions and channel health | snapshots plus liveness/checkpoint policy | Verified for modeled fields |
+| Nearby actors, spawn/despawn and received positions | observer smoke, zoning, combat and defeat scenarios | Verified |
+| Quest, event and scene state | active/update/completion decoding and exact event/scene/token identity | Verified for catalogued scenes |
+| Inventory, currency and experience state | `RewardsState`, live reward/inventory/shop/equipment evidence | Verified for enabled containers/transactions; broader operations open |
+| Predicted versus received state | separate `predicted_position`/`observed_position`; route completion explicitly says observer proof is required | Verified |
+| Ordered journal and race-safe waits | sequenced bounded worker events; Python state/event versions registered before triggers | Verified |
+| Base/layout/runtime identity separation | versioned catalogs bind source actor/event IDs and resolve received runtime entities | Verified for catalogued content |
+| Core semantic API | login/select/world-ready/logout, movement, interaction, scene choice, quest/reward expectations are wrapped above raw packets | Verified for supported subset |
+| Later combat/social/transition/instance API | natural combat, Say and one physical zone transition are live | **Partial:** parties and instance entry are absent; combat/social/transition breadth is narrow |
+| Action preconditions/transitions/deadlines/diagnostics | native guards, Python predicates, per-action timeouts and journals | Verified for enabled methods |
+| Scene adapter: approach→interact→observe→choose→finish→state | live quest, shop and opening scenarios use explicit catalogs and received identities | Verified for supported one/two-result and opening chains |
+| Unknown scenes fail closed | worker/policy contracts; workload invariant rejects any unexpected scene | Verified |
+| Yield/resume scene exchange | Server logs prove quest yield is unimplemented and no established resume packet/result exists | **Blocked; unsupported capability is explicit** |
+| Range/discovery/territory triggers | physical ExitRange crossing and one source-bound enter-territory operation | **Partial:** general range/discovery adapters are absent |
+| Curated waypoint stage | independently observed quest/shop/transition/pursuit routes | Verified |
+| Navmesh routing for selected territories | matching TSET catalogs/meshes for territories 130 and 141; disconnected/off-mesh routes fail closed | Verified for selected corridors only |
+| Content-aware transitions/doors/dynamic obstacles | one source-defined exit volume is crossed | **Partial:** general transitions, doors and dynamic obstacles are absent |
+| Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
+| Progress watchdog and bounded replanning | monotonic route/state deadlines retain failures | **Partial:** no general stalled-progress detector or replanning policy |
+| Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
+| Authored regression mode | strict nine-case allowlist plus native/Python contracts | Verified for supported suite |
+| Seeded exploration mode | v1/v2 plans, allowlisted preconditions, decisions, observations and replay | Verified for walk/Say/heartbeat/reconnect subset |
+| Soak/load mode | bounded ramp/pacing/actions, liveness and process/worker resource samples | Verified as bounded smoke and 30-minute low-rate evidence; not capacity/overnight proof |
+| Record actual actions, not seed alone | plan/outcome/checkpoint journals retain semantic order, limits and observations; replay warns that scheduling is nondeterministic | Verified |
+| Preserve and shorten a useful failure | fresh-environment exact-signature minimizer and retained live deadline failure | Verified for unpaced semantic-plan failures only |
+| Disposable DB/ports/workdirs/credentials | per-test MariaDB schema/process tree and generated secrets/config | Verified on local Windows and Linux gates |
+| Repository initialize/migrate tooling and fixture version | DB manager install/update, migration call, manifest fixture version | Verified |
+| Non-GM/full-session config; hot swap disabled | generated `DefaultGMRank=0`, `AllowNoSessionConnect=false`, hot swap false | Verified |
+| Creation journey plus faster pre-provisioned fixtures | normal four-account lobby creation case and separately labeled pre-connection character fixtures | Verified for Ul'dah subset |
+| No live DB mutation/assertion shortcut | fixture SQL occurs only before first connection; journeys use protocol and restart reload | Verified by code path for enabled scenarios |
+| Independent scenarios and no cached reset | each case creates/removes its owned environment; world is stopped before preserved-DB restart | Verified |
+| Observation hierarchy | acting-client messages, independent observers, reconnect/restart and diagnostic-only DB checks are separated in scenarios/artifacts | Verified |
+| Monotonic waits and application readiness | condition/event waits; world binds only after data/territory/script setup and clients require received world-ready | Verified |
+| Record build/script/fixture/protocol/data/nav identities | gate manifest and summary hashes; game assets remain private | Verified; hashes identify inputs but do not prove compatibility |
+| Step/run timeout and failure cleanup | worker, action, pytest/workload budgets; cleanup-fault matrix and `cleanup_verified` gate | Verified for tested failure modes; host-kill behavior remains infrastructure-owned |
+| No ambiguous retry of gameplay mutations | timeout marks worker failed; no automatic gameplay retry; receipts are not mutation proof | Verified |
+| Regression versus recovery behavior | strict gate rejects process loss/skips; reconnect occurs only in explicitly authored scenarios/plans | Verified |
+| Reviewed capability/skip accounting | capabilities advertise unsupported surfaces; strict gate rejects skipped/missing/duplicate/foreign cases | Verified |
+| Independent packet/client compatibility | byte fixtures and one unmodified 3.3 DX11 world/movement/Say/logout pilot | **Partial:** no normalized golden trace and no graphical quest/scene agreement |
+| Stage 0 feasibility record | READMEs/catalogs document assets, selected quests, states, scene results and explicit unknowns | Verified against headless runtime; known-good graphical quest transcript remains absent |
+| Stages 1–4 acceptance | repeated login, observer movement, persisted quest and selected regression actions with CI reports | Verified for declared subset |
+| Stages 5–6 acceptance | readable replay/minimization; action latency, disconnect/liveness, resources, cleanup and load-generator utilization | Verified for narrow bounded workloads; no capacity claim |
+| Public/unprovisioned CI tier | `.github/workflows/test-client.yml` | Authored and locally validated; **hosted run unverified** |
+| Provisioned trusted CI tier | `.github/workflows/gameplay-e2e.yml`, protected-runner contract, Windows/Linux local rehearsals | Authored/local only; **blocked by no registered authorized runner** |
+| Scheduled exploration/soak tier | local workload commands and artifacts | **Partial:** no authorized hosted scheduled execution |
+| Manual/scheduled real-client tier | policy plus completed isolated manual Sandbox lane | Verified once locally; no scheduled breadth |
+| Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
+| Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit and bounded state dumps | Verified |
+| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs and bounded decoded journals are retained | **Partial:** process death is detected, but platform crash dumps are only retained where externally produced |
+| Fixture/persistence evidence, redaction, JUnit and summary | scenario JSON snapshots, restart state, redaction contracts, `live.xml` and CI JSON summary | Verified |
+| Bounded soak logs and generator saturation | capped plans/journals, checkpoints, action percentiles and API/lobby/world/DB/worker/runner resource samples | Verified; scenario coverage remains reported separately from concurrency |
+| Initial design decisions | Headless primary + separate real client; Python; 3.3 profile; Ul'dah/Motivational Speaking; local-first; regression then bounded exploration/soak | Resolved and documented |
 
 ## Verified results
 
@@ -770,11 +843,25 @@ The clean gate passed in **620.91s**, creation **65.662s**. Evidence:
 and worker SHA-256
 `d7a2ae2631a81508fbb30deec2255a451a4329bc4374a05a7807bcc845a1ba45`.
 
+At `b65d74567`, each source-defined opening ring (4423..4426) is also bound to
+received class/item/quantity state and exact Ring1 slot 11. The silent opening
+grant is not treated as live mutation evidence: fresh authentication first proves
+the exact ordinary-bag source. Operation 8 then requests the equip, and the shared
+world restart proves each ring at `1000:11`. A reverse operation remains a receipt
+only until another fresh HTTP/lobby/world session proves the ring back in its exact
+original bag slot. The targeted case passed in **127.13s**; artifact
+`.e2e-artifacts/creation-ring-live/sapphire-e2e-azs17ll9/character-creation-opening.json`
+has SHA-256
+`bd461e51c559e1b8ef11d5d4652ae55d56d8df6276b9ca716202364417306df2`.
+Native fixtures cover all four ring IDs and reject Ring2 substitution; reward
+contracts pass with Clang, MSVC and GNU, and 74 relevant Python policy/worker
+contracts pass. No acknowledgement is used as equipment mutation proof.
+
 This evidence remains deliberately narrow: it covers the three Ul'dah starting
 classes, one canonical appearance payload, all ring choices, all five Gladiator
 starter slots and each distinct starter main hand, the initial/continuation scenes
 and Coming to Ul'dah acceptance. It does not establish quest turn-in/rewards,
-accessories/off-hand/head/waist, later equipment, account signup UI,
+other accessories/off-hand/head/waist, later equipment, account signup UI,
 appearance breadth, other cities/classes, name rejection/deletion, travel into
 public Ul'dah, real-client cutscene presentation or broader protocol compatibility.
 
