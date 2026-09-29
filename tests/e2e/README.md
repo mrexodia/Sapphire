@@ -42,8 +42,11 @@ lobby, world and MariaDB processes with matching game data:
   kicks the newcomer; the removed client receives empty state while the original
   two retain the leader and exact remaining roster. The leader then re-expands the
   party through exact received rosters up to eight members; the eighth member's
-  message reaches all seven peers, a ninth invite fails closed at the protocol
-  limit, and explicit disband reaches all eight. The former leader cannot construct
+  message reaches all seven peers and a ninth invite fails closed at the protocol
+  limit. The eighth member normally logs out, all seven peers retain its exact
+  identity with offline detail redacted, and a fresh HTTP/lobby/world session
+  restores the same full roster/channel and seven-recipient chat fan-out. Explicit
+  disband then reaches all eight. The former leader cannot construct
   restricted operations. The
   zoning scenario additionally keeps the
   two-client form of that party across a physical
