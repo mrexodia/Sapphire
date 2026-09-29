@@ -51,6 +51,12 @@ def test_received_party_join_and_leave(environment, live_worker):
     live_worker.wait_state(leader.name,
         lambda s: str(third_id) in s["actors"] and s["actors"][str(third_id)]["name"] == third_fixture["name"],
         "third party target received by leader")
+    leader.tell(member_id, member_fixture["name"], "leader to member exact tell")
+    received_tell = member.expect_tell(leader_state, "leader to member exact tell")
+    assert received_tell["party_id"] == 0
+    member.tell(leader_id, leader_fixture["name"], "member to leader exact tell")
+    received_tell = leader.expect_tell(member_state, "member to leader exact tell")
+    assert received_tell["party_id"] == 0
     leader.invite_party(member_id, member_fixture["name"])
     declined = member.decline_party()
     assert declined == {"result": 0, "auth_type": 1, "answer": 0, "name": leader_fixture["name"]}
@@ -78,13 +84,6 @@ def test_received_party_join_and_leave(environment, live_worker):
     sent = member.party_chat("member to leader party message")
     received = leader.expect_party_chat(member_party, "member to leader party message")
     assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
-    leader.tell(member_id, member_fixture["name"], "leader to member exact tell")
-    received_tell = member.expect_tell(leader_party, "leader to member exact tell")
-    assert received_tell["party_id"] == leader_party["party"]["id"]
-    member.tell(leader_id, leader_fixture["name"], "member to leader exact tell")
-    received_tell = leader.expect_tell(member_party, "member to leader exact tell")
-    assert received_tell["party_id"] == member_party["party"]["id"]
-
     original_party = (leader_party["party"]["id"], leader_party["party"]["chat_channel"])
     leader.invite_party(third_id, third_fixture["name"])
     third_party = third.accept_party(expected_count=3)

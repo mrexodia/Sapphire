@@ -175,6 +175,9 @@ int main()
     const std::string tellMessage = "Exact tell message";
     std::copy(tellMessage.begin(), tellMessage.end(), expectedTell.begin() + 33);
     require(tell == expectedTell, "tell exact target/message byte fixture");
+    require(tellRequest(partyActors, nlohmann::json::object(), 2097154, "E2E Target",
+                        "Exact tell message") == expectedTell,
+            "nonparty tell exact observed target/message byte fixture");
     rejects([&] { tellRequest(partyActors, tellParty, 2097153, "E2E Target", "Exact tell message"); });
     rejects([&] { tellRequest(partyActors, tellParty, 2097154, "Wrong Target", "Exact tell message"); });
     rejects([&] { tellRequest(partyActors, tellParty, 2097154, "E2E Target", "!debug"); });

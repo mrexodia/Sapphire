@@ -464,15 +464,23 @@ namespace Sapphire::Testing
         const auto sender = receivedName(p.fromName, sizeof(p.fromName));
         const auto message = text(p.message);
         const auto& party = m_state["party"];
-        auto matches = Json::array();
+        std::vector<uint32_t> actorMatches;
+        for(auto it = m_state["actors"].begin(); it != m_state["actors"].end(); ++it)
+          if(it.value().value("kind", 0) == 1 && it.value().value("name", "") == sender)
+            actorMatches.push_back(static_cast<uint32_t>(std::stoul(it.key())));
+        if(p.type != 0 || !p.fromCharacterID || message.empty() || message.size() > 128 ||
+           !std::all_of(message.begin(), message.end(), [](unsigned char c) { return c >= 0x20 && c <= 0x7e; }) ||
+           actorMatches.size() != 1)
+          throw ProtocolError("tell sender does not match one bounded received player identity");
+        uint64_t partyId = 0;
         for(const auto& member : party.at("members"))
-          if(member.value("character_id", uint64_t{0}) == p.fromCharacterID && member.value("name", "") == sender)
-            matches.push_back(member);
-        if(p.type != 0 || matches.size() != 1 ||
-           !m_state["actors"].contains(std::to_string(matches[0].value("entity_id", 0u))) ||
-           m_state["actors"].at(std::to_string(matches[0].value("entity_id", 0u))).value("name", "") != sender)
-          throw ProtocolError("tell sender does not match exact received party and spawn identity");
-        Json received{{"party_id", party.at("id")}, {"actor", matches[0].at("entity_id")},
+          if(member.value("entity_id", 0u) == actorMatches[0] && member.value("name", "") == sender)
+          {
+            if(member.value("character_id", uint64_t{0}) != p.fromCharacterID)
+              throw ProtocolError("tell sender character ID disagrees with received party identity");
+            partyId = party.at("id");
+          }
+        Json received{{"party_id", partyId}, {"actor", actorMatches[0]},
                       {"character_id", p.fromCharacterID}, {"name", sender},
                       {"message", message}, {"token", m_seq + 1}};
         m_state["tells"].push_back(received);

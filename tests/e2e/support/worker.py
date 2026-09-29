@@ -574,13 +574,22 @@ class Bot:
 
     def expect_tell(self, sender_state, message, timeout=10):
         expected_entity = sender_state["entity_id"]
+        expected_name = sender_state["actors"][str(expected_entity)]["name"]
+        identities = [row for row in sender_state["characters"]
+                      if row["entity_id"] == expected_entity and row["name"] == expected_name]
+        if len(identities) != 1:
+            raise WorkerError("Tell sender requires one exact independently received lobby identity")
+        expected_character = identities[0]["character_id"]
         def matches(state, row):
             members = [member for member in state["party"]["members"]
-                       if member["entity_id"] == expected_entity]
-            return (len(members) == 1 and row["actor"] == expected_entity
-                    and row["character_id"] == members[0]["character_id"]
-                    and row["name"] == members[0]["name"] and row["message"] == message
-                    and row["party_id"] == state["party"]["id"])
+                       if member["entity_id"] == expected_entity and member["name"] == expected_name]
+            expected_party = state["party"]["id"] if len(members) == 1 else 0
+            actor = state["actors"].get(str(expected_entity))
+            return (actor is not None and actor["kind"] == 1 and actor["name"] == expected_name
+                    and row["actor"] == expected_entity
+                    and row["character_id"] == expected_character
+                    and row["name"] == expected_name and row["message"] == message
+                    and row["party_id"] == expected_party)
         state = self.worker.wait_state(self.name,
             lambda s: any(matches(s, row) for row in s["tells"]),
             "exact received tell", timeout)
