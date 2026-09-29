@@ -66,17 +66,30 @@ namespace Sapphire::Testing
   Bytes centralThanalanDiscoveryRequest(uint16_t territory, uint32_t layoutId,
                                         const std::array<float, 3>& receivedPosition)
   {
-    // Source LGB MapRange 3643706 is the sole enabled discovery sphere containing
-    // the supported territory-141 arrival pop. Its full diameters are 140/23.2278/140.
-    constexpr std::array<float, 3> center{-90.4246521f, 16.7652493f, 297.3623962f};
-    constexpr float horizontalRadius = 70.0f;
-    constexpr float verticalRadius = 11.6139154f;
     for(float value : receivedPosition)
       if(!std::isfinite(value)) throw ProtocolError("discovery requires a finite received position");
-    const auto horizontal = std::hypot(receivedPosition[0] - center[0],
-                                       receivedPosition[2] - center[2]);
-    if(territory != 141 || layoutId != 3643706 || horizontal > horizontalRadius ||
-       std::abs(receivedPosition[1] - center[1]) > verticalRadius)
+    bool reached = false;
+    if(layoutId == 3643706)
+    {
+      // Sole enabled discovery sphere containing the supported territory-141 arrival.
+      constexpr std::array<float, 3> center{-90.4246521f, 16.7652493f, 297.3623962f};
+      reached = std::hypot(receivedPosition[0] - center[0], receivedPosition[2] - center[2]) <= 70.0f &&
+                std::abs(receivedPosition[1] - center[1]) <= 11.6139154f;
+    }
+    else if(layoutId == 4204061)
+    {
+      // Source LGB part-three box, reached by the catalogued destination-navmesh route.
+      constexpr std::array<float, 3> center{37.6967506f, 13.3800697f, 99.4899521f};
+      constexpr std::array<float, 3> scale{10.0f, 10.0f, 35.0f};
+      constexpr float yaw = 0.3573853f;
+      const auto x = receivedPosition[0] - center[0];
+      const auto z = receivedPosition[2] - center[2];
+      const auto localX = std::cos(yaw) * x - std::sin(yaw) * z;
+      const auto localZ = std::sin(yaw) * x + std::cos(yaw) * z;
+      reached = std::abs(localX) <= scale[0] * 0.5f && std::abs(localZ) <= scale[2] * 0.5f &&
+                std::abs(receivedPosition[1] - center[1]) <= scale[1] * 0.5f;
+    }
+    if(territory != 141 || !reached)
       throw ProtocolError("unsupported or unreached discovery range");
     Wire::WorldPackets::Client::FFXIVIpcNewDiscovery packet{};
     packet.LayoutId = layoutId;

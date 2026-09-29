@@ -195,9 +195,65 @@ int main(int argc, char** argv)
       auto level = data.getRow<Excel::ParamGrow>(1);
       if(!level) throw std::runtime_error("level-one discovery reward metadata unavailable");
       discovery["level_one_exp_reward"] = level->data().NextExp * 5 / 100;
+
+      Json nextMatches = Json::array();
+      for(const auto& candidate : targets.at(targetTerritory))
+        if(candidate["kind"] == "map_range" && candidate.value("enabled", false) &&
+           candidate.value("discovery_enabled", false) && candidate.value("shape", 0) == 1 &&
+           candidate.value("id", 0u) == 4204061 && candidate.value("discovery_index", 0) == 3)
+          nextMatches.push_back(candidate);
+      if(nextMatches.size() != 1)
+        throw std::runtime_error("second discovery must resolve exact source box 4204061");
+      auto nextDiscovery = nextMatches[0];
+      nextDiscovery["map_id"] = territoryInfo->data().Map;
+      nextDiscovery["map_discovery_index"] = mapInfo->data().DiscoveryIndex;
+      nextDiscovery["uint16_storage"] = mapInfo->data().IsUint16Discovery != 0;
+      nextDiscovery["map_discovery_flag"] = mapInfo->data().DiscoveryFlag;
+      nextDiscovery["level_one_exp_reward"] = level->data().NextExp * 5 / 100;
+      const auto nextCenter = nextDiscovery["position"].get<Sapphire::Testing::Point>();
+      const auto nextScale = nextDiscovery["scale"].get<Sapphire::Testing::Point>();
+      const auto nextRotation = nextDiscovery["rotation"].get<Sapphire::Testing::Point>();
+      const auto dx = arrival[0] - nextCenter[0];
+      const auto dz = arrival[2] - nextCenter[2];
+      if(std::hypot(dx, dz) <= std::hypot(nextScale[0], nextScale[2]) ||
+         nextScale[0] <= 0 || nextScale[1] <= 0 || nextScale[2] <= 0)
+        throw std::runtime_error("second discovery geometry is not a distinct reachable box");
+      Sapphire::Common::Navi::NaviProvider targetFinder("w1f2");
+      if(!targetFinder.init(argv[2])) throw std::runtime_error("destination navigation mesh unavailable");
+      dtNavMeshQuery targetQuery;
+      if(dtStatusFailed(targetQuery.init(targetFinder.getNavMesh(), 4096)))
+        throw std::runtime_error("destination navigation query unavailable");
+      auto targetSurface = [&](const Sapphire::Testing::Point& point, const Sapphire::Testing::Point& extents) {
+        dtPolyRef ref = 0; Sapphire::Testing::Point nearest{};
+        auto status = targetQuery.findNearestPoly(point.data(), extents.data(), &filter, &ref, nearest.data());
+        if(dtStatusFailed(status) || !ref) throw std::runtime_error("no walkable destination discovery surface");
+        return nearest;
+      };
+      auto discoveryStart = targetSurface(arrival, {8, 80, 8});
+      auto discoveryEnd = targetSurface(nextCenter, {8, 80, 8});
+      const auto localX = std::cos(nextRotation[1]) * (discoveryEnd[0]-nextCenter[0]) -
+                          std::sin(nextRotation[1]) * (discoveryEnd[2]-nextCenter[2]);
+      const auto localZ = std::sin(nextRotation[1]) * (discoveryEnd[0]-nextCenter[0]) +
+                          std::cos(nextRotation[1]) * (discoveryEnd[2]-nextCenter[2]);
+      if(std::abs(localX) > nextScale[0] * 0.5f || std::abs(localZ) > nextScale[2] * 0.5f ||
+         std::abs(discoveryEnd[1]-nextCenter[1]) > nextScale[1] * 0.5f)
+        throw std::runtime_error("second discovery route endpoint is outside its source box");
+      auto discoveryRoute = Sapphire::Testing::navigationRoute(*targetFinder.getNavMesh(), discoveryStart, discoveryEnd);
+      double discoveryLength = 0;
+      for(size_t i = 1; i < discoveryRoute.size(); ++i)
+        discoveryLength += std::sqrt(std::pow(discoveryRoute[i][0]-discoveryRoute[i-1][0], 2) +
+                                     std::pow(discoveryRoute[i][1]-discoveryRoute[i-1][1], 2) +
+                                     std::pow(discoveryRoute[i][2]-discoveryRoute[i-1][2], 2));
+      nextDiscovery["route"] = discoveryRoute;
+      nextDiscovery["route_length"] = discoveryLength;
+      nextDiscovery["navigation"] = {
+        {"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1f2" / "w1f2.nav").generic_string()},
+        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}};
+
       result.erase("exits");
       result["transition"] = exit;
       result["supported_discovery"] = discovery;
+      result["supported_discoveries"] = Json::array({discovery, nextDiscovery});
       result["route"] = route; result["route_length"] = length;
       result["navigation"] = {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                                {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}};

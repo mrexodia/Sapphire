@@ -429,8 +429,9 @@ class Bot:
             lambda s: s["phase"] == "ready" and s["territory"] == transition["target_territory"]
                       and not s["between_areas"], "destination territory ready", timeout)
 
-    def discover_central_thanalan(self, binding, timeout=10):
-        self.worker.request("discover_central_thanalan", self.name, layout_id=binding["id"])
+    def discover_central_thanalan(self, binding, received_position, timeout=10):
+        self.worker.request("discover_central_thanalan", self.name, layout_id=binding["id"],
+                            part_id=binding["discovery_index"], received_position=received_position)
         return self.worker.wait_state(self.name,
             lambda s: s["discovery_reply"] == {"map_id": binding["map_id"],
                                                 "part_id": binding["discovery_index"]},

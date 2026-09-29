@@ -85,6 +85,39 @@ def validate_transition_catalog(data):
             or math.hypot(arrival[0] - dcenter[0], arrival[2] - dcenter[2]) > min(dscale[0], dscale[2]) * 0.5
             or abs(arrival[1] - dcenter[1]) > dscale[1] * 0.5):
         raise WorkerError("arrival is outside supported discovery range")
+    discoveries = data.get("supported_discoveries", [])
+    if len(discoveries) != 2 or discoveries[0] != discovery:
+        raise WorkerError("unsupported discovery sequence")
+    second = discoveries[1]
+    if (second.get("id") != 4204061 or second.get("territory") != 141
+            or second.get("kind") != "map_range" or second.get("enabled") is not True
+            or second.get("discovery_enabled") is not True or second.get("shape") != 1
+            or second.get("discovery_index") != 3 or second.get("map_id") != 21
+            or second.get("map_discovery_index") != 8 or second.get("uint16_storage") is not True
+            or second.get("map_discovery_flag") != 16382
+            or second.get("level_one_exp_reward") != 15):
+        raise WorkerError("unsupported second source discovery binding")
+    second_nav = second.get("navigation", {})
+    if (second_nav.get("format") != "TSET-v1" or second_nav.get("polyref_bits") not in (32, 64)
+            or not str(second_nav.get("mesh", "")).replace("\\", "/").endswith("/w1f2/w1f2.nav")):
+        raise WorkerError("unsupported second discovery navigation identity")
+    second_route = second.get("route", [])
+    second_length = sum(math.dist(a, b) for a, b in zip(second_route, second_route[1:]))
+    if (len(second_route) < 2 or len(second_route) > 1000 or second.get("route_length", 0) <= 0
+            or abs(second_length - second["route_length"]) > 0.01
+            or math.dist(second_route[0], arrival) > 0.15):
+        raise WorkerError("invalid second discovery route")
+    for point in (*[second.get(key, []) for key in ("position", "scale", "rotation")], *second_route):
+        if len(point) != 3 or not all(type(x) in (int, float) and math.isfinite(x) and abs(x) < 1000 for x in point):
+            raise WorkerError("invalid second discovery transform/route")
+    center, scale, rotation, endpoint = (second["position"], second["scale"],
+                                          second["rotation"], second_route[-1])
+    x, z = endpoint[0] - center[0], endpoint[2] - center[2]
+    local_x = math.cos(rotation[1]) * x - math.sin(rotation[1]) * z
+    local_z = math.sin(rotation[1]) * x + math.cos(rotation[1]) * z
+    if (abs(local_x) > scale[0] * 0.5 or abs(local_z) > scale[2] * 0.5
+            or abs(endpoint[1] - center[1]) > scale[1] * 0.5):
+        raise WorkerError("second discovery route does not end in its source box")
     return data
 
 

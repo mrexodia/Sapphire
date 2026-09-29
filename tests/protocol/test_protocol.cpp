@@ -149,6 +149,14 @@ int main()
     rejects([&] { centralThanalanDiscoveryRequest(141, 3643706, unreachedDiscovery); });
     auto malformedDiscovery = discoveryArrival; malformedDiscovery[1] = std::numeric_limits<float>::infinity();
     rejects([&] { centralThanalanDiscoveryRequest(141, 3643706, malformedDiscovery); });
+    const std::array<float, 3> secondDiscovery{37.69675064086914f, 13.387104988098145f,
+                                               99.48995208740234f};
+    const Bytes expectedSecondDiscovery{0x1d,0x26,0x40,0x00, 0x79,0xc9,0x16,0x42,
+                                         0x95,0x31,0x56,0x41, 0xdb,0xfa,0xc6,0x42};
+    require(centralThanalanDiscoveryRequest(141, 4204061, secondDiscovery) == expectedSecondDiscovery,
+            "second source-defined discovery byte fixture");
+    auto outsideSecondDiscovery = secondDiscovery; outsideSecondDiscovery[0] += 6;
+    rejects([&] { centralThanalanDiscoveryRequest(141, 4204061, outsideSecondDiscovery); });
 
     nlohmann::json partyActors = {{"2097154", {{"kind", 1}, {"name", "E2E Target"}}}};
     auto invite = partyInviteRequest(partyActors, 2097154, "E2E Target");

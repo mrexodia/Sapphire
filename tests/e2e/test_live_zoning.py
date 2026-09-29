@@ -14,18 +14,23 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     assert path, "zoning requires profile.transition_catalog generated from matching local assets"
     catalog = load_transition_catalog(path)
     transition = catalog["transition"]
-    discovery = catalog["supported_discovery"]
+    discovery, second_discovery = catalog["supported_discoveries"]
     destination = transition["destinations"][0]
     fixture = environment.fresh_character(catalog["route"][0])
     source_fixture = environment.fresh_character(catalog["route"][0])
     target_fixture = environment.fresh_character(destination["position"], destination["territory"])
+    discovery_observer_fixture = environment.fresh_character(second_discovery["route"][-1],
+                                                              destination["territory"])
     player = Bot(live_worker, "traveler")
     source, target = Bot(live_worker, "source-observer"), Bot(live_worker, "target-observer")
+    discovery_observer = Bot(live_worker, "discovery-observer")
     state = player.login_via_lobby(fixture["auth"], fixture["name"])
     assert state["territory"] == 130 and state["scene"] is None
     actor = str(state["entity_id"])
     source_state = source.login_via_lobby(source_fixture["auth"], source_fixture["name"])
     target_state = target.login_via_lobby(target_fixture["auth"], target_fixture["name"])
+    discovery_observer.login_via_lobby(discovery_observer_fixture["auth"],
+                                       discovery_observer_fixture["name"])
     assert target_state["territory"] == destination["territory"] and target_state["scene"] is None
     assert actor not in target_state["actors"]
     live_worker.wait_state(source.name, lambda s: actor in s["actors"], "traveler visible in source territory")
@@ -49,7 +54,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     assert state["central_thanalan_discovery"] is False
     assert math.dist(state["observed_position"], destination["position"]) < 0.15
     live_worker.wait_state(source.name, lambda s: actor not in s["actors"], "traveler left source territory")
-    live_worker.wait_state(target.name,
+    target_arrival = live_worker.wait_state(target.name,
         lambda s: actor in s["actors"] and math.dist(s["actors"][actor]["position"], destination["position"]) < 0.15,
         "traveler arrived in destination territory")
     assert live_worker.snapshot(source.name)["territory"] == 130
@@ -76,12 +81,20 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     received = source.expect_party_chat(state, "traveler to remote source party message")
     assert (sent["party_id"], sent["channel"]) == (received["party_id"], received["channel"])
     player.expect_rewards(before, 1)
-    player.discover_central_thanalan(discovery)
+    player.discover_central_thanalan(discovery, target_arrival["actors"][actor]["position"])
     after_discovery = deepcopy(before)
     after_discovery["exp"] += discovery["level_one_exp_reward"]
     player.expect_rewards(after_discovery, 1)
+    player.walk_route(second_discovery["route"], speed=2.0, timeout=330)
+    second_arrival = live_worker.wait_state(discovery_observer.name,
+        lambda s: actor in s["actors"]
+                  and math.dist(s["actors"][actor]["position"], second_discovery["route"][-1]) < 0.15,
+        "traveler independently observed in second discovery box")
+    player.discover_central_thanalan(second_discovery, second_arrival["actors"][actor]["position"])
+    after_discovery["exp"] += second_discovery["level_one_exp_reward"]
+    state = player.expect_rewards(after_discovery, 1)
     player.say("E2E destination chat after zoning")
-    target.expect_say(state["entity_id"], "E2E destination chat after zoning")
+    discovery_observer.expect_say(state["entity_id"], "E2E destination chat after zoning")
     heartbeats = state["heartbeats"]
     live_worker.wait_state(player.name,
         lambda s: all(s["heartbeats"][channel] > heartbeats[channel] for channel in ("zone", "chat")),
@@ -90,8 +103,9 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     live_worker.wait_state(player.name, lambda s: s["party"]["count"] == 0,
                            "traveler received cross-zone party disband")
     player.logout()
-    live_worker.wait_state(target.name, lambda s: actor not in s["actors"], "destination session cleanup", 30)
-    for bot in (source, target):
+    live_worker.wait_state(discovery_observer.name, lambda s: actor not in s["actors"],
+                           "destination session cleanup", 30)
+    for bot in (source, target, discovery_observer):
         bot.logout()
         bot.close()
     player.close()
@@ -100,8 +114,9 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     reloaded = Bot(live_worker, "traveler-reloaded")
     state = reloaded.login_via_lobby(auth, fixture["name"])
     assert state["territory"] == destination["territory"]
-    assert math.dist(state["observed_position"], destination["position"]) < 0.15
+    assert math.dist(state["observed_position"], second_discovery["route"][-1]) < 0.15
     assert state["central_thanalan_discovery"] is True
+    assert state["central_thanalan_discoveries"] == [1, 3]
     reloaded.expect_rewards(after_discovery, 1)
     reloaded.logout()
     reloaded.close()

@@ -104,8 +104,9 @@ namespace Sapphire::Testing
       {"scene", nullptr}, {"event_id", nullptr}, {"name_rejection", nullptr}, {"pending_party_invite", nullptr},
       {"party_invite_result", nullptr}, {"party", {{"id", 0}, {"chat_channel", 0}, {"count", 0},
                                                             {"leader_index", 0}, {"members", Json::array()}}},
-      {"discovery_reply", nullptr},
-      {"discovery_request_sent", false}, {"central_thanalan_discovery", false}, {"heartbeat_replies", 0},
+      {"discovery_reply", nullptr}, {"discovery_requests_sent", Json::array()},
+      {"central_thanalan_discoveries", Json::array()}, {"central_thanalan_discovery", false},
+      {"heartbeat_replies", 0},
       {"heartbeats", {{"zone", 0}, {"chat", 0}}}, {"packets_received", 0}};
   }
   void Bot::event(const std::string& name, Json data)
@@ -530,10 +531,20 @@ namespace Sapphire::Testing
     {
       const auto p = readObject<WS::FFXIVIpcPlayerStatus>(segment.data, off);
       m_state["homepoint"] = p.HomePoint;
-      const bool discovered = (p.Discovery16[16] & 0x02) != 0;
-      if(m_state["central_thanalan_discovery"].get<bool>() != discovered)
-        event("discovery_state", {{"map_id", 21}, {"part_id", 1}, {"discovered", discovered}});
-      m_state["central_thanalan_discovery"] = discovered;
+      Json discoveries = Json::array();
+      for(const auto part : {1u, 3u})
+        if((p.Discovery16[16] & (uint8_t{1} << part)) != 0) discoveries.push_back(part);
+      for(const auto part : {1u, 3u})
+      {
+        const auto oldValue = std::find(m_state["central_thanalan_discoveries"].begin(),
+                                        m_state["central_thanalan_discoveries"].end(), part) !=
+                              m_state["central_thanalan_discoveries"].end();
+        const auto newValue = std::find(discoveries.begin(), discoveries.end(), part) != discoveries.end();
+        if(oldValue != newValue)
+          event("discovery_state", {{"map_id", 21}, {"part_id", part}, {"discovered", newValue}});
+      }
+      m_state["central_thanalan_discoveries"] = discoveries;
+      m_state["central_thanalan_discovery"] = !discoveries.empty() && discoveries[0] == 1;
     }
     if(h.type == WS::FFXIVIpcInviteResult::_ServerIpcType)
     {
@@ -580,7 +591,7 @@ namespace Sapphire::Testing
     if(h.type == WS::FFXIVIpcDiscoveryReply::_ServerIpcType)
     {
       const auto p = readObject<WS::FFXIVIpcDiscoveryReply>(segment.data, off);
-      if(p.mapId != 21 || p.mapPartId != 1)
+      if(p.mapId != 21 || (p.mapPartId != 1 && p.mapPartId != 3))
         throw ProtocolError("unsupported discovery reply identity");
       m_state["discovery_reply"] = {{"map_id", p.mapId}, {"part_id", p.mapPartId}};
       event("discovery_reply", m_state["discovery_reply"]);
@@ -801,12 +812,25 @@ namespace Sapphire::Testing
     }
     if(method == "discover_central_thanalan")
     {
-      if(m_moving || !m_state["event_id"].is_null() || m_state["territory"] != 141 ||
-         m_state["discovery_request_sent"].get<bool>() || m_state["central_thanalan_discovery"].get<bool>())
-        throw ProtocolError("discovery requires an idle undiscovered character in territory 141");
+      if(m_moving || !m_state["event_id"].is_null() || m_state["territory"] != 141)
+        throw ProtocolError("discovery requires an idle character in territory 141");
       const auto layout = args.at("layout_id").get<uint32_t>();
-      auto payload = centralThanalanDiscoveryRequest(m_state["territory"], layout, m_predicted);
-      m_state["discovery_request_sent"] = true;
+      const auto part = args.at("part_id").get<uint32_t>();
+      if((layout != 3643706 || part != 1) && (layout != 4204061 || part != 3))
+        throw ProtocolError("unsupported discovery layout/part identity");
+      if(std::find(m_state["discovery_requests_sent"].begin(), m_state["discovery_requests_sent"].end(), layout) !=
+           m_state["discovery_requests_sent"].end() ||
+         std::find(m_state["central_thanalan_discoveries"].begin(),
+                   m_state["central_thanalan_discoveries"].end(), part) !=
+           m_state["central_thanalan_discoveries"].end())
+        throw ProtocolError("discovery part was already requested or received");
+      const auto receivedPosition = args.at("received_position").get<std::array<float, 3>>();
+      if(std::sqrt(std::pow(receivedPosition[0]-m_predicted[0], 2) +
+                   std::pow(receivedPosition[1]-m_predicted[1], 2) +
+                   std::pow(receivedPosition[2]-m_predicted[2], 2)) > 0.15f)
+        throw ProtocolError("discovery witness does not match the actor's predicted endpoint");
+      auto payload = centralThanalanDiscoveryRequest(m_state["territory"], layout, receivedPosition);
+      m_state["discovery_requests_sent"].push_back(layout);
       sendZone(WC::FFXIVIpcNewDiscovery::_ServerIpcType, payload);
       return Json::object();
     }
