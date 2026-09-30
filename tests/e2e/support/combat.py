@@ -110,8 +110,8 @@ def require_unchanged_death_state(before_rewards, before_inventory,
         raise ValueError("death reward state must be received mappings")
     if before_rewards != after_rewards:
         raise ValueError("death changed received EXP, level, currency or item totals")
-    if not isinstance(before_inventory, list) or not isinstance(after_inventory, list):
-        raise ValueError("death inventory state must be received rows")
+    if not isinstance(before_inventory, dict) or not isinstance(after_inventory, dict):
+        raise ValueError("death inventory state must be received mappings")
     if before_inventory != after_inventory:
         raise ValueError("death changed received inventory rows")
 

@@ -22,7 +22,7 @@ def ready_state():
 def test_received_death_state_rejects_every_tracked_penalty():
     rewards = {"items": {"100": 2}, "exp": 50, "level": 1,
                "currencies": {"gil": 208}}
-    inventory = [{"container": 0, "slot": 0, "item": 100, "quantity": 2}]
+    inventory = {"0:0": {"container": 0, "slot": 0, "item": 100, "quantity": 2}}
     require_unchanged_death_state(rewards, inventory, deepcopy(rewards), deepcopy(inventory))
     for field, changed in (("exp", 49), ("level", 0), ("currencies", {"gil": 207}),
                            ("items", {"100": 1})):
@@ -31,13 +31,13 @@ def test_received_death_state_rejects_every_tracked_penalty():
         with pytest.raises(ValueError, match="death changed received"):
             require_unchanged_death_state(rewards, inventory, after, deepcopy(inventory))
     after_inventory = deepcopy(inventory)
-    after_inventory[0]["quantity"] = 1
+    after_inventory["0:0"]["quantity"] = 1
     with pytest.raises(ValueError, match="death changed received inventory"):
         require_unchanged_death_state(rewards, inventory, deepcopy(rewards), after_inventory)
     with pytest.raises(ValueError, match="mappings"):
         require_unchanged_death_state([], inventory, rewards, inventory)
-    with pytest.raises(ValueError, match="rows"):
-        require_unchanged_death_state(rewards, {}, rewards, inventory)
+    with pytest.raises(ValueError, match="mappings"):
+        require_unchanged_death_state(rewards, [], rewards, inventory)
 
 
 def test_sprint_readiness_requires_received_living_player_tp():
