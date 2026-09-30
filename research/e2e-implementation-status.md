@@ -38,10 +38,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
-| Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, a controlled live diagnostic-write failure and one intentional owned-world termination verified; broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built Windows and Linux binaries; hosted execution/runner controls unverified, no registered runners |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored; current isolated fifteen-case Windows gate passes, older nine-case Linux gate passes, but the current expanded Linux gate remains red under observed delayed scene/action/logout/zoning delivery; hosted execution/runner controls unverified, no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent lane live-verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
@@ -62,7 +62,7 @@ a nearby passing test does not close them.
 | HTTP, encrypted lobby selection and normal handoff | `Client.cpp`, rejected-login/live-login tests and creation journey | Verified |
 | Zone/chat startup, both keepalives, logout and reconnect | live smoke, zoning, workload reconnect and fresh-login scenarios | Verified |
 | Explicit disconnected/loading/ready/zoning/closing lifecycle | worker state snapshots and phase guards; live zoning/logout assertions | Verified for represented phases |
-| Bounded queues, deadlines and cancellation | 64 KiB control limit, two-frame send-queue cap, bounded journals, monotonic Python/native timers, and explicit `close`/`remove` cancellation of timers/sockets | Verified; timed-out operations are never retried and owned teardown cancels the worker |
+| Bounded queues, deadlines and cancellation | 64 KiB control limit, two-frame send-queue cap, bounded journals, monotonic Python/native timers, recorded deadline scale 1..3, asynchronous final-movement write completion, and explicit `close`/`remove` cancellation of timers/sockets | Verified; timed-out operations are never retried and owned teardown cancels the worker |
 | Useful error classes | protocol/invalid-request worker errors; setup, assertion, worker-death and owned-process exit distinctions | Verified at harness boundary and for one live owned-world termination; not a universal server error taxonomy |
 | Do not copy authoritative server gameplay | Worker uses shared low-level definitions/crypto only and has no world-service linkage or handler calls | Verified |
 | Identity, territory/loading, conditions and channel health | snapshots plus liveness/checkpoint policy | Verified for modeled fields |
@@ -124,33 +124,41 @@ a nearby passing test does not close them.
   rewards, combat, synthetic navigation, borrowed database bindings and concurrent item-ID allocation). Navigation tests reject disconnected and
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
-  executables pass; the resulting Linux API, lobby, world, DB manager and worker also
-  pass the strict live gate described below.
-- 271 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
-  network-isolated Linux container using the current GNU-built worker; 17 asset-backed cases skip without an explicit live profile.
-- The provisioned CI entry point passes its strict collection on Windows and Linux. The
-  latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
-  skips/errors/failures and verified exact collection, staged-input identities,
-  clean source and normal cleanup (`gameplay-ci-kekux1o4` under
-  `.e2e-artifacts/linux-ci`, summary
-  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows
-  **fifteen-case** gate at `39198db88` took **2991.257s**, retaining the natural
-  level-four combo and tracked death-state assertions and adding one independently
-  witnessed, source-bound active-vision aggro/defeat path with no player combat
-  action (`gameplay-ci-qi1qhtgz`, summary
-  `build-e2e/ci-summary-proximity-aggro.json`). Summary SHA-256 is
-  `d3a6e17ad55783cf0fabc9847deff89b8e6bb9d7c5897bd8e142318392362d1b`,
-  private manifest SHA-256 is
-  `2126d2de1328695d7b12be544a6bdd096f2b4a7509d99a34bae4ac58aba124ee`, and
-  its runtime was removed. In both current platform summaries
-  `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
-  rehearsals are explicitly labeled as such.
+  executables pass. The older strict nine-case Linux live gate remains green, but
+  the current expanded fifteen-case Linux gate is not green; it is not counted as
+  platform gameplay verification.
+- **281** Python worker/policy/CI/pacing/resource-control contracts pass with the
+  current MSVC worker; 17 asset-backed cases skip without an explicit live profile.
+  All six native suites pass under current MSVC and GNU builds. The attempted local
+  Clang worker path was absent, so no new Clang result is claimed here.
+- The current strict **fifteen-case Windows** gate at `e34d695fd` passed all cases in
+  **3334.527s** with deadline scale 1, exact collection, all fifteen per-case staged
+  manifests matched, clean source, and complete process/runtime cleanup. Evidence:
+  `.e2e-artifacts/ci-current/gameplay-ci-bi18aeo4` and
+  `build-e2e/ci-summary-windows-isolated.json`; summary SHA-256
+  `665328be156fff96479a9ad94ee753c1dc59c05a12a345d93374eddb9562ff05`,
+  private gate-diagnostics SHA-256
+  `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`.
+- The latest successful strict Linux evidence remains the nine-case rehearsal at
+  `4bbf7ec9a` (1009.57s, `gameplay-ci-kekux1o4`, summary
+  `build-e2e/ci-summary-linux-gameplay.json`). A current GNU-worker expanded run at
+  `e34d695fd` used fifteen fresh environments inside an isolated Linux network
+  namespace and deadline scale 3. Collection, staged-input identities, and cleanup
+  all verified, but only seven gameplay cases passed; delayed scene/event completion,
+  logout acknowledgement, cross-zone liveness, combat results, and return/zoning
+  transitions failed their bounded semantic deadlines. It is retained only as
+  blocker evidence at `.e2e-artifacts/linux-native-current/gameplay-ci-51vqgda3`
+  and `build-e2e/ci-summary-linux-native-expanded-failed.json` (summary SHA-256
+  `ecb088df8ea527f185d2d8be2aaec71029ed9bb6fd49266b7650a9a862970f79`).
+  Docker Desktop and native-WSL variants were also tried; increasing deadlines and
+  moving game data off the host mount did not produce a green expanded gate, so no
+  further blind rerun or Linux compatibility claim is made.
   `actionlint` v1.7.7 validates both client workflows. Read-only GitHub API inspection
   found zero registered self-hosted runners; no runner/settings were created.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
   protected-environment approval and VM disposal responsibilities. Local rehearsal
   does not prove hosted approval, cancellation cleanup or independent compatibility.
-- Fifteen live cases pass together: rejected credentials, login/idle/logout, received
+- Fifteen live cases pass in one strict Windows gate across fresh per-case environments: rejected credentials, login/idle/logout, received
   party join/leave, observed movement/Say/position persistence, single quest, chained quests plus inventory
   persistence and one persisted gil-shop sale/purchase pair, zoning/discovery/cross-zone-party persistence, observed living Return, enemy defeat/rewards,
   natural level-two and level-four progression plus one exact combo, unprovoked source-bound active-vision aggro/defeat, player defeat with independently observed pursuit/leash/reset, source-bound
@@ -2274,3 +2282,40 @@ The new rehearsal still used pre-connection character fixtures, skipped the
 first-run creation UI, and retained an unhandled `0330` command in server logs.
 It is not proof of normal character creation/opening, all client packets,
 headless/real-client quest agreement, cancellation safety or hosted execution.
+
+## Current strict-gate transport and isolation hardening
+
+The current regression increment closes several harness races without weakening
+received-state requirements:
+
+- `Channel` retains an optional completion callback with each asynchronous write.
+  A movement waypoint remains `moving` until its terminal zone frame has actually
+  been published by Asio; `route_sent` is still local transport/prediction evidence
+  and never substitutes for the independent observer.
+- Private profiles may select only integer `deadline_scale` 1..3. The selected
+  value is in every manifest and public allowlisted summary. It multiplies bounded
+  command/state ceilings and the native 30-second zoning watchdog only; there is no
+  fixed sleep, mutation retry, or acknowledgement-as-state fallback.
+- Combat loops now wait for each exact received committed HP value before enabling
+  the next actor, and unprovoked-aggro checks wait for effect plus matching integrity
+  instead of racing a later packet. Full-party teardown publishes the independent
+  logouts concurrently before waiting for every acknowledgement.
+- The strict runner fixes pytest's root explicitly, retains private
+  `gate-diagnostics.json`, provisions a fresh environment per allowlisted case,
+  verifies every staged manifest, and requires every environment's process and
+  runtime cleanup. This avoids accepting prefixed/foreign node IDs or inheriting
+  roaming actors and teardown backlog between cases.
+
+Commits `c56ad6fbe`, `e211f5f33`, `909c27b00`, `6c5540e00`, `028d38eb5`, and
+`e34d695fd` preserve the intermediate diagnosis and final bounded behavior. The
+temporary low-port and alternate-loopback experiments were explicitly reverted
+after proving that WSL host forwarding did not provide a reliable kernel-loopback
+lane; no wildcard or LAN listener support was retained.
+
+The clean current Windows gate described above is the positive verification
+surface. The retained expanded Linux failure is equally important: it proves that
+collection, input binding, and cleanup work on the current GNU worker, but it does
+not prove expanded Linux gameplay compatibility. The older nine-case Linux success
+therefore remains the only green Linux live scope. This requirement stays open
+until a new source-supported scheduling/transport hypothesis produces a clean
+expanded run; repeating the expensive gate without one is not warranted.
