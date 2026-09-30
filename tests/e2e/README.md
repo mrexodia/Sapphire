@@ -4,6 +4,10 @@ This is an external client, not an in-process server bot. Tests use normal HTTP,
 lobby, zone and chat connections. The current worker deliberately accepts only
 loopback endpoints and at most 64 bots per process.
 
+For fast feedback on an already-running local server and watching bots from your
+own character, see [the shared development lane](DEVELOPMENT.md). It is separate
+from isolated acceptance tests and does not own/reset the server or its database.
+
 ## Verified scope
 
 The Windows/3.3 implementation has been exercised against isolated local API,

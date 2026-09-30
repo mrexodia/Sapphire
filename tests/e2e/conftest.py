@@ -4,15 +4,22 @@ import pytest
 
 from .support.environment import Environment
 from .support.worker import Worker
+from .support.timing import PhaseTiming
 
 
 def pytest_addoption(parser):
     parser.addoption("--e2e-worker", help="Path to the headless worker (required for worker contract tests)")
     parser.addoption("--e2e-profile", help="Local disposable-server profile JSON (opts into live E2E)")
+    parser.addoption("--e2e-timings", help="Write pytest setup/call/teardown durations to a NEW JSON file")
 
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "live: requires matching game assets and isolated Sapphire servers")
+    path = config.getoption("--e2e-timings")
+    if path:
+        if Path(path).exists():
+            raise pytest.UsageError("--e2e-timings requires a new output path")
+        config.pluginmanager.register(PhaseTiming(path), "e2e-phase-timing")
 
 
 @pytest.fixture
