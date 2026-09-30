@@ -36,7 +36,13 @@ def test_combat_catalog_rejects_unsupported_action_metadata(patch):
             "blizzard": {"action": 142, "class_job": 7, "work_index": 5, "level": 1,
                          "base_exp": 50, "category": 2, "cost_type": 3, "cost": 4,
                          "range": 25, "cast_ms": 2500, "recast_ms": 2500,
-                         "recast_group": 58, "effect_type": 1, "target_enemy": True}}
+                         "recast_group": 58, "effect_type": 1, "target_enemy": True},
+            "first_fast_blade_combo": {"action": 11, "class_job": 1, "work_index": 1,
+                         "level": 4, "base_exp": 65, "category": 3, "cost_type": 5,
+                         "cost": 60, "range": -1, "cast_ms": 0, "recast_ms": 2500,
+                         "recast_group": 58, "effect_type": 1, "target_enemy": True,
+                         "required_cumulative_exp": 2000, "level_one_enemy_exp": 50,
+                         "minimum_level_one_defeats": 40}}
     assert validate_combat_catalog(data) == data
     with pytest.raises(WorkerError, match="Fast Blade"):
         validate_combat_catalog({**data, **patch})

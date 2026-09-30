@@ -88,7 +88,13 @@ def profile(tmp_path):
               "blizzard": {"action": 142, "class_job": 7, "work_index": 5, "level": 1,
                            "base_exp": 50, "category": 2, "cost_type": 3, "cost": 4,
                            "range": 25, "cast_ms": 2500, "recast_ms": 2500,
-                           "recast_group": 58, "effect_type": 1, "target_enemy": True}}
+                           "recast_group": 58, "effect_type": 1, "target_enemy": True},
+              "first_fast_blade_combo": {"action": 11, "class_job": 1, "work_index": 1,
+                           "level": 4, "base_exp": 65, "category": 3, "cost_type": 5,
+                           "cost": 60, "range": -1, "cast_ms": 0, "recast_ms": 2500,
+                           "recast_group": 58, "effect_type": 1, "target_enemy": True,
+                           "required_cumulative_exp": 2000, "level_one_enemy_exp": 50,
+                           "minimum_level_one_defeats": 40}}
     Path(p["combat_catalog"]).write_text(json.dumps(combat))
     shop = {"version": 1, "profile": "sapphire-3.3", "territory": 130,
             "start_actor": 1001289, "navigation": nav,
@@ -176,6 +182,20 @@ def profile(tmp_path):
                "navigation": nav}
     Path(p["opening_quest_catalog"]).write_text(json.dumps(opening))
     return p
+
+
+@pytest.mark.parametrize("patch", [{"action": 10}, {"level": 3}, {"base_exp": 50},
+    {"required_cumulative_exp": 1999}, {"level_one_enemy_exp": 49},
+    {"minimum_level_one_defeats": 39}])
+def test_combat_catalog_rejects_combo_prerequisite_mismatch(profile, patch):
+    from pathlib import Path
+    from .support.catalog import validate_combat_catalog
+    from .support.worker import WorkerError
+    path = Path(profile["combat_catalog"])
+    data = json.loads(path.read_text())
+    data["first_fast_blade_combo"] = {**data["first_fast_blade_combo"], **patch}
+    with pytest.raises(WorkerError, match="combo prerequisite"):
+        validate_combat_catalog(data)
 
 
 def test_preflight_checks_all_inputs_without_gameplay(profile):

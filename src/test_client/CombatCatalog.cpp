@@ -14,8 +14,8 @@ int main(int argc, char** argv)
     if(!data.init(argv[1])) throw std::runtime_error("cannot initialize game data");
     auto metadata = [&](uint32_t actionId)
     {
-      if(actionId != 3 && actionId != 6 && actionId != 9 && actionId != 53 && actionId != 142)
-        throw std::runtime_error("action is not an enabled level-one ability");
+      if(actionId != 3 && actionId != 6 && actionId != 9 && actionId != 11 && actionId != 53 && actionId != 142)
+        throw std::runtime_error("action is not an enabled audited combat action");
       auto row = data.getRow<Excel::Action>(actionId);
       if(!row) throw std::runtime_error("starting-class action missing");
       const auto& a = row->data();
@@ -39,6 +39,23 @@ int main(int argc, char** argv)
       output["return"] = metadata(6);
       output["bootshine"] = metadata(53);
       output["blizzard"] = metadata(142);
+      auto combo = metadata(11);
+      uint32_t requiredExp = 0;
+      for(uint32_t level = 1; level < combo["level"].get<uint32_t>(); ++level)
+      {
+        auto growth = data.getRow<Excel::ParamGrow>(level);
+        if(!growth || !growth->data().NextExp)
+          throw std::runtime_error("combo prerequisite EXP metadata missing");
+        requiredExp += growth->data().NextExp;
+      }
+      auto levelOne = data.getRow<Excel::ParamGrow>(1);
+      if(!levelOne || !levelOne->data().BaseExp)
+        throw std::runtime_error("level-one enemy EXP metadata missing");
+      combo["required_cumulative_exp"] = requiredExp;
+      combo["level_one_enemy_exp"] = levelOne->data().BaseExp;
+      combo["minimum_level_one_defeats"] =
+        (requiredExp + levelOne->data().BaseExp - 1) / levelOne->data().BaseExp;
+      output["first_fast_blade_combo"] = combo;
     }
     std::ofstream file(argv[2]);
     if(!file || !(file << output.dump(2) << '\n')) throw std::runtime_error("cannot write combat catalog");

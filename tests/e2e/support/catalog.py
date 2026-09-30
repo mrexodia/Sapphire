@@ -368,6 +368,14 @@ def validate_combat_catalog(data):
                 "effect_type": 1, "target_enemy": True}
     if data.get("blizzard") != blizzard:
         raise WorkerError("combat catalog does not match the supported level-one Blizzard profile")
+    first_combo = {"action": 11, "class_job": 1, "work_index": 1, "level": 4, "base_exp": 65,
+                   "category": 3, "cost_type": 5, "cost": 60, "range": -1,
+                   "cast_ms": 0, "recast_ms": 2500, "recast_group": 58,
+                   "effect_type": 1, "target_enemy": True,
+                   "required_cumulative_exp": 2000, "level_one_enemy_exp": 50,
+                   "minimum_level_one_defeats": 40}
+    if data.get("first_fast_blade_combo") != first_combo:
+        raise WorkerError("combat catalog does not match the first source-defined Fast Blade combo prerequisite")
     return data
 
 
