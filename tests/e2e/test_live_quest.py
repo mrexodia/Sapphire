@@ -324,7 +324,8 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                            "request": 0, "result": 0,
                            "effects": [{"type": 54,
                                         "value": catalog["purchase"]["item_action"]["arg"],
-                                        "flag": 0, "args": [0, 0, 0]}]}
+                                        "flag": 0, "args": [0, 0, 0]}],
+                           "source_effects": []}
     observer_effect = worker.wait_state(observer.name,
         lambda s: used_effect in s["combat"]["effects"],
         "independently received exact shop VFX item effect")
