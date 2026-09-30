@@ -195,6 +195,16 @@ class Environment:
     def check_alive(self):
         for name, process in self.processes.items():
             if process.poll() is not None:
+                failure = self.artifacts / "process-failure.json"
+                if not failure.exists():
+                    failure.write_text(json.dumps({
+                        "version": 1,
+                        "classification": "unexpected_process_exit",
+                        "process": name,
+                        "returncode": process.returncode,
+                        "log": f"{name}.log",
+                        "cleanup_required": True,
+                    }, indent=2), encoding="utf-8")
                 raise SetupError(f"{name} exited unexpectedly ({process.returncode}); see {self.artifacts}")
 
     def _wait_port(self, port, timeout=120):
