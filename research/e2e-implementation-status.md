@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 round trips plus one Ring2 round trip, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 and Ring2 round trips, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Locally live-verified on Windows and containerized Ubuntu 22.04; hosted deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 choices and one Ring2 choice plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other Ring2 variants/off-hand/waist, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, off-hand/waist, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -126,7 +126,7 @@ a nearby passing test does not close them.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
-- 257 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 258 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes its strict collection on Windows and Linux. The
   latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
@@ -134,16 +134,16 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
-  gate at `6ea7ed1e7` took **1367.22s**, including source-routed head, ear, neck and wrist purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
+  gate at `486238678` took **1442.07s**, including all four persisted Ring2 branches, source-routed head, ear, neck and wrist purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
   Tell, cross-zone party Tell, independently observed living Return, persisted
   three-stage later-equipment purchase/resale/equip, the quantity-three VFX item action/liquidation,
   observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
-  discovery, Ring2, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-3uhrtpbn`, summary
-  `build-e2e/ci-summary-wrist-shop.json`). Summary SHA-256 is
-  `500ed64780b61bc787850b2c432b9dfc34f22e9b8498dd40a8cac20676dfbea4`,
+  discovery, all Ring2 variants, duplicate-name rejection and normal character deletion
+  (`gameplay-ci-uk4bqhyj`, summary
+  `build-e2e/ci-summary-all-ring2.json`). Summary SHA-256 is
+  `0cf36b62088742d82e22f7396322c34b2d01a0bd0ef4e08512ba2d9c773566cf`,
   private manifest SHA-256 is
-  `253990fc01a081466c679d9e523b7cdfa0eef0bb3d0f2bad9f2fd3ad8cc071ad`, and
+  `25b25018f6d0b4053ac94aefa5d5434845e16c13654144b7a332b4e77f4e1809`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -1245,6 +1245,24 @@ artifact SHA-256 is
 The manifest is clean and its private runtime was removed. Clang, MSVC and GNU
 reward fixtures cover both ring slots and reject non-ring destinations. This is one
 second-ring round trip, not evidence for other accessory types.
+
+At `486238678`, the live matrix closes the remaining Ring2 variants rather than
+extrapolating from item 4423. Each exact freshly authenticated bag identity for
+4423, 4424, 4425 and 4426 is independently moved to empty `1000:12`; each operation
+receipt remains non-proof until a separate world restart and fresh HTTP/lobby/world
+session proves the exact Ring2 identity and complete inventory. Each reverse move
+is likewise followed by another fresh login proving the original bag slot and full
+reward state. All four Ring1 and all four Ring2 paths therefore have direct live
+persistence evidence while the existing exact native fixtures cover every ID/slot
+pair and reject non-ring destinations. The clean case passed in **207.62s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-4u598gz4`; manifest SHA-256 is
+`f78758c8111b04a94e6760a7699f4a67c25f0c218505c0a78a3d6c974599ee1f`,
+`character-creation-opening.json` SHA-256 is
+`bf72627014cf87952eb4406e4a8c25c428e3fee90a86833fe9a9939f273bb1a1`, and event
+journal SHA-256 is
+`a1083a020a427719f3342fb18573b155f38ff08651cfc162952f4e6dfbd2f8dc`.
+The source is clean and runtime removal is confirmed. This closes the exact
+source-defined Ring2 matrix, not arbitrary accessories or other creation choices.
 
 At `694802919`, the first fully evidenced disposable creation branch is then deleted
 through the normal encrypted lobby operation. The request is built only from its

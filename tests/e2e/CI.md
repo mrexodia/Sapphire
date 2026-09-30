@@ -115,19 +115,20 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this twelve-scenario headless suite only.
 
-Latest local evidence: clean revision `6ea7ed1e7` passed the twelve-case strict gate
-in 1367.22 seconds with zero skips/errors/failures, exact collection and staged-input
-identity, and removed private runtime. This includes source-routed second-/third-/fourth-shop
+Latest local evidence: clean revision `486238678` passed the twelve-case strict gate
+in 1442.07 seconds with zero skips/errors/failures, exact collection and staged-input
+identity, and removed private runtime. This includes all four persisted Ring2
+branches and source-routed second-/third-/fourth-shop
 head, ear, neck and wrist purchases/equips, restart-proven generic currency-move rejection, same- and
 cross-zone nonparty Tell, cross-zone party Tell, independently observed living
 Return, persisted three-stage later-equipment purchase/resale/equip, the quantity-
 three VFX action/liquidation, source-bound observed Sprint, the full eight-member
-party lifecycle, two persisted discovery parts/shapes, Ring2, duplicate-name
-rejection and normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-wrist-shop.json` (SHA-256
-`500ed64780b61bc787850b2c432b9dfc34f22e9b8498dd40a8cac20676dfbea4`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-3uhrtpbn` and private manifest
-SHA-256 `253990fc01a081466c679d9e523b7cdfa0eef0bb3d0f2bad9f2fd3ad8cc071ad`;
+party lifecycle, two persisted discovery parts/shapes, duplicate-name rejection
+and normal lobby deletion with fresh-session absence proof. Evidence is
+`build-e2e/ci-summary-all-ring2.json` (SHA-256
+`0cf36b62088742d82e22f7396322c34b2d01a0bd0ef4e08512ba2d9c773566cf`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-uk4bqhyj` and private manifest
+SHA-256 `25b25018f6d0b4053ac94aefa5d5434845e16c13654144b7a332b4e77f4e1809`;
 this is local, not hosted execution.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict

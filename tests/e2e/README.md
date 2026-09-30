@@ -99,11 +99,11 @@ lobby, world and MariaDB processes with matching game data:
   equipped from its exact freshly observed bag slot into Ring1; restart proves all
   seven starter-gear restores and all four ring equips. A reverse ring operation is
   proved by another fresh login returning it to the exact original bag slot. The
-  first ring then completes a separate Ring2 equip across world restart and an
+  each ring then completes a separate Ring2 equip across world restart and an
   unequip proved by another fresh login; source rows bind all four items to
-  single-stack equip-slot category 12. After all retained evidence, that disposable
-  a second empty account receives the exact source duplicate-name rejection for the
-  first character. After all retained evidence, that character is deleted through
+  single-stack equip-slot category 12. A second empty account receives the exact
+  source duplicate-name rejection for the first character. After all retained
+  evidence, that character is deleted through
   the encrypted lobby; a refreshed list and then a new HTTP/lobby session
   independently prove absence rather than trusting the reply.
   Receipts are never treated as mutation proof. Each branch also walks a generated
@@ -115,8 +115,8 @@ lobby, world and MariaDB processes with matching game data:
   2 (scene 40→30) survive restart. The generated giver-to-Momodi route fails closed
   as `incomplete navigation corridor`, so turn-in, the quest's 50 EXP/103 gil and
   public-Ul'dah travel are not claimed. This covers all five Gladiator starter
-  equipment slots, each distinct starter main hand, all four Ring1 choices, one
-  Ring2 round trip, one purchased later leg item/equip and the supported opening
+  equipment slots, each distinct starter main hand, all four Ring1 and Ring2
+  round trips, one purchased later leg item/equip and the supported opening
   subset, not other accessory types, off-hand/head/waist, other later gear,
   appearance breadth, other cities/classes or the complete opening.
 - A fresh living non-GM player in Central Thanalan performs source-catalogued Return
