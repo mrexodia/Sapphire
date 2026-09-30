@@ -69,8 +69,8 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
     assert math.dist(state["predicted_position"], bound["position"]) > 15
     assert not state["combat"]["effects"] and not state["combat"]["starts"]
 
-    approached = fighter.walk_route(pursuit["proximity_route"], 6.0, 30)
-    live_worker.wait_state(
+    fighter.walk_route(pursuit["proximity_route"], 6.0, 30)
+    approach_seen = live_worker.wait_state(
         witness.name,
         lambda s: str(entity) in s["actors"]
                   and math.dist(s["actors"][str(entity)]["position"],
@@ -132,7 +132,7 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
         "approach_start": pursuit["proximity_route"][0],
         "approach_end": pursuit["proximity_route"][-1],
         "witness_position": pursuit["proximity_witness_position"],
-        "fighter_position_after_route": approached["predicted_position"],
+        "fighter_position_after_route": approach_seen["actors"][str(entity)]["position"],
         "first_unprovoked_effect": effect,
         "fighter_hp_before": before["hp"],
         "fighter_hp_after_first_effect": first["actors"][str(entity)]["hp"],
