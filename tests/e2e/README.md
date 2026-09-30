@@ -586,8 +586,9 @@ validator requires supported level-one Gladiator/Fast Blade, Pugilist/Bootshine
 and Thaumaturge/Blizzard metadata (received TP or MP, exact cast/recast and source-
 defined range). It additionally binds level-two Pugilist True Strike 54 and records,
 but does not enable, the first server-represented Fast Blade combo follow-up:
-level-four Savage Blade 11, 2,000 cumulative source EXP and a minimum 40 of the
-exact evidenced 50-EXP level-one defeats. The latter is source prerequisite
+level-four Savage Blade 11, 2,000 cumulative source EXP and either a minimum 40
+exact evidenced 50-EXP level-one defeats or 18 exact evidenced 115-EXP level-14
+defeats when either source is used exclusively. The latter is source prerequisite
 evidence, not independent client or combo-execution evidence.
 
 `test_live_combat.py` places fresh characters one metre laterally from a spawn in
@@ -644,6 +645,21 @@ both clients then require the same action-54 damage and exact committed HP, whil
 the actor requires group-58/250-centisecond start metadata. No EXP, level, ability,
 TP or enemy is granted. This proves one exact level-up and level-two ability, not a
 combo, positional bonus, general progression or exact TP debit.
+
+`test_live_high_level_combat.py` binds the existing level-14 layout 3749193 and
+source 115-EXP reward. Four ordinary Gladiators attack while a fifth client remains
+a non-attacking witness. Every request requires received TP/range/living state;
+all five clients must receive each identical effect and matching committed HP.
+Every attacker must receive exact EXP/complete test-table loot while the witness
+remains unchanged, followed by exact fresh-authentication persistence after a world
+restart. This proves only that exact shared-hate reward path, not party contribution,
+general scaling, arbitrary enemies or capacity. Eighteen such rewards would meet
+the source 2,000-EXP level-four threshold; the scenario performs one and makes no
+combo claim. A retained diagnostic found no received self-targeted `TypeCombo`
+marker after an otherwise successful Fast Blade, so `nextCombo` metadata is not
+accepted as runtime combo-readiness proof. A future level-four scenario must first
+establish an exact received readiness/success semantic rather than relying on a
+timer or server debug text.
 
 The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
 Received rewards must be exactly 50 EXP, no level/currency change, one five-item
@@ -900,7 +916,7 @@ runtime, raw database, game assets, local profiles or unredacted configs.
 `.github/workflows/test-client.yml` builds and tests the asset-independent client
 on Linux and Windows. It does **not** provision game data, run gameplay tests, or
 claim real-client compatibility. The opt-in `gameplay-e2e.yml` workflow and
-`python -m tests.e2e.run_ci` entry point implement a separate thirteen-case gameplay
+`python -m tests.e2e.run_ci` entry point implement a separate fourteen-case gameplay
 gate, with strict preflight, no skips, staged-input identity and cleanup checks.
 Only an allowlisted summary is publishable; raw pytest/JUnit and gameplay logs
 stay private. See [CI.md](CI.md) for runner access restrictions, approval settings,

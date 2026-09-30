@@ -30,10 +30,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike, Thaumaturge Blizzard and one four-attacker level-14 defeat with shared persisted rewards; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
 | Range/discovery/territory event triggers | Curated bidirectional physical ExitRange crossings, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
-| Deterministic authored regression suite | Thirteen allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
+| Deterministic authored regression suite | Fourteen allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
@@ -85,7 +85,7 @@ a nearby passing test does not close them.
 | Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
 | Progress watchdog and bounded replanning | workload movement requires every waypoint from an independent observer; exploration permits one recorded fresh-session replan only from the same curated corridor, while soak/regression fail without recovery | Verified for bounded workload navigation; no general-navigation replanner claim |
 | Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
-| Authored regression mode | strict thirteen-case allowlist plus native/Python contracts | Verified for supported suite |
+| Authored regression mode | strict fourteen-case allowlist plus native/Python contracts | Verified for supported suite |
 | Seeded exploration mode | v1/v2 plans, allowlisted preconditions, decisions, observations and replay | Verified for walk/Say/heartbeat/reconnect subset |
 | Soak/load mode | bounded ramp/pacing/actions, liveness and process/worker resource samples | Verified as bounded smoke and 30-minute low-rate evidence; not capacity/overnight proof |
 | Record actual actions, not seed alone | plan/outcome/checkpoint journals retain semantic order, limits and observations; replay warns that scheduling is nondeterministic | Verified |
@@ -126,7 +126,7 @@ a nearby passing test does not close them.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
-- 265 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 268 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes its strict collection on Windows and Linux. The
   latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
@@ -134,14 +134,14 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows
-  **thirteen-case** gate at `93b4914d6` took **2051.124s**, adding six naturally
-  rewarded level-one Pugilist defeats, six clean world restarts/fresh persistence
-  checks, received level 1→2 progression and independently witnessed True Strike
-  to the previous bidirectional-zoning suite (`gameplay-ci-hqrpgt3e`, summary
-  `build-e2e/ci-summary-level-two-progression.json`). Summary SHA-256 is
-  `93cf5e2014e1edd0def48c364d787fa3e8d9a8b0731359b9c48b28701cae61b7`,
+  **fourteen-case** gate at `7bf5716a1` took **2176.473s**, retaining natural
+  level-two progression and adding one four-attacker natural level-14 defeat with
+  exact shared rewards, a non-attacking witness and restart persistence
+  (`gameplay-ci-zfu301c6`, summary
+  `build-e2e/ci-summary-high-level-combat.json`). Summary SHA-256 is
+  `f7e9593f607022fd70c30d3c3f65e04aa91048122cfca39129b68e1850d1c686`,
   private manifest SHA-256 is
-  `4dee86612114e4e03f708751a8e795c6738b5530a0e4b75c26f208fcc1865aea`, and
+  `9909a377f285797106158eb62305edcd973c2a52cfe4c2caa7ad6f8ea9278200`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -864,6 +864,52 @@ recorded above repeats the complete path; its progression artifact SHA-256 is
 `54dd46a7ebafdec9e57294ccf6565bed1810ba4174264a0610f407b8fdeb83a7`.
 This proves one exact natural level-up and one level-two ability, not general
 progression, arbitrary abilities, positional bonuses or combo semantics.
+
+At `7bf5716a1`, four fresh level-one Gladiators and a fifth non-attacking witness
+bind exact natural layout 3749193/base 302: a level-14 enemy with 237 received HP
+and source `ParamGrow` reward 115 EXP. The attackers use only ordinary Fast Blade
+requests. Before every hit all five clients require the same current target HP,
+the acting fighter's living state and independently received melee range; after
+every hit all five require the identical effect/result ID and exact matching
+committed HP. The clean focused run required 29 such effects and every attacker
+contributed, while the witness never attacked.
+
+Every attacker then received exact 115 EXP and one complete current-`testTable`
+loot result; the witness's reward snapshot remained byte-for-byte semantically
+unchanged. After all five clients independently observed delayed removal, normal
+logout and one clean world restart, four fresh HTTP/lobby/world sessions returned
+each attacker's exact EXP and complete inventory. No enemy, damage, HP, TP, EXP or
+loot was injected or granted. The focused case passed in **124.32s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-dsyhokdl`; manifest SHA-256 is
+`6ec94ad6c47a35dc79dbf0053421dda9dca69c0c7d892716a03ebfcb48b7bef3`,
+`combat-high-level-multi-attacker.json` SHA-256 is
+`ac3dac165b2ae6295b0c93c35b2aeddef476beb6357ca214d170630583b77755`,
+and journal SHA-256 is
+`03ca9d897b6e6830bc773b50ca194b7e044bf3097ea87c0cd80539eec81c97f7`.
+The exact committed revision is clean and its runtime was removed.
+
+The expanded source catalog also establishes that 2,000 EXP requires at least 18
+of this exact 115-EXP enemy, versus 40 exact 50-EXP enemies. That narrows a normal
+level-four path but is not combo evidence and does not justify grants or a synthetic
+level. The full suite reports **268 passed, 14 skipped** with Clang/MSVC/GNU
+workers. The clean fourteen-case gate repeats this scenario; its high-level artifact
+SHA-256 is
+`902d148d96c8cfe67efad47945c32bcc15c092db7134b68231bce3af54a38dee`.
+This proves one exact multi-attacker hate/reward path, not general reward sharing,
+level scaling, party contribution policy, combat capacity or arbitrary enemies.
+
+A subsequent diagnostic required every nearby client to receive a self-targeted
+Fast Blade `TypeCombo` (`0x1d`) readiness result matching the exact action/request.
+It timed out after the actor had received the ordinary action-9 damage, committed
+HP and group-58 start; no such result existed in the retained combat state. The
+failed run is preserved at
+`.e2e-artifacts/discovery-live/sapphire-e2e-o1o1wxk2` (event journal SHA-256
+`20ccd013426163a5304c54ddfdf83364415278cc5c571a45496a101b6c43f535`), with its
+runtime removed, and is not success evidence. This does not prove combos impossible,
+but it means the apparent `nextCombo` table entry is not enough to claim received
+combo readiness. Before paying the 18-defeat progression cost, a combo scenario
+still needs defensible received binding and exact success-result semantics (or a
+separately verified server publication fix), not timing alone or debug text.
 
 At `569a02898`, the same case adds source-defined Thaumaturge Blizzard 142
 (`WorkIndex=5`, MP cost metadata 3/4, 2.5s cast/recast and 25-unit range). A fresh
@@ -1928,10 +1974,13 @@ compatibility.
    current-test-table rewards: broader aggro/leash and enemy-reset policy, raises, combos and broader abilities
    and production loot selection remain uncovered. The first server-represented
    Fast Blade combo is source-level 4 and requires 2,000 cumulative EXP (at least
-   40 of the exact currently evidenced 50-EXP defeats); Bootshine/True Strike is
+   18 exact evidenced 115-EXP level-14 defeats or 40 exact 50-EXP defeats if each
+   is used exclusively); Bootshine/True Strike is
    not a valid server-table combo substitute. Preserve observed resource/range
    checks, require genuine navigation for any pursuit, and do not replace a
-   bounded progression test with a grant or fixture-edited level.
+   bounded progression test with a grant or fixture-edited level. Establish an
+   exact received combo-ready/success signal before spending the evidenced
+   18-defeat minimum; Fast Blade currently publishes no decoded `TypeCombo` marker.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond
    the first Ul'dah opening branch; unknown content must still fail. Instance entry
    is not currently a defensible shortcut: `findContent` accepts a requested
@@ -1942,7 +1991,7 @@ compatibility.
    journey and exact received eligibility/match semantics.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   The separate 30-minute paced workload is not part of the thirteen-case CI gate.
+   The separate 30-minute paced workload is not part of the fourteen-case CI gate.
 5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
    coverage and independently captured trace/layout checks. Strengthen fault and
    cancellation coverage separately from successful-path evidence. Do not alter

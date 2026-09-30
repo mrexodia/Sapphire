@@ -113,18 +113,17 @@ separate evidence that its binaries came from the checkout.
   upload glob to include these directories, catalogs, assets or runtime trees.
 - Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. A passed summary covers this thirteen-scenario headless suite only.
+  local run. A passed summary covers this fourteen-scenario headless suite only.
 
-Latest local evidence: clean revision `93b4914d6` passed the thirteen-case strict
-gate in 2051.124 seconds with zero skips/errors/failures, exact collection and
-staged-input identity, and removed private runtime. In addition to the prior
-bidirectional-zoning suite, it performs six independently witnessed natural
-Pugilist defeats, six clean world restarts, exact persisted inventory/EXP checks,
-received level 1→2 progression and independently witnessed True Strike. Evidence
-is `build-e2e/ci-summary-level-two-progression.json` (SHA-256
-`93cf5e2014e1edd0def48c364d787fa3e8d9a8b0731359b9c48b28701cae61b7`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-hqrpgt3e` and private manifest
-SHA-256 `4dee86612114e4e03f708751a8e795c6738b5530a0e4b75c26f208fcc1865aea`;
+Latest local evidence: clean revision `7bf5716a1` passed the fourteen-case strict
+gate in 2176.473 seconds with zero skips/errors/failures, exact collection and
+staged-input identity, and removed private runtime. It retains natural level-two
+progression and adds one four-attacker level-14 defeat with an independent
+non-attacking witness, exact shared EXP/loot and restart persistence. Evidence is
+`build-e2e/ci-summary-high-level-combat.json` (SHA-256
+`f7e9593f607022fd70c30d3c3f65e04aa91048122cfca39129b68e1850d1c686`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-zfu301c6` and private manifest
+SHA-256 `9909a377f285797106158eb62305edcd973c2a52cfe4c2caa7ad6f8ea9278200`;
 this is local, not hosted execution. A retained preflight diagnostic at
 `.e2e-artifacts/ci/gameplay-ci-xa4osh_n` rejected the stale generated shop catalog
 before provisioning; the passing run regenerated the exact current source catalog
