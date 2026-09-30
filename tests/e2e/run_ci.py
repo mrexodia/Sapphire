@@ -202,7 +202,8 @@ def run(profile_path, private_root, summary_path, *, worker=None, binaries=None,
                 with (private / "pytest.log").open("w", encoding="utf-8") as log, contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
                     import pytest
                     gate = EvidenceGate()
-                    code = pytest.main([*SUITES, "--e2e-profile", str(local_profile), "-q", "--capture=sys",
+                    code = pytest.main([*SUITES, "--rootdir", str(REPO),
+                                        "--e2e-profile", str(local_profile), "-q", "--capture=sys",
                                         "-o", "addopts=", "-p", "no:cacheprovider", "--strict-markers",
                                         "--junitxml", str(private / "live.xml")], plugins=[gate])
                 report.update(gate.summary(code))

@@ -27,13 +27,25 @@ class SetupError(RuntimeError):
 
 
 def allocate_ports(count):
-    # Hold all reservations together to avoid selecting the same port twice.
+    if type(count) is not int or not 1 <= count <= 32:
+        raise ValueError("port reservation count must be 1..32")
+    # Hold all reservations together and stay below the normal Linux/Windows
+    # ephemeral ranges. WSL host forwarding can race a listener that reuses the
+    # ephemeral port selected by bind(..., 0) immediately after reservation close.
     sockets = []
+    attempts = 0
     try:
-        for _ in range(count):
+        while len(sockets) < count and attempts < 1024:
+            attempts += 1
             sock = socket.socket()
-            sock.bind(("127.0.0.1", 0))
+            try:
+                sock.bind(("127.0.0.1", 20000 + secrets.randbelow(10000)))
+            except OSError:
+                sock.close()
+                continue
             sockets.append(sock)
+        if len(sockets) != count:
+            raise SetupError("could not reserve bounded loopback ports")
         return [s.getsockname()[1] for s in sockets]
     finally:
         for sock in sockets:

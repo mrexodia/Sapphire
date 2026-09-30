@@ -264,8 +264,16 @@ def test_nondefault_fixture_requires_explicit_position():
         env.fresh_character(territory=141)
 
 
-def test_ports_are_distinct():
-    assert len(set(allocate_ports(4))) == 4
+def test_ports_are_distinct_and_outside_ephemeral_ranges():
+    ports = allocate_ports(4)
+    assert len(set(ports)) == 4
+    assert all(20000 <= port < 30000 for port in ports)
+
+
+@pytest.mark.parametrize("count", [True, 0, 33])
+def test_port_reservation_count_is_bounded(count):
+    with pytest.raises(ValueError, match="1..32"):
+        allocate_ports(count)
 
 
 def test_unknown_scene_never_sends_a_result():
