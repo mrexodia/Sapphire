@@ -530,8 +530,13 @@ or real-client shop UI.
 The full-build metadata tool reads the same LGB exit/pop-range data used by
 Sapphire. Required layers must parse. Unsupported optional planner layers are
 explicitly listed in the output, matching the server's fallback to its three
-required layers. The curated profile supports enabled ordinary box exits from
-territory 130, not arbitrary teleports, housing, tilted volumes or general triggers.
+required layers. The curated profile supports the exact enabled ordinary box pair 2377056
+(130→141/pop 2372271) and 2372269 (141→130/pop 2377058), not arbitrary teleports,
+housing, tilted volumes or general triggers. The live journey walks the complete
+outbound route, both discovery routes and a 755-point/~359.63m source-navmesh return
+route. Independent clients witness both exit-volume arrivals and both destination
+arrivals; fresh authentication after world restart proves the final public-Ul'dah
+territory/position plus retained discovery/EXP state.
 
 ```sh
 cmake --build build --target sapphire_test_transitions sapphire_test_navbuild --config Debug

@@ -115,9 +115,10 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this twelve-scenario headless suite only.
 
-Latest local evidence: clean revision `486238678` passed the twelve-case strict gate
-in 1442.07 seconds with zero skips/errors/failures, exact collection and staged-input
-identity, and removed private runtime. This includes all four persisted Ring2
+Latest local evidence: clean revision `1be6fc6dc` passed the twelve-case strict gate
+in 1665.89 seconds with zero skips/errors/failures, exact collection and staged-input
+identity, and removed private runtime. This includes bidirectional physical
+Ul'dah/Central Thanalan zoning and all four persisted Ring2
 branches and source-routed second-/third-/fourth-shop
 head, ear, neck and wrist purchases/equips, restart-proven generic currency-move rejection, same- and
 cross-zone nonparty Tell, cross-zone party Tell, independently observed living
@@ -125,11 +126,14 @@ Return, persisted three-stage later-equipment purchase/resale/equip, the quantit
 three VFX action/liquidation, source-bound observed Sprint, the full eight-member
 party lifecycle, two persisted discovery parts/shapes, duplicate-name rejection
 and normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-all-ring2.json` (SHA-256
-`0cf36b62088742d82e22f7396322c34b2d01a0bd0ef4e08512ba2d9c773566cf`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-uk4bqhyj` and private manifest
-SHA-256 `25b25018f6d0b4053ac94aefa5d5434845e16c13654144b7a332b4e77f4e1809`;
-this is local, not hosted execution.
+`build-e2e/ci-summary-bidirectional-zoning-clean.json` (SHA-256
+`66ca01f5ad5f0d4ad1e9b4716c96c3eb0450c8bf1026f80a74e8a8dedf32a3db`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-oivuf_ng` and private manifest
+SHA-256 `e38f5d7031e9acb64bd2a82cd092047c36bd0be2e1374faf1be0e4756436e361`;
+this is local, not hosted execution. A retained preflight diagnostic at
+`.e2e-artifacts/ci/gameplay-ci-xa4osh_n` rejected the stale generated shop catalog
+before provisioning; the passing run regenerated the exact current source catalog
+rather than weakening identity validation.
 
 Earlier local evidence: clean revision `8ca87f3f1` passed the nine-case strict
 gate in 620.91 seconds with no skips/errors/failures, exact collection and staged-

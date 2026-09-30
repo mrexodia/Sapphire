@@ -20,7 +20,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
-| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 and Ring2 round trips, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards/public travel; appearance breadth and other cities/classes remain uncovered |
+| Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 and Ring2 round trips, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards and that opening's private-to-public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Locally live-verified on Windows and containerized Ubuntu 22.04; hosted deployment unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
@@ -30,8 +30,8 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
-| Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
+| Range/discovery/territory event triggers | Curated bidirectional physical ExitRange crossings, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
@@ -73,12 +73,12 @@ a nearby passing test does not close them.
 | Ordered journal and race-safe waits | sequenced bounded worker events; Python state/event versions registered before triggers | Verified |
 | Base/layout/runtime identity separation | versioned catalogs bind source actor/event IDs and resolve received runtime entities | Verified for catalogued content |
 | Core semantic API | login/select/world-ready/logout, movement, interaction, scene choice, quest/reward expectations are wrapped above raw packets | Verified for supported subset |
-| Later combat/social/transition/instance API | natural combat, Say, exact direct Tell, a full-roster party lifecycle, same-/cross-zone party chat and one physical zone transition are live | **Partial:** instance entry is absent; combat/social/transition breadth is narrow |
+| Later combat/social/transition/instance API | natural combat, Say, exact direct Tell, a full-roster party lifecycle, same-/cross-zone party chat and one bidirectional physical zone-transition pair are live | **Partial:** instance entry is absent; combat/social/transition breadth is narrow |
 | Action preconditions/transitions/deadlines/diagnostics | native guards, Python predicates, per-action timeouts and journals | Verified for enabled methods |
 | Scene adapter: approach→interact→observe→choose→finish→state | live quest, shop and opening scenarios use explicit catalogs and received identities | Verified for supported one/two-result and opening chains |
 | Unknown scenes fail closed | worker/policy contracts; workload invariant rejects any unexpected scene | Verified |
 | Yield/resume scene exchange | Server logs prove quest yield is unimplemented and no established resume packet/result exists | **Blocked; unsupported capability is explicit** |
-| Range/discovery/territory triggers | physical ExitRange crossing plus source-bound enter-territory, opening WithinRange and two Central Thanalan discovery operations | **Partial:** exact sphere and rotated-box discovery paths are verified, but general adapters are absent |
+| Range/discovery/territory triggers | bidirectional physical ExitRange crossings plus source-bound enter-territory, opening WithinRange and two Central Thanalan discovery operations | **Partial:** exact sphere and rotated-box discovery paths are verified, but general adapters are absent |
 | Curated waypoint stage | independently observed quest/shop/transition/pursuit routes | Verified |
 | Navmesh routing for selected territories | matching TSET catalogs/meshes for territories 130 and 141; disconnected/off-mesh routes fail closed | Verified for selected corridors only |
 | Content-aware transitions/doors/dynamic obstacles | one source-defined exit volume is crossed | **Partial:** general transitions, doors and dynamic obstacles are absent |
@@ -134,16 +134,16 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
-  gate at `486238678` took **1442.07s**, including all four persisted Ring2 branches, source-routed head, ear, neck and wrist purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
+  gate at `1be6fc6dc` took **1665.89s**, including bidirectional physical Ul'dah/Central Thanalan zoning, all four persisted Ring2 branches, source-routed head, ear, neck and wrist purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
   Tell, cross-zone party Tell, independently observed living Return, persisted
   three-stage later-equipment purchase/resale/equip, the quantity-three VFX item action/liquidation,
   observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
   discovery, all Ring2 variants, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-uk4bqhyj`, summary
-  `build-e2e/ci-summary-all-ring2.json`). Summary SHA-256 is
-  `0cf36b62088742d82e22f7396322c34b2d01a0bd0ef4e08512ba2d9c773566cf`,
+  (`gameplay-ci-oivuf_ng`, summary
+  `build-e2e/ci-summary-bidirectional-zoning-clean.json`). Summary SHA-256 is
+  `66ca01f5ad5f0d4ad1e9b4716c96c3eb0450c8bf1026f80a74e8a8dedf32a3db`,
   private manifest SHA-256 is
-  `25b25018f6d0b4053ac94aefa5d5434845e16c13654144b7a332b4e77f4e1809`, and
+  `e38f5d7031e9acb64bd2a82cd092047c36bd0be2e1374faf1be0e4756436e361`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -233,7 +233,33 @@ a nearby passing test does not close them.
   `58f8bc182e401cab62b53de4cdefb7b2d4f6113d2266a278e2fb82fc31ddc703`, and
   bounded event-journal SHA-256 is
   `3375fae3a5762c388545d92ce90f6336ddf4e17b622f1032a3c6fe2bb762e8b3`.
-  The source is clean and runtime removal is confirmed. The first expanded strict
+  At `1be6fc6dc`, the journey continues from part 3 over a second complete
+  source-navmesh route to exact reverse exit 2372269. The 755-point route is
+  **359.629710m** and begins at the independently witnessed discovery endpoint;
+  every requested waypoint is received. The existing Central Thanalan observer
+  independently sees the traveler inside the conservative reverse-exit volume.
+  The bounded action accepts only the exact 141→130 source tuple (exit 2372269,
+  destination pop 2377058) in addition to the exact existing 130→141 tuple, and
+  rejects mismatched territory/exit/pop bindings. The source observer, already
+  independently identified before the outbound crossing, receives the returning
+  traveler at public-Ul'dah pop `[40.215672,4,-148.808304]`, exact Say and later
+  departure. Both channels advance after return. A world restart and fresh HTTP/
+  lobby/world session—not the zone-jump request—prove territory 130, exact arrival
+  position, both discovery bits and unchanged 30 EXP. The clean focused case passed
+  in **561.87s** at `.e2e-artifacts/discovery-live/sapphire-e2e-1sybq9ei`;
+  manifest SHA-256 is
+  `486eb2cb442a12659f0c996fba6df0888e5afbc28623b9c2633a9a7eb82f83c6`,
+  `bidirectional-transition.json` SHA-256 is
+  `bcef1764d5c0e253c497fe00fdaf87833710ba31e05e60a5725af1172d7ef4e6`,
+  discovery artifact SHA-256 is
+  `93be66c13159456b1f98476326263463c5dfe997c441c1a508f0ec5c7ec47680`, and event
+  journal SHA-256 is
+  `a659ca49605aa8724b81b08f0a688641b85987d883e040305d7b3f37849166f8`.
+  The source is clean and runtime removal is confirmed. This proves one exact
+  bidirectional public-territory pair, not general exits, doors, dynamic obstacles
+  or the private opening-territory route.
+
+  The first expanded strict
   gate preserved a 9/10 failure: longer world uptime let the source-layout defeat
   target roam 11m before the fighter connected, exposing a stale same-spawn-point
   assumption. At `56911f505`, initial selection binds the exact source layout and a
