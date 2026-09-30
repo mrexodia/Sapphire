@@ -81,7 +81,7 @@ a nearby passing test does not close them.
 | Range/discovery/territory triggers | bidirectional physical ExitRange crossings plus source-bound enter-territory, opening WithinRange and two Central Thanalan discovery operations | **Partial:** exact sphere and rotated-box discovery paths are verified, but general adapters are absent |
 | Curated waypoint stage | independently observed quest/shop/transition/pursuit routes | Verified |
 | Navmesh routing for selected territories | matching TSET catalogs/meshes for territories 130 and 141; disconnected/off-mesh routes fail closed | Verified for selected corridors only |
-| Content-aware transitions/doors/dynamic obstacles | one source-defined exit volume is crossed | **Partial:** general transitions, doors and dynamic obstacles are absent |
+| Content-aware transitions/doors/dynamic obstacles | one source-defined bidirectional exit pair is crossed | **Partial:** normal dynamic-door code is instance-bound and currently blocked by unavailable normal instance entry; debug obstacle toggles are not evidence |
 | Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
 | Progress watchdog and bounded replanning | workload movement requires every waypoint from an independent observer; exploration permits one recorded fresh-session replan only from the same curated corridor, while soak/regression fail without recovery | Verified for bounded workload navigation; no general-navigation replanner claim |
 | Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
@@ -259,6 +259,21 @@ a nearby passing test does not close them.
   The source is clean and runtime removal is confirmed. This proves one exact
   bidirectional public-territory pair, not general exits, doors, dynamic obstacles
   or the private opening-territory route.
+
+  A source audit bounds the missing navigation stage rather than substituting a
+  debug toggle. `EventObject::setCollisionEnabled()` does update Detour box/sphere/
+  cylinder obstacles, and normal instance code uses it: Sastasha's hidden door is
+  disabled only after the Chopper encounter reaches `SUCCESS` and the ordinary
+  touch event runs. `Encounter` also owns lockout collision transitions. Those
+  actors and state machines exist inside instance content, while the current
+  normal duty path remains unavailable: `findContent` trusts an arbitrary requested
+  territory and `cfDutyAccepted` still logs `TODO: Duty accept`, with no received
+  unlock eligibility in the fixtures. The only direct open-world obstacle toggle
+  found is `DebugCommandMgr`'s debug `obstacle` command. Entering Sastasha through
+  the trusted duty request, fixture placement or the debug command would therefore
+  violate the E2E boundary. Door/dynamic-obstacle coverage is source-blocked until
+  normal unlock, matchmaking/acceptance and instance-entry semantics are complete;
+  the physical exit pair is not a door proxy.
 
   The first expanded strict
   gate preserved a 9/10 failure: longer world uptime let the source-layout defeat

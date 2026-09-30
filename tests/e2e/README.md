@@ -570,6 +570,15 @@ manifest path/hash alone is not evidence that a server successfully loaded a mes
 Destination observers start at the catalog pop point in a whitelisted public
 territory before their first connection; the traveler crosses only through packets.
 
+Dynamic doors are not approximated by this exit. The server can toggle Detour
+collision for event objects, and Sastasha normally disables its hidden-door
+collision only after the Chopper encounter succeeds and an ordinary touch event
+runs. That path is instance-bound. Current duty selection trusts a requested
+territory and duty acceptance is explicitly unfinished, while the only direct
+open-world obstacle toggle is a debug command. Until normal unlock/acceptance/entry
+semantics exist, neither a trusted duty request nor the debug toggle is valid E2E
+door evidence.
+
 ## Opening quest acceptance catalog
 
 ```sh
