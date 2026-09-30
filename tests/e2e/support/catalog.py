@@ -286,7 +286,9 @@ def validate_shop_catalog(data):
     if data.get("equipment_gap_scan") != {
             "available_gil": 208, "maximum_equip_level": 1,
             "off_hand": {"source_slot": 2, "listed_candidates": 0, "routed_candidates": 0},
-            "waist": {"source_slot": 6, "listed_candidates": 0, "routed_candidates": 0}}:
+            "waist": {"source_slot": 6, "listed_candidates": 0, "routed_candidates": 0},
+            "overflow_merge": {"required_units": "stack_max_plus_one",
+                               "listed_candidates": 0, "routed_candidates": 0}}:
         raise WorkerError("source shop equipment-gap scan changed")
     shop = data.get("shop", {})
     if (set(shop) != {"layout_id", "base_id", "event_id", "position"}

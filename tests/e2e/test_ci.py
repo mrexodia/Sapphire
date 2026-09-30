@@ -122,7 +122,10 @@ def profile(tmp_path):
                                     "off_hand": {"source_slot": 2, "listed_candidates": 0,
                                                    "routed_candidates": 0},
                                     "waist": {"source_slot": 6, "listed_candidates": 0,
-                                                "routed_candidates": 0}}}
+                                                "routed_candidates": 0},
+                                    "overflow_merge": {"required_units": "stack_max_plus_one",
+                                                        "listed_candidates": 0,
+                                                        "routed_candidates": 0}}}
     Path(p["shop_catalog"]).write_text(json.dumps(shop))
     respawn = {"version": 1, "profile": "sapphire-3.3", "homepoint": 9, "territory": 130,
                "pop_range": {"id": 1, "position": [0, 0, 0], "rotation": [0, 0, 0]}}
