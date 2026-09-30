@@ -148,8 +148,11 @@ lobby, world and MariaDB processes with matching game data:
   through zero. The defeated fighter then sends the bounded return command, reaches
   its source-bound Ul'dah homepoint at full HP, is observed there by a third client,
   and preserves that position/HP after restart. Both clients also receive the
-  leashed enemy's ordinary HUD update restoring 237/237 HP. This proves one
-  leash/position/health reset, not general aggro policy, raises or death penalties.
+  leashed enemy's ordinary HUD update restoring 237/237 HP. Exact received EXP,
+  level, currency, item totals and complete inventory also remain unchanged while
+  dead, after return and after restart. This proves one leash/position/health reset
+  and no penalty in those tracked fields, not general aggro policy, raises or
+  unexposed durability semantics.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -698,8 +701,11 @@ pre-positioned destination observer, and reload the same position/full HP after
 logout and world restart. The worker decodes bounded ordinary HUD-parameter updates;
 after the retreat both clients must receive the same enemy HP restoration to
 237/237 before re-engagement. It does not infer healing from position or server
-logs. This proves one position-and-health leash reset, but does not claim automatic
-aggro, raises, death penalties, general pursuit/leash policy or general combat.
+logs. Exact received EXP, level, currencies, item totals and complete inventory
+must equal the pre-hostility state while dead, after return and after restart. This
+proves one position-and-health leash reset and no penalty in those tracked fields,
+but does not claim automatic aggro, raises, unexposed durability semantics, general
+pursuit/leash policy or general combat.
 
 Generate the private binding from matching game data:
 
