@@ -584,10 +584,11 @@ bin/sapphire_test_combat_catalog <game/sqpack> build-e2e/combat-catalog.json
 Use `.exe` on Windows and set `combat_catalog` to the absolute output path. The
 validator requires supported level-one Gladiator/Fast Blade, Pugilist/Bootshine
 and Thaumaturge/Blizzard metadata (received TP or MP, exact cast/recast and source-
-defined range). It also records, but does not enable, the first server-represented
-Fast Blade follow-up: level-four Savage Blade 11, 2,000 cumulative source EXP and a
-minimum 40 of the exact evidenced 50-EXP level-one defeats. This is source
-prerequisite evidence, not independent client or combo-execution evidence.
+defined range). It additionally binds level-two Pugilist True Strike 54 and records,
+but does not enable, the first server-represented Fast Blade combo follow-up:
+level-four Savage Blade 11, 2,000 cumulative source EXP and a minimum 40 of the
+exact evidenced 50-EXP level-one defeats. The latter is source prerequisite
+evidence, not independent client or combo-execution evidence.
 
 `test_live_combat.py` places fresh characters one metre laterally from a spawn in
 the unchanged staged Central Thanalan population before their first connection.
@@ -632,6 +633,17 @@ cost. These are two additional starter abilities, not combo, positional-bonus,
 interrupt, elemental-state or general combat coverage. Bootshine cannot stand in
 for a combo: the current server action table gives it no `nextCombo`, and gives
 True Strike neither combo potency nor form statuses.
+
+`test_live_progression.py` uses only ordinary sessions and unchanged natural
+population. Six independently witnessed, bounded Bootshine defeat sequences each
+must publish exact 50-EXP/test-table rewards. After every defeat, normal logout,
+world restart and fresh HTTP/lobby/world authentication must return the exact
+inventory, level and EXP. The sixth reward proves level 1/250 EXP becomes level
+2/0 EXP. Only that received progression enables the narrow True Strike method;
+both clients then require the same action-54 damage and exact committed HP, while
+the actor requires group-58/250-centisecond start metadata. No EXP, level, ability,
+TP or enemy is granted. This proves one exact level-up and level-two ability, not a
+combo, positional bonus, general progression or exact TP debit.
 
 The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
 Received rewards must be exactly 50 EXP, no level/currency change, one five-item
@@ -888,7 +900,7 @@ runtime, raw database, game assets, local profiles or unredacted configs.
 `.github/workflows/test-client.yml` builds and tests the asset-independent client
 on Linux and Windows. It does **not** provision game data, run gameplay tests, or
 claim real-client compatibility. The opt-in `gameplay-e2e.yml` workflow and
-`python -m tests.e2e.run_ci` entry point implement a separate twelve-case gameplay
+`python -m tests.e2e.run_ci` entry point implement a separate thirteen-case gameplay
 gate, with strict preflight, no skips, staged-input identity and cleanup checks.
 Only an allowlisted summary is publishable; raw pytest/JUnit and gameplay logs
 stay private. See [CI.md](CI.md) for runner access restrictions, approval settings,

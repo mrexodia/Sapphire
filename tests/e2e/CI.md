@@ -113,23 +113,18 @@ separate evidence that its binaries came from the checkout.
   upload glob to include these directories, catalogs, assets or runtime trees.
 - Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. A passed summary covers this twelve-scenario headless suite only.
+  local run. A passed summary covers this thirteen-scenario headless suite only.
 
-Latest local evidence: clean revision `1be6fc6dc` passed the twelve-case strict gate
-in 1665.89 seconds with zero skips/errors/failures, exact collection and staged-input
-identity, and removed private runtime. This includes bidirectional physical
-Ul'dah/Central Thanalan zoning and all four persisted Ring2
-branches and source-routed second-/third-/fourth-shop
-head, ear, neck and wrist purchases/equips, restart-proven generic currency-move rejection, same- and
-cross-zone nonparty Tell, cross-zone party Tell, independently observed living
-Return, persisted three-stage later-equipment purchase/resale/equip, the quantity-
-three VFX action/liquidation, source-bound observed Sprint, the full eight-member
-party lifecycle, two persisted discovery parts/shapes, duplicate-name rejection
-and normal lobby deletion with fresh-session absence proof. Evidence is
-`build-e2e/ci-summary-bidirectional-zoning-clean.json` (SHA-256
-`66ca01f5ad5f0d4ad1e9b4716c96c3eb0450c8bf1026f80a74e8a8dedf32a3db`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-oivuf_ng` and private manifest
-SHA-256 `e38f5d7031e9acb64bd2a82cd092047c36bd0be2e1374faf1be0e4756436e361`;
+Latest local evidence: clean revision `93b4914d6` passed the thirteen-case strict
+gate in 2051.124 seconds with zero skips/errors/failures, exact collection and
+staged-input identity, and removed private runtime. In addition to the prior
+bidirectional-zoning suite, it performs six independently witnessed natural
+Pugilist defeats, six clean world restarts, exact persisted inventory/EXP checks,
+received level 1→2 progression and independently witnessed True Strike. Evidence
+is `build-e2e/ci-summary-level-two-progression.json` (SHA-256
+`93cf5e2014e1edd0def48c364d787fa3e8d9a8b0731359b9c48b28701cae61b7`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-hqrpgt3e` and private manifest
+SHA-256 `4dee86612114e4e03f708751a8e795c6738b5530a0e4b75c26f208fcc1865aea`;
 this is local, not hosted execution. A retained preflight diagnostic at
 `.e2e-artifacts/ci/gameplay-ci-xa4osh_n` rejected the stale generated shop catalog
 before provisioning; the passing run regenerated the exact current source catalog

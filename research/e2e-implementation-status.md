@@ -30,10 +30,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
 | Range/discovery/territory event triggers | Curated bidirectional physical ExitRange crossings, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
-| Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
+| Deterministic authored regression suite | Thirteen allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
@@ -85,7 +85,7 @@ a nearby passing test does not close them.
 | Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
 | Progress watchdog and bounded replanning | workload movement requires every waypoint from an independent observer; exploration permits one recorded fresh-session replan only from the same curated corridor, while soak/regression fail without recovery | Verified for bounded workload navigation; no general-navigation replanner claim |
 | Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
-| Authored regression mode | strict twelve-case allowlist plus native/Python contracts | Verified for supported suite |
+| Authored regression mode | strict thirteen-case allowlist plus native/Python contracts | Verified for supported suite |
 | Seeded exploration mode | v1/v2 plans, allowlisted preconditions, decisions, observations and replay | Verified for walk/Say/heartbeat/reconnect subset |
 | Soak/load mode | bounded ramp/pacing/actions, liveness and process/worker resource samples | Verified as bounded smoke and 30-minute low-rate evidence; not capacity/overnight proof |
 | Record actual actions, not seed alone | plan/outcome/checkpoint journals retain semantic order, limits and observations; replay warns that scheduling is nondeterministic | Verified |
@@ -126,24 +126,22 @@ a nearby passing test does not close them.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
-- 258 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 265 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes its strict collection on Windows and Linux. The
   latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
   skips/errors/failures and verified exact collection, staged-input identities,
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
-  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows twelve-case
-  gate at `1be6fc6dc` took **1665.89s**, including bidirectional physical Ul'dah/Central Thanalan zoning, all four persisted Ring2 branches, source-routed head, ear, neck and wrist purchase/equip, exact generic currency-move rejection, same- and cross-zone nonparty
-  Tell, cross-zone party Tell, independently observed living Return, persisted
-  three-stage later-equipment purchase/resale/equip, the quantity-three VFX item action/liquidation,
-  observed Sprint, the full-roster party/reconnect lifecycle, dual persisted
-  discovery, all Ring2 variants, duplicate-name rejection and normal character deletion
-  (`gameplay-ci-oivuf_ng`, summary
-  `build-e2e/ci-summary-bidirectional-zoning-clean.json`). Summary SHA-256 is
-  `66ca01f5ad5f0d4ad1e9b4716c96c3eb0450c8bf1026f80a74e8a8dedf32a3db`,
+  `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows
+  **thirteen-case** gate at `93b4914d6` took **2051.124s**, adding six naturally
+  rewarded level-one Pugilist defeats, six clean world restarts/fresh persistence
+  checks, received level 1→2 progression and independently witnessed True Strike
+  to the previous bidirectional-zoning suite (`gameplay-ci-hqrpgt3e`, summary
+  `build-e2e/ci-summary-level-two-progression.json`). Summary SHA-256 is
+  `93cf5e2014e1edd0def48c364d787fa3e8d9a8b0731359b9c48b28701cae61b7`,
   private manifest SHA-256 is
-  `e38f5d7031e9acb64bd2a82cd092047c36bd0be2e1374faf1be0e4756436e361`, and
+  `4dee86612114e4e03f708751a8e795c6738b5530a0e4b75c26f208fcc1865aea`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -830,6 +828,42 @@ uncovered pending a bounded normal level-4 path (or another independently
 source-backed attainable combo), exact received combo-result semantics and an
 independent witness; an expensive 40-kill grind was not added merely to satisfy a
 checkbox.
+
+At `93b4914d6`, a separate normal Pugilist path proves the attainable next
+progression step without grants. Across seven fresh HTTP→lobby→world actor sessions
+and seven independent witness sessions, the same character naturally defeats six
+unchanged level-one Central Thanalan marmots. Every defeat uses ten paced,
+received-TP/range-bound Bootshines; both clients require each identical damage
+result and exact committed HP, then exact 50-EXP/current-`testTable` loot. After
+each defeat the clients log out normally, the world is cleanly restarted and the
+next fresh authentication must return the exact prior inventory, level and EXP.
+The received sequence is level 1 at EXP 0/50/100/150/200/250, then level 2 at EXP
+0 after the sixth reward.
+
+Only that independently received level-two state enables source action True Strike
+54 (`WorkIndex=0`, 50 received TP required, melee range and 2.5-second group-58
+recast). A fresh natural target first receives a witnessed Bootshine and then both
+clients receive the identical 10-damage True Strike result plus committed HP
+84→74; the actor separately receives action-start metadata. The API rejects wrong
+class, level, actor level, TP, range, target and malformed IDs and exposes no
+arbitrary action interface. Natural regeneration means this does not claim an exact
+50-TP debit, and the current server table does not make this Bootshine→True Strike
+sequence a combo.
+
+The clean focused case passed in **396.47s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-yzkkgyv0`; manifest SHA-256 is
+`ab79c41fe9416ab6cfbb075effbe26af278c8dcc3f4151474bb1669529f26e5b`,
+`combat-level-two-true-strike.json` SHA-256 is
+`8a428fcff384e56247d6ce764e45d7a642ff3bf3425e3ef497df1bc5f7dd91a9`,
+and journal SHA-256 is
+`1ece88df732daaaefa4c6294cc03d957fec2bdbc27ee9a9799813b0c7f72cfd6`.
+The manifest is clean at the exact commit, all private runtimes were removed, the
+expanded native protocol suite passes on Clang/MSVC/GNU, and **265 passed, 13
+skipped** Python contracts agree across those workers. The clean thirteen-case gate
+recorded above repeats the complete path; its progression artifact SHA-256 is
+`54dd46a7ebafdec9e57294ccf6565bed1810ba4174264a0610f407b8fdeb83a7`.
+This proves one exact natural level-up and one level-two ability, not general
+progression, arbitrary abilities, positional bonuses or combo semantics.
 
 At `569a02898`, the same case adds source-defined Thaumaturge Blizzard 142
 (`WorkIndex=5`, MP cost metadata 3/4, 2.5s cast/recast and 25-unit range). A fresh
@@ -1908,7 +1942,7 @@ compatibility.
    journey and exact received eligibility/match semantics.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   The separate 30-minute paced workload is not part of the twelve-case CI gate.
+   The separate 30-minute paced workload is not part of the thirteen-case CI gate.
 5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
    coverage and independently captured trace/layout checks. Strengthen fault and
    cancellation coverage separately from successful-path evidence. Do not alter
