@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, off-hand/waist, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; 130-to-141 crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine and Thaumaturge Blizzard; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; consuming item mutation, arbitrary shops/quantities, overflow merges, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases are source-shop-blocked under the evidenced economy |
 | Range/discovery/territory event triggers | Curated physical ExitRange crossing, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Ten allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -1714,6 +1714,26 @@ journal SHA-256 is
 The source is clean and runtime removal is confirmed. This proves one wrist item
 and same-shop listing transition, not arbitrary accessories, waist/off-hand slots
 or general merchant behavior.
+
+At `2169c25f6`, the catalog records why the next off-hand/waist increment has no
+honest level-one shop path instead of inventing one. From the exact wrist-end state,
+normal wrist resale would make at most 208 gil. The read-only source scan examines
+all forty listing positions of every placed territory-130 category-4 shop handler,
+without applying a class restriction, for nonzero-price single-stack items with
+`EquipLevel <= 1`, price `<= 208`, and source slot 2 (off-hand) or 6 (waist). It
+finds **zero listed candidates** and therefore zero source-navmesh-routed candidates
+for both slots. Python requires the exact scan budget/level/slot/count tuple and
+fails closed if source data changes. A clean regenerated catalog at `2169c25f6`
+has SHA-256
+`797c9d5d1aca19c588f0edfffff65619221be9703a05149c88b55046dfadb531`;
+52 focused catalog/policy/CI contracts pass and the Clang full-project target builds
+and executes against the matching private source data/navmesh. Standalone test-
+client build trees do not define this full-project catalog target, and a network-
+isolated GNU full-project attempt exceeded its 600-second local build deadline, so
+no new GNU/MSVC execution claim is made. This establishes only that the current
+level-one, 208-gil, placed-Ul'dah-shop path has no off-hand or waist listing; it does
+not prove those slots unsupported after legitimate leveling, greater funds, another
+territory, quest rewards or different source data.
 
 The first live attempt exposed two server defects rather than prompting weaker
 assertions. `addCurrency()` created a missing currency item with the generic

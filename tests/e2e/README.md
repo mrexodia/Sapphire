@@ -510,9 +510,13 @@ reachable ear listing: third-shop event 262425/index 0/item 4200 at 66 gil, with
 complete ~91.37m route. Liquidating the exact body/head/ear identities funds the
 cheapest reachable neck listing: fourth-shop event 262640/index 1/item 15130 at 168
 gil, with a complete ~23.28m route. The same shop's index 2/item 15132 wrist listing
-costs 168 gil after exact neck resale. Python validates all exact transactions, all
-seven equipment metadata bindings, all four event families, route continuity,
-and endpoint range. This does not establish arbitrary quantities/items, other shops,
+costs 168 gil after exact neck resale. With the maximum evidenced 208 gil after
+wrist resale, an unrestricted-class scan of every placed Ul'dah gil-shop listing
+finds zero level-one single-stack off-hand or waist candidates; those paths fail
+closed rather than using higher-level or invented items. Python validates all exact
+transactions, all seven equipment metadata bindings, all four event families,
+route continuity, endpoint range and the exact zero-candidate gap scan. This does
+not establish arbitrary quantities/items, other shops,
 consuming item mutation, positive direct currency transfer, concurrent transactions,
 or real-client shop UI.
 
