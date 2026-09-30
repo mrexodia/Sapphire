@@ -153,6 +153,12 @@ lobby, world and MariaDB processes with matching game data:
   dead, after return and after restart. This proves one leash/position/health reset
   and no penalty in those tracked fields, not general aggro policy, raises or
   unexposed durability semantics.
+- `test_live_aggro.py` separately binds one natural level-six `activeType=0`
+  vision population and a complete source-navmesh radial approach. A level-one
+  player sends no combat action; both clients must receive identical unprovoked
+  action-7 damage and exact committed HP through natural defeat. This proves only
+  that source-defined vision case, not general senses, line of sight, linked aggro
+  or target selection.
 
 The source-derived `scene_catalog/due_diligence.json` remains unverified: its NPCs
 are not connected by the available regenerated mesh. General navigation/combat
@@ -670,6 +676,16 @@ damage, committed HP and `TypeComboHit`, plus Savage Blade's next-combo marker.
 This proves one exact combo, not arbitrary chains, positional behavior or exact TP
 debit.
 
+`test_live_aggro.py` uses pursuit-catalog v2 to bind layout 3746983/base 735,
+level 6, active vision sense/range, wandering bound, source transform and adjusted
+level-one sense range. Its complete 82-point route starts outside that range and
+traverses source-navmesh points around the spawn. The normally moving fighter sends
+no combat action. Fighter and independent witness must receive the identical first
+action-7 damage and exact committed HP, followed by natural zero HP, unchanged
+tracked rewards/inventory and normal cleanup via the already bounded dead Return.
+This proves one unprovoked vision-aggro path, not line of sight, other senses,
+linked aggro, general targeting or general combat policy.
+
 The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
 Received rewards must be exactly 50 EXP, no level/currency change, one five-item
 choice from loot pool 8/9, items 5016 and 12728, and one to three item 4551. A fresh
@@ -928,7 +944,7 @@ runtime, raw database, game assets, local profiles or unredacted configs.
 `.github/workflows/test-client.yml` builds and tests the asset-independent client
 on Linux and Windows. It does **not** provision game data, run gameplay tests, or
 claim real-client compatibility. The opt-in `gameplay-e2e.yml` workflow and
-`python -m tests.e2e.run_ci` entry point implement a separate fourteen-case gameplay
+`python -m tests.e2e.run_ci` entry point implement a separate fifteen-case gameplay
 gate, with strict preflight, no skips, staged-input identity and cleanup checks.
 Only an allowlisted summary is publishable; raw pytest/JUnit and gameplay logs
 stay private. See [CI.md](CI.md) for runner access restrictions, approval settings,

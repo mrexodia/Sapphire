@@ -30,10 +30,10 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike, Thaumaturge Blizzard, 18 four-attacker level-14 defeats with shared persisted rewards and one naturally earned Fast Blade→Savage Blade combo; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return and unchanged tracked EXP/level/currency/items/inventory | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combo chains/other combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike, Thaumaturge Blizzard, 18 four-attacker level-14 defeats with shared persisted rewards and one naturally earned Fast Blade→Savage Blade combo; one source-bound unprovoked active-vision aggro/defeat path; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return and unchanged tracked EXP/level/currency/items/inventory | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy beyond the two exact source-bound paths, raises, combo chains/other combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
 | Range/discovery/territory event triggers | Curated bidirectional physical ExitRange crossings, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
-| Deterministic authored regression suite | Fourteen allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
+| Deterministic authored regression suite | Fifteen allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
@@ -85,7 +85,7 @@ a nearby passing test does not close them.
 | Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
 | Progress watchdog and bounded replanning | workload movement requires every waypoint from an independent observer; exploration permits one recorded fresh-session replan only from the same curated corridor, while soak/regression fail without recovery | Verified for bounded workload navigation; no general-navigation replanner claim |
 | Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
-| Authored regression mode | strict fourteen-case allowlist plus native/Python contracts | Verified for supported suite |
+| Authored regression mode | strict fifteen-case allowlist plus native/Python contracts | Verified for supported suite |
 | Seeded exploration mode | v1/v2 plans, allowlisted preconditions, decisions, observations and replay | Verified for walk/Say/heartbeat/reconnect subset |
 | Soak/load mode | bounded ramp/pacing/actions, liveness and process/worker resource samples | Verified as bounded smoke and 30-minute low-rate evidence; not capacity/overnight proof |
 | Record actual actions, not seed alone | plan/outcome/checkpoint journals retain semantic order, limits and observations; replay warns that scheduling is nondeterministic | Verified |
@@ -127,21 +127,21 @@ a nearby passing test does not close them.
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
 - 271 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
-  network-isolated Linux container using the current GNU-built worker.
+  network-isolated Linux container using the current GNU-built worker; 16 asset-backed cases skip without an explicit live profile.
 - The provisioned CI entry point passes its strict collection on Windows and Linux. The
   latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
   skips/errors/failures and verified exact collection, staged-input identities,
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows
-  **fourteen-case** gate at `a93a12a37` took **2822.459s**, retaining the natural
-  level-four combo and additionally requiring exact tracked EXP, level, currencies,
-  item totals and complete inventory to remain unchanged through ordinary player
-  defeat, homepoint return and restart (`gameplay-ci-schfstxa`, summary
-  `build-e2e/ci-summary-player-defeat-penalty.json`). Summary SHA-256 is
-  `c957dbe8ed2a73e4317f1420bb17ea151f86064f38096fc83c246655af84390c`,
+  **fifteen-case** gate at `39198db88` took **2991.257s**, retaining the natural
+  level-four combo and tracked death-state assertions and adding one independently
+  witnessed, source-bound active-vision aggro/defeat path with no player combat
+  action (`gameplay-ci-qi1qhtgz`, summary
+  `build-e2e/ci-summary-proximity-aggro.json`). Summary SHA-256 is
+  `d3a6e17ad55783cf0fabc9847deff89b8e6bb9d7c5897bd8e142318392362d1b`,
   private manifest SHA-256 is
-  `55cb729001d155c05e463f88cd6b99dc0af4f263bb346b4014e2ca65bff8806b`, and
+  `2126d2de1328695d7b12be544a6bdd096f2b4a7509d99a34bae4ac58aba124ee`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -150,10 +150,10 @@ a nearby passing test does not close them.
   See `tests/e2e/CI.md` for mandatory workflow-scoped runner access restrictions,
   protected-environment approval and VM disposal responsibilities. Local rehearsal
   does not prove hosted approval, cancellation cleanup or independent compatibility.
-- Fourteen live cases pass together: rejected credentials, login/idle/logout, received
+- Fifteen live cases pass together: rejected credentials, login/idle/logout, received
   party join/leave, observed movement/Say/position persistence, single quest, chained quests plus inventory
   persistence and one persisted gil-shop sale/purchase pair, zoning/discovery/cross-zone-party persistence, observed living Return, enemy defeat/rewards,
-  natural level-two and level-four progression plus one exact combo, player defeat with independently observed pursuit/leash/reset, source-bound
+  natural level-two and level-four progression plus one exact combo, unprovoked source-bound active-vision aggro/defeat, player defeat with independently observed pursuit/leash/reset, source-bound
   homepoint return and unchanged tracked reward/inventory state, and normal lobby creation spanning all four
   Ul'dah ring choices and all three starter classes plus persisted opening/equipment checks. Both public tested territories use compatible
   server-side meshes; the private opening territory does not make a navigation claim.
@@ -170,7 +170,8 @@ a nearby passing test does not close them.
   independently observed Thaumaturge Blizzard and source-bound living Return. Later
   increments cover one naturally earned Fast Blade→Savage Blade combo and one player
   defeat/homepoint return with exact exposed reward/inventory state unchanged. Broader
-  abilities, general cooldown scheduling, general aggro/leash policy, raises,
+  abilities, general cooldown scheduling, general aggro/leash policy beyond one
+  active-vision and one initiated-pursuit path, raises,
   unexposed penalties and production loot selection remain uncovered.
   Initial position is fixture setup.
   The decoded `sapphire-e2e-wd3lpulz` journal records nine damage, NPC HP 94 → 85 on both clients,
@@ -1021,6 +1022,53 @@ and event journal SHA-256 is
 The source is clean and runtime removal is confirmed. This proves one common
 self-status ability and exact TP-zero commit, not general statuses or abilities.
 
+## Source-bound unprovoked active-vision aggro
+
+`0e17a7ec2` extends the read-only pursuit catalog with exactly one unchanged
+Central Thanalan population: layout 3746983, base 735, level 6, `activeType=0`,
+vision sense 1/range 14, wandering range 6 and normal population flags. For the
+received level-one fixture the source formula gives an adjusted range of
+`14 - 1.53^3 = 10.418423`. A complete 82-point, **37.694m** source-navmesh route
+starts about 20m from the spawn and traverses a bounded three-metre radial approach;
+a separate source-navmesh point places the independent witness about 30m away.
+Catalog v2 rejects changed identity, activity/sense metadata, transform, adjusted
+range, incomplete routes, an approach starting inside the outer bound, no point
+within five metres, or an unsafe witness placement.
+
+`test_live_aggro.py` logs in two ordinary non-GM clients and verifies the exact
+living source actor before movement. The fighter sends only normal route movement:
+it sends no combat action, receives no player action-start, and has no received
+effect sourced by itself. Both clients independently receive the same unrequested
+enemy action-7 damage and matching exact committed HP integrity. The enemy continues
+ordinary attacks through natural regeneration until both clients receive zero HP;
+the focused run retained 55 matching effects from the bound source. Aggregate EXP,
+level, currencies, item totals and complete inventory remain exact while dead and
+a source-bound homepoint return is used only to permit normal cleanup.
+
+The first clean diagnostic (`sapphire-e2e-_6py5qhr`) established exact aggro/damage
+but correctly timed out at 90 seconds because regeneration prolonged defeat. A
+subsequent attempted escape (`sapphire-e2e-5syeggww`) established further pursuit
+but did not reach the server's retreat transition before its bounded deadline, so
+that unsupported reset claim and route were removed. `sapphire-e2e-eqch4r6q`
+completed every gameplay and cleanup assertion but failed while serializing a
+`walk_route()` return value that is deliberately `None`; it is not counted as
+success. All three clean failed runtimes were removed.
+
+The final focused path passed in **178.53s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-9f9os_b4`; manifest SHA-256 is
+`6b408f9c889f2e4ac514bd529b1561e16bdd1345a2959018a0de413f93e2436b`,
+`combat-proximity-aggro.json` SHA-256 is
+`c368410cec2c5f80c1e3193e13a7b0f91facb98ca6c92ba59e3a65b5265e582c`,
+and journal SHA-256 is
+`5039d10fd3b3c1cc9cd009d0170c380fb3250d095933d00ca34af665fed0611e`.
+The first exact committed effect is 94→92 HP. Revision `212bd1c61` is clean and its
+runtime is absent. The clean fifteen-case gate at `39198db88` repeats all gameplay
+assertions; its aggro artifact SHA-256 is
+`5a3a788fde46bf1f98c747c9f8caa297c9bbe0d8d208146c5b4bb31ce555db56`.
+This proves one source-defined vision path and unprovoked defeat, not general
+senses, line of sight (the source contains a TODO), target selection, linked aggro,
+other levels/populations, pursuit/reset policy or real-client presentation.
+
 ## Independently observed player defeat
 
 `test_live_player_defeat.py` starts fresh rank-zero level-one Gladiator and witness
@@ -1168,8 +1216,8 @@ and journal SHA-256 is
 `787ca1c48c8856ac4d0583ecfc087dd23e8ef2908e40cd4ccfa5a99ebc24cc5c`.
 The preceding failed run `sapphire-e2e-i8y_63gd` exposed that received inventory is
 a keyed mapping rather than the synthetic contract's initial list shape; it is
-retained and was fixed without weakening equality. The current fourteen-case gate
-repeats this assertion; its player-defeat artifact SHA-256 is
+retained and was fixed without weakening equality. The then-current fourteen-case gate
+repeated this assertion; its player-defeat artifact SHA-256 is
 `45da09c84d4fc4c1c10933fb4cf54dd84bb6461bc0d1a80480ea74deb1d07e81`.
 This establishes absence of a death penalty only for those explicitly received
 fields on this one path. Durability is not exposed by this worker, and persistence
@@ -2033,9 +2081,9 @@ compatibility.
    replay is flat; this does not establish capacity or memory stability for all
    code paths. Generator histories/allocator retention also remain distinct from
    server resource behavior.
-2. Extend combat beyond the now-verified enemy/player defeat, homepoint return,
-   naturally earned Fast Blade→Savage Blade combo and persisted current-test-table
-   rewards: broader aggro/leash and enemy-reset policy, raises, other combo chains,
+2. Extend combat beyond the now-verified initiated and unprovoked active-vision
+   enemy/player defeat paths, homepoint return, naturally earned Fast Blade→Savage
+   Blade combo and persisted current-test-table rewards: broader aggro/leash and enemy-reset policy, raises, other combo chains,
    broader abilities and production loot selection remain uncovered. Preserve
    received source/target effects, resources and range checks, require genuine
    navigation for pursuit, and do not replace progression with grants or
@@ -2050,7 +2098,7 @@ compatibility.
    journey and exact received eligibility/match semantics.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   The separate 30-minute paced workload is not part of the fourteen-case CI gate.
+   The separate 30-minute paced workload is not part of the fifteen-case CI gate.
 5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
    coverage and independently captured trace/layout checks. Strengthen fault and
    cancellation coverage separately from successful-path evidence. Do not alter

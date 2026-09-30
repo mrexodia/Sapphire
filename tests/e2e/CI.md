@@ -113,17 +113,17 @@ separate evidence that its binaries came from the checkout.
   upload glob to include these directories, catalogs, assets or runtime trees.
 - Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. A passed summary covers this fourteen-scenario headless suite only.
+  local run. A passed summary covers this fifteen-scenario headless suite only.
 
-Latest local evidence: clean revision `a93a12a37` passed the fourteen-case strict
-gate in 2822.459 seconds with zero skips/errors/failures, exact collection and
+Latest local evidence: clean revision `39198db88` passed the fifteen-case strict
+gate in 2991.257 seconds with zero skips/errors/failures, exact collection and
 staged-input identity, and removed private runtime. It retains naturally earned
-level-four combo evidence and requires exact tracked EXP, level, currencies, item
-totals and complete inventory to remain unchanged through player defeat, homepoint
-return and restart. Evidence is `build-e2e/ci-summary-player-defeat-penalty.json`
-(SHA-256 `c957dbe8ed2a73e4317f1420bb17ea151f86064f38096fc83c246655af84390c`) with
-private diagnostics at `.e2e-artifacts/ci/gameplay-ci-schfstxa` and private manifest
-SHA-256 `55cb729001d155c05e463f88cd6b99dc0af4f263bb346b4014e2ca65bff8806b`;
+level-four combo and tracked death-state evidence and adds one independently
+witnessed source-bound active-vision aggro/defeat path with no player combat action.
+Evidence is `build-e2e/ci-summary-proximity-aggro.json` (SHA-256
+`d3a6e17ad55783cf0fabc9847deff89b8e6bb9d7c5897bd8e142318392362d1b`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-qi1qhtgz` and private manifest
+SHA-256 `2126d2de1328695d7b12be544a6bdd096f2b4a7509d99a34bae4ac58aba124ee`;
 this is local, not hosted execution. A retained preflight diagnostic at
 `.e2e-artifacts/ci/gameplay-ci-xa4osh_n` rejected the stale generated shop catalog
 before provisioning; the passing run regenerated the exact current source catalog
