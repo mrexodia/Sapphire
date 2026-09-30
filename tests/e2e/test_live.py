@@ -1,4 +1,5 @@
 """Normal-network journeys against disposable servers, never synthetic peers."""
+from concurrent.futures import ThreadPoolExecutor
 import math
 import pytest
 from .support.worker import Bot, WorkerError
@@ -185,8 +186,12 @@ def test_received_party_join_and_leave(environment, live_worker):
     for bot in party_bots:
         live_worker.wait_state(bot.name, lambda s: s["party"]["count"] == 0,
                                "received explicit full-party disband")
-    for bot in [*party_bots, outsider]:
-        bot.logout()
+    # Publish every independent logout before waiting for acknowledgements. Serial
+    # waits can leave later requests behind unrelated per-session server teardown.
+    with ThreadPoolExecutor(max_workers=9) as pool:
+        futures = [pool.submit(bot.logout) for bot in [*party_bots, outsider]]
+        for future in futures:
+            future.result(timeout=35)
         bot.close()
 
 

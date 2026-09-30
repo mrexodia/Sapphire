@@ -80,6 +80,7 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
         fighter.name,
         lambda s: any(effect["source"] == target and effect["target"] == entity
                       and effect["kind"] == 1 and damage_value(effect) > 0
+                      and committed_damage(s, effect, before)
                       for effect in s["combat"]["effects"]),
         "natural active enemy attacks without a player action", 30)
     effect = next(effect for effect in first["combat"]["effects"]
@@ -93,8 +94,8 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
 
     witnessed = live_worker.wait_state(
         witness.name,
-        lambda s: effect in s["combat"]["effects"],
-        "witness receives identical unprovoked enemy action", 20)
+        lambda s: committed_damage(s, effect, witness_before["actors"][str(entity)]),
+        "witness receives identical committed unprovoked enemy action", 20)
     assert committed_damage(witnessed, effect, witness_before["actors"][str(entity)])
 
     defeated = live_worker.wait_state(

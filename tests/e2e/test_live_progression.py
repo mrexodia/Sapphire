@@ -100,6 +100,9 @@ def test_natural_pugilist_level_two_true_strike(environment, live_worker):
         expected_hp = live_worker.snapshot(player.name)["actors"][target]["hp"]
         while expected_hp > 0:
             assert len(effects) < 16, "bounded Bootshine sequence did not defeat the natural target"
+            live_worker.wait_state(player.name,
+                lambda s, hp=expected_hp: s["actors"].get(target, {}).get("hp") == hp,
+                "fighter receives exact committed Bootshine HP", 10)
             ready = player.wait_bootshine_ready(int(target), 45)
             before = ready["actors"][target]
             assert before["hp"] == expected_hp > 0

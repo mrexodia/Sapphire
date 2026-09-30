@@ -99,6 +99,9 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
             for fighter, entity in zip(fighters, entities):
                 if expected_hp == 0:
                     break
+                live_worker.wait_state(fighter.name,
+                    lambda s, hp=expected_hp: s["actors"].get(target, {}).get("hp") == hp,
+                    "acting fighter receives exact committed high-level HP", 10)
                 ready = fighter.wait_fast_blade_ready(int(target), 45)
                 before = ready["actors"][target]
                 assert before["hp"] == expected_hp > 0
@@ -195,6 +198,10 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
             lambda s: committed_damage(s, fast_effect, before_fast),
             "final Fast Blade committed HP and combo readiness", 10)
 
+    expected_savage_hp = max(0, before_fast["hp"] - damage_value(fast_effect))
+    live_worker.wait_state(actor.name,
+        lambda s: s["actors"].get(target, {}).get("hp") == expected_savage_hp,
+        "combo actor receives committed Fast Blade HP", 10)
     ready = actor.wait_savage_blade_ready(int(target), 10)
     before_savage = ready["actors"][target]
     assert before_savage["hp"] > 0 and ready["actors"][str(entity)]["tp"] >= 60
