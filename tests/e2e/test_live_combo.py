@@ -242,3 +242,7 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
     for bot in all_bots:
         bot.logout(timeout=30)
         bot.close()
+    # This session intentionally leaves the combo target alive and damaged. Reset
+    # the owned world before the next allowlisted scenario; this is teardown, not
+    # a retry or combo assertion.
+    environment.restart_world()
