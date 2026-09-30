@@ -515,10 +515,12 @@ wrist resale, an unrestricted-class scan of every placed Ul'dah gil-shop listing
 finds zero level-one single-stack off-hand or waist candidates; those paths fail
 closed rather than using higher-level or invented items. The same exhaustive scan
 finds no listing for which `StackMax + 1` units are affordable with 208 gil, so a
-shop-funded overflow merge is likewise blocked rather than synthesized. Python
-validates all exact transactions, all seven equipment metadata bindings, all four
-event families, route continuity, endpoint range and both exact zero-candidate gap
-scans. This does
+shop-funded overflow merge is likewise blocked rather than synthesized. No listing
+affordable with that balance uses the server's consuming Companion/Mount/Song
+ItemAction families (853/1322/5845), so consuming mutation also remains blocked;
+non-consuming VFX is not treated as a substitute. Python validates all exact
+transactions, all seven equipment metadata bindings, all four event families,
+route continuity, endpoint range and all exact zero-candidate gap scans. This does
 not establish arbitrary quantities/items, other shops,
 consuming item mutation, positive direct currency transfer, concurrent transactions,
 or real-client shop UI.
