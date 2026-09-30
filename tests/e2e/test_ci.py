@@ -247,6 +247,19 @@ def test_preflight_accepts_bounded_deadline_scale(profile):
     assert result["deadline_scale"] == 3
 
 
+@pytest.mark.parametrize("host", ["127.0.0.1", "127.0.0.2"])
+def test_preflight_accepts_exact_loopback_hosts(profile, host):
+    profile["loopback_host"] = host
+    result, _ = run_ci.preflight(profile, suffix=".exe")
+    assert result["loopback_host"] == host
+
+
+def test_preflight_rejects_other_loopback_or_wildcard_hosts(profile):
+    profile["loopback_host"] = "127.0.0.3"
+    with pytest.raises(run_ci.PreflightError, match="loopback_host"):
+        run_ci.preflight(profile, suffix=".exe")
+
+
 @pytest.mark.parametrize("mutation", ["missing", "version", "mesh", "route_mesh", "chain", "unknown"])
 def test_preflight_rejects_mismatches(profile, mutation):
     from pathlib import Path

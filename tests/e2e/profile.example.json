@@ -13,5 +13,6 @@
   "pursuit_catalog": "C:/path/to/pursuit.json",
   "opening_quest_catalog": "C:/path/to/coming-to-uldah.json",
   "deadline_scale": 1,
+  "loopback_host": "127.0.0.1",
   "artifacts": "C:/CodeBlocks/Sapphire/.e2e-artifacts"
 }

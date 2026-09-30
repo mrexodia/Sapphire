@@ -32,7 +32,10 @@ self-hosted runners (checked through the read-only Actions runners API).
    the workflow overrides these with its newly built out-of-tree outputs. A slow
    isolated runner may set integer `deadline_scale` to 2 or 3 (default 1). This
    changes bounded wait ceilings only, performs no retry or fixed sleep, and is
-   recorded in both the private manifest and allowlisted summary. No DB
+   recorded in both the private manifest and allowlisted summary. WSL runners
+   whose host forwarding races `127.0.0.1` may set `loopback_host` to the only
+   alternate accepted value, `127.0.0.2`; this does not expose any listener beyond
+   kernel loopback. No DB
    credentials or connection strings belong in this profile. Fixtures create a
    fresh private DB and accounts, not a connection to an existing service.
 4. Create the `sapphire-private-e2e` GitHub environment **before enabling** the
