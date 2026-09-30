@@ -145,7 +145,12 @@ def test_shop_catalog_binds_route_actor_and_exact_sale():
                               "route": [[3, 0, 0], [4, 0, 0]], "route_length": 1},
             "wrist_purchase": {"shop_id": 262640, "index": 2, "item": 15132,
                                 "quantity": 1, "gil": 168,
-                                "source_slot": 11, "gear_slot": 10}}
+                                "source_slot": 11, "gear_slot": 10},
+            "equipment_gap_scan": {"available_gil": 208, "maximum_equip_level": 1,
+                                    "off_hand": {"source_slot": 2, "listed_candidates": 0,
+                                                   "routed_candidates": 0},
+                                    "waist": {"source_slot": 6, "listed_candidates": 0,
+                                                "routed_candidates": 0}}}
     assert validate_shop_catalog(data) == data
     for changed in ({**data, "territory": 141}, {**data, "sale": {"item": 4551, "quantity": 2, "gil": 56}},
                     {**data, "purchase": {**data["purchase"], "item": 1}},

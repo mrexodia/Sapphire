@@ -297,6 +297,44 @@ int main(int argc, char** argv)
     }
     if(!wristItem)
       throw std::runtime_error("selected neck shop has no affordable source-listed wrist item");
+
+    std::array<uint32_t, 2> gapListings{}, gapRouted{};
+    constexpr std::array<uint32_t, 2> gapSourceSlots{2, 6};
+    for(const auto& candidate : candidates)
+    {
+      auto candidateShop = data.getRow<Excel::Shop>(candidate.event);
+      if(!candidateShop) continue;
+      for(uint32_t index = 0; index < 40; ++index)
+      {
+        auto shopItem = data.getRow<Excel::ShopItem>(candidateShop->data().Item[index]);
+        if(!shopItem) continue;
+        auto item = data.getRow<Excel::Item>(shopItem->data().ItemId);
+        if(!item || !item->data().Price || item->data().Price > wristFunds ||
+           item->data().StackMax != 1 || item->data().EquipLevel > 1)
+          continue;
+        const auto slot = static_cast<uint32_t>(item->data().Slot);
+        const auto gap = std::find(gapSourceSlots.begin(), gapSourceSlots.end(), slot);
+        if(gap == gapSourceSlots.end()) continue;
+        const auto gapIndex = static_cast<size_t>(std::distance(gapSourceSlots.begin(), gap));
+        ++gapListings[gapIndex];
+        try
+        {
+          auto route = Sapphire::Testing::navigationRoute(*finder.getNavMesh(),
+            {neck.shop.position.x, neck.shop.position.y, neck.shop.position.z},
+            {candidate.position.x, candidate.position.y, candidate.position.z});
+          bool complete = !route.empty();
+          for(size_t point = 1; complete && point < route.size(); ++point)
+          {
+            const auto& a = route[point - 1]; const auto& b = route[point];
+            const double step = std::sqrt(std::pow(a[0]-b[0], 2) + std::pow(a[1]-b[1], 2) +
+                                          std::pow(a[2]-b[2], 2));
+            complete = std::isfinite(step) && step <= 2;
+          }
+          if(complete) ++gapRouted[gapIndex];
+        }
+        catch(const std::exception&) { /* Missing corridors remain unavailable. */ }
+      }
+    }
     auto selectedItem = data.getRow<Excel::Item>(purchaseItem);
     if(!selectedItem || !selectedItem->data().StackMax)
       throw std::runtime_error("selected gil-shop item has no stack metadata");
@@ -361,6 +399,13 @@ int main(int argc, char** argv)
       {"wrist_purchase", {{"shop_id", neck.shop.event}, {"index", wristIndex},
                             {"item", wristItem}, {"quantity", 1}, {"gil", wristPrice},
                             {"source_slot", 11}, {"gear_slot", 10}}},
+      {"equipment_gap_scan", {{"available_gil", wristFunds}, {"maximum_equip_level", 1},
+                                {"off_hand", {{"source_slot", 2},
+                                               {"listed_candidates", gapListings[0]},
+                                               {"routed_candidates", gapRouted[0]}}},
+                                {"waist", {{"source_slot", 6},
+                                           {"listed_candidates", gapListings[1]},
+                                           {"routed_candidates", gapRouted[1]}}}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

@@ -117,7 +117,12 @@ def profile(tmp_path):
                               "route": [[3, 0, 0], [4, 0, 0]], "route_length": 1},
             "wrist_purchase": {"shop_id": 262640, "index": 2, "item": 15132,
                                 "quantity": 1, "gil": 168,
-                                "source_slot": 11, "gear_slot": 10}}
+                                "source_slot": 11, "gear_slot": 10},
+            "equipment_gap_scan": {"available_gil": 208, "maximum_equip_level": 1,
+                                    "off_hand": {"source_slot": 2, "listed_candidates": 0,
+                                                   "routed_candidates": 0},
+                                    "waist": {"source_slot": 6, "listed_candidates": 0,
+                                                "routed_candidates": 0}}}
     Path(p["shop_catalog"]).write_text(json.dumps(shop))
     respawn = {"version": 1, "profile": "sapphire-3.3", "homepoint": 9, "territory": 130,
                "pop_range": {"id": 1, "position": [0, 0, 0], "rotation": [0, 0, 0]}}
