@@ -4,16 +4,16 @@ from copy import deepcopy
 import pytest
 
 from .support.combat import (blizzard_ready, bootshine_ready, committed_damage,
-                             damage_value, fast_blade_ready, sprint_ready)
+                             damage_value, fast_blade_ready, sprint_ready, true_strike_ready)
 from .support.worker import Bot
 
 
 def ready_state():
     return {"phase": "ready", "entity_id": 7, "gm_rank": 0, "moving": False,
-            "event_id": None, "scene": None, "rewards": {"class_job": 1},
+            "event_id": None, "scene": None, "rewards": {"class_job": 1, "level_by_index": [1]},
             "predicted_position": [0, 0, 0],
             "combat": {"starting_action_guard_remaining_ms": 0, "effects": [], "integrities": []},
-            "actors": {"7": {"kind": 1, "hp": 94, "tp": 60},
+            "actors": {"7": {"kind": 1, "hp": 94, "tp": 60, "level": 1},
                        "8": {"kind": 2, "level": 1, "hp": 94, "position": [0, 0, 2]}}}
 
 
@@ -98,6 +98,23 @@ def test_bootshine_readiness_requires_received_pugilist_state():
     state["rewards"]["class_job"] = 1
     with pytest.raises(ValueError, match="Pugilist"):
         bootshine_ready(state, 8)
+
+
+def test_true_strike_readiness_requires_received_level_two_pugilist_and_fifty_tp():
+    state = ready_state()
+    state["rewards"].update(class_job=2, level_by_index=[2])
+    state["actors"]["7"].update(level=2, tp=50)
+    assert true_strike_ready(state, 8)
+    state["actors"]["7"]["tp"] = 49
+    assert not true_strike_ready(state, 8)
+    state["actors"]["7"]["tp"] = 50
+    state["rewards"]["level_by_index"][0] = 1
+    with pytest.raises(ValueError, match="level 2"):
+        true_strike_ready(state, 8)
+    state["rewards"]["level_by_index"][0] = 2
+    state["actors"]["7"]["level"] = 1
+    with pytest.raises(ValueError, match="actor level"):
+        true_strike_ready(state, 8)
 
 
 def test_blizzard_readiness_requires_received_thaumaturge_mp_and_range():

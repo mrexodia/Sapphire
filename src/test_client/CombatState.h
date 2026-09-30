@@ -18,7 +18,7 @@ namespace Sapphire::Testing
   // Local conservative pacing guard, not a received server-ready acknowledgement.
   uint32_t startingActionGuardRemainingMs(std::chrono::steady_clock::time_point ready,
                                     std::chrono::steady_clock::time_point now);
-  // Deliberately narrow profiles for source-defined level-one actions.
+  // Deliberately narrow profiles for source-defined starter progression actions.
   // No arbitrary ability/raw-packet API.
   Bytes sprintRequest(uint32_t entity, uint32_t request, const nlohmann::json& actors);
   Bytes livingReturnRequest(uint32_t entity, uint32_t request, uint16_t territory,
@@ -29,6 +29,9 @@ namespace Sapphire::Testing
   Bytes bootshineRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position,
                          const nlohmann::json& actors, const nlohmann::json& rewards);
+  Bytes trueStrikeRequest(uint32_t entity, uint32_t request, uint32_t target,
+                          const std::array<float, 3>& position,
+                          const nlohmann::json& actors, const nlohmann::json& rewards);
   Bytes blizzardRequest(uint32_t entity, uint32_t request, uint32_t target,
                         const std::array<float, 3>& position,
                         const nlohmann::json& actors, const nlohmann::json& rewards);

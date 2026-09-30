@@ -28,7 +28,7 @@ int main()
     require(startingActionGuardRemainingMs(now + std::chrono::microseconds(1001), now) == 2);
     require(startingActionGuardRemainingMs(now + std::chrono::milliseconds(2500), now) == 2500);
     require(startingActionGuardRemainingMs(now + std::chrono::milliseconds(2500), now + std::chrono::milliseconds(2499)) == 1);
-    Json actors{{"7", {{"hp", 100}, {"tp", 1000}, {"kind", 1}}}, {"8", {{"hp", 20}, {"kind", 2}, {"level", 1}, {"position", {0, 0, 2}}}}};
+    Json actors{{"7", {{"hp", 100}, {"tp", 1000}, {"kind", 1}, {"level", 1}}}, {"8", {{"hp", 20}, {"kind", 2}, {"level", 1}, {"position", {0, 0, 2}}}}};
     Json rewards{{"class_job", 1}};
     auto body = fastBladeRequest(7, 1, 8, {0,0,0}, actors, rewards);
     // Independently authored request offsets, not round-tripped through a shared struct.
@@ -60,9 +60,21 @@ int main()
     expected[4] = 53; expected[8] = 2;
     require(bootshine == expected);
     rejects([&] { bootshineRequest(7, 2, 8, {0,0,0}, actors, rewards); });
+    auto levelTwoActors = actors; levelTwoActors["7"]["level"] = 2;
+    Json levelTwoPugilist{{"class_job", 2}, {"level_by_index", Json::array({2})}};
+    auto trueStrike = trueStrikeRequest(7, 3, 8, {0,0,0}, levelTwoActors, levelTwoPugilist);
+    expected[4] = 54; expected[8] = 3;
+    require(trueStrike == expected);
+    auto levelOnePugilist = levelTwoPugilist; levelOnePugilist["level_by_index"][0] = 1;
+    rejects([&] { trueStrikeRequest(7, 3, 8, {0,0,0}, levelTwoActors, levelOnePugilist); });
+    auto levelOneActor = levelTwoActors; levelOneActor["7"]["level"] = 1;
+    rejects([&] { trueStrikeRequest(7, 3, 8, {0,0,0}, levelOneActor, levelTwoPugilist); });
+    auto lowTrueStrikeTp = levelTwoActors; lowTrueStrikeTp["7"]["tp"] = 49;
+    rejects([&] { trueStrikeRequest(7, 3, 8, {0,0,0}, lowTrueStrikeTp, levelTwoPugilist); });
+    rejects([&] { trueStrikeRequest(7, 3, 8, {0,0,-2}, levelTwoActors, levelTwoPugilist); });
     auto casterActors = actors; casterActors["7"]["mp"] = 100;
-    auto blizzard = blizzardRequest(7, 3, 8, {0,0,0}, casterActors, {{"class_job", 7}});
-    expected[4] = 142; expected[8] = 3;
+    auto blizzard = blizzardRequest(7, 4, 8, {0,0,0}, casterActors, {{"class_job", 7}});
+    expected[4] = 142; expected[8] = 4;
     require(blizzard == expected);
     rejects([&] { blizzardRequest(7, 3, 8, {0,0,0}, casterActors, rewards); });
     auto noMp = casterActors; noMp["7"]["mp"] = 3;

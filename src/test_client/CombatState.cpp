@@ -114,18 +114,18 @@ namespace Sapphire::Testing
     p.RequestId = request; p.Target = entity;
     return objectBytes(p);
   }
-  static Bytes startingMeleeRequest(uint32_t action, uint32_t classJob, const char* name,
-                                    uint32_t entity, uint32_t request, uint32_t target,
-                                    const std::array<float, 3>& position, const Json& actors,
-                                    const Json& rewards)
+  static Bytes startingMeleeRequest(uint32_t action, uint32_t classJob, uint16_t tpCost,
+                                    const char* name, uint32_t entity, uint32_t request,
+                                    uint32_t target, const std::array<float, 3>& position,
+                                    const Json& actors, const Json& rewards)
   {
     const auto key = std::to_string(target), self = std::to_string(entity);
     if(!request || request > 65535 || target == entity || rewards.at("class_job") != classJob ||
        !actors.contains(self) || actors.at(self).at("hp") == 0 ||
        !actors.contains(key) || actors.at(key).at("kind") != 2 || actors.at(key).at("hp") == 0)
       throw ProtocolError(std::string(name) + " requires the matching living starter class and observed battle NPC");
-    if(actors.at(self).at("tp").get<uint16_t>() < 60)
-      throw ProtocolError(std::string(name) + " requires at least 60 received TP");
+    if(actors.at(self).at("tp").get<uint16_t>() < tpCost)
+      throw ProtocolError(std::string(name) + " requires sufficient received TP");
     auto destination = actors.at(key).at("position").get<std::array<float, 3>>();
     float squared = 0;
     for(size_t i = 0; i < 3; ++i)
@@ -145,12 +145,23 @@ namespace Sapphire::Testing
   Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position, const Json& actors, const Json& rewards)
   {
-    return startingMeleeRequest(9, 1, "Fast Blade", entity, request, target, position, actors, rewards);
+    return startingMeleeRequest(9, 1, 60, "Fast Blade", entity, request, target, position, actors, rewards);
   }
   Bytes bootshineRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position, const Json& actors, const Json& rewards)
   {
-    return startingMeleeRequest(53, 2, "Bootshine", entity, request, target, position, actors, rewards);
+    return startingMeleeRequest(53, 2, 60, "Bootshine", entity, request, target, position, actors, rewards);
+  }
+  Bytes trueStrikeRequest(uint32_t entity, uint32_t request, uint32_t target,
+                          const std::array<float, 3>& position, const Json& actors, const Json& rewards)
+  {
+    const auto self = std::to_string(entity);
+    if(!rewards.contains("level_by_index") || !rewards.at("level_by_index").is_array() ||
+       rewards.at("level_by_index").empty() ||
+       rewards.at("level_by_index").at(0).get<uint16_t>() < 2 ||
+       !actors.contains(self) || actors.at(self).at("level").get<uint16_t>() < 2)
+      throw ProtocolError("True Strike requires received Pugilist level two progression");
+    return startingMeleeRequest(54, 2, 50, "True Strike", entity, request, target, position, actors, rewards);
   }
   Bytes blizzardRequest(uint32_t entity, uint32_t request, uint32_t target,
                         const std::array<float, 3>& position, const Json& actors, const Json& rewards)
