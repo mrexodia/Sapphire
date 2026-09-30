@@ -684,7 +684,11 @@ no combat action. Fighter and independent witness must receive the identical fir
 action-7 damage and exact committed HP, followed by natural zero HP, unchanged
 tracked rewards/inventory and normal cleanup via the already bounded dead Return.
 This proves one unprovoked vision-aggro path, not line of sight, other senses,
-linked aggro, general targeting or general combat policy.
+linked aggro, general targeting or general combat policy. Raise is intentionally not
+exposed: no normal server path publishes a received offer, generic actions interrupt
+on a dead target, and the trusted `REVIVE/RaiseSpell` branch explicitly lacks raiser,
+weakness and resource semantics. The GM raise path and an unsolicited acceptance
+command are not valid substitutes.
 
 The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
 Received rewards must be exactly 50 EXP, no level/currency change, one five-item

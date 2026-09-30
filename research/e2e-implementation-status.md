@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike, Thaumaturge Blizzard, 18 four-attacker level-14 defeats with shared persisted rewards and one naturally earned Fast Blade→Savage Blade combo; one source-bound unprovoked active-vision aggro/defeat path; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return and unchanged tracked EXP/level/currency/items/inventory | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy beyond the two exact source-bound paths, raises, combo chains/other combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike, Thaumaturge Blizzard, 18 four-attacker level-14 defeats with shared persisted rewards and one naturally earned Fast Blade→Savage Blade combo; one source-bound unprovoked active-vision aggro/defeat path; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return and unchanged tracked EXP/level/currency/items/inventory | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy beyond the two exact source-bound paths, combo chains/other combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy; raise is blocked by absent normal offer/execution semantics |
 | Range/discovery/territory event triggers | Curated bidirectional physical ExitRange crossings, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Fifteen allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -1224,6 +1224,20 @@ fields on this one path. Durability is not exposed by this worker, and persisten
 while dead, raise behavior, other classes/homepoints and real-client presentation
 remain uncovered.
 
+Raise is not a defensible next protocol scenario at this revision. Public action
+entries 125 (Raise), 173 (Resurrection) and 3603 (Ascend) have zero potency/cure/
+restore values and no caster or target statuses, and no action-specific script
+exists. Generic `Action::update()` interrupts whenever its resolved target is dead;
+`playerPreCheck()` also leaves party/dead validation as a TODO. No production source
+publishes a raise offer or binds a raiser identity. The client `REVIVE/RaiseSpell`
+branch instead contains an explicit TODO for raiser position, weakness and HP/MP/TP
+semantics and currently teleports to the player's homepoint. Sending that command
+without a received offer would exploit trusted input exactly like the rejected duty
+shortcut. The only implemented direct HP/status reset is `GmCommand::Raise`, which
+is forbidden evidence. Normal raise coverage is therefore source-blocked until an
+ordinary learned-action path publishes a received offer and the acceptance handler
+validates and commits it; Return evidence is not a raise proxy.
+
 ## Persisted ordinary-bag move and swap
 
 `62c3391bd3c2e9c144be8051d0923e420fb208fe` adds only a whole-stack move from an
@@ -2083,11 +2097,12 @@ compatibility.
    server resource behavior.
 2. Extend combat beyond the now-verified initiated and unprovoked active-vision
    enemy/player defeat paths, homepoint return, naturally earned Fast Blade→Savage
-   Blade combo and persisted current-test-table rewards: broader aggro/leash and enemy-reset policy, raises, other combo chains,
+   Blade combo and persisted current-test-table rewards: broader aggro/leash and enemy-reset policy, other combo chains,
    broader abilities and production loot selection remain uncovered. Preserve
    received source/target effects, resources and range checks, require genuine
    navigation for pursuit, and do not replace progression with grants or
-   fixture-edited levels.
+   fixture-edited levels. Raise remains blocked by absent normal offer/acceptance
+   semantics; do not send the trusted `RaiseSpell` command without a received offer.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond
    the first Ul'dah opening branch; unknown content must still fail. Instance entry
    is not currently a defensible shortcut: `findContent` accepts a requested
