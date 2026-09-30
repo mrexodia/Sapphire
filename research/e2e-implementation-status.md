@@ -12,6 +12,35 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Fast development lane (not acceptance coverage)
+
+At `c078afc17`, `tests/e2e/run_development.py` adds an explicitly opted-in,
+non-isolated two-bot lane against an already-running loopback development server.
+It uses dedicated existing accounts, local exclusive account leases, ordinary
+HTTP/lobby/world sessions, independently witnessed identities/Say/despawn, and
+optional per-waypoint observation of a <=5m out-and-back prefix from the existing
+Motivational Speaking catalog. It never owns server processes or accesses the DB.
+A human viewer may remain in the world. Failures retain account leases; automatic
+retries/resets are absent. Server binary identity is explicitly unverified.
+
+`tests/e2e/DEVELOPMENT.md` and `development.profile.example.json` describe setup,
+limitations, manual failed-lease recovery and the separation from isolated gates.
+Existing dedicated characters must already be offline and positioned appropriately;
+account provisioning and targeted development-world reset commands are **not yet
+implemented**. No live shared-server run has been attempted: actual approved
+endpoints/bot credentials and prepared characters are still needed.
+
+Focused verification: **127 passed in 5.59s**, running `test_development.py`,
+`test_policy.py`, `test_ci.py`, and `test_worker.py` with the existing MSVC worker.
+Evidence: `.e2e-artifacts/development-focused-contract-timings-2.json`. This is
+synthetic policy/control-flow plus worker-contract evidence, not shared-world or
+new server-build evidence. The new `--e2e-timings` option reports pytest setup,
+call and teardown times; call still includes any in-scenario restarts. Development
+summaries additionally separate login, witness, Say/movement and logout phases.
+No full acceptance gate was run, as requested. Earlier uncommitted Linux
+scheduler/navigation/client-event experiments remain separate and unvalidated;
+the existing Linux, hosted-CI and real-client blockers are unchanged.
+
 ## Requirement audit
 
 | Requirement | Evidence | Status |
