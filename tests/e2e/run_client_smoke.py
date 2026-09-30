@@ -75,7 +75,7 @@ def run():
         report["artifacts"] = str(env.artifacts)
         fixture = json.loads((INPUT / "fixture.json").read_text(encoding="utf-8"))
         report["fixture"] = fixture
-        with Worker(env.worker, env.artifacts / "observer") as worker:
+        with Worker(env.worker, env.artifacts / "observer", env.deadline_scale) as worker:
             witness = env.fresh_character(fixture["position"])
             real = env.fresh_character(fixture["position"])
             bot = Bot(worker, "witness")

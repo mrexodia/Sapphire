@@ -82,6 +82,9 @@ class Environment:
         self.mariadb = Path(profile["mariadb_bin"]).resolve()
         self.worker = Path(profile["worker"]).resolve()
         self.navigation = Path(profile.get("navigation", self.binaries / "navi")).resolve()
+        self.deadline_scale = profile.get("deadline_scale", 1)
+        if type(self.deadline_scale) is not int or not 1 <= self.deadline_scale <= 3:
+            raise SetupError("deadline_scale must be an integer from 1 through 3")
         self.suffix = ".exe" if os.name == "nt" else ""
         required = [self.worker, self.game_data,
                     self.mariadb / ("mariadbd" + self.suffix),
@@ -152,7 +155,8 @@ class Environment:
         revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
         dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO, text=True))
         manifest = {"revision": revision, "dirty": dirty, "profile": "sapphire-3.3",
-                    "fixture_version": 2, "database": self.db_name, "runtime": str(self.runtime),
+                    "fixture_version": 2, "deadline_scale": self.deadline_scale,
+                    "database": self.db_name, "runtime": str(self.runtime),
                     "game_data": str(self.game_data), "navmesh": str(self.navigation),
                     "ports": {"database": self.db_port, "api": self.api_port,
                               "lobby": self.lobby_port, "world": self.zone_port},

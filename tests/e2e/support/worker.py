@@ -21,9 +21,12 @@ class UnsupportedScene(WorkerError):
 
 
 class Worker:
-    def __init__(self, executable: Path, artifacts: Path):
+    def __init__(self, executable: Path, artifacts: Path, deadline_scale=1):
+        if type(deadline_scale) is not int or not 1 <= deadline_scale <= 3:
+            raise WorkerError("deadline scale must be an integer from 1 through 3")
         artifacts.mkdir(parents=True, exist_ok=True)
         self.artifacts = artifacts
+        self.deadline_scale = deadline_scale
         self._cv = threading.Condition()
         self._write_lock = threading.Lock()
         self._responses = {}
@@ -88,7 +91,7 @@ class Worker:
                 self._stderr.append(line.decode("utf-8", errors="replace"))
 
     def request(self, method, bot=None, timeout=10, **args):
-        deadline = time.monotonic() + timeout
+        deadline = time.monotonic() + timeout * getattr(self, "deadline_scale", 1)
         with self._write_lock:
             with self._cv:
                 if self._closed or self._failure:
@@ -154,7 +157,7 @@ class Worker:
         return self.request("snapshot", bot)
 
     def wait_state(self, bot, predicate, description, timeout=30):
-        deadline = time.monotonic() + timeout
+        deadline = time.monotonic() + timeout * getattr(self, "deadline_scale", 1)
         while True:
             with self._cv:
                 version = self._versions.get(bot, 0)
@@ -284,7 +287,8 @@ class Bot:
         entity = str(state["entity_id"])
         if state["homepoint"] != 9 or state["territory"] != 141 or state["actors"][entity]["hp"] != 0:
             raise WorkerError("homepoint return requires the supported received defeated state")
-        self.worker.request("return_homepoint", self.name)
+        self.worker.request("return_homepoint", self.name,
+                            deadline_seconds=30 * self.worker.deadline_scale)
         return self.worker.wait_state(self.name,
             lambda s: s["phase"] == "ready" and s["territory"] == territory
                       and math.dist(s["observed_position"], position) < 0.15
@@ -572,7 +576,8 @@ class Bot:
                     and e["target"] == target and e["action"] == 9 and e["request"] == request)
 
     def cross_exit(self, transition, timeout=30):
-        self.worker.request("cross_exit", self.name, exit=transition)
+        self.worker.request("cross_exit", self.name, exit=transition,
+                            deadline_seconds=30 * self.worker.deadline_scale)
         return self.worker.wait_state(self.name,
             lambda s: s["phase"] == "ready" and s["territory"] == transition["target_territory"]
                       and not s["between_areas"], "destination territory ready", timeout)

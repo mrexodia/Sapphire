@@ -234,6 +234,19 @@ def test_preflight_checks_all_inputs_without_gameplay(profile):
     assert set(identities["meshes"]) == {"w1t1", "w1f2"}
 
 
+@pytest.mark.parametrize("scale", [True, 0, 4, 1.5])
+def test_preflight_rejects_unbounded_deadline_scale(profile, scale):
+    profile["deadline_scale"] = scale
+    with pytest.raises(run_ci.PreflightError, match="deadline_scale"):
+        run_ci.preflight(profile, suffix=".exe")
+
+
+def test_preflight_accepts_bounded_deadline_scale(profile):
+    profile["deadline_scale"] = 3
+    result, _ = run_ci.preflight(profile, suffix=".exe")
+    assert result["deadline_scale"] == 3
+
+
 @pytest.mark.parametrize("mutation", ["missing", "version", "mesh", "route_mesh", "chain", "unknown"])
 def test_preflight_rejects_mismatches(profile, mutation):
     from pathlib import Path

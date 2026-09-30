@@ -66,22 +66,24 @@ namespace Sapphire::Testing
       if(!self->m_closed) self->read();
     });
   }
-  void Channel::send(Bytes bytes)
+  void Channel::send(Bytes bytes, std::function<void()> complete)
   {
     if(m_closed) throw ProtocolError("send on closed channel");
     if(m_queued + bytes.size() > 2 * Decoder::MaxFrame) throw ProtocolError("send queue limit exceeded");
     const bool idle = m_output.empty();
     m_queued += bytes.size();
-    m_output.push_back(std::move(bytes));
+    m_output.push_back({std::move(bytes), std::move(complete)});
     if(idle) write();
   }
   void Channel::write()
   {
-    asio::async_write(m_socket, asio::buffer(m_output.front()), [self = shared_from_this()](auto ec, size_t) {
+    asio::async_write(m_socket, asio::buffer(m_output.front().bytes), [self = shared_from_this()](auto ec, size_t) {
       if(self->m_closed) return;
       if(ec) return self->error("write failed");
-      self->m_queued -= self->m_output.front().size();
+      self->m_queued -= self->m_output.front().bytes.size();
+      auto complete = std::move(self->m_output.front().complete);
       self->m_output.pop_front();
+      if(complete) complete();
       if(!self->m_output.empty()) self->write();
     });
   }
@@ -198,10 +200,10 @@ namespace Sapphire::Testing
     bytes.resize(bytes.size() + 16, 0);
     m_lobby->send(frame(0, 3, bytes));
   }
-  void Bot::sendZone(uint16_t opcode, const Bytes& payload)
+  void Bot::sendZone(uint16_t opcode, const Bytes& payload, std::function<void()> complete)
   {
     if(!m_zone) throw ProtocolError("zone channel not initialized");
-    m_zone->send(frame(1, 3, ipc(opcode, payload), m_entity));
+    m_zone->send(frame(1, 3, ipc(opcode, payload), m_entity), std::move(complete));
   }
   void Bot::sendChat(uint16_t opcode, const Bytes& payload)
   {
@@ -828,9 +830,18 @@ namespace Sapphire::Testing
     for(size_t i = 0; i < 3; ++i) m_predicted[i] += (m_destination[i] - m_predicted[i]) * fraction;
     p.pos.x = m_predicted[0]; p.pos.y = m_predicted[1]; p.pos.z = m_predicted[2];
     p.flag = fraction < 1 ? Common::Walking : 0;
-    sendZone(p._ServerIpcType, objectBytes(p));
+    const bool final = fraction >= 1;
+    std::function<void()> complete;
+    if(final)
+    {
+      complete = [self = shared_from_this()] {
+        self->m_moving = false;
+        self->event("route_sent", {{"position", self->m_predicted}});
+      };
+    }
+    sendZone(p._ServerIpcType, objectBytes(p), std::move(complete));
     m_state["predicted_position"] = m_predicted;
-    if(fraction >= 1) { m_moving = false; event("route_sent", {{"position", m_predicted}}); return; }
+    if(final) return;
     m_movement.expires_from_now(std::chrono::milliseconds(100));
     m_movement.async_wait([self = shared_from_this()](auto ec) {
       if(ec) return;
@@ -1267,9 +1278,11 @@ namespace Sapphire::Testing
       if(m_state["homepoint"].is_null()) throw ProtocolError("return requires a received homepoint");
       auto payload = returnHomepointRequest(m_entity, m_state.at("territory").get<uint16_t>(),
         m_state.at("homepoint").get<uint8_t>(), m_state.at("actors"));
+      const auto deadline = args.value("deadline_seconds", 30u);
+      if(deadline < 30 || deadline > 90) throw ProtocolError("return deadline must be 30..90 seconds");
       sendZone(WC::FFXIVIpcClientTrigger::_ServerIpcType, payload);
       phase("zoning");
-      m_deadline.expires_from_now(std::chrono::seconds(30));
+      m_deadline.expires_from_now(std::chrono::seconds(deadline));
       m_deadline.async_wait([self = shared_from_this()](auto ec) {
         if(!ec) self->fail("homepoint return deadline exceeded");
       });
@@ -1279,9 +1292,11 @@ namespace Sapphire::Testing
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
       auto payload = exitRangeRequest(m_state.at("territory"), m_predicted, args.at("exit"));
+      const auto deadline = args.value("deadline_seconds", 30u);
+      if(deadline < 30 || deadline > 90) throw ProtocolError("transition deadline must be 30..90 seconds");
       sendZone(WC::FFXIVIpcZoneJump::_ServerIpcType, payload);
       phase("zoning");
-      m_deadline.expires_from_now(std::chrono::seconds(30));
+      m_deadline.expires_from_now(std::chrono::seconds(deadline));
       m_deadline.async_wait([self = shared_from_this()](auto ec) {
         if(!ec) self->fail("territory transition deadline exceeded");
       });

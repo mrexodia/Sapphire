@@ -20,16 +20,21 @@ namespace Sapphire::Testing
     using Receive = std::function<void(Segment)>;
     Channel(asio::io_service& io, Receive receive, std::function<void(const std::string&)> error);
     void connect(const std::string& host, uint16_t port, std::function<void()> ready);
-    void send(Bytes bytes);
+    void send(Bytes bytes, std::function<void()> complete = {});
     void close();
   private:
+    struct Outbound
+    {
+      Bytes bytes;
+      std::function<void()> complete;
+    };
     void read();
     void write();
     void error(const std::string& reason);
     asio::ip::tcp::socket m_socket;
     Decoder m_decoder;
     std::array<uint8_t, 16384> m_input{};
-    std::deque<Bytes> m_output;
+    std::deque<Outbound> m_output;
     size_t m_queued = 0;
     bool m_closed = false;
     Receive m_receive;
@@ -53,7 +58,7 @@ namespace Sapphire::Testing
     void heartbeat();
     void moveStep();
     void sendLobby(uint16_t opcode, const Bytes& payload);
-    void sendZone(uint16_t opcode, const Bytes& payload);
+    void sendZone(uint16_t opcode, const Bytes& payload, std::function<void()> complete = {});
     void sendChat(uint16_t opcode, const Bytes& payload);
     void event(const std::string& name, Json data = Json::object());
     void phase(const std::string& phase);

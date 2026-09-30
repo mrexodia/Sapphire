@@ -49,6 +49,7 @@ def environment(request):
 @pytest.fixture
 def live_worker(environment, request):
     name = request.node.name.replace("/", "_")
-    with Worker(environment.worker, environment.artifacts / name) as instance:
+    with Worker(environment.worker, environment.artifacts / name,
+                environment.deadline_scale) as instance:
         yield instance
     environment.check_alive()

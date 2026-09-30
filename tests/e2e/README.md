@@ -313,7 +313,7 @@ state = bot.login_via_lobby(fixture["auth"], fixture["name"])
 # login_via_lobby also waits for server-observed world readiness.
 
 bot.walk_to([43.0, 4.0, -157.6])
-# This only confirms all movement samples were SENT.
+# This only confirms all movement samples were published to the zone socket.
 # Assert the resulting position with an independent observer bot.
 
 bot.logout()   # Waits for a received logout acknowledgement, then closes sockets.
@@ -329,6 +329,10 @@ Additional actions: `wait_world_ready`, `walk_route`, `interact`, `choose_dialog
 Use `worker.wait_state(...)` for bounded predicates against received state. Event
 notifications wake waits; snapshots also cover observations received before the
 wait was registered. No automatic gameplay retry is performed after a timeout.
+A private profile may set integer `deadline_scale` to 1, 2, or 3 (default 1) for
+slower isolated runners. It only multiplies bounded command/state deadlines and
+the worker's 30-second zoning watchdogs; it adds no sleep or retry. The strict CI
+summary and private manifest record the selected scale.
 
 Movement is interpolated at 100ms intervals, with per-waypoint distance <=100m
 and speed <=6m/s. It is not a general collision simulator. `predicted_position`

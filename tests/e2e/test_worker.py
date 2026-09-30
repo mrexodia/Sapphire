@@ -6,7 +6,12 @@ import subprocess
 import pytest
 
 from .support.environment import Environment, SetupError, allocate_ports
-from .support.worker import Bot, UnsupportedScene, WorkerError
+from .support.worker import Bot, UnsupportedScene, Worker, WorkerError
+
+
+def test_worker_rejects_unbounded_deadline_scale(tmp_path):
+    with pytest.raises(WorkerError, match="deadline scale"):
+        Worker(tmp_path / "unused", tmp_path / "artifacts", deadline_scale=4)
 
 
 def test_capabilities(worker):

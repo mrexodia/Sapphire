@@ -45,7 +45,8 @@ def run(profile, catalog, plan, *, mode="replay"):
     try:
         (environment.artifacts / "plan.json").write_text(json.dumps(plan, indent=2), encoding="utf-8")
         environment.start()
-        with Worker(environment.worker, environment.artifacts / "workload") as worker:
+        with Worker(environment.worker, environment.artifacts / "workload",
+                    getattr(environment, "deadline_scale", 1)) as worker:
             workload = Workload(environment, worker, catalog, plan)
             metrics = ProcessMetrics({**{name: p.pid for name, p in environment.processes.items()},
                                       "worker": worker.process.pid, "runner": os.getpid()})
