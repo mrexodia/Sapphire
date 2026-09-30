@@ -56,7 +56,15 @@ int main(int argc, char** argv)
       combo["level_one_enemy_exp"] = levelOne->data().BaseExp;
       combo["minimum_level_one_defeats"] =
         (requiredExp + levelOne->data().BaseExp - 1) / levelOne->data().BaseExp;
+      auto levelFourteen = data.getRow<Excel::ParamGrow>(14);
+      if(!levelFourteen || !levelFourteen->data().BaseExp)
+        throw std::runtime_error("level-fourteen enemy EXP metadata missing");
+      combo["level_fourteen_enemy_exp"] = levelFourteen->data().BaseExp;
+      combo["minimum_level_fourteen_defeats"] =
+        (requiredExp + levelFourteen->data().BaseExp - 1) / levelFourteen->data().BaseExp;
       output["first_fast_blade_combo"] = combo;
+      output["representative_high_level_enemy"] =
+        {{"level", 14}, {"base_exp", levelFourteen->data().BaseExp}};
     }
     std::ofstream file(argv[2]);
     if(!file || !(file << output.dump(2) << '\n')) throw std::runtime_error("cannot write combat catalog");

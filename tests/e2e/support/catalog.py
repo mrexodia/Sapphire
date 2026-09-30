@@ -379,9 +379,12 @@ def validate_combat_catalog(data):
                    "cast_ms": 0, "recast_ms": 2500, "recast_group": 58,
                    "effect_type": 1, "target_enemy": True,
                    "required_cumulative_exp": 2000, "level_one_enemy_exp": 50,
-                   "minimum_level_one_defeats": 40}
+                   "minimum_level_one_defeats": 40, "level_fourteen_enemy_exp": 115,
+                   "minimum_level_fourteen_defeats": 18}
     if data.get("first_fast_blade_combo") != first_combo:
         raise WorkerError("combat catalog does not match the first source-defined Fast Blade combo prerequisite")
+    if data.get("representative_high_level_enemy") != {"level": 14, "base_exp": 115}:
+        raise WorkerError("combat catalog does not match the representative high-level enemy reward")
     return data
 
 

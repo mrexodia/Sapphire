@@ -98,7 +98,9 @@ def profile(tmp_path):
                            "cost": 60, "range": -1, "cast_ms": 0, "recast_ms": 2500,
                            "recast_group": 58, "effect_type": 1, "target_enemy": True,
                            "required_cumulative_exp": 2000, "level_one_enemy_exp": 50,
-                           "minimum_level_one_defeats": 40}}
+                           "minimum_level_one_defeats": 40, "level_fourteen_enemy_exp": 115,
+                           "minimum_level_fourteen_defeats": 18},
+              "representative_high_level_enemy": {"level": 14, "base_exp": 115}}
     Path(p["combat_catalog"]).write_text(json.dumps(combat))
     shop = {"version": 1, "profile": "sapphire-3.3", "territory": 130,
             "start_actor": 1001289, "navigation": nav,
@@ -190,7 +192,8 @@ def profile(tmp_path):
 
 @pytest.mark.parametrize("patch", [{"action": 10}, {"level": 3}, {"base_exp": 50},
     {"required_cumulative_exp": 1999}, {"level_one_enemy_exp": 49},
-    {"minimum_level_one_defeats": 39}])
+    {"minimum_level_one_defeats": 39}, {"level_fourteen_enemy_exp": 114},
+    {"minimum_level_fourteen_defeats": 17}])
 def test_combat_catalog_rejects_combo_prerequisite_mismatch(profile, patch):
     from pathlib import Path
     from .support.catalog import validate_combat_catalog
@@ -199,6 +202,16 @@ def test_combat_catalog_rejects_combo_prerequisite_mismatch(profile, patch):
     data = json.loads(path.read_text())
     data["first_fast_blade_combo"] = {**data["first_fast_blade_combo"], **patch}
     with pytest.raises(WorkerError, match="combo prerequisite"):
+        validate_combat_catalog(data)
+
+
+def test_combat_catalog_rejects_high_level_enemy_reward_mismatch(profile):
+    from pathlib import Path
+    from .support.catalog import validate_combat_catalog
+    from .support.worker import WorkerError
+    data = json.loads(Path(profile["combat_catalog"]).read_text())
+    data["representative_high_level_enemy"]["base_exp"] = 114
+    with pytest.raises(WorkerError, match="high-level enemy reward"):
         validate_combat_catalog(data)
 
 
