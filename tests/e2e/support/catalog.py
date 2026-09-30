@@ -154,7 +154,7 @@ def validate_transition_catalog(data):
 
 
 def validate_pursuit_catalog(data):
-    if data.get("profile") != "sapphire-3.3" or data.get("version") != 1 or data.get("territory") != 141:
+    if data.get("profile") != "sapphire-3.3" or data.get("version") != 2 or data.get("territory") != 141:
         raise WorkerError("unsupported pursuit catalog profile/territory")
     enemy = data.get("enemy", {})
     if {key: enemy.get(key) for key in ("layout_id", "base_id", "level")} != {
@@ -176,6 +176,38 @@ def validate_pursuit_catalog(data):
     displacement = math.hypot(leash[-1][0] - position[0], leash[-1][2] - position[2])
     if displacement < 45 or data["leash_route_length"] > 70:
         raise WorkerError("leash route does not cross the bounded retreat distance")
+    proximity = data.get("proximity_enemy", {})
+    expected = {"layout_id": 3746983, "base_id": 735, "level": 6,
+                "active_type": 0, "sense": 1, "sense_range": 14,
+                "wandering_range": 6}
+    if any(proximity.get(key) != value for key, value in expected.items()):
+        raise WorkerError("unsupported active-vision population binding")
+    proximity_position = proximity.get("position")
+    expected_position = [47.837039947509766, 20.88382911682129, -297.4685974121094]
+    if (not isinstance(proximity_position, list) or len(proximity_position) != 3
+            or math.dist(proximity_position, expected_position) > 0.001
+            or not math.isclose(proximity.get("rotation", math.inf), 0.26782724261283875,
+                                abs_tol=1e-6)
+            or not math.isclose(proximity.get("level_adjusted_range", math.inf),
+                                14.0 - 1.53 ** 3.0, abs_tol=1e-6)):
+        raise WorkerError("invalid active-vision source transform or adjusted range")
+    proximity_route = validated_route({"route": data.get("proximity_route") or [],
+                                       "route_length": data.get("proximity_route_length")})
+    start_distance = math.hypot(proximity_route[0][0] - proximity_position[0],
+                                proximity_route[0][2] - proximity_position[2])
+    closest = min(math.hypot(point[0] - proximity_position[0], point[2] - proximity_position[2])
+                  for point in proximity_route)
+    if not 15 <= start_distance <= 25 or closest > 5 \
+            or not 15 <= data["proximity_route_length"] <= 80:
+        raise WorkerError("active-vision route does not approach from outside source sense range")
+    witness = data.get("proximity_witness_position")
+    if (not isinstance(witness, list) or len(witness) != 3
+            or not all(type(value) in (int, float) and math.isfinite(value) for value in witness)
+            or not 25 <= math.hypot(witness[0] - proximity_position[0],
+                                    witness[2] - proximity_position[2]) <= 35
+            or math.hypot(witness[0] - proximity_route[0][0],
+                          witness[2] - proximity_route[0][2]) < 5):
+        raise WorkerError("active-vision witness fixture is not source-navmesh bounded")
     return data
 
 

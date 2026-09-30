@@ -35,6 +35,7 @@ CASES = (
     "tests/e2e/test_live_combat.py::test_observed_fast_blade_damage",
     "tests/e2e/test_live_progression.py::test_natural_pugilist_level_two_true_strike",
     "tests/e2e/test_live_combo.py::test_natural_level_four_fast_blade_combo",
+    "tests/e2e/test_live_aggro.py::test_natural_vision_aggro_without_player_action",
     "tests/e2e/test_live_player_defeat.py::test_natural_enemy_defeats_level_one_player",
     "tests/e2e/test_live_creation.py::test_lobby_character_creation_and_opening_persistence",
 )

@@ -98,15 +98,27 @@ def test_opening_quest_catalog_fails_closed_without_completion_corridor():
 
 def test_pursuit_catalog_binds_natural_enemy_and_displaced_route():
     leash_route = [[1 + index * 1.5, 0, 0] for index in range(31)]
-    data = {"version": 1, "profile": "sapphire-3.3", "territory": 141,
+    origin = [47.837039947509766, 20.88382911682129, -297.4685974121094]
+    proximity_route = [[origin[0], origin[1], origin[2] + distance]
+                       for distance in range(20, 2, -1)]
+    data = {"version": 2, "profile": "sapphire-3.3", "territory": 141,
             "enemy": {"layout_id": 3749193, "base_id": 302, "level": 14, "position": [0, 0, 0]},
             "route": [[1, 0, 0], [2.5, 0, 0], [4, 0, 0], [5.5, 0, 0], [7, 0, 0], [8, 0, 0]],
-            "route_length": 7, "leash_route": leash_route, "leash_route_length": 45}
+            "route_length": 7, "leash_route": leash_route, "leash_route_length": 45,
+            "proximity_enemy": {"layout_id": 3746983, "base_id": 735, "level": 6,
+                "position": origin, "rotation": 0.26782724261283875, "active_type": 0,
+                "sense": 1, "sense_range": 14, "wandering_range": 6,
+                "level_adjusted_range": 14.0 - 1.53 ** 3.0},
+            "proximity_route": proximity_route, "proximity_route_length": 17,
+            "proximity_witness_position": [origin[0] + 30, origin[1], origin[2]]}
     assert validate_pursuit_catalog(data) == data
     for changed in ({**data, "territory": 130},
                     {**data, "enemy": {**data["enemy"], "layout_id": 1}},
                     {**data, "route": [[1, 0, 0], [3, 0, 0]], "route_length": 2},
-                    {**data, "leash_route": leash_route[:5], "leash_route_length": 6}):
+                    {**data, "leash_route": leash_route[:5], "leash_route_length": 6},
+                    {**data, "proximity_enemy": {**data["proximity_enemy"], "active_type": 1}},
+                    {**data, "proximity_route": proximity_route[-5:],
+                     "proximity_route_length": 4}):
         with pytest.raises(WorkerError):
             validate_pursuit_catalog(changed)
 

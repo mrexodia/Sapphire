@@ -155,13 +155,23 @@ def profile(tmp_path):
     respawn = {"version": 1, "profile": "sapphire-3.3", "homepoint": 9, "territory": 130,
                "pop_range": {"id": 1, "position": [0, 0, 0], "rotation": [0, 0, 0]}}
     Path(p["respawn_catalog"]).write_text(json.dumps(respawn))
-    pursuit = {"version": 1, "profile": "sapphire-3.3", "territory": 141,
+    proximity_origin = [47.837039947509766, 20.88382911682129, -297.4685974121094]
+    proximity_route = [[proximity_origin[0], proximity_origin[1], proximity_origin[2] + distance]
+                       for distance in range(20, 2, -1)]
+    pursuit = {"version": 2, "profile": "sapphire-3.3", "territory": 141,
                "enemy": {"layout_id": 3749193, "base_id": 302, "level": 14, "position": [0, 0, 0]},
                "navigation": {"mesh": str(Path(p["navigation"]) / "w1f2/w1f2.nav")},
                "route": [[1, 0, 0], [2.5, 0, 0], [4, 0, 0], [5.5, 0, 0], [7, 0, 0], [8, 0, 0]],
                "route_length": 7,
                "leash_route": [[1 + index * 1.5, 0, 0] for index in range(31)],
-               "leash_route_length": 45}
+               "leash_route_length": 45,
+               "proximity_enemy": {"layout_id": 3746983, "base_id": 735, "level": 6,
+                   "position": proximity_origin, "rotation": 0.26782724261283875,
+                   "active_type": 0, "sense": 1, "sense_range": 14, "wandering_range": 6,
+                   "level_adjusted_range": 14.0 - 1.53 ** 3.0},
+               "proximity_route": proximity_route, "proximity_route_length": 17,
+               "proximity_witness_position": [proximity_origin[0] + 30,
+                                                proximity_origin[1], proximity_origin[2]]}
     Path(p["pursuit_catalog"]).write_text(json.dumps(pursuit))
     opening_route = [[42 - index * 0.9, 4 + index * 0.01, -157.6 + index * 0.56]
                      for index in range(11)]
