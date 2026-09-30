@@ -117,6 +117,30 @@ int main(int argc, char** argv)
        std::hypot(proximityRoute.front()[0]-proximityOrigin[0],
                   proximityRoute.front()[2]-proximityOrigin[2]) < 15)
       throw std::runtime_error("no complete bounded active-vision approach route");
+    std::vector<Sapphire::Testing::Point> proximityEscape;
+    double proximityEscapeLength = std::numeric_limits<double>::infinity();
+    for(size_t index = 0; index < 16; ++index)
+    {
+      try
+      {
+        const auto angle = proximityRotation + static_cast<double>(index) * pi / 8.0;
+        auto candidate = Sapphire::Testing::navigationRoute(
+            *finder.getNavMesh(), proximityRoute.back(), radial(angle, 50.0));
+        double length = 0;
+        for(size_t i = 1; i < candidate.size(); ++i)
+          length += std::sqrt(std::pow(candidate[i][0]-candidate[i-1][0],2) +
+                             std::pow(candidate[i][1]-candidate[i-1][1],2) +
+                             std::pow(candidate[i][2]-candidate[i-1][2],2));
+        const auto displacement = std::hypot(candidate.back()[0]-proximityOrigin[0],
+                                              candidate.back()[2]-proximityOrigin[2]);
+        if(displacement >= 45 && displacement <= 60 && length <= 80 &&
+           length < proximityEscapeLength)
+        { proximityEscape = std::move(candidate); proximityEscapeLength = length; }
+      }
+      catch(const std::exception&) { }
+    }
+    if(proximityEscape.empty())
+      throw std::runtime_error("no complete bounded active-vision escape route");
     Sapphire::Testing::Point witnessPosition{};
     bool haveWitness = false;
     for(size_t index = 0; index < 16 && !haveWitness; ++index)
@@ -147,6 +171,8 @@ int main(int argc, char** argv)
                            {"active_type",0},{"sense",1},{"sense_range",14},
                            {"wandering_range",6},{"level_adjusted_range",14.0-std::pow(1.53,3.0)}}},
       {"proximity_route",proximityRoute},{"proximity_route_length",proximityLength},
+      {"proximity_escape_route",proximityEscape},
+      {"proximity_escape_route_length",proximityEscapeLength},
       {"proximity_witness_position",witnessPosition},
       {"navigation",{{"mesh",std::filesystem::absolute(std::filesystem::path(argv[1])/"w1f2"/"w1f2.nav").generic_string()},
                      {"format","TSET-v1"},{"polyref_bits",sizeof(dtPolyRef)*8}}}};

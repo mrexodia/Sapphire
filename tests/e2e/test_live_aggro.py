@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from .support.catalog import load_pursuit_catalog, load_respawn_catalog
+from .support.catalog import load_pursuit_catalog
 from .support.combat import (committed_damage, damage_value,
                              require_unchanged_death_state)
 from .support.worker import Bot, reward_values
@@ -14,10 +14,8 @@ pytestmark = pytest.mark.live
 
 def test_natural_vision_aggro_without_player_action(environment, live_worker):
     pursuit_path = environment.profile.get("pursuit_catalog")
-    respawn_path = environment.profile.get("respawn_catalog")
-    assert pursuit_path and respawn_path, "proximity aggro requires source-bound pursuit and respawn catalogs"
+    assert pursuit_path, "proximity aggro requires a source-bound pursuit catalog"
     pursuit = load_pursuit_catalog(pursuit_path)
-    respawn = load_respawn_catalog(respawn_path)
     bound = pursuit["proximity_enemy"]
 
     population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
@@ -95,23 +93,51 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
         "witness receives identical unprovoked enemy action", 20)
     assert committed_damage(witnessed, effect, witness_before["actors"][str(entity)])
 
-    defeated = live_worker.wait_state(
-        fighter.name, lambda s: s["actors"].get(str(entity), {}).get("hp") == 0,
-        "natural active enemy defeats non-attacking player", 90)
-    observed_defeat = live_worker.wait_state(
-        witness.name, lambda s: s["actors"].get(str(entity), {}).get("hp") == 0,
-        "witness sees naturally aggroed player defeat", 20)
-    assert observed_defeat["actors"][str(entity)]["hp"] == defeated["actors"][str(entity)]["hp"] == 0
+    enemy_at_aggro = first["actors"][str(target)]["position"]
+    escaped = fighter.walk_route(pursuit["proximity_escape_route"], 6.0, 30)
+    live_worker.wait_state(
+        witness.name,
+        lambda s: str(entity) in s["actors"]
+                  and math.dist(s["actors"][str(entity)]["position"],
+                                pursuit["proximity_escape_route"][-1]) < 0.15,
+        "witness sees non-attacking fighter complete escape route", 30)
+    pursued = live_worker.wait_state(
+        fighter.name,
+        lambda s: s["actors"].get(str(entity), {}).get("hp", 0) > 0
+                  and math.dist(s["actors"].get(str(target), {}).get("position", enemy_at_aggro),
+                                enemy_at_aggro) >= 2,
+        "naturally aggroed enemy pursues non-attacking player", 30)
+    pursued_witness = live_worker.wait_state(
+        witness.name,
+        lambda s: math.dist(s["actors"].get(str(target), {}).get("position", enemy_at_aggro),
+                            enemy_at_aggro) >= 2,
+        "witness sees natural proximity pursuit", 30)
+    escape_vector = [end - start for start, end in
+                     zip(enemy_at_aggro, pursuit["proximity_escape_route"][-1])]
+    escape_length = math.sqrt(sum(value * value for value in escape_vector))
+    assert escape_length > 40
+    for chase_position in (pursued["actors"][str(target)]["position"],
+                           pursued_witness["actors"][str(target)]["position"]):
+        displacement = [end - start for start, end in zip(enemy_at_aggro, chase_position)]
+        displacement_length = math.sqrt(sum(value * value for value in displacement))
+        projection = sum(value * direction for value, direction in
+                         zip(displacement, escape_vector)) / escape_length
+        assert displacement_length >= 2 and projection >= 2
+        assert projection / displacement_length > 0.5
+    reset = live_worker.wait_state(
+        fighter.name,
+        lambda s: s["actors"].get(str(entity), {}).get("hp", 0) > 0
+                  and math.dist(s["actors"].get(str(target), {}).get("position", enemy_at_aggro),
+                                bound["position"]) < 2,
+        "active enemy returns to its source position", 45)
+    reset_witness = live_worker.wait_state(
+        witness.name,
+        lambda s: math.dist(s["actors"].get(str(target), {}).get("position", enemy_at_aggro),
+                            bound["position"]) < 2,
+        "witness sees active enemy return to source", 20)
     require_unchanged_death_state(
         before_rewards, before_inventory,
-        reward_values(defeated["rewards"], 1), defeated["rewards"]["inventory"])
-
-    returned = fighter.return_homepoint(respawn["territory"], respawn["pop_range"]["position"])
-    live_worker.wait_state(witness.name, lambda s: str(entity) not in s["actors"],
-                           "naturally aggroed player leaves source territory", 30)
-    require_unchanged_death_state(
-        before_rewards, before_inventory,
-        reward_values(returned["rewards"], 1), returned["rewards"]["inventory"])
+        reward_values(reset["rewards"], 1), reset["rewards"]["inventory"])
     fighter.logout()
     fighter.close()
     witness.logout()
@@ -128,11 +154,18 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
         "first_unprovoked_effect": effect,
         "fighter_hp_before": before["hp"],
         "fighter_hp_after_first_effect": first["actors"][str(entity)]["hp"],
-        "fighter_hp_after": defeated["actors"][str(entity)]["hp"],
+        "escape_route_length": pursuit["proximity_escape_route_length"],
+        "escape_end": pursuit["proximity_escape_route"][-1],
+        "fighter_position_after_escape": escaped["predicted_position"],
+        "fighter_hp_after_escape": reset["actors"][str(entity)]["hp"],
+        "enemy_position_at_aggro": enemy_at_aggro,
+        "enemy_position_after_pursuit": pursued["actors"][str(target)]["position"],
+        "enemy_witness_position_after_pursuit": pursued_witness["actors"][str(target)]["position"],
+        "enemy_position_after_reset": reset["actors"][str(target)]["position"],
+        "enemy_witness_position_after_reset": reset_witness["actors"][str(target)]["position"],
         "player_combat_effects_sent": 0,
         "player_action_starts_received": 0,
         "independent_witness_verified": True,
         "reward_state_unchanged": before_rewards,
-        "return_territory": returned["territory"],
-        "scope": "one source-bound level-six active vision enemy naturally attacks and defeats a normally moving non-attacking level-one player; not general proximity, vision, line-of-sight, aggro, target-selection, pursuit or combat policy"
+        "scope": "one source-bound level-six active vision enemy naturally attacks and pursues a normally moving non-attacking level-one player, then returns to source after a source-navmesh escape; not general proximity, vision, line-of-sight, aggro, target-selection, pursuit, reset or combat policy"
     }, indent=2), encoding="utf-8")
