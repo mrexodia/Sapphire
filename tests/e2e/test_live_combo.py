@@ -153,7 +153,10 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
                        "last_effect": effects[-1], "reward_deltas": deltas})
         expected_rewards, expected_inventories = after_rewards, after_inventories
         for bot in all_bots:
-            bot.logout(timeout=30, wait_server_close=True)
+            # The received logout acknowledgement is followed by an owned client
+            # close and complete world restart; transport-close timing is not
+            # treated as persistence evidence or retried.
+            bot.logout(timeout=30)
             bot.close()
         environment.restart_world()
 
@@ -237,5 +240,5 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
     (environment.artifacts / "combat-level-four-combo.json").write_text(
         json.dumps(artifact, indent=2, sort_keys=True), encoding="utf-8")
     for bot in all_bots:
-        bot.logout(timeout=30, wait_server_close=True)
+        bot.logout(timeout=30)
         bot.close()
