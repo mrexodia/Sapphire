@@ -101,10 +101,6 @@ def test_pursuit_catalog_binds_natural_enemy_and_displaced_route():
     origin = [47.837039947509766, 20.88382911682129, -297.4685974121094]
     proximity_route = [[origin[0], origin[1], origin[2] + distance]
                        for distance in range(20, 2, -1)]
-    proximity_escape = ([[origin[0] + distance, origin[1], origin[2] + 3]
-                         for distance in range(51)]
-                        + [[origin[0] + 50, origin[1], origin[2] + distance]
-                           for distance in (2, 1, 0)])
     data = {"version": 2, "profile": "sapphire-3.3", "territory": 141,
             "enemy": {"layout_id": 3749193, "base_id": 302, "level": 14, "position": [0, 0, 0]},
             "route": [[1, 0, 0], [2.5, 0, 0], [4, 0, 0], [5.5, 0, 0], [7, 0, 0], [8, 0, 0]],
@@ -114,8 +110,6 @@ def test_pursuit_catalog_binds_natural_enemy_and_displaced_route():
                 "sense": 1, "sense_range": 14, "wandering_range": 6,
                 "level_adjusted_range": 14.0 - 1.53 ** 3.0},
             "proximity_route": proximity_route, "proximity_route_length": 17,
-            "proximity_escape_route": proximity_escape,
-            "proximity_escape_route_length": 53,
             "proximity_witness_position": [origin[0] + 30, origin[1], origin[2]]}
     assert validate_pursuit_catalog(data) == data
     for changed in ({**data, "territory": 130},
@@ -124,9 +118,7 @@ def test_pursuit_catalog_binds_natural_enemy_and_displaced_route():
                     {**data, "leash_route": leash_route[:5], "leash_route_length": 6},
                     {**data, "proximity_enemy": {**data["proximity_enemy"], "active_type": 1}},
                     {**data, "proximity_route": proximity_route[-5:],
-                     "proximity_route_length": 4},
-                    {**data, "proximity_escape_route": proximity_escape[:5],
-                     "proximity_escape_route_length": 4}):
+                     "proximity_route_length": 4}):
         with pytest.raises(WorkerError):
             validate_pursuit_catalog(changed)
 

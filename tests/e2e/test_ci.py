@@ -158,10 +158,6 @@ def profile(tmp_path):
     proximity_origin = [47.837039947509766, 20.88382911682129, -297.4685974121094]
     proximity_route = [[proximity_origin[0], proximity_origin[1], proximity_origin[2] + distance]
                        for distance in range(20, 2, -1)]
-    proximity_escape = ([[proximity_origin[0] + distance, proximity_origin[1],
-                          proximity_origin[2] + 3] for distance in range(51)]
-                        + [[proximity_origin[0] + 50, proximity_origin[1],
-                            proximity_origin[2] + distance] for distance in (2, 1, 0)])
     pursuit = {"version": 2, "profile": "sapphire-3.3", "territory": 141,
                "enemy": {"layout_id": 3749193, "base_id": 302, "level": 14, "position": [0, 0, 0]},
                "navigation": {"mesh": str(Path(p["navigation"]) / "w1f2/w1f2.nav")},
@@ -174,8 +170,6 @@ def profile(tmp_path):
                    "active_type": 0, "sense": 1, "sense_range": 14, "wandering_range": 6,
                    "level_adjusted_range": 14.0 - 1.53 ** 3.0},
                "proximity_route": proximity_route, "proximity_route_length": 17,
-               "proximity_escape_route": proximity_escape,
-               "proximity_escape_route_length": 53,
                "proximity_witness_position": [proximity_origin[0] + 30,
                                                 proximity_origin[1], proximity_origin[2]]}
     Path(p["pursuit_catalog"]).write_text(json.dumps(pursuit))

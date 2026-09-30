@@ -200,14 +200,6 @@ def validate_pursuit_catalog(data):
     if not 15 <= start_distance <= 25 or closest > 5 \
             or not 15 <= data["proximity_route_length"] <= 80:
         raise WorkerError("active-vision route does not approach from outside source sense range")
-    escape = validated_route({"route": data.get("proximity_escape_route") or [],
-                              "route_length": data.get("proximity_escape_route_length")})
-    escape_displacement = math.hypot(escape[-1][0] - proximity_position[0],
-                                     escape[-1][2] - proximity_position[2])
-    if math.dist(escape[0], proximity_route[-1]) > 2 \
-            or not 45 <= escape_displacement <= 60 \
-            or data["proximity_escape_route_length"] > 80:
-        raise WorkerError("active-vision escape does not cross the bounded retreat distance")
     witness = data.get("proximity_witness_position")
     if (not isinstance(witness, list) or len(witness) != 3
             or not all(type(value) in (int, float) and math.isfinite(value) for value in witness)
