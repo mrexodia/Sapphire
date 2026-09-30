@@ -32,10 +32,7 @@ self-hosted runners (checked through the read-only Actions runners API).
    the workflow overrides these with its newly built out-of-tree outputs. A slow
    isolated runner may set integer `deadline_scale` to 2 or 3 (default 1). This
    changes bounded wait ceilings only, performs no retry or fixed sleep, and is
-   recorded in both the private manifest and allowlisted summary. WSL runners
-   whose host forwarding races `127.0.0.1` may set `loopback_host` to the only
-   alternate accepted value, `127.0.0.2`; this does not expose any listener beyond
-   kernel loopback. No DB
+   recorded in both the private manifest and allowlisted summary. No DB
    credentials or connection strings belong in this profile. Fixtures create a
    fresh private DB and accounts, not a connection to an existing service.
 4. Create the `sapphire-private-e2e` GitHub environment **before enabling** the
@@ -103,21 +100,21 @@ separate evidence that its binaries came from the checkout.
 - The entry point collects the nine whole live modules and requires exactly the
   fifteen expected cases. Added/removed cases require explicit review of `CASES`.
   Inherited pytest selection options and automatic third-party plugins are
-  disabled. Every allowlisted case provisions and removes its own disposable
-  database/API/lobby/world environment, preventing an earlier case's sessions,
-  roaming actors, or teardown backlog from becoming a later case's fixture. No
-  tests, skipped cases, missing/duplicate phase reports, unexpected tests, failing
-  setup/call/teardown, nonzero pytest exit, live child processes, or a retained
-  private runtime prevent a passing summary. Preflight identities must match every
-  staged environment manifest, including script modules; changing a binary,
-  catalog or mesh between those checks fails verification.
+  disabled. The suite uses one disposable database/API/lobby/world environment;
+  scenarios perform ordinary logout/cleanup and explicit owned-world resets where
+  state isolation is required. No tests, skipped cases, missing/duplicate phase
+  reports, unexpected tests, failing setup/call/teardown, nonzero pytest exit,
+  live child processes, or a retained private runtime prevent a passing summary.
+  Preflight identities must match the staged environment manifest, including
+  script modules; changing a binary, catalog or mesh between those checks fails
+  verification.
 - Only `.e2e-ci-summary.json` is uploaded: fixed schema, allowlisted case identities
   and booleans, checkout identity, component hashes and cleanup/collection results.
   The upload step requires the current gameplay step to create the report. It
   does not reuse a stale report after an earlier step fails.
 - Private run directories contain `profile.json`, `entry-error.log` on entry
   failure, `pytest.log`, `live.xml`, `gate-diagnostics.json`, and the normal
-  per-case server/worker artifacts. Neither
+  server/worker artifacts. Neither
   JUnit nor pytest failures are safe public artifacts: they can contain received
   positions, paths, scene parameters and exception details. Do not broaden the
   upload glob to include these directories, catalogs, assets or runtime trees.

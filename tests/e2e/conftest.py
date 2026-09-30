@@ -32,7 +32,7 @@ def worker(worker_path, tmp_path):
         yield instance
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def environment(request):
     profile_path = request.config.getoption("--e2e-profile")
     if not profile_path:

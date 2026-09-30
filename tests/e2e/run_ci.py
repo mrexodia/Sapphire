@@ -52,10 +52,8 @@ class PreflightError(RuntimeError):
 def preflight(profile, *, suffix=None):
     """Availability/metadata gate only; it cannot certify gameplay or binary provenance."""
     suffix = (".exe" if os.name == "nt" else "") if suffix is None else suffix
-    if set(profile) - {*PATH_KEYS, "artifacts", "deadline_scale", "loopback_host"} or any(not profile.get(key) for key in PATH_KEYS):
+    if set(profile) - {*PATH_KEYS, "artifacts", "deadline_scale"} or any(not profile.get(key) for key in PATH_KEYS):
         raise PreflightError("unsupported or incomplete profile")
-    if profile.get("loopback_host", "127.0.0.1") not in {"127.0.0.1", "127.0.0.2"}:
-        raise PreflightError("unsupported loopback_host")
     deadline_scale = profile.get("deadline_scale", 1)
     if type(deadline_scale) is not int or not 1 <= deadline_scale <= 3:
         raise PreflightError("deadline_scale must be an integer from 1 through 3")
@@ -188,8 +186,7 @@ def run(profile_path, private_root, summary_path, *, worker=None, binaries=None,
             if require_clean and dirty:
                 raise PreflightError("CI requires a clean checkout")
             report.update(revision=revision, source_dirty=dirty, identities=identities,
-                          deadline_scale=profile.get("deadline_scale", 1),
-                          loopback_host=profile.get("loopback_host", "127.0.0.1"))
+                          deadline_scale=profile.get("deadline_scale", 1))
             profile["artifacts"] = str(private / "artifacts")
             local_profile = private / "profile.json"
             local_profile.write_text(json.dumps(profile), encoding="utf-8")

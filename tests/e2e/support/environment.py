@@ -26,17 +26,15 @@ class SetupError(RuntimeError):
     pass
 
 
-def allocate_ports(count, host="127.0.0.1"):
+def allocate_ports(count):
     if type(count) is not int or not 1 <= count <= 32:
         raise ValueError("port reservation count must be 1..32")
-    if host not in {"127.0.0.1", "127.0.0.2"}:
-        raise ValueError("unsupported loopback host")
     # Hold all reservations together to avoid selecting the same port twice.
     sockets = []
     try:
         for _ in range(count):
             sock = socket.socket()
-            sock.bind((host, 0))
+            sock.bind(("127.0.0.1", 0))
             sockets.append(sock)
         return [s.getsockname()[1] for s in sockets]
     finally:
@@ -86,9 +84,6 @@ class Environment:
         self.mariadb = Path(profile["mariadb_bin"]).resolve()
         self.worker = Path(profile["worker"]).resolve()
         self.navigation = Path(profile.get("navigation", self.binaries / "navi")).resolve()
-        self.loopback_host = profile.get("loopback_host", "127.0.0.1")
-        if self.loopback_host not in {"127.0.0.1", "127.0.0.2"}:
-            raise SetupError("unsupported loopback_host")
         self.deadline_scale = profile.get("deadline_scale", 1)
         if type(self.deadline_scale) is not int or not 1 <= self.deadline_scale <= 3:
             raise SetupError("deadline_scale must be an integer from 1 through 3")
@@ -107,7 +102,7 @@ class Environment:
         self.runtime.mkdir()
         self.artifacts = Path(profile.get("artifacts", REPO / ".e2e-artifacts")) / self.root.name
         self.artifacts.mkdir(parents=True)
-        self.db_port, self.api_port, self.lobby_port, self.zone_port = allocate_ports(4, self.loopback_host)
+        self.db_port, self.api_port, self.lobby_port, self.zone_port = allocate_ports(4)
         self.db_name = "sapphire_e2e_" + uuid.uuid4().hex
         self.secret = secrets.token_hex(24)
         self.db_password = secrets.token_hex(24)
@@ -132,38 +127,37 @@ class Environment:
         config = self.runtime / "config"
         config.mkdir()
         write_config(config / "global.ini", {
-            "Database": {"Host": self.loopback_host, "Port": self.db_port, "Database": self.db_name,
+            "Database": {"Host": "127.0.0.1", "Port": self.db_port, "Database": self.db_name,
                          "Username": "root", "Password": self.db_password, "SyncThreads": 2, "AsyncThreads": 2},
             "General": {"ServerSecret": self.secret, "DataPath": self.game_data.as_posix(),
                         "DataVersion": "2016.07.05.0000.0001", "WorldID": 67,
                         "DefaultGMRank": 0, "LogLevel": 1, "LogFilter": 0},
-            "Network": {"ZoneHost": self.loopback_host, "ZonePort": self.zone_port,
-                        "LobbyHost": self.loopback_host, "LobbyPort": self.lobby_port,
-                        "RestHost": self.loopback_host, "RestPort": self.api_port},
+            "Network": {"ZoneHost": "127.0.0.1", "ZonePort": self.zone_port,
+                        "LobbyHost": "127.0.0.1", "LobbyPort": self.lobby_port,
+                        "RestHost": "127.0.0.1", "RestPort": self.api_port},
         })
         write_config(config / "mysql-client.ini", {
-            "client": {"host": self.loopback_host, "port": self.db_port, "user": "root",
+            "client": {"host": "127.0.0.1", "port": self.db_port, "user": "root",
                        "password": self.db_password, "protocol": "tcp"},
         })
         write_config(config / "world.ini", {
             "Scripts": {"Path": "./compiledscripts/", "CachePath": "./cache/", "HotSwap": "false"},
-            "Network": {"ListenIp": self.loopback_host, "ListenPort": self.zone_port, "DisconnectTimeout": 20},
+            "Network": {"ListenIp": "127.0.0.1", "ListenPort": self.zone_port, "DisconnectTimeout": 20},
             "General": {"SkipOpening": "false", "MotD": "Sapphire isolated E2E"},
             "Navigation": {"MeshPath": self.navigation.as_posix()},
             "Map": {"EagerENpcEObjCache": "false"},
         })
         write_config(config / "lobby.ini", {
             "Lobby": {"AllowNoSessionConnect": "false", "WorldName": "Sapphire E2E"},
-            "Network": {"ListenIp": self.loopback_host, "ListenPort": self.lobby_port},
+            "Network": {"ListenIp": "127.0.0.1", "ListenPort": self.lobby_port},
         })
         write_config(config / "api.ini", {
-            "Network": {"ListenIp": self.loopback_host, "ListenPort": self.api_port},
+            "Network": {"ListenIp": "127.0.0.1", "ListenPort": self.api_port},
         })
         revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip()
         dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO, text=True))
         manifest = {"revision": revision, "dirty": dirty, "profile": "sapphire-3.3",
                     "fixture_version": 2, "deadline_scale": self.deadline_scale,
-                    "loopback_host": self.loopback_host,
                     "database": self.db_name, "runtime": str(self.runtime),
                     "game_data": str(self.game_data), "navmesh": str(self.navigation),
                     "ports": {"database": self.db_port, "api": self.api_port,
@@ -224,7 +218,7 @@ class Environment:
         while time.monotonic() < deadline:
             self.check_alive()
             try:
-                with socket.create_connection((self.loopback_host, port), timeout=0.2):
+                with socket.create_connection(("127.0.0.1", port), timeout=0.2):
                     return
             except OSError:
                 time.sleep(0.1)  # Bounded readiness polling, not a gameplay assertion.
@@ -242,7 +236,7 @@ class Environment:
                 self._run("db-install", [self.mariadb / "mariadb-install-db", f"--datadir={data}",
                           "--auth-root-authentication-method=normal", "--skip-test-db"])
             args = [self.mariadb / ("mariadbd" + self.suffix), "--no-defaults", f"--datadir={data}",
-                    f"--bind-address={self.loopback_host}", f"--port={self.db_port}", "--max-connections=64"]
+                    "--bind-address=127.0.0.1", f"--port={self.db_port}", "--max-connections=64"]
             if os.name != "nt":
                 args += [f"--socket={self.root / 'mysql.sock'}", f"--pid-file={self.root / 'mysql.pid'}"]
             self._start("database", args)
@@ -250,7 +244,7 @@ class Environment:
             if os.name != "nt":
                 client = self.mariadb / "mariadb"
                 # Password generated internally from hex; no user-supplied SQL fragments.
-                self._run("db-password", [client, "--no-defaults", f"--host={self.loopback_host}", f"--port={self.db_port}",
+                self._run("db-password", [client, "--no-defaults", "--host=127.0.0.1", f"--port={self.db_port}",
                           "--user=root", "--execute", f"ALTER USER 'root'@'localhost' IDENTIFIED BY '{self.db_password}'"], timeout=10)
             for mode in ("initialize", "migrate", "check"):
                 self._run(f"db-{mode}", [self.runtime / ("dbm" + self.suffix), "--mode", mode, "--force", "yes"])
@@ -268,7 +262,7 @@ class Environment:
     def api(self, method, payload, expected=200):
         if method not in {"login", "createAccount", "createCharacter"}:
             raise ValueError("unsupported fixture API method")
-        request = urllib.request.Request(f"http://{self.loopback_host}:{self.api_port}/sapphire-api/lobby/{method}",
+        request = urllib.request.Request(f"http://127.0.0.1:{self.api_port}/sapphire-api/lobby/{method}",
             data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"})
         try:
             with self._http.open(request, timeout=10) as response:

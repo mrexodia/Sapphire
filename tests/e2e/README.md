@@ -332,10 +332,7 @@ wait was registered. No automatic gameplay retry is performed after a timeout.
 A private profile may set integer `deadline_scale` to 1, 2, or 3 (default 1) for
 slower isolated runners. It only multiplies bounded command/state deadlines and
 the worker's 30-second zoning watchdogs; it adds no sleep or retry. The strict CI
-summary and private manifest record the selected scale. Endpoints default to
-`127.0.0.1`; a WSL runner affected by host localhost forwarding may select only
-`127.0.0.2` through `loopback_host`. Both values remain kernel loopback addresses;
-wildcard, LAN, and arbitrary loopback endpoints are rejected.
+summary and private manifest record the selected scale.
 
 Movement is interpolated at 100ms intervals, with per-waypoint distance <=100m
 and speed <=6m/s. It is not a general collision simulator. `predicted_position`
