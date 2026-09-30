@@ -280,7 +280,9 @@ The runner:
 - Stops only the processes it owns, redacts credentials/session identifiers from
   collected text logs, and removes the private runtime/database on teardown.
   Transient Windows file-sharing failures get bounded cleanup retries; persistent
-  cleanup failures remain errors, not ignored successes.
+  cleanup failures remain errors, not ignored successes. If an owned process exits
+  unexpectedly, the first observation also writes bounded `process-failure.json`
+  with only its classification/name/return code/log identity before failing.
 
 Live tests currently use the already-built server binaries. `manifest.json`
 records their hashes, script hashes, worker hash, source revision/dirty status,
@@ -924,6 +926,8 @@ Each live run writes `.e2e-artifacts/sapphire-e2e-*/`:
 - Per-test `actions.jsonl`: the last 2048 semantic actions, omitting authentication
   arguments; safe movement/interaction/scene arguments are retained.
 - Per-test `worker-stderr.log`: bounded worker diagnostics.
+- `process-failure.json` when an owned server process exits unexpectedly; it does
+  not contain command lines, credentials or private configuration.
 
 Workload runs additionally save `plan.json`, per-action `outcomes.json`,
 `rounds.json`, liveness `checkpoints.json`, `resources.jsonl` (one-second process samples), and `result.json` with status,
@@ -940,7 +944,12 @@ partially published canonical `result.json` claiming success. Other diagnostic
 writes are still attempted independently. If even `result.json` cannot be
 published, inspect the failed CLI result; missing output is never success.
 This does not establish recovery from process hard kills, unresponsive OS calls,
-or every failure inside an individual process's teardown.
+or every failure inside an individual process's teardown. The separate
+`test_live_fault_diagnostics.py` intentionally terminates one freshly provisioned
+owned world process and verifies classification, redacted log publication and
+whole-runtime removal. It is not in the gameplay allowlist and does not prove an
+organic crash, crash-dump retention, coordinator hard-kill cleanup or hosted
+cancellation behavior.
 
 JUnit output goes to the path selected with `--junitxml`. Never upload the private
 runtime, raw database, game assets, local profiles or unredacted configs.

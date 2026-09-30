@@ -38,7 +38,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
-| Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults and a controlled live diagnostic-write failure verified; broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, a controlled live diagnostic-write failure and one intentional owned-world termination verified; broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored and locally rehearsed with freshly built Windows and Linux binaries; hosted execution/runner controls unverified, no registered runners |
@@ -63,7 +63,7 @@ a nearby passing test does not close them.
 | Zone/chat startup, both keepalives, logout and reconnect | live smoke, zoning, workload reconnect and fresh-login scenarios | Verified |
 | Explicit disconnected/loading/ready/zoning/closing lifecycle | worker state snapshots and phase guards; live zoning/logout assertions | Verified for represented phases |
 | Bounded queues, deadlines and cancellation | 64 KiB control limit, two-frame send-queue cap, bounded journals, monotonic Python/native timers, and explicit `close`/`remove` cancellation of timers/sockets | Verified; timed-out operations are never retried and owned teardown cancels the worker |
-| Useful error classes | protocol/invalid-request worker errors; setup, assertion, worker-death and owned-process crash distinctions in harness contracts | Verified at harness boundary; not a universal server error taxonomy |
+| Useful error classes | protocol/invalid-request worker errors; setup, assertion, worker-death and owned-process exit distinctions | Verified at harness boundary and for one live owned-world termination; not a universal server error taxonomy |
 | Do not copy authoritative server gameplay | Worker uses shared low-level definitions/crypto only and has no world-service linkage or handler calls | Verified |
 | Identity, territory/loading, conditions and channel health | snapshots plus liveness/checkpoint policy | Verified for modeled fields |
 | Nearby actors, spawn/despawn and received positions | observer smoke, zoning, combat and defeat scenarios | Verified |
@@ -113,7 +113,7 @@ a nearby passing test does not close them.
 | Manual/scheduled real-client tier | policy plus completed isolated manual Sandbox lane | Verified once locally; no scheduled breadth |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
 | Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit and bounded state dumps | Verified |
-| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs and bounded decoded journals are retained | **Partial:** process death is detected, but platform crash dumps are only retained where externally produced |
+| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured unexpected-process-exit metadata are retained | **Partial:** one owned-world termination is verified, but platform crash dumps are only retained where externally produced |
 | Fixture/persistence evidence, redaction, JUnit and summary | scenario JSON snapshots, restart state, redaction contracts, `live.xml` and CI JSON summary | Verified |
 | Bounded soak logs and generator saturation | capped plans/journals, checkpoints, action percentiles and API/lobby/world/DB/worker/runner resource samples | Verified; scenario coverage remains reported separately from concurrency |
 | Initial design decisions | Headless primary + separate real client; Python; 3.3 profile; Ul'dah/Motivational Speaking; local-first; regression then bounded exploration/soak | Resolved and documented |
@@ -127,7 +127,7 @@ a nearby passing test does not close them.
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
 - 271 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
-  network-isolated Linux container using the current GNU-built worker; 16 asset-backed cases skip without an explicit live profile.
+  network-isolated Linux container using the current GNU-built worker; 17 asset-backed cases skip without an explicit live profile.
 - The provisioned CI entry point passes its strict collection on Windows and Linux. The
   latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
   skips/errors/failures and verified exact collection, staged-input identities,
@@ -1654,6 +1654,37 @@ actual full filesystem, sustained load, capacity, every sampler failure live,
 or every cleanup failure. Hard-kill recovery, blocked OS calls and all individual
 process-teardown faults remain outside this verification. The prior 30-minute
 workload was not repeated without a new stability hypothesis.
+
+## Owned-process exit classification and retained logs
+
+At `790a985d4`, `Environment.check_alive()` writes the first structured
+`process-failure.json` before raising `SetupError`: schema version, classification,
+owned process name, return code, expected redacted log name and the fact cleanup is
+still required. It records no argv, credentials, session identifiers or private
+configuration and never converts the process exit into a passing result.
+
+A separate fault-lane test provisioned fresh isolated database/API/lobby/world
+processes, intentionally terminated only its owned world process, observed Windows
+return code 1, required the exact `unexpected_process_exit` classification, and
+then ran normal owned teardown. The test independently required retained
+`world.log` and manifest, absence of generated secret/database-password values from
+all published text logs, and actual whole-runtime absence. It passed in **23.79s**
+at `.e2e-artifacts/discovery-live/sapphire-e2e-b_xxisnj`; manifest SHA-256 is
+`e007dc4da596dceff36a50be1f78bd0f1afc6444ce265311475a8e13c855ecb8`,
+`process-failure.json` SHA-256 is
+`77617f78bbb701c9a4722d90cd309b43db55e4d56ed50af038c2ef3f3d8cbc11`,
+retained world-log SHA-256 is
+`a077f58327951f444f55dbcd087f3ac55fbea77c9cbf600f9b92e8d521a99004`,
+and verification SHA-256 is
+`f59403cacfa192b9b62665acb1b9fe1577e2da9353b39f66586959e526e7f6dc`.
+Revision and source were clean and the runtime is absent. The full contracts report
+**271 passed, 17 skipped** with Clang/MSVC workers and network-isolated GNU.
+
+This is an intentional graceful OS termination of one disposable process, not an
+organic server crash, signal matrix, crash-dump test, hosted cancellation test,
+power-loss recovery, or proof that forced termination of the Python coordinator
+cleans stranded processes. The fault lane remains separate from the fifteen-case
+gameplay gate so an expected world kill cannot mask or contaminate gameplay.
 
 ## Corrections exposed by execution
 

@@ -94,8 +94,8 @@ separate evidence that its binaries came from the checkout.
   mesh identity. This checks availability and consistency, **not** game correctness or
   independent real-client compatibility. Static prerequisite validation never
   modifies quest progress; the live chain must complete its first quest normally.
-- The entry point collects the six whole live modules and requires exactly the
-  ten expected cases. Added/removed cases require explicit review of `CASES`.
+- The entry point collects the nine whole live modules and requires exactly the
+  fifteen expected cases. Added/removed cases require explicit review of `CASES`.
   Inherited pytest selection options and automatic third-party plugins are
   disabled. No tests, skipped cases, missing/duplicate phase reports, unexpected
   tests, failing setup/call/teardown, nonzero pytest exit, live child processes, or
@@ -114,6 +114,10 @@ separate evidence that its binaries came from the checkout.
 - Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this fifteen-scenario headless suite only.
+  `test_live_fault_diagnostics.py` is a separate opt-in lane that intentionally
+  terminates its own freshly provisioned world process; it verifies process-exit
+  classification, redacted log publication and runtime removal, not gameplay or
+  hosted cancellation cleanup.
 
 Latest local evidence: clean revision `39198db88` passed the fifteen-case strict
 gate in 2991.257 seconds with zero skips/errors/failures, exact collection and
