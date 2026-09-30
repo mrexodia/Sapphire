@@ -16,10 +16,10 @@ namespace Sapphire::Testing
     array.push_back(std::move(value));
     if(array.size() > 128) array.erase(array.begin());
   }
-  static Json effects(const Common::CalcResult& result)
+  static Json effects(const Common::CalcResultParam (&effects)[4])
   {
     Json values = Json::array();
-    for(const auto& effect : result.CalcResultTg)
+    for(const auto& effect : effects)
       if(effect.Type) values.push_back({{"type", effect.Type}, {"value", effect.Value}, {"flag", effect.Flag},
                                        {"args", {effect.Arg0, effect.Arg1, effect.Arg2}}});
     return values;
@@ -31,7 +31,9 @@ namespace Sapphire::Testing
     {
       const auto p = readObject<WS::FFXIVIpcActionResult1>(data, off);
       append(m_state["effects"], {{"source", source}, {"target", p.Target}, {"action", p.ActionKey},
-        {"kind", p.ActionKind}, {"request", p.RequestId}, {"result", p.ResultId}, {"effects", effects(p.CalcResult)}});
+        {"kind", p.ActionKind}, {"request", p.RequestId}, {"result", p.ResultId},
+        {"effects", effects(p.CalcResult.CalcResultTg)},
+        {"source_effects", effects(p.CalcResult.CalcResultCt)}});
     }
     else if(opcode == WS::FFXIVIpcActionResult::_ServerIpcType)
     {
@@ -39,7 +41,9 @@ namespace Sapphire::Testing
       if(p.TargetCount > 16) throw ProtocolError("action result target count exceeds profile");
       for(size_t i = 0; i < p.TargetCount; ++i)
         append(m_state["effects"], {{"source", source}, {"target", p.Target[i]}, {"action", p.ActionKey},
-          {"kind", p.ActionKind}, {"request", p.RequestId}, {"result", p.ResultId}, {"effects", effects(p.CalcResult[i])}});
+          {"kind", p.ActionKind}, {"request", p.RequestId}, {"result", p.ResultId},
+          {"effects", effects(p.CalcResult[i].CalcResultTg)},
+          {"source_effects", effects(p.CalcResult[i].CalcResultCt)}});
     }
     else if(opcode == WS::FFXIVIpcActorCast::_ServerIpcType)
     {
@@ -146,6 +150,30 @@ namespace Sapphire::Testing
                          const std::array<float, 3>& position, const Json& actors, const Json& rewards)
   {
     return startingMeleeRequest(9, 1, 60, "Fast Blade", entity, request, target, position, actors, rewards);
+  }
+  Bytes savageBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
+                           const std::array<float, 3>& position, const Json& actors,
+                           const Json& rewards, const Json& combat)
+  {
+    const auto self = std::to_string(entity);
+    if(!rewards.contains("level_by_index") || !rewards.at("level_by_index").is_array() ||
+       rewards.at("level_by_index").size() <= 1 ||
+       rewards.at("level_by_index").at(1).get<uint16_t>() < 4 ||
+       !actors.contains(self) || actors.at(self).at("level").get<uint16_t>() < 4)
+      throw ProtocolError("Savage Blade requires received Gladiator level four progression");
+    bool combo = false;
+    const auto& rows = combat.at("effects");
+    for(auto it = rows.rbegin(); it != rows.rend(); ++it)
+      if(it->at("source") == entity)
+      {
+        if(it->at("action") != 9 || it->at("target") != target) break;
+        for(const auto& effect : it->at("source_effects"))
+          if(effect.at("type") == 29 && effect.at("value") == 9 && effect.at("flag") == 0x80)
+            combo = true;
+        break;
+      }
+    if(!combo) throw ProtocolError("Savage Blade requires exact received Fast Blade combo readiness");
+    return startingMeleeRequest(11, 1, 60, "Savage Blade", entity, request, target, position, actors, rewards);
   }
   Bytes bootshineRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position, const Json& actors, const Json& rewards)

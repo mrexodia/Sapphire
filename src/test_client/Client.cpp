@@ -566,8 +566,9 @@ namespace Sapphire::Testing
       {
         detail["start"] = m_combat.state()["starts"].back();
         if(detail["start"]["source"] == m_entity &&
-           (detail["start"]["action"] == 9 || detail["start"]["action"] == 53 ||
-            detail["start"]["action"] == 54 || detail["start"]["action"] == 142))
+           (detail["start"]["action"] == 9 || detail["start"]["action"] == 11 ||
+            detail["start"]["action"] == 53 || detail["start"]["action"] == 54 ||
+            detail["start"]["action"] == 142))
         {
           const auto recast = detail["start"]["recast_centiseconds"].get<uint32_t>();
           if(recast != 250) throw ProtocolError("unsupported starting-melee recast");
@@ -580,6 +581,15 @@ namespace Sapphire::Testing
           readObject<WS::FFXIVIpcActionResult>(segment.data, sizeof(Wire::FFXIVARR_IPC_HEADER)).TargetCount;
         const auto& effects = m_combat.state()["effects"];
         detail["effects"] = Json(effects.end() - count, effects.end());
+        for(const auto& row : detail["effects"])
+          if(row["source"] == m_entity && row["action"] == 9)
+            for(const auto& effect : row["source_effects"])
+              if(effect["type"] == 29 && effect["value"] == 9 && effect["flag"] == 0x80)
+              {
+                m_fastBladeComboTarget = row["target"];
+                m_fastBladeComboDeadline = std::chrono::steady_clock::now() +
+                  std::chrono::milliseconds(Common::MAX_COMBO_LENGTH);
+              }
       }
       event("combat_changed", detail);
     }
@@ -1215,7 +1225,8 @@ namespace Sapphire::Testing
       m_startingActionReady = std::chrono::steady_clock::now() + std::chrono::milliseconds(2500);
       return {{"request", m_actionRequest}};
     }
-    if(method == "fast_blade" || method == "bootshine" || method == "true_strike" || method == "blizzard")
+    if(method == "fast_blade" || method == "savage_blade" || method == "bootshine" ||
+       method == "true_strike" || method == "blizzard")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("movement/event already in progress");
       if(!args.at("target").is_number_unsigned() || args.at("target") > uint64_t{0xffffffff})
@@ -1226,6 +1237,16 @@ namespace Sapphire::Testing
       if(method == "fast_blade")
         payload = fastBladeRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
                                    m_state["actors"], m_rewards.state());
+      else if(method == "savage_blade")
+      {
+        if(args.at("target") != m_fastBladeComboTarget ||
+           std::chrono::steady_clock::now() > m_fastBladeComboDeadline)
+          throw ProtocolError("Savage Blade requires unexpired received Fast Blade combo readiness");
+        payload = savageBladeRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
+                                     m_state["actors"], m_rewards.state(), m_combat.state());
+        m_fastBladeComboTarget = 0;
+        m_fastBladeComboDeadline = {};
+      }
       else if(method == "bootshine")
         payload = bootshineRequest(m_entity, ++m_actionRequest, args.at("target"), m_predicted,
                                    m_state["actors"], m_rewards.state());

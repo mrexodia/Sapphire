@@ -81,6 +81,8 @@ def test_natural_multi_attacker_high_level_defeat(environment, live_worker):
                     "all clients see exact pre-hit HP and acting fighter in range", 10)
             effect = fighter.fast_blade(int(target))
             assert effect["source"] == entity and effect["action"] == 9 and damage_value(effect) > 0
+            assert effect["source_effects"] == [
+                {"type": 29, "value": 9, "flag": 0x80, "args": [0, 0, 0]}]
             for observer in all_bots:
                 live_worker.wait_state(observer.name,
                     lambda s, e=effect, b=before: committed_damage(s, e, b),

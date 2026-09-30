@@ -4,7 +4,8 @@ from copy import deepcopy
 import pytest
 
 from .support.combat import (blizzard_ready, bootshine_ready, committed_damage,
-                             damage_value, fast_blade_ready, sprint_ready, true_strike_ready)
+                             damage_value, fast_blade_ready, savage_blade_ready,
+                             sprint_ready, true_strike_ready)
 from .support.worker import Bot
 
 
@@ -89,6 +90,21 @@ def test_profile_death_and_estimated_range_guards():
     state["rewards"]["class_job"] = 2
     with pytest.raises(ValueError, match="Gladiator"):
         fast_blade_ready(state, 8)
+
+
+def test_savage_blade_readiness_requires_level_and_exact_received_combo_marker():
+    state = ready_state()
+    state["rewards"]["level_by_index"] = [0, 4]
+    state["actors"]["7"]["level"] = 4
+    state["combat"]["effects"] = [{"source": 7, "target": 8, "action": 9,
+        "source_effects": [{"type": 29, "value": 9, "flag": 0x80, "args": [0, 0, 0]}]}]
+    assert savage_blade_ready(state, 8)
+    state["combat"]["effects"][0]["source_effects"][0]["value"] = 10
+    assert not savage_blade_ready(state, 8)
+    state["combat"]["effects"][0]["source_effects"][0]["value"] = 9
+    state["rewards"]["level_by_index"][1] = 3
+    with pytest.raises(ValueError, match="level 4"):
+        savage_blade_ready(state, 8)
 
 
 def test_bootshine_readiness_requires_received_pugilist_state():

@@ -54,6 +54,18 @@ def fast_blade_ready(state, target):
     return starting_melee_ready(state, target, 1, "Gladiator")
 
 
+def savage_blade_ready(state, target):
+    if not starting_melee_ready(state, target, 1, "Gladiator", 60, 4, 1):
+        return False
+    for row in reversed(state["combat"]["effects"]):
+        if row["source"] == state["entity_id"]:
+            return (row["target"] == target and row["action"] == 9
+                    and any(effect == {"type": 29, "value": 9, "flag": 0x80,
+                                       "args": [0, 0, 0]}
+                            for effect in row.get("source_effects", [])))
+    return False
+
+
 def bootshine_ready(state, target):
     return starting_melee_ready(state, target, 2, "Pugilist")
 

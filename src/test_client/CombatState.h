@@ -26,6 +26,10 @@ namespace Sapphire::Testing
   Bytes fastBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position,
                          const nlohmann::json& actors, const nlohmann::json& rewards);
+  Bytes savageBladeRequest(uint32_t entity, uint32_t request, uint32_t target,
+                           const std::array<float, 3>& position,
+                           const nlohmann::json& actors, const nlohmann::json& rewards,
+                           const nlohmann::json& combat);
   Bytes bootshineRequest(uint32_t entity, uint32_t request, uint32_t target,
                          const std::array<float, 3>& position,
                          const nlohmann::json& actors, const nlohmann::json& rewards);

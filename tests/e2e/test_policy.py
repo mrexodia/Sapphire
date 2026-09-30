@@ -45,7 +45,8 @@ def test_combat_catalog_rejects_unsupported_action_metadata(patch):
                          "level": 4, "base_exp": 65, "category": 3, "cost_type": 5,
                          "cost": 60, "range": -1, "cast_ms": 0, "recast_ms": 2500,
                          "recast_group": 58, "effect_type": 1, "target_enemy": True,
-                         "required_cumulative_exp": 2000, "level_one_enemy_exp": 50,
+                         "required_cumulative_exp": 2000, "level_thresholds": [300, 600, 1100],
+                         "level_one_enemy_exp": 50,
                          "minimum_level_one_defeats": 40, "level_fourteen_enemy_exp": 115,
                          "minimum_level_fourteen_defeats": 18},
             "representative_high_level_enemy": {"level": 14, "base_exp": 115}}

@@ -42,17 +42,20 @@ int main(int argc, char** argv)
       output["blizzard"] = metadata(142);
       auto combo = metadata(11);
       uint32_t requiredExp = 0;
+      nlohmann::json levelThresholds = nlohmann::json::array();
       for(uint32_t level = 1; level < combo["level"].get<uint32_t>(); ++level)
       {
         auto growth = data.getRow<Excel::ParamGrow>(level);
         if(!growth || !growth->data().NextExp)
           throw std::runtime_error("combo prerequisite EXP metadata missing");
         requiredExp += growth->data().NextExp;
+        levelThresholds.push_back(growth->data().NextExp);
       }
       auto levelOne = data.getRow<Excel::ParamGrow>(1);
       if(!levelOne || !levelOne->data().BaseExp)
         throw std::runtime_error("level-one enemy EXP metadata missing");
       combo["required_cumulative_exp"] = requiredExp;
+      combo["level_thresholds"] = levelThresholds;
       combo["level_one_enemy_exp"] = levelOne->data().BaseExp;
       combo["minimum_level_one_defeats"] =
         (requiredExp + levelOne->data().BaseExp - 1) / levelOne->data().BaseExp;

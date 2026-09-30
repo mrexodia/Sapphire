@@ -9,7 +9,7 @@ import subprocess
 import threading
 import time
 
-from .combat import blizzard_ready, bootshine_ready, fast_blade_ready, sprint_ready, true_strike_ready
+from .combat import blizzard_ready, bootshine_ready, fast_blade_ready, savage_blade_ready, sprint_ready, true_strike_ready
 
 
 class WorkerError(RuntimeError):
@@ -103,7 +103,7 @@ class Worker:
             with self._cv:
                 self._pending.add(identifier)
                 if method not in {"snapshot", "capabilities"}:
-                    safe_args = args if method in {"walk_to", "interact", "choose_scene", "say", "discard_item", "fast_blade", "bootshine", "true_strike", "blizzard"} else {}
+                    safe_args = args if method in {"walk_to", "interact", "choose_scene", "say", "discard_item", "fast_blade", "savage_blade", "bootshine", "true_strike", "blizzard"} else {}
                     if method in {"request_item_unequip", "request_item_reequip_starter", "request_item_move", "request_item_swap", "request_item_split", "request_item_merge"}:
                         keys = (("gear_slot", "expected_item", "destination_storage", "destination_slot")
                                 if method == "request_item_unequip" else
@@ -435,6 +435,20 @@ class Bot:
         # no fixed recast sleep, privileged replenishment or automatic retry.
         return self.worker.wait_state(self.name, lambda s: fast_blade_ready(s, target),
                                       "Fast Blade local guard, natural TP and estimated range", timeout)
+
+    def wait_savage_blade_ready(self, target, timeout=30):
+        return self.worker.wait_state(self.name, lambda s: savage_blade_ready(s, target),
+                                      "Savage Blade combo marker, local guard, TP and range", timeout)
+
+    def savage_blade(self, target, timeout=10):
+        request = self.worker.request("savage_blade", self.name, target=target)["request"]
+        state = self.worker.wait_state(self.name,
+            lambda s: any(e["source"] == s["entity_id"] and e["target"] == target and e["action"] == 11
+                          and e["request"] == request for e in s["combat"]["effects"]),
+            "matching Savage Blade effect", timeout)
+        return next(e for e in state["combat"]["effects"]
+                    if e["source"] == state["entity_id"] and e["target"] == target
+                    and e["action"] == 11 and e["request"] == request)
 
     def wait_bootshine_ready(self, target, timeout=30):
         return self.worker.wait_state(self.name, lambda s: bootshine_ready(s, target),

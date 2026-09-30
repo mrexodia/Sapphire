@@ -56,6 +56,22 @@ int main()
     auto deadReturn = actors; deadReturn["7"]["hp"] = 0;
     rejects([&] { livingReturnRequest(7, 5, 141, 9, deadReturn); });
     rejects([&] { livingReturnRequest(7, 0, 141, 9, actors); });
+    auto levelFourActors = actors; levelFourActors["7"]["level"] = 4;
+    Json levelFourGladiator{{"class_job", 1}, {"level_by_index", Json::array({0, 4})}};
+    Json comboState{{"effects", Json::array({{{"source", 7}, {"target", 8}, {"action", 9},
+      {"source_effects", Json::array({{{"type", 29}, {"value", 9}, {"flag", 0x80},
+                                       {"args", {0, 0, 0}}}})}}})}};
+    auto savageBlade = savageBladeRequest(7, 4, 8, {0,0,0}, levelFourActors,
+                                          levelFourGladiator, comboState);
+    expected[4] = 11; expected[8] = 4;
+    require(savageBlade == expected);
+    auto noCombo = comboState; noCombo["effects"][0]["source_effects"] = Json::array();
+    rejects([&] { savageBladeRequest(7, 4, 8, {0,0,0}, levelFourActors, levelFourGladiator, noCombo); });
+    auto levelThreeGladiator = levelFourGladiator; levelThreeGladiator["level_by_index"][1] = 3;
+    rejects([&] { savageBladeRequest(7, 4, 8, {0,0,0}, levelFourActors, levelThreeGladiator, comboState); });
+    rejects([&] { savageBladeRequest(7, 4, 9, {0,0,0}, levelFourActors, levelFourGladiator, comboState); });
+    auto lowSavageTp = levelFourActors; lowSavageTp["7"]["tp"] = 59;
+    rejects([&] { savageBladeRequest(7, 4, 8, {0,0,0}, lowSavageTp, levelFourGladiator, comboState); });
     auto bootshine = bootshineRequest(7, 2, 8, {0,0,0}, actors, {{"class_job", 2}});
     expected[4] = 53; expected[8] = 2;
     require(bootshine == expected);
@@ -99,8 +115,13 @@ int main()
     WS::FFXIVIpcActionResult1 result{};
     result.Target = 8; result.ActionKey = 9; result.ActionKind = 1; result.RequestId = 1; result.ResultId = 42;
     result.CalcResult.CalcResultTg[0].Type = 3; result.CalcResult.CalcResultTg[0].Value = 7;
+    result.CalcResult.CalcResultCt[0].Type = 29; result.CalcResult.CalcResultCt[0].Value = 9;
+    result.CalcResult.CalcResultCt[0].Flag = 0x80;
     require(state.receive(result._ServerIpcType, 7, packet(result)));
     require(state.state()["effects"].back()["effects"][0]["value"] == 7);
+    const Json expectedSourceEffect{{"type", 29}, {"value", 9}, {"flag", 0x80},
+                                    {"args", {0, 0, 0}}};
+    require(state.state()["effects"].back()["source_effects"][0] == expectedSourceEffect);
     require(state.state()["effects"].back()["source"] == 7);
     WS::FFXIVIpcActorCast cast{};
     cast.Action = 6; cast.ActionKey = 6; cast.ActionKind = 1;
