@@ -98,6 +98,24 @@ def blizzard_ready(state, target):
     return remaining == 0 and own["mp"] >= 4 and math.dist(*positions) <= 24.5
 
 
+def require_unchanged_death_state(before_rewards, before_inventory,
+                                  after_rewards, after_inventory):
+    """Require exact tracked reward/inventory equality across defeat or return.
+
+    This deliberately covers only received EXP, level, currencies, item totals and
+    complete inventory rows. It does not infer unexposed durability or other death
+    penalties.
+    """
+    if not isinstance(before_rewards, dict) or not isinstance(after_rewards, dict):
+        raise ValueError("death reward state must be received mappings")
+    if before_rewards != after_rewards:
+        raise ValueError("death changed received EXP, level, currency or item totals")
+    if not isinstance(before_inventory, list) or not isinstance(after_inventory, list):
+        raise ValueError("death inventory state must be received rows")
+    if before_inventory != after_inventory:
+        raise ValueError("death changed received inventory rows")
+
+
 def damage_value(effect):
     return sum(row["value"] for row in effect["effects"] if row["type"] in (3, 5) and row["flag"] == 0)
 

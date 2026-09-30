@@ -4,7 +4,8 @@ from copy import deepcopy
 import pytest
 
 from .support.combat import (blizzard_ready, bootshine_ready, committed_damage,
-                             damage_value, fast_blade_ready, savage_blade_ready,
+                             damage_value, fast_blade_ready,
+                             require_unchanged_death_state, savage_blade_ready,
                              sprint_ready, true_strike_ready)
 from .support.worker import Bot
 
@@ -16,6 +17,27 @@ def ready_state():
             "combat": {"starting_action_guard_remaining_ms": 0, "effects": [], "integrities": []},
             "actors": {"7": {"kind": 1, "hp": 94, "tp": 60, "level": 1},
                        "8": {"kind": 2, "level": 1, "hp": 94, "position": [0, 0, 2]}}}
+
+
+def test_received_death_state_rejects_every_tracked_penalty():
+    rewards = {"items": {"100": 2}, "exp": 50, "level": 1,
+               "currencies": {"gil": 208}}
+    inventory = [{"container": 0, "slot": 0, "item": 100, "quantity": 2}]
+    require_unchanged_death_state(rewards, inventory, deepcopy(rewards), deepcopy(inventory))
+    for field, changed in (("exp", 49), ("level", 0), ("currencies", {"gil": 207}),
+                           ("items", {"100": 1})):
+        after = deepcopy(rewards)
+        after[field] = changed
+        with pytest.raises(ValueError, match="death changed received"):
+            require_unchanged_death_state(rewards, inventory, after, deepcopy(inventory))
+    after_inventory = deepcopy(inventory)
+    after_inventory[0]["quantity"] = 1
+    with pytest.raises(ValueError, match="death changed received inventory"):
+        require_unchanged_death_state(rewards, inventory, deepcopy(rewards), after_inventory)
+    with pytest.raises(ValueError, match="mappings"):
+        require_unchanged_death_state([], inventory, rewards, inventory)
+    with pytest.raises(ValueError, match="rows"):
+        require_unchanged_death_state(rewards, {}, rewards, inventory)
 
 
 def test_sprint_readiness_requires_received_living_player_tp():

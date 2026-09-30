@@ -6,8 +6,8 @@ import time
 import pytest
 
 from .support.catalog import load_pursuit_catalog, load_respawn_catalog
-from .support.worker import Bot
-from .support.combat import damage_value
+from .support.worker import Bot, reward_values
+from .support.combat import damage_value, require_unchanged_death_state
 
 pytestmark = pytest.mark.live
 
@@ -44,6 +44,8 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     initial = fighter.login_via_lobby(fighter_fixture["auth"], fighter_fixture["name"])
     entity = initial["entity_id"]
     before = initial["actors"][str(entity)]
+    before_rewards = reward_values(initial["rewards"], 1)
+    before_inventory = initial["rewards"]["inventory"]
     assert before["hp"] == before["hp_max"] > 0 and before["level"] == 1
     live_worker.wait_state(observer.name, lambda s: str(entity) in s["actors"], "fighter visible", 20)
     state = live_worker.wait_state(fighter.name,
@@ -187,6 +189,9 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     enemy = defeated["actors"][str(source)]
     assert enemy["base_id"] == 302 and enemy["level"] == 14 and 0 < enemy["hp"] < enemy["hp_max"]
     assert math.dist(enemy["position"], pursuit["route"][-1]) < 4
+    require_unchanged_death_state(
+        before_rewards, before_inventory,
+        reward_values(defeated["rewards"], 1), defeated["rewards"]["inventory"])
 
     observed = live_worker.wait_state(observer.name,
         lambda s: s["actors"].get(str(entity), {}).get("hp") == 0,
@@ -221,6 +226,9 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     returned_position = returned["observed_position"]
     returned_hp = returned["actors"][str(entity)]["hp"]
     assert returned_hp == returned["actors"][str(entity)]["hp_max"] == before["hp_max"]
+    require_unchanged_death_state(
+        before_rewards, before_inventory,
+        reward_values(returned["rewards"], 1), returned["rewards"]["inventory"])
 
     fighter.logout()
     live_worker.wait_state(return_observer.name, lambda s: str(entity) not in s["actors"],
@@ -238,6 +246,9 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     assert persisted["territory"] == respawn["territory"]
     assert math.dist(persisted["observed_position"], respawn["pop_range"]["position"]) < 0.15
     assert persisted_self["hp"] == persisted_self["hp_max"] == before["hp_max"]
+    require_unchanged_death_state(
+        before_rewards, before_inventory,
+        reward_values(persisted["rewards"], 1), persisted["rewards"]["inventory"])
     reloaded.logout()
     reloaded.close()
     (environment.artifacts / "combat-player-defeat.json").write_text(json.dumps({
@@ -263,6 +274,9 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
         "homepoint": respawn, "returned_position": returned_position, "returned_hp": returned_hp,
         "return_observer_hp": return_seen["actors"][str(entity)]["hp"],
         "persisted_position": persisted["observed_position"], "persisted_hp": persisted_self["hp"],
+        "reward_state_before": before_rewards, "reward_state_after_defeat": before_rewards,
+        "reward_state_after_return": before_rewards, "reward_state_after_restart": before_rewards,
+        "inventory_unchanged_through_defeat_return_restart": before_inventory,
         "both_defeat_clients_verified": True, "return_observer_verified": True,
-        "scope": "one natural level-14 enemy pursues a normally moving level-one player, retreats to spawn after the 40m leash, is re-engaged and defeats the player, followed by a source-bound homepoint return and restart persistence; no health-reset, raise or general combat claim"
+        "scope": "one natural level-14 enemy pursues a normally moving level-one player, retreats to spawn after the 40m leash, is re-engaged and defeats the player, followed by a source-bound homepoint return and restart persistence with exact tracked EXP, level, currency and inventory unchanged; no durability, raise or general combat claim"
     }, indent=2), encoding="utf-8")
