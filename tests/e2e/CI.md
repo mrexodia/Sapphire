@@ -115,15 +115,15 @@ separate evidence that its binaries came from the checkout.
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this fourteen-scenario headless suite only.
 
-Latest local evidence: clean revision `7bf5716a1` passed the fourteen-case strict
-gate in 2176.473 seconds with zero skips/errors/failures, exact collection and
-staged-input identity, and removed private runtime. It retains natural level-two
-progression and adds one four-attacker level-14 defeat with an independent
-non-attacking witness, exact shared EXP/loot and restart persistence. Evidence is
-`build-e2e/ci-summary-high-level-combat.json` (SHA-256
-`f7e9593f607022fd70c30d3c3f65e04aa91048122cfca39129b68e1850d1c686`) with private
-diagnostics at `.e2e-artifacts/ci/gameplay-ci-zfu301c6` and private manifest
-SHA-256 `9909a377f285797106158eb62305edcd973c2a52cfe4c2caa7ad6f8ea9278200`;
+Latest local evidence: clean revision `3a3a11ea5` passed the fourteen-case strict
+gate in 2815.752 seconds with zero skips/errors/failures, exact collection and
+staged-input identity, and removed private runtime. It performs 18 independently
+witnessed four-attacker level-14 defeats, exact restart-persisted progression to
+level 4 and an exact received Fast Blade→Savage Blade combo. Evidence is
+`build-e2e/ci-summary-level-four-combo-final.json` (SHA-256
+`cbe9909e71657635c0317a2e6e1b724bbd729273a72f24abe924d4a6c1601bd1`) with private
+diagnostics at `.e2e-artifacts/ci/gameplay-ci-uhwz3vc4` and private manifest
+SHA-256 `fb2fe06118179e0f9afe205daeea9681f2514a2c28c80d3a7f79e37d59aef8d8`;
 this is local, not hosted execution. A retained preflight diagnostic at
 `.e2e-artifacts/ci/gameplay-ci-xa4osh_n` rejected the stale generated shop catalog
 before provisioning; the passing run regenerated the exact current source catalog

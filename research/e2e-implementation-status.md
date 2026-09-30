@@ -30,7 +30,7 @@ accept unknown scenes or label codec/mock tests as gameplay/real-client evidence
 | Received inventory/currency/XP model | `RewardsState.cpp`: initial snapshots, deferred successful transactions, class-index and incremental XP; exact 0→28 gil sale then 28→20 gil purchase deltas and persistence | Unit verified; live item/XP/nonzero-currency state verified for the bounded transactions |
 | Exact quest rewards | Independent authored expectation: 50 XP and two items 4551, no other tracked bag/currency change | Verified |
 | World restart and fresh login | Position, completed flag, absent active quest, XP and tracked bag quantities checked after restart | Verified |
-| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike, Thaumaturge Blizzard and one four-attacker level-14 defeat with shared persisted rewards; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
+| More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike, Thaumaturge Blizzard, 18 four-attacker level-14 defeats with shared persisted rewards and one naturally earned Fast Blade→Savage Blade combo; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy, raises, combo chains/other combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy |
 | Range/discovery/territory event triggers | Curated bidirectional physical ExitRange crossings, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
 | Deterministic authored regression suite | Fourteen allowlisted live cases, native tests and Python contracts | Supported suite verified in a clean combined gate |
@@ -126,7 +126,7 @@ a nearby passing test does not close them.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
   executables pass; the resulting Linux API, lobby, world, DB manager and worker also
   pass the strict live gate described below.
-- 268 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
+- 270 Python worker/policy/CI/pacing/resource-control contracts pass with Clang and MSVC workers and in a
   network-isolated Linux container using the current GNU-built worker.
 - The provisioned CI entry point passes its strict collection on Windows and Linux. The
   latest strict Linux nine-case rehearsal at `4bbf7ec9a` took 1009.57s with zero
@@ -134,14 +134,14 @@ a nearby passing test does not close them.
   clean source and normal cleanup (`gameplay-ci-kekux1o4` under
   `.e2e-artifacts/linux-ci`, summary
   `build-e2e/ci-summary-linux-gameplay.json`). The latest strict Windows
-  **fourteen-case** gate at `7bf5716a1` took **2176.473s**, retaining natural
-  level-two progression and adding one four-attacker natural level-14 defeat with
-  exact shared rewards, a non-attacking witness and restart persistence
-  (`gameplay-ci-zfu301c6`, summary
-  `build-e2e/ci-summary-high-level-combat.json`). Summary SHA-256 is
-  `f7e9593f607022fd70c30d3c3f65e04aa91048122cfca39129b68e1850d1c686`,
+  **fourteen-case** gate at `3a3a11ea5` took **2815.752s**, replacing the single
+  high-level defeat with 18 restart-persisted four-attacker defeats, natural
+  level-four progression and an independently witnessed Fast Blade→Savage Blade
+  combo (`gameplay-ci-uhwz3vc4`, summary
+  `build-e2e/ci-summary-level-four-combo-final.json`). Summary SHA-256 is
+  `cbe9909e71657635c0317a2e6e1b724bbd729273a72f24abe924d4a6c1601bd1`,
   private manifest SHA-256 is
-  `9909a377f285797106158eb62305edcd973c2a52cfe4c2caa7ad6f8ea9278200`, and
+  `fb2fe06118179e0f9afe205daeea9681f2514a2c28c80d3a7f79e37d59aef8d8`, and
   its runtime was removed. In both current platform summaries
   `--require-clean` passed and `source_dirty` is false. Earlier dirty implementation
   rehearsals are explicitly labeled as such.
@@ -823,11 +823,10 @@ only the normal enemy damage result and action-start arrived. That expected fail
 experiment is retained at
 `.e2e-artifacts/discovery-live/sapphire-e2e-y3wrdh7c` (event journal SHA-256
 `0093ca0204cb39ed213d7a43a5de47e5d14dbd8558efd6c7360a1627bbe91f94`),
-with its runtime removed, and is not success evidence. A true combo remains
-uncovered pending a bounded normal level-4 path (or another independently
-source-backed attainable combo), exact received combo-result semantics and an
-independent witness; an expensive 40-kill grind was not added merely to satisfy a
-checkbox.
+with its runtime removed, and is not success evidence. At that revision a true
+combo remained uncovered pending bounded normal level-four progression, exact
+received combo-result semantics and an independent witness; the later `7436b4a44`
+path below closes one Fast Blade→Savage Blade case without relabelling Bootshine.
 
 At `93b4914d6`, a separate normal Pugilist path proves the attainable next
 progression step without grants. Across seven fresh HTTP→lobby→world actor sessions
@@ -889,29 +888,69 @@ and journal SHA-256 is
 The exact committed revision is clean and its runtime was removed.
 
 The expanded source catalog also establishes that 2,000 EXP requires at least 18
-of this exact 115-EXP enemy, versus 40 exact 50-EXP enemies. That narrows a normal
-level-four path but is not combo evidence and does not justify grants or a synthetic
-level. The full suite reports **268 passed, 14 skipped** with Clang/MSVC/GNU
-workers. The clean fourteen-case gate repeats this scenario; its high-level artifact
-SHA-256 is
-`902d148d96c8cfe67efad47945c32bcc15c092db7134b68231bce3af54a38dee`.
-This proves one exact multi-attacker hate/reward path, not general reward sharing,
-level scaling, party contribution policy, combat capacity or arbitrary enemies.
+of this exact 115-EXP enemy, versus 40 exact 50-EXP enemies. The original focused
+high-level path proves one exact multi-attacker hate/reward path, not general reward
+sharing, level scaling, party contribution policy, combat capacity or arbitrary
+enemies.
 
-A subsequent diagnostic required every nearby client to receive a self-targeted
-Fast Blade `TypeCombo` (`0x1d`) readiness result matching the exact action/request.
-It timed out after the actor had received the ordinary action-9 damage, committed
-HP and group-58 start; no such result existed in the retained combat state. The
-failed run is preserved at
-`.e2e-artifacts/discovery-live/sapphire-e2e-o1o1wxk2` (event journal SHA-256
-`20ccd013426163a5304c54ddfdf83364415278cc5c571a45496a101b6c43f535`), with its
-runtime removed, and is not success evidence. This does not prove combos impossible,
-but it means the apparent `nextCombo` table entry is not enough to claim received
-combo readiness. Before paying the 18-defeat progression cost, a combo scenario
-still needs defensible received binding and exact success-result semantics (or a
-separately verified server publication fix), not timing alone or debug text.
+A follow-up diagnostic initially appeared to find no Fast Blade `TypeCombo`
+(`0x1d`) readiness result. Inspection proved the server packet stores effects on
+the caster in `CalcResultCt`, while the worker decoded only target-side
+`CalcResultTg`. At `7436b4a44`, bounded action-result decoding exposes both arrays
+as `effects` and `source_effects`; independently authored native fixtures pin the
+wire fields. This changes test-client observability only, not server publication.
+The formerly failed diagnostic remains at
+`.e2e-artifacts/discovery-live/sapphire-e2e-o1o1wxk2` and is not absence evidence.
+
+The same commit then proves the actual combo through a fully ordinary path. Four
+Gladiators and a non-attacking witness perform **18** exact natural level-14
+defeats. Every cycle requires all five clients to receive every Fast Blade damage
+result, source-side `TypeCombo` value 9/flag `0x80`, exact committed target HP,
+complete 115-EXP/test-table rewards for all four attackers, unchanged witness
+rewards, normal logout, owned client close, world restart and fresh persistence.
+Source-derived thresholds 300/600/1100 produce the exact received progression:
+level 1→2 after defeat 3, level 2→3 after defeat 8, and level 3→4 after defeat 18,
+ending at level 4 with 70 EXP. No level, EXP, action, target, HP, TP or loot is
+granted.
+
+Only the received level-four state, at least 60 received TP, the same living target,
+melee range, elapsed 2.5-second recast and an unexpired 12.5-second exact Fast Blade
+marker enable bounded Savage Blade 11. All five clients receive the same 13-damage
+follow-up, exact committed HP, `TypeComboHit` (`0x1e`), and Savage Blade's next
+`TypeCombo` value 11; the actor also receives group-58/250-centisecond action-start
+metadata. The first otherwise successful progression run correctly failed because
+the assertion expected only `TypeComboHit` and omitted the independently received
+next-combo marker; that diagnostic remains at
+`.e2e-artifacts/discovery-live/sapphire-e2e-z3gtmyow`.
+
+The clean focused path passed in **1326.77s** at
+`.e2e-artifacts/discovery-live/sapphire-e2e-h99wkmzl`; manifest SHA-256 is
+`a3cf74975755bf65f9f42afbf999142d081a99c1cbe6ae2a07bd73debd4bc445`,
+`combat-level-four-combo.json` SHA-256 is
+`207c261df2820d5e4e69f7f83f6e245b37ed09f39e6cef2cb3863e44539c34b7`,
+and journal SHA-256 is
+`941363b9999f1cdb96cc0ecd34e983c4dcfe5c4ffd0b2a8ba8d8377974aa0389`.
+The source is clean, runtime removal is confirmed, native combat contracts pass on
+Clang/MSVC/GNU and **270 passed, 15 skipped** Python contracts agree across those
+workers. The final clean fourteen-case gate repeats the combo path; its artifact
+SHA-256 is
+`2e1395b8b8fe11680c56426fa5715d202f2d49ff7134bddaa8f4a0c2fceec8d3`.
+This proves one Fast Blade→Savage Blade combo, not arbitrary combo chains,
+positional combos, interruption, exact TP debit or broad combat correctness.
+
+Three strict-gate diagnostics are retained rather than hidden. `gameplay-ci-yvo5b2qn`
+exposed the new explicit empty `source_effects` field in an exact item-VFX assertion
+and then cascaded after combo teardown. `gameplay-ci-g893sffa` showed that repeatedly
+waiting for optional observable transport close can exceed 30 seconds after a
+received normal logout acknowledgement; the scenario now closes its owned client
+and restarts the owned world without treating close timing as persistence proof or
+retrying gameplay. `gameplay-ci-6ie9kp7o` passed the full combo but showed its final
+living target remained damaged for the following player-defeat case; explicit
+world-reset teardown fixed scenario isolation. The clean `gameplay-ci-uhwz3vc4`
+then passed all 14 cases with exact collection, no skips and cleanup verified.
 
 At `569a02898`, the same case adds source-defined Thaumaturge Blizzard 142
+ the same case adds source-defined Thaumaturge Blizzard 142
 (`WorkIndex=5`, MP cost metadata 3/4, 2.5s cast/recast and 25-unit range). A fresh
 normal class-7 fixture selects a living natural level-one marmot within 20m using
 received state; its witness independently observes both actors within spell range.
@@ -1970,17 +2009,13 @@ compatibility.
    replay is flat; this does not establish capacity or memory stability for all
    code paths. Generator histories/allocator retention also remain distinct from
    server resource behavior.
-2. Extend combat beyond the now-verified enemy/player defeat, homepoint return and persisted
-   current-test-table rewards: broader aggro/leash and enemy-reset policy, raises, combos and broader abilities
-   and production loot selection remain uncovered. The first server-represented
-   Fast Blade combo is source-level 4 and requires 2,000 cumulative EXP (at least
-   18 exact evidenced 115-EXP level-14 defeats or 40 exact 50-EXP defeats if each
-   is used exclusively); Bootshine/True Strike is
-   not a valid server-table combo substitute. Preserve observed resource/range
-   checks, require genuine navigation for any pursuit, and do not replace a
-   bounded progression test with a grant or fixture-edited level. Establish an
-   exact received combo-ready/success signal before spending the evidenced
-   18-defeat minimum; Fast Blade currently publishes no decoded `TypeCombo` marker.
+2. Extend combat beyond the now-verified enemy/player defeat, homepoint return,
+   naturally earned Fast Blade→Savage Blade combo and persisted current-test-table
+   rewards: broader aggro/leash and enemy-reset policy, raises, other combo chains,
+   broader abilities and production loot selection remain uncovered. Preserve
+   received source/target effects, resources and range checks, require genuine
+   navigation for pursuit, and do not replace progression with grants or
+   fixture-edited levels.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond
    the first Ul'dah opening branch; unknown content must still fail. Instance entry
    is not currently a defensible shortcut: `findContent` accepts a requested

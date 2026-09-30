@@ -584,12 +584,12 @@ bin/sapphire_test_combat_catalog <game/sqpack> build-e2e/combat-catalog.json
 Use `.exe` on Windows and set `combat_catalog` to the absolute output path. The
 validator requires supported level-one Gladiator/Fast Blade, Pugilist/Bootshine
 and Thaumaturge/Blizzard metadata (received TP or MP, exact cast/recast and source-
-defined range). It additionally binds level-two Pugilist True Strike 54 and records,
-but does not enable, the first server-represented Fast Blade combo follow-up:
-level-four Savage Blade 11, 2,000 cumulative source EXP and either a minimum 40
-exact evidenced 50-EXP level-one defeats or 18 exact evidenced 115-EXP level-14
-defeats when either source is used exclusively. The latter is source prerequisite
-evidence, not independent client or combo-execution evidence.
+defined range). It additionally binds level-two Pugilist True Strike 54 and the
+first server-represented Fast Blade combo follow-up: level-four Savage Blade 11,
+source thresholds 300/600/1100, 2,000 cumulative EXP and either a minimum 40 exact
+50-EXP level-one defeats or 18 exact 115-EXP level-14 defeats when either source is
+used exclusively. Catalog values are prerequisites; the live combo case supplies
+separate received execution evidence.
 
 `test_live_combat.py` places fresh characters one metre laterally from a spawn in
 the unchanged staged Central Thanalan population before their first connection.
@@ -653,13 +653,19 @@ all five clients must receive each identical effect and matching committed HP.
 Every attacker must receive exact EXP/complete test-table loot while the witness
 remains unchanged, followed by exact fresh-authentication persistence after a world
 restart. This proves only that exact shared-hate reward path, not party contribution,
-general scaling, arbitrary enemies or capacity. Eighteen such rewards would meet
-the source 2,000-EXP level-four threshold; the scenario performs one and makes no
-combo claim. A retained diagnostic found no received self-targeted `TypeCombo`
-marker after an otherwise successful Fast Blade, so `nextCombo` metadata is not
-accepted as runtime combo-readiness proof. A future level-four scenario must first
-establish an exact received readiness/success semantic rather than relying on a
-timer or server debug text.
+general scaling, arbitrary enemies or capacity.
+
+`test_live_combo.py` performs 18 such defeats with four attackers and a fifth
+non-attacking witness, restarting and fresh-authenticating after each complete
+reward. It proves exact level/EXP transitions through level 4/70 EXP. The decoder
+keeps target-side `CalcResultTg` and caster-side `CalcResultCt` separate; an earlier
+apparent missing-marker diagnostic was a test-client observability gap, not server
+absence. Savage Blade is exposed only when the received class/level, living same
+target, melee range, 60 TP, elapsed recast, exact Fast Blade `TypeCombo` value 9 and
+12.5-second local deadline all agree. Every client must then receive identical
+damage, committed HP and `TypeComboHit`, plus Savage Blade's next-combo marker.
+This proves one exact combo, not arbitrary chains, positional behavior or exact TP
+debit.
 
 The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
 Received rewards must be exactly 50 EXP, no level/currency change, one five-item
@@ -727,7 +733,7 @@ recast metadata. `combat-defeat-rewards.json` records every verified pre/post HP
 natural TP, guard/timing, retaliation, death/removal, received rewards and the exact
 fresh-login snapshot, supplementing rather than replacing raw journals. Earlier
 failed overlap and duplicate-ID runs remain retained and are not counted as passing.
-This slice does **not** prove damage-formula correctness, combos, general cooldown
+This initial defeat slice does **not** prove damage-formula correctness, combo semantics, general cooldown
 scheduling, general aggro/leash policy, arbitrary abilities, production loot-table selection
 or real-client combat presentation.
 
