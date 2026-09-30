@@ -1033,7 +1033,10 @@ starts about 20m from the spawn and traverses a bounded three-metre radial appro
 a separate source-navmesh point places the independent witness about 30m away.
 Catalog v2 rejects changed identity, activity/sense metadata, transform, adjusted
 range, incomplete routes, an approach starting inside the outer bound, no point
-within five metres, or an unsafe witness placement.
+within five metres, or an unsafe witness placement. The generator also compiled and
+executed against the same population/navmesh in a network-isolated Ubuntu 22.04/GNU
+full-project build (toolkit disabled); it reproduced catalog v2 with 82 points and
+37.694055m.
 
 `test_live_aggro.py` logs in two ordinary non-GM clients and verifies the exact
 living source actor before movement. The fighter sends only normal route movement:
