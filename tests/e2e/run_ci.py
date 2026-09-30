@@ -127,6 +127,7 @@ class EvidenceGate:
         self.reports = {case: {phase: [] for phase in ("setup", "call", "teardown")} for case in CASES}
         self.unexpected = 0
         self.environment = None
+        self.environments = []
 
     def pytest_collection_finish(self, session):
         self.collected = [item.nodeid for item in session.items]
@@ -142,14 +143,18 @@ class EvidenceGate:
     def pytest_runtest_call(self, item):
         if "environment" in item.funcargs:
             self.environment = item.funcargs["environment"]
+            if all(environment is not self.environment for environment in self.environments):
+                self.environments.append(self.environment)
 
     def summary(self, exit_code):
         cases = {case: all(values == ["passed"] for values in phases.values())
                  for case, phases in self.reports.items()}
         collection_ok = len(self.collected) == len(CASES) and set(self.collected) == set(CASES)
-        env = self.environment
-        cleanup_ok = bool(env is not None and env._closed and not env.root.exists()
-                          and all(p.poll() is not None for p in env.processes.values()))
+        environments = self.environments or ([self.environment] if self.environment is not None else [])
+        cleanup_ok = bool(environments and all(
+            env._closed and not env.root.exists()
+            and all(p.poll() is not None for p in env.processes.values())
+            for env in environments))
         passed = exit_code == 0 and collection_ok and not self.unexpected and all(cases.values()) and cleanup_ok
         return {"status": "passed" if passed else "failed", "collection_verified": collection_ok,
                 "cleanup_verified": cleanup_ok, "cases": cases, "pytest_exit_code": int(exit_code)}
@@ -201,10 +206,17 @@ def run(profile_path, private_root, summary_path, *, worker=None, binaries=None,
                                         "-o", "addopts=", "-p", "no:cacheprovider", "--strict-markers",
                                         "--junitxml", str(private / "live.xml")], plugins=[gate])
                 report.update(gate.summary(code))
-                report["inputs_verified"] = False
-                if gate.environment is not None:
-                    manifest = json.loads((gate.environment.artifacts / "manifest.json").read_text(encoding="utf-8"))
-                    report["inputs_verified"] = inputs_match(identities, manifest)
+                (private / "gate-diagnostics.json").write_text(json.dumps({
+                    "collected": gate.collected,
+                    "reports": gate.reports,
+                    "unexpected": gate.unexpected,
+                    "environment_count": len(gate.environments),
+                }, indent=2), encoding="utf-8")
+                environments = gate.environments or ([gate.environment] if gate.environment is not None else [])
+                report["inputs_verified"] = bool(environments) and all(
+                    inputs_match(identities, json.loads(
+                        (environment.artifacts / "manifest.json").read_text(encoding="utf-8")))
+                    for environment in environments)
                 if not report["inputs_verified"]:
                     report["status"] = "failed"
                 report["stage"] = "verified" if report["status"] == "passed" else "verification"

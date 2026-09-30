@@ -313,6 +313,17 @@ def test_report_is_allowlisted_and_requires_actual_reports(tmp_path):
     assert run_ci.EvidenceGate().summary(0)["status"] == "failed"
 
 
+def test_report_requires_cleanup_of_every_case_environment(tmp_path):
+    gate = complete_gate(tmp_path)
+    retained = tmp_path / "retained"
+    retained.mkdir()
+    gate.environments = [gate.environment,
+                         SimpleNamespace(_closed=True, root=retained, processes={})]
+    assert gate.summary(0)["cleanup_verified"] is False
+    retained.rmdir()
+    assert gate.summary(0)["cleanup_verified"] is True
+
+
 @pytest.mark.parametrize("mutation", ["skip", "missing", "duplicate", "foreign", "collection", "cleanup", "process", "exit"])
 def test_green_exit_is_not_sufficient(tmp_path, mutation):
     gate = complete_gate(tmp_path)
