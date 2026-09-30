@@ -49,7 +49,9 @@ def validate_transition_catalog(data):
         raise WorkerError("unsupported transition catalog profile/source")
     route = validated_route(data)
     transition = data["transition"]
-    if transition["territory"] != 130 or transition["enabled"] is not True or transition["shape"] != 1 or transition["exit_type"] != 1:
+    if (transition["territory"] != 130 or transition.get("id") != 2377056
+            or transition.get("target_pop") != 2372271 or transition["enabled"] is not True
+            or transition["shape"] != 1 or transition["exit_type"] != 1):
         raise WorkerError("unsupported transition exit")
     if transition["target_territory"] not in {131, 140, 141}:
         raise WorkerError("destination is not a supported public territory")
@@ -118,6 +120,36 @@ def validate_transition_catalog(data):
     if (abs(local_x) > scale[0] * 0.5 or abs(local_z) > scale[2] * 0.5
             or abs(endpoint[1] - center[1]) > scale[1] * 0.5):
         raise WorkerError("second discovery route does not end in its source box")
+    reverse = data.get("return_transition", {})
+    if ({key: reverse.get(key) for key in
+         ("id", "territory", "enabled", "shape", "exit_type", "target_territory", "target_pop")} !=
+            {"id": 2372269, "territory": 141, "enabled": True, "shape": 1,
+             "exit_type": 1, "target_territory": 130, "target_pop": 2377058}):
+        raise WorkerError("unsupported exact reverse transition binding")
+    reverse_destinations = reverse.get("destinations", [])
+    if (len(reverse_destinations) != 1 or reverse_destinations[0].get("id") != 2377058
+            or reverse_destinations[0].get("territory") != 130):
+        raise WorkerError("reverse exit must resolve exact Ul'dah destination")
+    for point in (reverse.get("position", []), reverse.get("scale", []),
+                  reverse.get("rotation", []), reverse_destinations[0].get("position", [])):
+        if len(point) != 3 or not all(type(x) in (int, float) and math.isfinite(x) and abs(x) < 1000
+                                      for x in point):
+            raise WorkerError("invalid reverse transition transform")
+    reverse_route = validated_route({"route": data.get("return_route", []),
+                                     "route_length": data.get("return_route_length")})
+    reverse_center, reverse_scale, reverse_rotation = (reverse["position"], reverse["scale"],
+                                                        reverse["rotation"])
+    if (math.dist(reverse_route[0], second_route[-1]) > 0.15
+            or abs(reverse_rotation[0]) > 1e-4 or abs(reverse_rotation[2]) > 1e-4
+            or any(value <= 0 or value > 100 for value in reverse_scale)
+            or math.hypot(reverse_route[-1][0] - reverse_center[0],
+                          reverse_route[-1][2] - reverse_center[2]) > min(reverse_scale[0], reverse_scale[2]) * 0.5
+            or abs(reverse_route[-1][1] - reverse_center[1]) > reverse_scale[1] * 0.5):
+        raise WorkerError("reverse route does not bind discovery endpoint and conservative exit volume")
+    reverse_nav = data.get("return_navigation", {})
+    if (reverse_nav.get("format") != "TSET-v1" or reverse_nav.get("polyref_bits") not in (32, 64)
+            or not str(reverse_nav.get("mesh", "")).replace("\\", "/").endswith("/w1f2/w1f2.nav")):
+        raise WorkerError("unsupported reverse transition navigation identity")
     return data
 
 

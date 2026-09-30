@@ -8,10 +8,18 @@ namespace Sapphire::Testing
   Bytes exitRangeRequest(uint16_t territory, const std::array<float, 3>& position,
                          const nlohmann::json& exit)
   {
-    if(territory != 130 || exit.at("territory") != territory || exit.at("enabled") != true ||
+    if(exit.at("territory") != territory || exit.at("enabled") != true ||
        exit.at("shape") != 1 || exit.at("exit_type") != 1 ||
-       !exit.at("id").is_number_integer() || exit.at("id") <= 0 || exit.at("id") > uint64_t{0xffffffff})
+       !exit.at("id").is_number_integer() || !exit.at("target_territory").is_number_integer() ||
+       !exit.at("target_pop").is_number_integer())
       throw ProtocolError("unsupported exit range/profile");
+    const auto id = exit.at("id").get<uint32_t>();
+    const auto targetTerritory = exit.at("target_territory").get<uint16_t>();
+    const auto targetPop = exit.at("target_pop").get<uint32_t>();
+    const bool supported =
+      (territory == 130 && id == 2377056 && targetTerritory == 141 && targetPop == 2372271) ||
+      (territory == 141 && id == 2372269 && targetTerritory == 130 && targetPop == 2377058);
+    if(!supported) throw ProtocolError("unsupported exit range/profile");
     const auto center = exit.at("position").get<std::array<float, 3>>();
     const auto scale = exit.at("scale").get<std::array<float, 3>>();
     const auto rotation = exit.at("rotation").get<std::array<float, 3>>();

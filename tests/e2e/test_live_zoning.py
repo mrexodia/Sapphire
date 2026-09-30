@@ -91,8 +91,10 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     assert path, "zoning requires profile.transition_catalog generated from matching local assets"
     catalog = load_transition_catalog(path)
     transition = catalog["transition"]
+    return_transition = catalog["return_transition"]
     discovery, second_discovery = catalog["supported_discoveries"]
     destination = transition["destinations"][0]
+    return_destination = return_transition["destinations"][0]
     fixture = environment.fresh_character(catalog["route"][0])
     source_fixture = environment.fresh_character(catalog["route"][0])
     target_fixture = environment.fresh_character(destination["position"], destination["territory"])
@@ -211,9 +213,42 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
         "both channels remain live after zoning")
     assert live_worker.snapshot(source.name)["party"]["count"] == 0
     assert live_worker.snapshot(player.name)["party"]["count"] == 0
+
+    player.walk_route(catalog["return_route"], speed=2.0, timeout=330)
+    reverse_source = live_worker.wait_state(target.name,
+        lambda s: actor in s["actors"]
+                  and math.dist(s["actors"][actor]["position"], catalog["return_route"][-1]) < 0.15,
+        "traveler independently observed reaching reverse exit", 30)
+    returned = player.cross_exit(return_transition)
+    assert returned["territory"] == return_destination["territory"] == 130
+    assert returned["scene"] is None and returned["event_id"] is None and returned["gm_rank"] == 0
+    assert math.dist(returned["observed_position"], return_destination["position"]) < 0.15
+    live_worker.wait_state(target.name, lambda s: actor not in s["actors"],
+                           "traveler left reverse source territory", 30)
+    return_arrival = live_worker.wait_state(source.name,
+        lambda s: actor in s["actors"]
+                  and math.dist(s["actors"][actor]["position"], return_destination["position"]) < 0.15,
+        "traveler independently observed returning to Ul'dah", 30)
+    player.expect_rewards(after_discovery, 1)
+    player.say("E2E Ul'dah chat after reverse zoning")
+    source.expect_say(returned["entity_id"], "E2E Ul'dah chat after reverse zoning")
+    heartbeats = returned["heartbeats"]
+    live_worker.wait_state(player.name,
+        lambda s: all(s["heartbeats"][channel] > heartbeats[channel] for channel in ("zone", "chat")),
+        "both channels remain live after reverse zoning")
+    (environment.artifacts / "bidirectional-transition.json").write_text(json.dumps({
+        "outbound_exit": transition["id"], "outbound_destination": destination,
+        "return_exit": return_transition["id"], "return_destination": return_destination,
+        "return_route_points": len(catalog["return_route"]),
+        "return_route_length": catalog["return_route_length"],
+        "reverse_source_witness": reverse_source["actors"][actor]["position"],
+        "return_destination_witness": return_arrival["actors"][actor]["position"],
+        "received_state_after_return": {"territory": returned["territory"],
+                                         "position": returned["observed_position"]}
+    }, indent=2), encoding="utf-8")
     player.logout()
-    live_worker.wait_state(discovery_observer.name, lambda s: actor not in s["actors"],
-                           "destination session cleanup", 30)
+    live_worker.wait_state(source.name, lambda s: actor not in s["actors"],
+                           "returned traveler session cleanup", 30)
     for bot in (source, target, discovery_observer):
         bot.logout()
         bot.close()
@@ -222,8 +257,8 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
     reloaded = Bot(live_worker, "traveler-reloaded")
     state = reloaded.login_via_lobby(auth, fixture["name"])
-    assert state["territory"] == destination["territory"]
-    assert math.dist(state["observed_position"], second_discovery["route"][-1]) < 0.15
+    assert state["territory"] == return_destination["territory"]
+    assert math.dist(state["observed_position"], return_destination["position"]) < 0.15
     assert state["central_thanalan_discovery"] is True
     assert state["central_thanalan_discoveries"] == [1, 3]
     reloaded.expect_rewards(after_discovery, 1)
@@ -237,6 +272,8 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
         "received_replies": [first_reply, second_reply],
         "fresh_login_discoveries": state["central_thanalan_discoveries"],
         "expected_cumulative_exp": after_discovery["exp"],
+        "fresh_login_after_reverse_transition": {
+            "territory": state["territory"], "position": state["observed_position"]},
         "reply_is_not_persistence_proof": True
     }, indent=2), encoding="utf-8")
     reloaded.logout()

@@ -96,7 +96,8 @@ int main(int argc, char** argv)
     Json result{{"profile", "sapphire-3.3"}, {"version", 1}, {"territory", 130}, {"exits", Json::array()}};
     result["ignored_optional_layers"] = Json::array();
     std::map<uint16_t, Json> targets;
-    for(auto entry : objects(data, 130, result["ignored_optional_layers"]))
+    const auto sourceObjects = objects(data, 130, result["ignored_optional_layers"]);
+    for(auto entry : sourceObjects)
     {
       if(entry["kind"] != "exit") continue;
       const auto target = entry["target_territory"].get<uint16_t>();
@@ -250,11 +251,52 @@ int main(int argc, char** argv)
         {"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1f2" / "w1f2.nav").generic_string()},
         {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}};
 
+      Json reverseMatches = Json::array();
+      for(const auto& candidate : targets.at(targetTerritory))
+        if(candidate["kind"] == "exit" && candidate.value("id", 0u) == 2372269 &&
+           candidate.value("enabled", false) && candidate.value("shape", 0) == 1 &&
+           candidate.value("exit_type", 0) == 1 && candidate.value("target_territory", 0) == 130)
+          reverseMatches.push_back(candidate);
+      if(reverseMatches.size() != 1)
+        throw std::runtime_error("reverse exit must resolve exact source box 2372269");
+      auto reverse = reverseMatches[0];
+      Json reverseDestinations = Json::array();
+      for(const auto& candidate : sourceObjects)
+        if(candidate["kind"] == "pop" && candidate["id"] == reverse["target_pop"])
+          reverseDestinations.push_back(candidate);
+      if(reverseDestinations.size() != 1)
+        throw std::runtime_error("reverse exit must resolve exactly one Ul'dah destination pop");
+      reverse["destinations"] = reverseDestinations;
+      const auto reverseCenter = reverse["position"].get<Sapphire::Testing::Point>();
+      const auto reverseScale = reverse["scale"].get<Sapphire::Testing::Point>();
+      const auto reverseRotation = reverse["rotation"].get<Sapphire::Testing::Point>();
+      if(std::abs(reverseRotation[0]) > 0.0001f || std::abs(reverseRotation[2]) > 0.0001f ||
+         reverseScale[0] <= 0 || reverseScale[0] > 30 || reverseScale[1] <= 0 || reverseScale[2] <= 0)
+        throw std::runtime_error("unsupported reverse exit transform");
+      const auto reverseRadius = std::min(reverseScale[0], reverseScale[2]) * 0.5f;
+      auto reverseEnd = targetSurface(reverseCenter, {reverseRadius, reverseScale[1] * 0.5f, reverseRadius});
+      if(std::hypot(reverseEnd[0]-reverseCenter[0], reverseEnd[2]-reverseCenter[2]) > reverseRadius ||
+         std::abs(reverseEnd[1]-reverseCenter[1]) > reverseScale[1] * 0.5f)
+        throw std::runtime_error("reverse route endpoint is outside conservative exit volume");
+      auto reverseRoute = Sapphire::Testing::navigationRoute(*targetFinder.getNavMesh(), discoveryEnd, reverseEnd);
+      double reverseLength = 0;
+      for(size_t i = 1; i < reverseRoute.size(); ++i)
+        reverseLength += std::sqrt(std::pow(reverseRoute[i][0]-reverseRoute[i-1][0], 2) +
+                                   std::pow(reverseRoute[i][1]-reverseRoute[i-1][1], 2) +
+                                   std::pow(reverseRoute[i][2]-reverseRoute[i-1][2], 2));
+      if(!std::isfinite(reverseLength) || reverseLength <= 5 || reverseLength > 500)
+        throw std::runtime_error("reverse route is incomplete or exceeds bounded distance");
+
       result.erase("exits");
       result["transition"] = exit;
+      result["return_transition"] = reverse;
       result["supported_discovery"] = discovery;
       result["supported_discoveries"] = Json::array({discovery, nextDiscovery});
       result["route"] = route; result["route_length"] = length;
+      result["return_route"] = reverseRoute; result["return_route_length"] = reverseLength;
+      result["return_navigation"] = {
+        {"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1f2" / "w1f2.nav").generic_string()},
+        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}};
       result["navigation"] = {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                                {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}};
     }

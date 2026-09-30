@@ -93,11 +93,21 @@ int main()
     require(!questCompletionFlag(completion.data(), completion.size(), 145), "quest flag must not use condition-bit order");
     rejects([&] { questCompletionFlag(completion.data(), completion.size(), completion.size() * 8); });
 
-    nlohmann::json exit{{"id", 0x01020304}, {"territory", 130}, {"enabled", true},
-      {"shape", 1}, {"exit_type", 1}, {"position", {1, 2, 3}}, {"scale", {4, 6, 8}}, {"rotation", {0, 1.57, 0}}};
-    const Bytes expectedExit{4,3,2,1, 0,0,0x80,0x3f, 0,0,0,0x40, 0,0,0x40,0x40, 0,0,0,0};
+    nlohmann::json exit{{"id", 2377056}, {"territory", 130}, {"enabled", true},
+      {"shape", 1}, {"exit_type", 1}, {"target_territory", 141}, {"target_pop", 2372271},
+      {"position", {1, 2, 3}}, {"scale", {4, 6, 8}}, {"rotation", {0, 1.57, 0}}};
+    const Bytes expectedExit{0x60,0x45,0x24,0, 0,0,0x80,0x3f, 0,0,0,0x40, 0,0,0x40,0x40, 0,0,0,0};
     require(exitRangeRequest(130, {1,2,3}, exit) == expectedExit, "exit request independent byte fixture");
     rejects([&] { exitRangeRequest(131, {1,2,3}, exit); });
+    nlohmann::json reverseExit{{"id", 2372269}, {"territory", 141}, {"enabled", true},
+      {"shape", 1}, {"exit_type", 1}, {"target_territory", 130}, {"target_pop", 2377058},
+      {"position", {1, 2, 3}}, {"scale", {4, 6, 8}}, {"rotation", {0, 1.57, 0}}};
+    auto expectedReverse = expectedExit;
+    expectedReverse[0] = 0xad; expectedReverse[1] = 0x32;
+    require(exitRangeRequest(141, {1,2,3}, reverseExit) == expectedReverse,
+            "reverse exit request independent byte fixture");
+    auto wrongReverse = reverseExit; wrongReverse["target_pop"] = 2372271;
+    rejects([&] { exitRangeRequest(141, {1,2,3}, wrongReverse); });
     rejects([&] { exitRangeRequest(130, {4,2,3}, exit); });
     rejects([&] { exitRangeRequest(130, {1,6,3}, exit); });
     auto disabledExit = exit; disabledExit["enabled"] = false;

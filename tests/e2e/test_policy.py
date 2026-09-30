@@ -224,10 +224,10 @@ def test_follow_up_requires_observed_prerequisite():
 def test_transition_requires_physical_crossing_and_resolved_destination():
     data = {"profile": "sapphire-3.3", "version": 1, "territory": 130,
             "route": [[i * 0.5, 0, 0] for i in range(13)], "route_length": 6,
-            "transition": {"id": 1, "territory": 130, "enabled": True, "shape": 1, "exit_type": 1,
+            "transition": {"id": 2377056, "territory": 130, "enabled": True, "shape": 1, "exit_type": 1,
                 "position": [6, 0, 0], "scale": [4, 4, 4], "rotation": [0, 0, 0],
-                "target_pop": 2, "target_territory": 141,
-                "destinations": [{"id": 2, "territory": 141,
+                "target_pop": 2372271, "target_territory": 141,
+                "destinations": [{"id": 2372271, "territory": 141,
                                   "position": [-113.490196, 17.62882, 329.058105]}]},
             "supported_discovery": {"id": 3643706, "territory": 141, "kind": "map_range",
                 "enabled": True, "discovery_enabled": True, "shape": 3, "discovery_index": 1,
@@ -244,6 +244,15 @@ def test_transition_requires_physical_crossing_and_resolved_destination():
          "navigation": {"mesh": "navi/w1f2/w1f2.nav", "format": "TSET-v1", "polyref_bits": 64},
          "route": [[-113.490196, 17.62882, 329.058105], [37.696751, 13.38007, 99.489952]],
          "route_length": 274.9128619973513}]
+    data["return_transition"] = {
+        "id": 2372269, "territory": 141, "enabled": True, "shape": 1, "exit_type": 1,
+        "target_territory": 130, "target_pop": 2377058,
+        "position": [39, 13.38007, 99.489952], "scale": [4, 4, 4], "rotation": [0, 0, 0],
+        "destinations": [{"id": 2377058, "territory": 130, "position": [40, 4, -149]}]}
+    data["return_route"] = [[37.696751, 13.38007, 99.489952], [39, 13.38007, 99.489952]]
+    data["return_route_length"] = 1.303249
+    data["return_navigation"] = {"mesh": "navi/w1f2/w1f2.nav", "format": "TSET-v1",
+                                 "polyref_bits": 64}
     assert validate_transition_catalog(data) == data
     bad = deepcopy(data); bad["transition"]["destinations"] = []
     with pytest.raises(WorkerError, match="exactly one"):

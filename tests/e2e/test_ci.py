@@ -39,10 +39,10 @@ def profile(tmp_path):
     Path(p["follow_up_catalog"]).write_text(json.dumps({**quest, "quest": 65687, "previous_quests": [65686, 0, 0]}))
     transition = {"profile": "sapphire-3.3", "version": 1, "territory": 130, "navigation": nav,
                   "route": [[2, 0, 0], [0, 0, 0]], "route_length": 2,
-                  "transition": {"territory": 130, "enabled": True, "shape": 1, "exit_type": 1,
-                                 "target_territory": 141, "target_pop": 1,
+                  "transition": {"id": 2377056, "territory": 130, "enabled": True, "shape": 1, "exit_type": 1,
+                                 "target_territory": 141, "target_pop": 2372271,
                                  "position": [0, 0, 0], "scale": [1, 1, 1], "rotation": [0, 0, 0],
-                                 "destinations": [{"id": 1, "territory": 141,
+                                 "destinations": [{"id": 2372271, "territory": 141,
                                                    "position": [-113.490196, 17.62882, 329.058105]}]},
                   "supported_discovery": {"id": 3643706, "territory": 141, "kind": "map_range",
                       "enabled": True, "discovery_enabled": True, "shape": 3, "discovery_index": 1,
@@ -59,6 +59,15 @@ def profile(tmp_path):
          "navigation": {"mesh": "navi/w1f2/w1f2.nav", "format": "TSET-v1", "polyref_bits": 64},
          "route": [[-113.490196, 17.62882, 329.058105], [37.696751, 13.38007, 99.489952]],
          "route_length": 274.9128619973513}]
+    transition["return_transition"] = {
+        "id": 2372269, "territory": 141, "enabled": True, "shape": 1, "exit_type": 1,
+        "target_territory": 130, "target_pop": 2377058,
+        "position": [39, 13.38007, 99.489952], "scale": [4, 4, 4], "rotation": [0, 0, 0],
+        "destinations": [{"id": 2377058, "territory": 130, "position": [40, 4, -149]}]}
+    transition["return_route"] = [[37.696751, 13.38007, 99.489952], [39, 13.38007, 99.489952]]
+    transition["return_route_length"] = 1.303249
+    transition["return_navigation"] = {"mesh": "navi/w1f2/w1f2.nav", "format": "TSET-v1",
+                                       "polyref_bits": 64}
     Path(p["transition_catalog"]).write_text(json.dumps(transition))
     combat = {"version": 1, "profile": "sapphire-3.3", "action": 9, "class_job": 1,
               "work_index": 1, "level": 1, "base_exp": 50,
