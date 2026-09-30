@@ -300,6 +300,7 @@ int main(int argc, char** argv)
 
     std::array<uint32_t, 2> gapListings{}, gapRouted{};
     uint32_t overflowMergeListings = 0, overflowMergeRouted = 0;
+    uint32_t consumingItemListings = 0, consumingItemRouted = 0;
     constexpr std::array<uint32_t, 2> gapSourceSlots{2, 6};
     for(const auto& candidate : candidates)
     {
@@ -310,6 +311,32 @@ int main(int argc, char** argv)
         auto shopItem = data.getRow<Excel::ShopItem>(candidateShop->data().Item[index]);
         if(!shopItem) continue;
         auto item = data.getRow<Excel::Item>(shopItem->data().ItemId);
+        if(item && item->data().Price && item->data().Price <= wristFunds)
+        {
+          auto action = data.getRow<Excel::ItemAction>(item->data().Action);
+          if(action && (action->data().Action == Sapphire::Common::ItemActionType::ItemActionMount ||
+                        action->data().Action == Sapphire::Common::ItemActionType::ItemActionCompanion ||
+                        action->data().Action == Sapphire::Common::ItemActionType::ItemActionSong))
+          {
+            ++consumingItemListings;
+            try
+            {
+              auto route = Sapphire::Testing::navigationRoute(*finder.getNavMesh(),
+                {neck.shop.position.x, neck.shop.position.y, neck.shop.position.z},
+                {candidate.position.x, candidate.position.y, candidate.position.z});
+              bool complete = !route.empty();
+              for(size_t point = 1; complete && point < route.size(); ++point)
+              {
+                const auto& a = route[point - 1]; const auto& b = route[point];
+                const double step = std::sqrt(std::pow(a[0]-b[0], 2) + std::pow(a[1]-b[1], 2) +
+                                              std::pow(a[2]-b[2], 2));
+                complete = std::isfinite(step) && step <= 2;
+              }
+              if(complete) ++consumingItemRouted;
+            }
+            catch(const std::exception&) { /* Missing corridors remain unavailable. */ }
+          }
+        }
         if(item && item->data().Price && item->data().StackMax > 1 &&
            uint64_t(item->data().Price) * (uint64_t(item->data().StackMax) + 1) <= wristFunds)
         {
@@ -430,7 +457,10 @@ int main(int argc, char** argv)
                                            {"routed_candidates", gapRouted[1]}}},
                                 {"overflow_merge", {{"required_units", "stack_max_plus_one"},
                                                      {"listed_candidates", overflowMergeListings},
-                                                     {"routed_candidates", overflowMergeRouted}}}}},
+                                                     {"routed_candidates", overflowMergeRouted}}},
+                                {"consuming_item", {{"supported_actions", {853, 1322, 5845}},
+                                                    {"listed_candidates", consumingItemListings},
+                                                    {"routed_candidates", consumingItemRouted}}}}},
       {"route_length", bestLength}, {"route", best},
       {"navigation", {{"mesh", std::filesystem::absolute(std::filesystem::path(argv[2]) / "w1t1" / "w1t1.nav").generic_string()},
                        {"format", "TSET-v1"}, {"polyref_bits", sizeof(dtPolyRef) * 8}}}};

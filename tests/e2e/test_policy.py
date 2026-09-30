@@ -153,7 +153,10 @@ def test_shop_catalog_binds_route_actor_and_exact_sale():
                                                 "routed_candidates": 0},
                                     "overflow_merge": {"required_units": "stack_max_plus_one",
                                                         "listed_candidates": 0,
-                                                        "routed_candidates": 0}}}
+                                                        "routed_candidates": 0},
+                                    "consuming_item": {"supported_actions": [853, 1322, 5845],
+                                                       "listed_candidates": 0,
+                                                       "routed_candidates": 0}}}
     assert validate_shop_catalog(data) == data
     for changed in ({**data, "territory": 141}, {**data, "sale": {"item": 4551, "quantity": 2, "gil": 56}},
                     {**data, "purchase": {**data["purchase"], "item": 1}},
