@@ -513,9 +513,12 @@ gil, with a complete ~23.28m route. The same shop's index 2/item 15132 wrist lis
 costs 168 gil after exact neck resale. With the maximum evidenced 208 gil after
 wrist resale, an unrestricted-class scan of every placed Ul'dah gil-shop listing
 finds zero level-one single-stack off-hand or waist candidates; those paths fail
-closed rather than using higher-level or invented items. Python validates all exact
-transactions, all seven equipment metadata bindings, all four event families,
-route continuity, endpoint range and the exact zero-candidate gap scan. This does
+closed rather than using higher-level or invented items. The same exhaustive scan
+finds no listing for which `StackMax + 1` units are affordable with 208 gil, so a
+shop-funded overflow merge is likewise blocked rather than synthesized. Python
+validates all exact transactions, all seven equipment metadata bindings, all four
+event families, route continuity, endpoint range and both exact zero-candidate gap
+scans. This does
 not establish arbitrary quantities/items, other shops,
 consuming item mutation, positive direct currency transfer, concurrent transactions,
 or real-client shop UI.
