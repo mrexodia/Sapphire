@@ -88,6 +88,8 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
     assert not first["combat"]["starts"]
     assert not any(row["source"] == entity for row in first["combat"]["effects"])
     assert committed_damage(first, effect, before)
+    first_integrity = next(row for row in first["combat"]["integrities"]
+                           if row["target"] == entity and row["result"] == effect["result"])
 
     witnessed = live_worker.wait_state(
         witness.name,
@@ -135,7 +137,8 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
         "fighter_position_after_route": approach_seen["actors"][str(entity)]["position"],
         "first_unprovoked_effect": effect,
         "fighter_hp_before": before["hp"],
-        "fighter_hp_after_first_effect": first["actors"][str(entity)]["hp"],
+        "fighter_hp_at_first_effect_snapshot": first["actors"][str(entity)]["hp"],
+        "first_unprovoked_integrity": first_integrity,
         "fighter_hp_after": defeated["actors"][str(entity)]["hp"],
         "received_bound_enemy_effect_count": len(incoming),
         "return_territory": returned["territory"],
