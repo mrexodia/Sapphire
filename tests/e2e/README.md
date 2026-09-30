@@ -584,7 +584,10 @@ bin/sapphire_test_combat_catalog <game/sqpack> build-e2e/combat-catalog.json
 Use `.exe` on Windows and set `combat_catalog` to the absolute output path. The
 validator requires supported level-one Gladiator/Fast Blade, Pugilist/Bootshine
 and Thaumaturge/Blizzard metadata (received TP or MP, exact cast/recast and source-
-defined range). This is not independent client evidence.
+defined range). It also records, but does not enable, the first server-represented
+Fast Blade follow-up: level-four Savage Blade 11, 2,000 cumulative source EXP and a
+minimum 40 of the exact evidenced 50-EXP level-one defeats. This is source
+prerequisite evidence, not independent client or combo-execution evidence.
 
 `test_live_combat.py` places fresh characters one metre laterally from a spawn in
 the unchanged staged Central Thanalan population before their first connection.
@@ -626,7 +629,9 @@ witness independently observes actual range. Both clients require the identical
 matching source integrity, action start and Blizzard's status-176 effect. Natural
 MP regeneration can overlap the cast, so this does not claim an exact committed MP
 cost. These are two additional starter abilities, not combo, positional-bonus,
-interrupt, elemental-state or general combat coverage.
+interrupt, elemental-state or general combat coverage. Bootshine cannot stand in
+for a combo: the current server action table gives it no `nextCombo`, and gives
+True Strike neither combo potency nor form statuses.
 
 The matching local catalog supplies level-one `BaseExp` and Gladiator `WorkIndex`.
 Received rewards must be exactly 50 EXP, no level/currency change, one five-item

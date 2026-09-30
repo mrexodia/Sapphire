@@ -804,6 +804,33 @@ and `combat-defeat-rewards.json` SHA-256 is
 This proves one additional starting-class ability, not positional bonuses, combos,
 general abilities or general combat.
 
+At `a63c1548f`, the generated combat catalog audits the first combo follow-up that
+is actually represented by the current server action table: Gladiator Savage Blade
+11 follows Fast Blade, has source level 4, costs 60 TP and uses the same 2.5-second
+group-58 recast. Matching `ParamGrow` rows require exactly 2,000 cumulative EXP to
+reach level 4. The currently evidenced natural level-one enemy grants 50 EXP, so a
+path using only that exact population requires at least **40 ordinary defeats**.
+The validator fails closed on the action, class/work index, level, EXP total,
+per-defeat EXP and minimum-defeat count; six independent mutation contracts plus
+52 existing policy/CI contracts pass. Generated catalog SHA-256 is
+`a7c03c62ee0e724166f95bcf7da0b0fc839361452378fc315e5275f284b5d173`.
+
+This is prerequisite evidence, not combo execution evidence and not a claim that
+40 defeats are impossible. In particular, the server table gives Bootshine 53 an
+empty `nextCombo` and True Strike 54 zero `comboPotency` and no caster/target
+statuses, so the already-covered level-one Bootshine must not be relabelled as a
+combo proxy. A focused diagnostic also waited ten seconds for an exact received
+self-targeted action-53 `TypeCombo` marker after a successful witnessed Bootshine;
+only the normal enemy damage result and action-start arrived. That expected failed
+experiment is retained at
+`.e2e-artifacts/discovery-live/sapphire-e2e-y3wrdh7c` (event journal SHA-256
+`0093ca0204cb39ed213d7a43a5de47e5d14dbd8558efd6c7360a1627bbe91f94`),
+with its runtime removed, and is not success evidence. A true combo remains
+uncovered pending a bounded normal level-4 path (or another independently
+source-backed attainable combo), exact received combo-result semantics and an
+independent witness; an expensive 40-kill grind was not added merely to satisfy a
+checkbox.
+
 At `569a02898`, the same case adds source-defined Thaumaturge Blizzard 142
 (`WorkIndex=5`, MP cost metadata 3/4, 2.5s cast/recast and 25-unit range). A fresh
 normal class-7 fixture selects a living natural level-one marmot within 20m using
@@ -1865,8 +1892,12 @@ compatibility.
    server resource behavior.
 2. Extend combat beyond the now-verified enemy/player defeat, homepoint return and persisted
    current-test-table rewards: broader aggro/leash and enemy-reset policy, raises, combos and broader abilities
-   and production loot selection remain uncovered. Preserve observed resource/range
-   checks and require genuine navigation for any pursuit.
+   and production loot selection remain uncovered. The first server-represented
+   Fast Blade combo is source-level 4 and requires 2,000 cumulative EXP (at least
+   40 of the exact currently evidenced 50-EXP defeats); Bootshine/True Strike is
+   not a valid server-table combo substitute. Preserve observed resource/range
+   checks, require genuine navigation for any pursuit, and do not replace a
+   bounded progression test with a grant or fixture-edited level.
 3. Extend explicit trigger/scene adapters and the normal creation journey beyond
    the first Ul'dah opening branch; unknown content must still fail. Instance entry
    is not currently a defensible shortcut: `findContent` accepts a requested
