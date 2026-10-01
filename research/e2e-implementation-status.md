@@ -323,6 +323,58 @@ graphical client, endpoint, account or gameplay operation ran. Current graphical
 execution and its explicit disposal remain pending, as do reset and broad gates.
 Overall goal remains incomplete.
 
+## Persistent witness rejects received viewer despawn/respawn
+
+Feature **`8c651230e`** strengthens the optional separate-viewer contract beyond
+independent endpoint snapshots without controlling the viewer. At the start
+checkpoint each observer must now supply the native worker's existing
+`known_players` record for the exact visible viewer: matching name, spawned state,
+strict received-sequence bounds and a non-boolean spawn-generation token. The
+runner retains the original witness through the scenario, binds its actor ID,
+viewer ID and start token, and requires that exact witness/token both before and
+through the finish Say reply. Any viewer despawn, zone loss or subsequent spawn
+received by that witness changes the native token and fails closed. The mover may
+still reconnect, and the viewer may move without changing spawn generation.
+
+The report records the narrowly named scope
+`unchanged-received-spawn-token-on-persistent-observer-not-server-session-proof`.
+The graphical bridge requires that exact six-field receipt, the witness's runner
+entity and viewer identity, and an identical receipt nested in the finish
+checkpoint. Missing, malformed, type-confused, extra-field, changed-token,
+changed-observer and internally inconsistent receipts are rejected. Older
+summaries, including the prior graphical run, cannot satisfy this current policy.
+The two independent ordinary Say challenges and all prior deadline, lease,
+worker-exit, inventory and no-viewer-control requirements remain unchanged.
+
+Frozen, remote-free source **`8c651230ec350f239cf6798d66b1cdfbe9ae7e21`**
+passed **233 tests in 1.78s** across viewer, graphical bridge, development,
+reconnect, inventory, deadline, smoke and lifecycle contracts. Negatives include
+missing/malformed known-player state, boolean tokens, changed generation before the
+finish challenge and a generation change while waiting for its reply. The source
+copy had no remote and only its expected ignored Python cache, which was removed.
+Test-log SHA-256:
+`ea39dafccc87a8bc470273e1fc84da142c15b9d7a61a3a4fe8024447a7e5186b`.
+Artifacts: `development-viewer-continuity-clean-{source.json,python.log}`.
+
+A read-only compatibility inspection of the retained raw journal from
+`development-placement-v2-live-001` found the separate GM operator's single spawn
+on the persistent headless witness at sequence201, before the start baseline208.
+There was no viewer spawn/despawn through the finish reply at sequence378, and the
+witness had exactly one login. The check is independently retained as
+`development-viewer-continuity-live-artifact-check.json` (SHA-256
+`bc179931ce0de54853e29d784a973e222633ac8c0bf368dd59511d495f4ce3f6`).
+It is raw-journal compatibility evidence only: that run predates the new report,
+used a GM headless operator rather than a graphical GM0 client, and is not upgraded
+to current graphical execution.
+
+An unchanged token proves only absence of a viewer despawn/respawn event received
+by one cooperating persistent client. It is not server-side online exclusion,
+packet-loss-free observation, unchanged viewer gameplay, continuous rendering,
+process identity, graphical compatibility or reset authority. No server, account,
+worker process, Sandbox, matching client, endpoint or gameplay operation ran for
+this increment. A fresh manually attended current graphical run remains pending;
+no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
