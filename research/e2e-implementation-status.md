@@ -2059,6 +2059,17 @@ private workflow SHA-256:
 This is static authored-workflow enforcement, not hosted execution, runner-group
 policy, asset approval, VM disposal or gate evidence.
 
+Fix **`ff3b4edc1`** closes an ordering weakness in that static policy: required
+strings alone no longer suffice. Inspection now requires strict order from fresh
+stage-root declaration through absence guard, staging command, staging exit guard,
+and only then `run_ci`. A mutation that swaps staging and gate commands is rejected.
+Frozen, remote-free source **`ff3b4edc155ee97e1a9592464966259168be60b5`**
+passed **161 CI/workflow-policy/staging tests in 11.39s** and strict policy inspection.
+Combined log SHA-256:
+`ecb010aa60eb5e154842953b647f501147fbe156b6c6d4c3af704b77793ad124`.
+The authored workflow bytes are unchanged; this strengthens their independent
+consumer, not hosted ordering/execution evidence.
+
 The smallest non-account current-profile live check then ran only
 `test_rejected_credentials` from the same frozen source: **1 passed in 24.78s**.
 The committed standalone inspector accepted the exact single JUnit identity, clean
