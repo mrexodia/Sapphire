@@ -123,9 +123,19 @@ def inspect_workflow(path, *, private):
                     "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\" || { echo 'Only the trusted default branch is allowed'; exit 1; }",
                     "          $privateRoot = Join-Path $env:RUNNER_TEMP \"sapphire-private-e2e-${{ github.run_id }}-${{ github.run_attempt }}\"",
                     "          if (Test-Path $privateRoot) { throw 'Private run root must start absent' }",
+                    "          $stageRoot = Join-Path $env:RUNNER_TEMP \"sapphire-private-e2e-stage-${{ github.run_id }}-${{ github.run_attempt }}\"",
+                    "          if (Test-Path $stageRoot) { throw 'Private staging root must start absent' }",
+                    "          if ($LASTEXITCODE -ne 0) { throw 'Service-free private profile staging failed' }",
                     "          $privateRuns = @(Get-ChildItem -LiteralPath $privateRoot -Directory -Force)",
                     "          if ($privateRuns.Count -ne 1) { throw 'Private run root must contain exactly one gate run' }")
+        staging = next((line for line in lines
+                        if line.startswith("          python -m tests.e2e.stage_ci_profile ")), "")
         if (any(value not in lines for value in required)
+                or not all(value in staging for value in
+                           ('--private-artifacts "$stageRoot"',
+                            '--expected-revision "${{ github.sha }}"',
+                            '--binaries "$pwd/build-e2e-ci/bin"',
+                            '--worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe"'))
                 or not any(line.startswith("          python -m tests.e2e.run_ci ")
                            and '--private-root "$privateRoot"' in line for line in lines)):
             raise DevelopmentError("private workflow lacks protected serialized runner controls")
@@ -163,6 +173,7 @@ def inspect_workflow(path, *, private):
             "sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
             "private_asset_workflow": private,
             "private_evidence_inspection_required":private,
+            "service_free_staging_required":private,
             "failed_summary_inspection_required":private,
             "permissions": {"contents": "read"},
             "jobs": jobs, "pinned_actions": actions}

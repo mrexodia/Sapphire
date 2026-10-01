@@ -98,6 +98,10 @@ jobs:
           if (Test-Path .e2e-ci-summary.json) { throw 'Summary destination must start absent' }
           $privateRoot = Join-Path $env:RUNNER_TEMP "sapphire-private-e2e-${{ github.run_id }}-${{ github.run_attempt }}"
           if (Test-Path $privateRoot) { throw 'Private run root must start absent' }
+          $stageRoot = Join-Path $env:RUNNER_TEMP "sapphire-private-e2e-stage-${{ github.run_id }}-${{ github.run_attempt }}"
+          if (Test-Path $stageRoot) { throw 'Private staging root must start absent' }
+          python -m tests.e2e.stage_ci_profile --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-artifacts "$stageRoot" --expected-revision "${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { throw 'Service-free private profile staging failed' }
           python -m tests.e2e.run_ci --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --summary .e2e-ci-summary.json --require-clean
           $gateExit = $LASTEXITCODE
           if ($gateExit -ne 0) {
