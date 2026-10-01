@@ -2408,6 +2408,24 @@ No server/account/provisioning/gameplay/client operation ran. Hard-link and
 oversize negatives are contract evidence only; these checks do not prove secrecy,
 atomic/race-free snapshots, signatures, external-server identity or offline state.
 
+Feature **`15d68d431`** adds the missing external placement-chain command:
+`python -m tests.e2e.inspect_development_placement --profile <private-profile>
+--provisioning-summary <private-summary> --registry <private-registry>
+--development-summary <private-summary>`. It reruns strict unmanaged provisioning
+and development consumers, recomputes the source-bound catalog/registry bytes, and
+requires one exact provisioning run, approval, registry digest, ordered
+character/entity identities, and received placement receipt. Output is sanitized
+of usernames/passwords. The shared registry reader now also rejects hard links and
+Windows reparse aliases before login.
+
+Frozen, remote-free source **`15d68d431cd4baaa50352fd1913d6924b5f44774`**
+passed **1026 focused contracts with no skips in 38.41s**. Test-log SHA-256:
+`ddd880ae0d4c08fe20682be630b44c28970761d770933f84a70206f4b904e1e8`.
+No account, endpoint, GM command, placement, service, gameplay or graphical action
+ran. The end-to-end synthetic chain exercises producers and consumers only. It
+does not establish command publication/causation, unchanged server-read bytes,
+offline exclusion, server identity, natural progression or reset authority.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

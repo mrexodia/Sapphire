@@ -428,8 +428,24 @@ Administrative waiting is timed and labelled separately. The runner never sends
 the debug command itself and does not attest that the command fired: if the bots
 already satisfy the destination preconditions, that is not proof of an
 administrative mutation. The strict external/managed result inspectors revalidate
-this preparation receipt as administrative evidence, never gameplay. By default
-this run does not check fresh-login
+this preparation receipt as administrative evidence, never gameplay. Correlate the
+entire retained external-server chain read-only with:
+
+```powershell
+python -m tests.e2e.inspect_development_placement `
+  --profile .e2e-dev.json `
+  --provisioning-summary .e2e-artifacts/dev-provision-001/provisioning-summary.json `
+  --registry .e2e-bot-placement.json `
+  --development-summary .e2e-artifacts/dev-prepare-001/development-summary.json
+```
+
+This sanitized consumer reruns strict provisioning and development inspection,
+recomputes the private registry/catalog association, and requires one exact
+provisioning run, registry digest/approval, ordered identities, and received
+placement receipt. The registry must also be a bounded duplicate-free single-link
+regular file. It does not inspect or attest the GM command, prove causation, or
+turn administrative arrival into gameplay/reset evidence. By default this run
+does not check fresh-login
 position persistence. Add `--verify-reconnect` (below) to check received positions
 across one fresh authentication without a server restart. Failed/uncertain
 placements retain leases for inspection. Do not
