@@ -1038,6 +1038,48 @@ No server, account, worker, Sandbox, matching client, endpoint, gameplay or
 disposal operation ran. Current manually attended execution and separate disposal
 remain pending; no full gate, soak or platform sweep ran.
 
+## Outer graphical movement starts from a fresh post-phase baseline
+
+Fix **`f065ffebd`** closes the analogous stale-displacement window in the
+independent real-client lane. Immediately after publishing `movement`, the outer
+witness now captures and retains a baseline that must still show the exact viewer
+within 0.15m of the original received spawn. The final state must place that same
+entity 1–5m from origin and carry a strictly advancing received-state sequence.
+`real_movement_receipt` binds actor, origin, baseline/final positions, baseline/
+received sequences and exact computed distance under scope
+`fresh-bounded-real-client-movement-received-by-independent-witness`. Pre-phase
+movement, cached final position, non-advancing sequence, boolean/type-confused
+values or excess movement cannot pass; there is no retry.
+
+The current-result inspector reruns both baseline and final movement consumers,
+requires exact type-aware receipt equality, compares the reported distance to the
+two retained states, and continues to bind initial/final outer witness identity.
+This is independent witness received-state evidence, not rendered animation,
+client input provenance beyond the manual procedure, server-session continuity or
+general route correctness.
+
+Frozen, remote-free source **`f065ffebd25b0183e280f1d535066a7fa6a5af69`**
+passed **499 tests in 4.47s**. Negatives cover a baseline beyond 0.15m, malformed/
+boolean baseline sequence, no sequence advance, movement over 5m, changed inspector
+baseline, altered receipt and stale final state. The coordinator control path also
+records the structured receipt before continuing to the fresh Say phase.
+Test-log SHA-256:
+`1ba49812c1ef369707f1c4b8d24ae8f74ae61d228f5eff1b89588db213abc017`.
+Artifacts: `client-fresh-movement-clean-{source.json,python.log}`.
+
+Read-only current code accepted genuine historical outer movement from
+`client-development-live-004` using its preceding spawn snapshot as the available
+baseline: sequence302→403 and 1.078566m for entity2097154. Artifact
+`client-fresh-movement-historical-compatibility.json` has SHA-256
+`54d01f52800d0543666f5bb5c1c9334eb11a9e4a0bb634303a3e77d23d64b546`.
+That old coordinator did not retain the new post-phase baseline/receipt or other
+current composite evidence; this is subreceipt compatibility only, not a current
+pass.
+
+No server, account, worker, Sandbox, matching client, endpoint, gameplay or
+disposal operation ran. Current manually attended execution and separate disposal
+remain pending; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1844,7 +1886,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, a fresh sequence-bound ordinary graphical-client Say and strict outer spawn/movement/review/logout consumer, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, clear leases and exact worker exits, followed by a committed read-only current-result inspector before separate disposal; current graphical execution remains pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, fresh sequence-bound ordinary graphical-client movement and Say receipts plus a strict outer spawn/review/logout consumer, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, clear leases and exact worker exits, followed by a committed read-only current-result inspector before separate disposal; current graphical execution remains pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; separate exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage but is now required as a separate fresh current graphical-policy run; all current graphical execution awaits manual approval/assets |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
