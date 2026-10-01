@@ -6,6 +6,7 @@ import re
 import uuid
 
 from .support.development import DevelopmentError, movement_route, validate_profile
+from .support.development_binding import require_provisioning_binding
 from .provision_development import reserve_private_profile
 
 
@@ -17,8 +18,10 @@ def placement_registry(profile, provisioning):
     if (provisioning.get("scope") != "shared-development-provisioning-not-gameplay"
             or provisioning.get("status") != "provisioned"
             or provisioning.get("lease_retained") is not False
-            or provisioning.get("worker_closed") is not True):
+            or provisioning.get("worker_closed") is not True
+            or provisioning.get("credential_profile_saved") is not True):
         raise DevelopmentError("a completed clean provisioning report is required")
+    require_provisioning_binding(profile, provisioning)
     rows = provisioning.get("accounts", [])
     if not isinstance(rows, list) or len(rows) != 2:
         raise DevelopmentError("exactly two provisioned accounts are required")

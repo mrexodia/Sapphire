@@ -17,6 +17,7 @@ import uuid
 from .support.development import (AccountLease, DevelopmentError, Timings, authenticate,
                                   create_account, received_character_identity, validate_profile, check_managed_host)
 from .support.worker import Bot, Worker
+from .support.development_binding import provisioning_binding
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -117,6 +118,7 @@ def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Wo
         with timings.phase("release_accounts"):
             lease.release()
             report["lease_retained"] = False
+        report["provisioning_binding"] = provisioning_binding(profile, report["accounts"])
         report["status"] = "provisioned"
         report["next_step"] = "Opening/public-world preparation is still required before run_development. No placement or reset command was run."
     except (Exception, KeyboardInterrupt) as error:

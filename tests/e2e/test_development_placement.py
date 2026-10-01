@@ -7,6 +7,7 @@ import pytest
 from . import prepare_development, run_development
 from .provision_development import new_profile
 from .support.development import DevelopmentError, received_character_identity
+from .support.development_binding import provisioning_binding
 from .test_development import FakeWorker, profile, execute
 
 
@@ -17,13 +18,14 @@ def preparation(tmp_path, monkeypatch):
     private = new_profile({"version": 1, "mode": "shared-development", "protocol": "sapphire-3.3",
                            "worker": str(worker), "api_port": 5000, "lobby_port": 54994, "territory": 130})
     report = {"scope": "shared-development-provisioning-not-gameplay", "status": "provisioned",
-              "lease_retained": False, "worker_closed": True,
+              "lease_retained": False, "worker_closed": True, "credential_profile_saved": True,
               "accounts": [{"slot": index, "character": account["character"], "entity_id": index + 1,
                             "character_id": index + 100, "gm_rank": 0,
                             "account_creation": "fresh_login_verified",
                             "character_creation": "refreshed_lobby_and_world_verified",
                             "logout_server_close_verified": True}
                            for index, account in enumerate(private["accounts"])]}
+    report["provisioning_binding"] = provisioning_binding(private, report["accounts"])
     monkeypatch.setattr(prepare_development, "movement_route", lambda _: ([[1, 2, 3], [2, 2, 3]], "a" * 64))
     return private, report
 
@@ -40,7 +42,7 @@ def test_registry_binds_exact_observed_characters_and_source_destination(prepara
 
 
 @pytest.mark.parametrize("patch", [{"status": "failed"}, {"lease_retained": True},
-    {"worker_closed": False}, {"scope": "headless-live-not-real-client"}])
+    {"worker_closed": False}, {"credential_profile_saved": False}, {"scope": "headless-live-not-real-client"}])
 def test_registry_requires_complete_provisioning(preparation, patch):
     private, report = preparation
     report.update(patch)
@@ -62,6 +64,7 @@ def test_registry_rejects_missing_legacy_or_unowned_identities(preparation, patc
 def test_registry_requires_unique_bindings(preparation):
     private, report = preparation
     report["accounts"][1]["character_id"] = report["accounts"][0]["character_id"]
+    report["provisioning_binding"] = provisioning_binding(private, report["accounts"])
     with pytest.raises(DevelopmentError):
         prepare_development.placement_registry(private, report)
 

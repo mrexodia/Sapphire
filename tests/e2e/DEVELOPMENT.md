@@ -185,6 +185,15 @@ It does not grant items/levels/quest completion or reset enemies/other players.
    ```
 
    This is an offline planner: it does not contact the server or execute a reset.
+   It requires a completed provisioning receipt whose
+   `development-provisioning-association-v1` digest matches the configured
+   API/lobby endpoint, optional managed-host session, ordered account names and
+   received character/entity IDs. Mixed-profile, edited-identity and legacy
+   receipts without this binding are rejected; do not synthesize approval for
+   old reports. Passwords, authentication sessions and server secrets are excluded. Worker and
+   catalog changes/password rotation do not select another account and retain
+   their separate validation. This is accidental-artifact association, **not** a
+   signature, current authentication, server fingerprint, offline proof or lock.
    Check both names, entity IDs, character IDs, catalog hash and position. The
    registry is an operator-controlled allowlist, **not a cryptographic attestation**;
    protect it against untrusted edits. The server checks its schema/bounds and
@@ -500,7 +509,10 @@ separate follow-up work; the command above is only opening bypass/placement of
 registered dedicated bots. A future reset must be development-only, explicitly targeted, require
 exclusive ownership/offline actors as appropriate, and record administrative
 preparation separately from normal gameplay evidence. Broad world resets must not
-interrupt a human viewer or be silently run between tests.
+interrupt a human viewer or be silently run between tests. The inspected source
+prerequisites and blockers are recorded in
+`research/development-reset-boundary.md`: ordinary deletion/logout and BNPC combat
+ownership are not sufficient reset authority or exclusion.
 
 ## Measure existing pytest cases without a full gate
 
