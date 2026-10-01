@@ -8,7 +8,8 @@ import pytest
 
 from . import run_ci
 from .inspect_ci_result import main as inspect_ci_main
-from .support.ci_result import SCOPE as CI_RESULT_SCOPE, inspect_ci_result
+from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
+                                SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
 from .support.environment import SetupError
 
 
@@ -455,6 +456,11 @@ def current_public_summary(revision="a" * 40):
         "inputs_verified":True}
 
 
+def test_public_result_consumer_allowlists_require_explicit_producer_sync():
+    assert EXPECTED_CASES == run_ci.CASES
+    assert EXPECTED_CATALOGS == run_ci.CATALOGS
+
+
 def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp_path, capsys):
     revision = "a" * 40
     path = tmp_path / "summary.json"
@@ -475,8 +481,10 @@ def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp
     lambda report:report.update(cleanup_verified=False),
     lambda report:report.update(deadline_scale=True),
     lambda report:report["cases"].pop(run_ci.CASES[0]),
+    lambda report:report.update(cases=dict(reversed(list(report["cases"].items())))),
     lambda report:report["cases"].update({run_ci.CASES[0]:1}),
     lambda report:report["identities"]["binaries"].update(api="g" * 64),
+    lambda report:report["identities"]["catalogs"].update(foreign="f" * 64),
     lambda report:report["identities"].update(script_modules=["a" * 64,"0" * 64]),
     lambda report:report.update(extra=True),
 ])

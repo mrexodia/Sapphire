@@ -10,10 +10,29 @@ import hashlib
 import json
 from pathlib import Path
 
-from ..run_ci import CASES, CATALOGS
 from .environment import SetupError
 
 SCOPE = "current-isolated-public-summary-with-exact-process-cleanup-claim"
+EXPECTED_CASES = (
+    "tests/e2e/test_live.py::test_rejected_credentials",
+    "tests/e2e/test_live.py::test_login_idle_logout",
+    "tests/e2e/test_live.py::test_received_party_join_and_leave",
+    "tests/e2e/test_live.py::test_observed_movement_and_position_persistence",
+    "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[single]",
+    "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[chain]",
+    "tests/e2e/test_live_zoning.py::test_observed_exit_crossing_and_territory_persistence",
+    "tests/e2e/test_live_zoning.py::test_observed_living_return_action",
+    "tests/e2e/test_live_combat.py::test_observed_sprint_status_and_tp_debit",
+    "tests/e2e/test_live_combat.py::test_observed_fast_blade_damage",
+    "tests/e2e/test_live_progression.py::test_natural_pugilist_level_two_true_strike",
+    "tests/e2e/test_live_combo.py::test_natural_level_four_fast_blade_combo",
+    "tests/e2e/test_live_aggro.py::test_natural_vision_aggro_without_player_action",
+    "tests/e2e/test_live_player_defeat.py::test_natural_enemy_defeats_level_one_player",
+    "tests/e2e/test_live_creation.py::test_lobby_character_creation_and_opening_persistence",
+)
+EXPECTED_CATALOGS = ("quest_catalog","follow_up_catalog","transition_catalog",
+                     "combat_catalog","shop_catalog","respawn_catalog",
+                     "pursuit_catalog","opening_quest_catalog")
 
 
 def _hex(value, length=64):
@@ -53,7 +72,7 @@ def inspect_ci_result(summary_path, expected_revision):
             or type(report.get("pytest_exit_code")) is not int
             or report["pytest_exit_code"] != 0
             or not isinstance(report.get("cases"), dict)
-            or list(report["cases"]) != list(CASES)
+            or list(report["cases"]) != list(EXPECTED_CASES)
             or any(value is not True for value in report["cases"].values())):
         raise SetupError("isolated-gate public summary is incomplete, foreign or failed")
     identities = report.get("identities")
@@ -61,7 +80,7 @@ def inspect_ci_result(summary_path, expected_revision):
             or set(identities) != {"worker","binaries","catalogs","meshes","script_modules"}
             or not _hex(identities.get("worker"))
             or not _hashes(identities.get("binaries"), ("api","lobby","server","dbm"))
-            or not _hashes(identities.get("catalogs"), CATALOGS)
+            or not _hashes(identities.get("catalogs"), EXPECTED_CATALOGS)
             or not _hashes(identities.get("meshes"), ("w1t1","w1f2"))
             or not isinstance(identities.get("script_modules"), list)
             or not identities["script_modules"]
@@ -71,7 +90,7 @@ def inspect_ci_result(summary_path, expected_revision):
         raise SetupError("isolated-gate input identities are malformed")
     return {"version":1,"status":"accepted","scope":SCOPE,
             "revision":expected_revision,"summary_sha256":hashlib.sha256(raw).hexdigest(),
-            "case_count":len(CASES),"deadline_scale":report["deadline_scale"],
+            "case_count":len(EXPECTED_CASES),"deadline_scale":report["deadline_scale"],
             "collection_verified":True,"inputs_verified":True,"cleanup_verified":True,
             "process_cleanup_verified":True,
             "note":"Public gate claim only; private PID/generation records, hosted execution and real-client compatibility are out of scope."}

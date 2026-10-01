@@ -92,8 +92,10 @@ python -m tests.e2e.inspect_ci_result --summary build-e2e/ci-summary.json \
 
 The summary destination must not already exist. Without `--require-clean`, local
 rehearsals may use a dirty checkout; the summary explicitly records that fact.
-The workflow always requires a clean checkout. The read-only inspector requires
-the exact current 15-case schema, successful collection/inputs/cleanup, the new
+The workflow always requires a clean checkout. The read-only inspector owns an
+independent exact ordered copy of the current 15-case and eight-catalog allowlists;
+a contract requires explicit producer/consumer synchronization when either changes.
+It also requires successful collection/inputs/cleanup, the new
 `process_cleanup_verified` claim, typed component identities, and the operator-
 supplied clean source revision; historical summaries without that field are not
 upgraded. The private workflow invokes this inspector against `${{ github.sha }}`
