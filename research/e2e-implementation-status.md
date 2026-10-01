@@ -12,6 +12,64 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Live warm-world development rehearsal (not acceptance coverage)
+
+After explicit broad local authorization, a committed-source client/controller
+snapshot at `1ad7fa50aeb1b8b4ba25fbe7f88c98ce920eb7b8` was built separately from
+all working-tree performance experiments. Client.cpp, PartyActions.cpp and the
+Python worker were byte-compared with that revision. The clean Clang worker hash
+is `64793b3034513ed9118baa8dba7aa484c7ca5ef57343c94862af981577e60fb2`.
+Clean-source focused contracts passed **199/199 in 6.89s** and the native protocol
+test passed **1/1**; artifacts are `.e2e-artifacts/shared-dev-clean-focused-timings.json`,
+`shared-dev-clean-{configure,build,native-tests}.log`.
+
+One owned private environment was started once using server/API/lobby/DB-manager
+binaries whose hashes exactly match the recorded `e34d695fd` Windows gate.
+Two non-GM characters were administratively prepared **before first world
+connection**, at the source catalog start, then reused for two explicitly authored
+successful-path runs of `run_development` with movement, party and reconnect
+verification. No gameplay retry, server restart, fixture reset or additional
+character provisioning occurred between runs. Both runs kept the exact same
+owned API/lobby/world/database PIDs.
+
+| Timing | First run | Second run |
+|---|---:|---:|
+| Shared development check total | 27.297s | 23.984s |
+| Source-prefix out-and-back movement | 6.719s | 6.469s |
+| Invite + observed membership + chat + disband | 0.453s | 0.188s |
+| Reconnect logout/despawn | 5.875s | 5.093s |
+| Final sequential logout/despawn | 11.547s | 11.828s |
+
+One-time environment startup took **28.578s**, cleanup **0.531s**, and the whole
+rehearsal **80.843s**. Logout waits dominate the warm run; they were not shortened
+by removing server-close or independent-despawn assertions. These timings cover
+only the selected short scenarios, **not** a faster equivalent of the 55-minute
+full acceptance suite.
+
+Each run retained **44 semantic actions**, including **24 observed waypoint
+commands**, the five bound party operations, and fresh authentication. Party IDs
+and channel IDs differ across runs. Both clients received exact empty membership
+after disband; fresh-login character identity/position and unique post-login Say
+were verified. This is position stability across a fresh session after an
+out-and-back route, not proof of arbitrary changed-position/restart/crash
+persistence. All account leases were released, the owned runtime was removed,
+and a process check found only the pre-existing local MySQL service afterward.
+The user's existing `sapphire` database and characters were not touched.
+
+Evidence: `.e2e-artifacts/shared-dev-live/sapphire-e2e-lm4tswcb/development-{1,2}`
+contains summaries and raw worker action/event journals. The two journals contain
+644 and 614 events respectively. Summary and journal hashes plus committed-input
+checks are in `.e2e-artifacts/shared-development-rehearsal-verification.json`;
+aggregate timing/identity/cleanup evidence is in
+`.e2e-artifacts/shared-development-rehearsal-summary.json` (SHA-256
+`2f39157116252c03ae6e415d353667f68fafa2c02f33e3007e9b9c281258aa5e`).
+
+**Limits:** this did not exercise `provision_development` normal lobby creation,
+`!devbot place`, the latest server command build, an existing shared dev database,
+a graphical viewer, or any full acceptance/platform/soak gate. Those requirements
+remain open. The warm checks now have real protocol evidence, not just mocks;
+that does not validate the separate Linux scheduling/navigation experiments.
+
 ## Fast development lane (not acceptance coverage)
 
 At `c078afc17`, `tests/e2e/run_development.py` adds an explicitly opted-in,
@@ -53,11 +111,11 @@ then requires received ready/position state followed by independent identities
 and position observations. Administrative wait timings remain separate from
 normal actions. Neither a registry nor a queued-warp response proves mutation;
 the runner does not attest administrative command execution. Fresh-login position
-verification is now optional (below); actual shared-world persistence remains
-unverified. General character reprovisioning and enemy/world-state
-resets remain **not implemented**. No live shared-server/provisioning/placement
-run has been attempted: approved endpoint configuration, a feature-built dev
-server and an operator-approved registry/GM session are still needed.
+verification is now optional (below), with the narrow owned-warm-world evidence
+above. General character reprovisioning and enemy/world-state resets remain
+**not implemented**. Normal provisioning and GM placement have not been live
+verified; those still need a feature-built server and an operator-approved
+registry/GM session, independently of the successful short warm checks.
 
 Placement verification: **161 focused Python tests passed in 5.86s** (the previous
 selection plus `test_development_placement.py`); timing evidence is
@@ -85,8 +143,9 @@ Reconnect-focused verification: **178 passed in 6.23s**, adding
 cover missing server close/despawn, failed fresh authentication, changed IDs/name,
 wrong territory/position/GM rank, absent or misplaced independent respawn and
 missing fresh Say. These are synthetic/controller and existing-worker contracts,
-not live shared-world reconnect evidence. No server or character was modified
-for this verification; approved shared-world configuration is still needed.
+not themselves live shared-world reconnect evidence. No server or character was
+modified for those contracts; the later owned-warm-world rehearsal above supplies
+separate narrow live evidence without exercising an existing shared dev database.
 
 At `7eff55c09`, `--verify-party` adds one optional normal two-bot invitation,
 exact received membership/channel, bidirectional party-chat and disband check.
@@ -111,11 +170,13 @@ invitation/roster/party/channel context rejection. Evidence:
 Input hashes explicitly identify the diagnostic worker/controller built with the
 pre-existing uncommitted packet-output/wakeup experiments; those experiments
 were excluded from the feature commit and are **not** validated performance fixes.
-No full acceptance test or live shared-server party run was performed. Only the
-party implementation hunks were staged in the otherwise dirty Client.cpp/worker.py.
-The suggested `.e2e-dev-server.json`, `.e2e-dev.json`, and
-`.e2e-bot-placement.json` are not present locally; approved shared-world inputs
-remain the blocker to live validation. No credentials/endpoints were guessed.
+At that checkpoint no full acceptance or live shared-server party run was performed.
+Only the party implementation hunks were staged in the otherwise dirty
+Client.cpp/worker.py. The suggested private development profiles were absent.
+Subsequent broad local authorization enabled the clean-source owned-warm-world
+rehearsal above, deriving ports/accounts from the owned environment and using
+existing local asset configuration rather than guessing credentials/endpoints.
+Deployment on the user's existing database with a graphical viewer remains open.
 
 Focused verification: **127 passed in 5.59s**, running `test_development.py`,
 `test_policy.py`, `test_ci.py`, and `test_worker.py` with the existing MSVC worker.

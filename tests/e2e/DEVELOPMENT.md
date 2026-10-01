@@ -6,6 +6,14 @@ database, change server/client configuration, restart a process, or issue
 administrative resets. Separate opt-in GM fixture placement is described below.
 Results are explicitly `shared-development-not-acceptance` evidence.
 
+A clean-source **owned warm-world rehearsal** has passed twice against the same
+server processes and accounts: **27.3s and 24.0s** for observed movement, party
+invite/chat/disband and fresh-login position verification. Setup was paid once
+(28.6s). This is a short development check, not equivalent coverage of the
+55-minute acceptance suite. It used pre-connection fixtures in a private database;
+normal provisioning, GM placement and an actual graphical viewer were not tested.
+See `research/e2e-implementation-status.md` for artifacts, hashes and limits.
+
 Use this lane for short development feedback and watching bots from a graphical
 client. Keep the existing isolated pytest lane for clean regression/acceptance;
 do not point its `Environment` fixture at a shared database. No full acceptance
@@ -224,8 +232,9 @@ exclusive to the runner and do not manually invite or operate them during a run.
 `party_verification` records the actual received roster/channel, invitation receipt,
 chat records and requested/verified flags. Five action phases plus worker-capability
 preflight are timed. The scope is only this two-bot lifecycle, not full social
-compatibility, persistence or isolation. Native context/packet tests and synthetic
-runner tests exist; live shared-world party evidence remains pending.
+compatibility, persistence or isolation. Native context/packet tests, synthetic
+runner tests and the two-run owned-warm-world rehearsal above are available;
+verification on the user's existing shared database with a viewer remains pending.
 
 ### Optional fresh-login position check
 
@@ -260,8 +269,9 @@ the command never falls back to resetting a character to make the check pass.
 This checks only the selected character's identity/position across a fresh
 session. It does not prove restart/crash persistence, full inventory/quest/EXP
 persistence, or that an administrative command actually ran. The shared-world
-run is still non-isolated. Current verification is synthetic controller/negative
-contracts; actual shared-world reconnect evidence remains pending.
+run is still non-isolated. Controller/negative contracts and the owned-warm-world
+rehearsal above verify the bounded check. Existing shared-database/graphical-viewer
+compatibility and restart/crash persistence remain unverified.
 
 ### Leases and failed runs
 
