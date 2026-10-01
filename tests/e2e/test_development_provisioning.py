@@ -135,7 +135,8 @@ def test_placement_planner_cli_requires_current_complete_provisioning_evidence(
     assert prepare_development.main(args) == 1 and not foreign.exists()
 
 
-@pytest.mark.parametrize("mutation", ["status","managed","worker-tree","profile","duplicate"])
+@pytest.mark.parametrize("mutation", ["status","managed","worker-tree","profile","duplicate",
+                                      "oversized","summary-hardlink","profile-hardlink"])
 def test_external_provisioning_inspector_rejects_foreign_or_incomplete_evidence(
         server, tmp_path, mutation):
     execute(server, tmp_path, max_seconds=60)
@@ -150,10 +151,17 @@ def test_external_provisioning_inspector_rejects_foreign_or_incomplete_evidence(
         profile = json.loads(profile_path.read_text())
         profile["accounts"][0]["character"] = "Foreign Character"
         profile_path.write_text(json.dumps(profile))
-    else:
+    elif mutation == "duplicate":
         summary.write_text(summary.read_text().replace(
             '{\n  "version": 1,', '{\n  "version": 1,\n  "version": 1,', 1))
-    if mutation not in {"worker-tree","profile","duplicate"}:
+    elif mutation == "oversized":
+        summary.write_text('{"padding":"' + 'x' * (1024 * 1024) + '"}')
+    elif mutation == "summary-hardlink":
+        os.link(summary, tmp_path / "summary-alias.json")
+    else:
+        os.link(profile_path, tmp_path / "profile-alias.json")
+    if mutation not in {"worker-tree","profile","duplicate","oversized",
+                         "summary-hardlink","profile-hardlink"}:
         summary.write_text(json.dumps(report))
     with pytest.raises(DevelopmentError):
         inspect_development_provisioning(summary, profile_path)

@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import json
+import os
 from types import SimpleNamespace
 
 import pytest
@@ -171,7 +172,8 @@ def test_external_shared_result_inspector_accepts_base_received_say(
     assert len(report["say_verification"]["observations"]) == 2
 
 
-@pytest.mark.parametrize("mutation", ["status","managed","deadline","say","worker-tree","duplicate"])
+@pytest.mark.parametrize("mutation", ["status","managed","deadline","say","worker-tree",
+                                      "duplicate","oversized","hardlink"])
 def test_external_shared_result_inspector_rejects_foreign_or_incomplete_evidence(
         profile, tmp_path, mutation, monkeypatch):
     catalog = tmp_path / "catalog.json"; catalog.write_text("synthetic catalog")
@@ -188,10 +190,14 @@ def test_external_shared_result_inspector_rejects_foreign_or_incomplete_evidence
         row = report["say_verification"]["observations"][0]
         row["received_sequence"] = row["baseline_receiver_sequence"]
     elif mutation == "worker-tree": (tmp_path / "run/worker/foreign.json").write_text("{}")
-    else:
+    elif mutation == "duplicate":
         summary.write_text(summary.read_text().replace(
             '{\n  "version": 1,', '{\n  "version": 1,\n  "version": 1,', 1))
-    if mutation not in {"worker-tree","duplicate"}:
+    elif mutation == "oversized":
+        summary.write_text('{"padding":"' + 'x' * (1024 * 1024) + '"}')
+    elif mutation == "hardlink":
+        os.link(summary, tmp_path / "summary-alias.json")
+    if mutation not in {"worker-tree","duplicate","oversized","hardlink"}:
         summary.write_text(json.dumps(report))
     with pytest.raises(DevelopmentError):
         inspect_development_result(summary)

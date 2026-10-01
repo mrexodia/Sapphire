@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import stat
 
 from .development import (DevelopmentError, require_managed_host_binding,
                           require_normal_worker_exit)
@@ -26,12 +27,17 @@ def _pairs(pairs):
 def _read(path):
     path = Path(path)
     try:
-        if path.is_symlink() or not path.is_file() or not 0 < path.stat().st_size <= 1024 * 1024:
+        metadata = path.lstat()
+        reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        if (path.is_symlink() or not stat.S_ISREG(metadata.st_mode)
+                or getattr(metadata, "st_file_attributes", 0) & reparse
+                or metadata.st_nlink != 1
+                or not 0 < metadata.st_size <= 1024 * 1024):
             raise OSError()
         raw = path.read_bytes()
-        if len(raw) > 1024 * 1024:
+        if not 0 < len(raw) <= 1024 * 1024:
             raise OSError()
-        value = json.loads(raw, object_pairs_hook=_pairs)
+        value = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs)
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise DevelopmentError("cannot read external shared-development summary") from error
     if not isinstance(value, dict):
@@ -45,8 +51,9 @@ def _hex(value, length):
 
 
 def inspect_development_result(summary_path):
-    summary_path = Path(summary_path).resolve()
+    summary_path = Path(summary_path)
     raw, report = _read(summary_path)
+    summary_path = summary_path.resolve()
     run_id = report.get("run_id")
     if (type(report.get("version")) is not int or report["version"] != 1
             or report.get("status") != "passed"

@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import stat
 
 from .development import (DevelopmentError, require_managed_host_binding,
                           require_normal_worker_exit, validate_profile)
@@ -33,10 +34,14 @@ def _pairs(pairs):
 def _read(path, label, max_bytes):
     try:
         path = Path(path)
-        if path.is_symlink() or not path.is_file() or not 0 < path.stat().st_size <= max_bytes:
+        metadata = path.lstat()
+        reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        if (path.is_symlink() or not stat.S_ISREG(metadata.st_mode)
+                or getattr(metadata, "st_file_attributes", 0) & reparse
+                or metadata.st_nlink != 1 or not 0 < metadata.st_size <= max_bytes):
             raise OSError()
         raw = path.read_bytes()
-        if len(raw) > max_bytes:
+        if not 0 < len(raw) <= max_bytes:
             raise OSError()
         value = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs)
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
@@ -54,8 +59,9 @@ def _hex(value, length):
 def validate_provisioning_evidence(summary_path, profile_path, *, managed):
     if managed is not None and type(managed) is not bool:
         raise DevelopmentError("provisioning host mode must be explicit")
-    summary_path = Path(summary_path).resolve()
+    summary_path = Path(summary_path)
     summary_raw, report = _read(summary_path, "summary", 1024 * 1024)
+    summary_path = summary_path.resolve()
     _, profile = _read(profile_path, "private profile", 64 * 1024)
     validate_profile(profile)
     if managed is None:
