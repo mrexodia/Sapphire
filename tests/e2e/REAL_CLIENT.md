@@ -107,8 +107,9 @@ actor, quest or route-length fields are regenerated or weakened.
 The prior screenshot review does **not** certify rendering of these added bot
 actions. Even a successful bridge is endpoint co-presence, not continuous presence,
 visual quest/combat agreement, normal opening progression, shared-database
-cleanliness or full acceptance. This opt-in bridge still needs actual graphical
-execution and disposal evidence; preparation/contracts alone do not satisfy it.
+cleanliness or full acceptance. One owned-guest bridge has actual graphical
+execution and disposal evidence (see below); preparation/contracts alone do not
+satisfy those requirements for another deployment or build.
 
 ## Manual procedure and machine assertions
 
@@ -126,7 +127,10 @@ are absent, not passing. On completion or failure, `status.json` changes to
    decline character creation if offered, and select the exact fixture name in
    `status.json`. Decline the external Playguide browser prompt. Enter the world.
    First-run input/calibration prompts vary; unknown UI must be inspected, never
-   answered automatically. The witness requires exactly one other level-one,
+   answered automatically. In the exercised first-run UI, closing the welcome/
+   character-creation prompt with its visible X returned to the fixture list;
+   Proceed instead opened the creation editor. Do not create another character
+   when the named fixture already exists. The witness requires exactly one other level-one,
    living, non-GM player in public territory 130, near the fixture position.
 2. At `movement`, move that character **1–5 metres** using normal movement keys.
    The witness must receive displacement from the original spawn position.
@@ -149,8 +153,10 @@ are absent, not passing. On completion or failure, `status.json` changes to
    Approval is an operator attestation bound to this run and exact screenshot
    SHA-256, not an independently computed visual assertion. Stale receipts,
    changed images, wrong phases and incomplete checks are rejected.
-5. At `logout`, use the client's normal `/logout` command and confirm. Leave the
-   process running. The witness must see the same entity disappear, the server
+5. At `logout`, use the client's normal `/logout` command and confirm. Inspect
+   any overlapping first-run help notification before clicking; opening and
+   closing its help window can uncover the confirmation buttons. Do not interpret
+   a click on an obscured button as successful logout. Leave the process running. The witness must see the same entity disappear, the server
    must have logged that entity's ordinary StartLogoutCountdown request, and the
    graphical process must still be alive. Inspect `logout.png` for the title
    screen separately; the automated conditions do not recognize that image.
@@ -183,6 +189,20 @@ cleanup. Interactive assistant inspection also confirmed the title screen;
 the owned Sandbox was discarded and its launcher/client checked exited. These
 were operator-driven UI checks, not an image-recognition or autonomous UI test.
 The status document records staged identities, review hash and disposal evidence.
+
+The opt-in bridge was exercised at committed `2a33024b6` in
+`.e2e-artifacts/client-development-live-004/`: 1.078566m independently received
+graphical movement, exact Say/manual rendering review, then 118.844s of normal
+bot checks including two manual viewer replies, followed by ordinary graphical
+logout/title-screen review and explicit Sandbox disposal. The whole manual lane
+took 726.312s including operator waiting; this is not gameplay CPU time. The
+bots independently received all 24 requested movement endpoints, exact party/chat/
+disband state, bidirectional Tell, reconnect and four viewer reply observations.
+The normal runner did not control the viewer. This is one owned private guest,
+not the user's existing shared-server deployment or continuous/rendered-action
+agreement. Three earlier failed attempts remain failed in the status audit.
+Private `inspect-evidence.py` and `inspected-evidence.json` bind the summaries to
+received journals, review/input hashes and lifecycle/disposal evidence.
 
 `test_client_snapshot.py` exercises local-only committed-source isolation and
 mismatch rejection; it does not launch a client or attest graphical behavior.

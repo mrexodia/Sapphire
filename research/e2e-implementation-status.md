@@ -12,6 +12,99 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Owned-guest graphical co-presence bridge: live passed, limited scope
+
+Fresh `.e2e-artifacts/client-development-live-004` ran frozen coordinator
+**`2a33024b6995e3b5540939f2683c3f4fd9ac152e`**. The matching unmodified DX11
+executable, clean placement backend and Tell worker identities remain unchanged.
+All staged input hashes and committed source were rechecked after execution;
+preserved worktree experiments were excluded. Effective private input manifest
+SHA-256: `a11937938c0a59acdd744c54bf063cb248af46d5203a51f7d35b1adee0a0b545`.
+The base manifest and private guest-only, individually operated UI relay are
+retained separately; no automatic dialogue/attestation logic was added.
+
+The graphical character **Tester HIKOKBAOPC / entity 2097154 / GM rank 0** entered
+public130 through its ordinary UI. An independent headless witness received
+**1.078566380m** movement and exact `E2E real client verified` Say. Interactive
+inspection of `output/review.png` confirmed the named fixture rendered in-world
+and `E2E independent witness` rendered in chat, then the ordinary approval CLI
+bound the attestation to review SHA-256
+`b89aaa67955cd17a2977aa4ef044ebcb093776d20250322b3a9da1c32d6ea3b8`.
+Pre-connection placement/opening preparation is not natural progression.
+
+After normal closure of the initial witness, the normal development runner used
+only **Tester NAGHBKBACF / 2097153 / character 18014398526259201** and
+**Tester PAAPGHLDHM / 2097155 / character 18014398526259203**. The separate graphical
+viewer remained in-world and explicitly replied to each newly read nonce through
+ordinary Say UI. The received identities and same position matched at both
+checkpoints. This runner never authenticated, moved, invited or reset the viewer.
+
+`output/development/development-summary.json` passed in **118.844s**. Inspection
+of the corresponding action/event journals independently matched:
+
+- 24 normal movement publications to witness-received positions within 0.15m,
+  after each request and before the next, along the catalog's 13-point prefix
+  out and back; movement phase **20.172s**.
+- Exact two-bot party roster in both sessions, both received party messages with
+  matching sender/channel/party identity, and both empty states after disband.
+- Two exact nonparty Tell deliveries with newer tokens (**330→332**, **246→248**);
+  Tell phase **0.032s**. No Tell was addressed to the viewer.
+- Normal mover closure/despawn, fresh authentication of the same character/entity,
+  exact position and independent respawn/Say, without a world restart.
+- Four exact graphical-viewer Say observations: start **120→172**, **118→170**;
+  finish **118→159**, **351→395**. Manual reply waits were **32.000s** and
+  **41.812s**, each below its unchanged 60-second bound.
+- Three normal bot-session `server_logout_complete` events, explicit worker
+  closure and released account leases. No DB access, administrative placement
+  wait, reset or world restart was performed by the normal runner.
+
+The original witness authenticated afresh, received the graphical entity's
+ordinary logout/despawn, and the server recorded
+`[2097154] Zone IPC : StartLogoutCountdown`. `output/logout.png` was separately
+inspected and shows the title screen. The final smoke witness then sent logout,
+received its acknowledgement and closed locally; unlike the three development
+sessions it did not wait for `server_logout_complete`. Do not claim final smoke-
+witness persistence from that acknowledgement. Runtime teardown completed, the
+owned Sandbox discard dialog was actually inspected and confirmed once, and
+post-disposal process inspection found only pre-existing MySQL PID 7764.
+
+Whole manual lane: **726.312s**, with setup **23.984s**, spawn/UI **168.047s**,
+graphical movement **66.891s**, Say **79.234s**, review **45.297s**, bridge including
+handoff **124.578s**, logout/UI **217.453s**, cleanup **0.828s**. These are monotonic
+wall-phase durations including operator waiting and worker unwinding, not CPU
+benchmarks. The previously added phase timing and terminal `finished` publication
+now have live successful execution evidence.
+
+The 29 manually selected UI requests each have a reply/frame. Two private host
+mailbox replacements failed with WinError5 before publication; the previous
+published ID was checked unchanged and the pending file explicitly published
+under its original unique ID. No additional movement or logout request was
+created and no uncertain gameplay mutation was retried. The first logout button
+was obscured by the active-help notification; screenshot inspection led to
+opening/closing that help window before confirming the still-visible dialog.
+`operator-publication-notes.json` preserves these tool-output-derived notes;
+they are not labelled native runtime logs.
+
+`inspect-evidence.py` / `inspected-evidence.json` verify raw received evidence,
+input/source identity, exact summary associations, review hash, timing totals,
+normal graphical logout marker/despawn, cleanup and disposal artifacts. Result
+SHA-256: `6993aaa8bb3e3557e712f3184e3630959edf29e6312ac16214cf8e484e54d223`.
+Development summary SHA-256:
+`c6d65ae5084e4cf5d38562a3df1eb2011a986ac7f7ab2c14479c33c9b453aa4f`.
+The earlier three failed attempts below remain failed; this is a fresh run, not
+a rewrite or retry of their uncertain state.
+
+**Scope/remaining gaps:** this establishes one matching graphical client's two
+fresh endpoint replies around meaningful non-GM bot checks on an owned private
+guest runtime, plus the limited original rendering review. It does **not** attest
+continuous presence, rendering of added bot actions, quest/scene agreement,
+all-state viewer invariance, the user's existing shared database/deployment,
+general reset/reprovisioning, broad compatibility, crash consistency, Linux,
+hosted execution or acceptance. No full gate, platform sweep or soak was run.
+No product code changed in this evidence increment; `REAL_CLIENT.md` records the
+observed manual UI caveats and this bounded rehearsal. Overall goal remains
+incomplete; reset coordination and the existing acceptance audit gaps persist.
+
 ## Corrected graphical guest startup reached; manual spawn deadline retained
 
 Fresh `.e2e-artifacts/client-development-live-003` ran frozen coordinator
