@@ -2357,6 +2357,25 @@ signature, same-byte server-read proof, offline/exclusive-session fence, command
 attestation or crash-consistent approval. Historical placement runs lack this
 mandatory receipt and remain historical.
 
+Fix **`8163f2168`** closes the preceding offline-planner authorization gap. The
+actual `prepare_development` CLI no longer parses a report and relies only on its
+minimal registry-construction checks. Before exclusive registry publication it
+runs the current strict provisioning core, inferring unmanaged versus owned-host
+mode from the validated private profile and requiring the exact schema, successful
+cooperative deadline, profile/account binding, two received GM0 outcomes and
+server closures, normal worker exit, clear leases, and complete run-owned worker
+journal tree. A focused end-to-end synthetic producer→strict consumer→planner test
+passes, then proves a changed worker tree cannot publish a second registry.
+
+Frozen, remote-free source **`8163f2168f15c60dc2eb149e0f1561f2203cbb88`**
+passed **1013 focused contracts with no skips in 47.55s**. Test-log SHA-256:
+`3fe27f171d6b44b1205618c343a1c880dd396110bff54b64ed5c9953dcee5726`.
+No account, endpoint, service, registry deployment, placement or gameplay action
+ran. The pure registry-construction function remains a schema unit seam; only the
+strict CLI chain is authorization evidence. This still does not prove profile
+secrecy, server-side offline exclusion, unchanged registry bytes at server read,
+or permission to retry an uncertain provisioning mutation.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

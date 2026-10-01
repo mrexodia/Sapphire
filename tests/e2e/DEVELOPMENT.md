@@ -340,8 +340,14 @@ It does not grant items/levels/quest completion or reset enemies/other players.
    ```
 
    This is an offline planner: it does not contact the server or execute a reset.
-   It requires a completed provisioning receipt whose
-   `development-provisioning-association-v1` digest matches the configured
+   Before writing a registry, the CLI now runs the same strict current provisioning
+   consumer as `inspect_development_provisioning`: exact unmanaged/managed mode,
+   bounded successful deadline, private-profile association, two GM0 outcomes,
+   server-close receipts, normal exact worker exit, complete run-owned worker tree
+   and clear local leases are mandatory. A legacy/minimal object accepted only by a
+   unit-level schema helper cannot authorize CLI publication. It then requires the
+   completed provisioning receipt's
+   `development-provisioning-association-v1` digest to match the configured
    API/lobby endpoint, optional managed-host session, ordered account names and
    received character/entity IDs. Registry schema v2 also retains the exact
    lowercase provisioning `run_id`; legacy v1 registries and reports with a
