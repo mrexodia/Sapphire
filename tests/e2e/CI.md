@@ -53,8 +53,11 @@ self-hosted runners (checked through the read-only Actions runners API).
 Both E2E workflows pin external actions to exact 40-hex revisions, use a read-only
 token, disable checkout credential persistence, apply bounded whole-job and every-
 step timeouts, and bound artifact retention. The private workflow additionally
-serializes gameplay jobs without cancelling an active run and limits the gameplay
-job to 45 minutes. These repository controls can be checked read-only with
+serializes gameplay jobs without cancelling an active run, limits the whole gameplay
+job to 120 minutes, and limits the isolated gate step to 75 minutes. These ceilings
+cover the previously observed roughly 56-minute 15-case gate plus build/contracts;
+they remain bounds, not capacity or hosted-execution evidence. Repository controls can
+be checked read-only with
 `python -m tests.e2e.inspect_workflow_policy`; its receipt explicitly leaves hosted
 execution, runner-group restrictions and ephemeral VM destruction unverified. The
 private workflow rebuilds the checked-out server, all discovered
@@ -102,9 +105,11 @@ It also requires successful collection/inputs/cleanup, the new
 `process_cleanup_verified` claim, typed component identities, and the operator-
 supplied clean source revision; historical summaries without that field are not
 upgraded. The private workflow invokes this inspector against `${{ github.sha }}`
-after a passing gate and before marking that summary publishable; failed gate
+after a passing gate, then requires exactly one run below a fresh run-ID/attempt-ID
+private root and invokes the private-evidence inspector against that run before
+marking the summary publishable. The private root is never uploaded. Failed gate
 summaries retain their separate fixed-schema diagnostic upload path. This verifies
-the sanitized public result's current contract. It cannot reconstruct the private
+the sanitized public result and retained private evidence contracts. It cannot reconstruct the private
 PID/generation records deleted with disposable fixtures,
 prove hosted execution, or replace an actual current gate run. When the authorized
 private run directory is retained, the second inspector matches every public hash

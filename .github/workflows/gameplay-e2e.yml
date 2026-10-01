@@ -40,7 +40,7 @@ jobs:
     # Configure required reviewers and default-branch deployment restrictions BEFORE enabling.
     environment: sapphire-private-e2e
     runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]
-    timeout-minutes: 45
+    timeout-minutes: 120
     defaults:
       run:
         shell: pwsh
@@ -90,13 +90,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Controller contracts failed' }
       - name: Isolated gameplay and evidence gate
         id: gameplay
-        timeout-minutes: 35
+        timeout-minutes: 75
         env:
           SAPPHIRE_E2E_PROFILE: ${{ secrets.SAPPHIRE_E2E_PROFILE }}
         run: |
           if (-not $env:SAPPHIRE_E2E_PROFILE) { throw 'Private profile path is not configured' }
           if (Test-Path .e2e-ci-summary.json) { throw 'Summary destination must start absent' }
-          python -m tests.e2e.run_ci --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$env:RUNNER_TEMP/sapphire-private-e2e" --summary .e2e-ci-summary.json --require-clean
+          $privateRoot = Join-Path $env:RUNNER_TEMP "sapphire-private-e2e-${{ github.run_id }}-${{ github.run_attempt }}"
+          if (Test-Path $privateRoot) { throw 'Private run root must start absent' }
+          python -m tests.e2e.run_ci --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --summary .e2e-ci-summary.json --require-clean
           $gateExit = $LASTEXITCODE
           if ($gateExit -ne 0) {
             if (Test-Path .e2e-ci-summary.json) {
@@ -106,6 +108,10 @@ jobs:
           }
           python -m tests.e2e.inspect_ci_result --summary .e2e-ci-summary.json --expected-revision "${{ github.sha }}"
           if ($LASTEXITCODE -ne 0) { throw 'Published gameplay summary inspection failed' }
+          $privateRuns = @(Get-ChildItem -LiteralPath $privateRoot -Directory -Force)
+          if ($privateRuns.Count -ne 1) { throw 'Private run root must contain exactly one gate run' }
+          python -m tests.e2e.inspect_ci_private_evidence --summary .e2e-ci-summary.json --private-run-dir "$($privateRuns[0].FullName)" --expected-revision "${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { throw 'Private gameplay evidence inspection failed' }
           'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       - name: Publish allowlisted evidence only
         if: always() && steps.gameplay.outputs.summary_created == 'true'

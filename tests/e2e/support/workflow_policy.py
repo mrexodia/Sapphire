@@ -120,21 +120,34 @@ def inspect_workflow(path, *, private):
                     "        default: false",
                     "          test \"$ACK\" = true || { echo 'Explicit review acknowledgement required'; exit 1; }",
                     "          test \"$ENABLED\" = true || { echo 'Private E2E runner is not enabled'; exit 1; }",
-                    "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\" || { echo 'Only the trusted default branch is allowed'; exit 1; }")
-        if any(value not in lines for value in required):
+                    "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\" || { echo 'Only the trusted default branch is allowed'; exit 1; }",
+                    "          $privateRoot = Join-Path $env:RUNNER_TEMP \"sapphire-private-e2e-${{ github.run_id }}-${{ github.run_attempt }}\"",
+                    "          if (Test-Path $privateRoot) { throw 'Private run root must start absent' }",
+                    "          $privateRuns = @(Get-ChildItem -LiteralPath $privateRoot -Directory -Force)",
+                    "          if ($privateRuns.Count -ne 1) { throw 'Private run root must contain exactly one gate run' }")
+        if (any(value not in lines for value in required)
+                or not any(line.startswith("          python -m tests.e2e.run_ci ")
+                           and '--private-root "$privateRoot"' in line for line in lines)):
             raise DevelopmentError("private workflow lacks protected serialized runner controls")
         inspection = ('          python -m tests.e2e.inspect_ci_result --summary '
                       '.e2e-ci-summary.json --expected-revision "${{ github.sha }}"')
         inspection_failure = "          if ($LASTEXITCODE -ne 0) { throw 'Published gameplay summary inspection failed' }"
+        private_inspection = ('          python -m tests.e2e.inspect_ci_private_evidence --summary '
+                              '.e2e-ci-summary.json --private-run-dir "$($privateRuns[0].FullName)" '
+                              '--expected-revision "${{ github.sha }}"')
+        private_failure = "          if ($LASTEXITCODE -ne 0) { throw 'Private gameplay evidence inspection failed' }"
         publication = "          'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
         failed_publication = "              'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
         upload_guard = "        if: always() && steps.gameplay.outputs.summary_created == 'true'"
         if (lines.count(inspection) != 1 or lines.count(inspection_failure) != 1
+                or lines.count(private_inspection) != 1 or lines.count(private_failure) != 1
                 or lines.count(publication) != 1 or lines.count(failed_publication) != 1
                 or lines.count(upload_guard) != 1
-                or not lines.index(inspection) < lines.index(inspection_failure) < lines.index(publication)
-                or lines.index(upload_guard) < lines.index(inspection_failure)):
-            raise DevelopmentError("private workflow does not inspect a passing summary before publication")
+                or not lines.index(inspection) < lines.index(inspection_failure) \
+                    < lines.index(private_inspection) < lines.index(private_failure) \
+                    < lines.index(publication)
+                or lines.index(upload_guard) < lines.index(private_failure)):
+            raise DevelopmentError("private workflow does not inspect public and private evidence before publication")
     normalized = path.as_posix()
     marker = ".github/workflows/"
     display = normalized[normalized.index(marker):] if marker in normalized else path.name
@@ -142,5 +155,7 @@ def inspect_workflow(path, *, private):
             "scope": "repository-workflow-controls-not-hosted-execution-or-runner-policy",
             "workflow": display,
             "sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
-            "private_asset_workflow": private, "permissions": {"contents": "read"},
+            "private_asset_workflow": private,
+            "private_evidence_inspection_required":private,
+            "permissions": {"contents": "read"},
             "jobs": jobs, "pinned_actions": actions}
