@@ -452,8 +452,41 @@ exits/closures, terminal lease evidence, diagnostics and cleanup. Summary hashes
 Placement is administrative setup only: it proves neither natural travel nor
 progression and grants no reset/reprovisioning or account-reuse authority. The
 fresh owned runtime does not prove safety on an existing shared server, graphical
-compatibility, arbitrary social behavior or shared-world cleanliness. No full
-gate, soak or platform sweep ran; overall goal remains incomplete.
+compatibility, arbitrary social behavior or shared-world cleanliness.
+
+### Placement registry v2 binds the provisioning run identity
+
+Feature **`00e01b840`** closes a remaining setup-audit association gap. The offline
+planner now requires the exact lowercase 32-hex provisioning `run_id`, emits it as
+`provisioning_run_id`, and advances the strict placement registry to version2.
+The operator helper copies it into each durable pre-dispatch intent/local receipt.
+The server's exact-field parser requires that field and rejects version1, missing,
+malformed, type-confused or extra-field registries. Successful server diagnostics
+now include the provisioning run identity beside approval, operator, target,
+source and catalog identity. The native action remains selected by the independently
+reviewed approval ID; this addition is artifact provenance, not authentication,
+a signature or a server-session/offline fence.
+
+Focused provisioning/planner/operator/lease contracts passed **131 tests in
+1.47s** from detached clean exact commit
+`00e01b840271f4d6de0775480f39e6df425f935e`. The exact-source standalone native
+parser contract compiled and passed; an exact first-party `DebugCommandMgr.cpp`
+translation-unit compile also passed against the previously attested clean
+placement-build dependency include tree. Native negatives include legacy v1,
+missing/malformed run identity, floating version and extra fields. Evidence:
+`.e2e-artifacts/development-placement-provenance-clean-001.json`; Python log
+SHA-256 `b4a02be1019c304a77f63f088b42a404d56b7e485d77139fc71cdb66f8d6bdb9`;
+native-test SHA-256
+`1e64355bb1f319a88305b4e548cd3d812b29a588f165e16947aa8242115e089a`.
+
+The first detached CMake configure attempt is retained as a setup failure: it
+stopped because that worktree's submodules were intentionally uninitialized and
+executed no build/test. The isolated exact-target compiles followed instead; it is
+not relabelled as a successful configure. No live version2 placement ran. The
+preceding version1 live artifact remains valid only for controller `c198af1c3` and
+is not upgraded to current-registry evidence. Version2 positive live execution,
+current graphical execution, reset and broad gates remain pending. No full gate,
+soak or platform sweep ran; overall goal remains incomplete.
 
 ## Dedicated provisioning has one cooperative success deadline
 
@@ -929,8 +962,8 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; current bounded planner-only and placement-chain live audits | Implemented and positive producer→strict-planner→registered-placement path live-verified on fresh owned runtimes; expiry/no-retry paths remain synthetic; worker exit, server closure and local lease state remain distinct and grant no adoption/reset authority |
-| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-strict-placement-live-001` | Current strict provisioning→planner→registered placement verified with ordinary non-GM received arrival; setup is not progression or general reset |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; bounded planner-only and placement-chain live audits | Provisioning and the v1 producer→planner→registered-placement path are live-verified on fresh owned runtimes; current v2 run provenance has focused/native contracts but no new live placement; expiry/no-retry paths remain synthetic; worker exit, server closure and local lease state grant no adoption/reset authority |
+| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-strict-placement-live-001`; v2 provenance contracts | Registered v1 placement verified with ordinary non-GM received arrival at its exact version; current v2 binds the provisioning run ID and fails closed but awaits positive live execution; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
 | Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit and terminal-lease receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
