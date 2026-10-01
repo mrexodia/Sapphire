@@ -197,6 +197,14 @@ local cooperating-runner snapshot, not server-side offline proof. Independently
 verify both bots offline before any narrowly reviewed manual recovery; never steal
 a lease to make another run pass.
 
+The shared runner and provisioner also attach this snapshot to every terminal
+summary. A successful result requires `state: clear` after release. An acquired
+failed run normally records `state: retained`, with both receipts matching its
+`run_id`. Partial release, replacement races, malformed files or unavailable
+inspection remain failures and are never repaired automatically; provisioning
+removes its otherwise-complete association rather than publishing a reusable
+fixture receipt without verified lease release.
+
 Expiry before lease acquisition leaves no lease to retain. A late account-creation
 response remains `requested_outcome_unknown`, is never retried, and cannot advance
 to login/character creation. Native worker exit remains distinct from each recorded

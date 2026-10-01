@@ -5,10 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from . import inspect_development_leases
+from . import inspect_development_leases, provision_development, run_development
 from .support.development import AccountLease, DevelopmentError, validate_profile
-from .support.development_lease import inspect_account_leases
-from .test_development import profile
+from .support import development_lease
+from .support.development_lease import inspect_account_leases, terminal_account_lease_snapshot
+from .test_development import FakeWorker, profile
+from .test_development_provisioning import ProvisionWorker, server
 
 
 RECOVERY = "verify bots offline before removing lease"
@@ -105,6 +107,17 @@ def test_unrelated_entries_are_neither_inspected_nor_changed(profile, tmp_path):
     assert hashlib.sha256(foreign.read_bytes()).hexdigest() == digest
 
 
+def test_terminal_snapshot_sanitizes_inspection_failure(profile, tmp_path, monkeypatch):
+    def fail(*_):
+        raise KeyboardInterrupt("private failure")
+    monkeypatch.setattr(development_lease, "inspect_account_leases", fail)
+    report = terminal_account_lease_snapshot(profile, tmp_path / "leases", "a" * 32)
+    assert report["state"] == "unavailable" and report["inspection_error_type"] == "KeyboardInterrupt"
+    assert report["retained_receipts_match_run"] is False
+    assert not report["filesystem_mutation_performed"] and not report["release_authorized"]
+    assert "private failure" not in json.dumps(report)
+
+
 def test_recovery_inspection_does_not_require_worker_to_still_exist(profile, tmp_path):
     Path(profile["worker"]).unlink()
     with pytest.raises(DevelopmentError):
@@ -152,3 +165,49 @@ def test_cli_ambiguous_result_persists_failure_without_mutation(profile, tmp_pat
     assert report["status"] == "failed" and report["state"] == "ambiguous"
     assert first.exists() and first.read_text() == receipt("d" * 32)
     assert json.loads(capsys.readouterr().out)["status"] == "failed"
+
+
+def test_runner_partial_release_is_failed_and_preserved_as_ambiguous(profile, tmp_path, monkeypatch):
+    class PartialRelease(AccountLease):
+        def release(self):
+            self.paths[0].unlink()
+            raise OSError("synthetic partial release")
+    monkeypatch.setattr(run_development, "AccountLease", PartialRelease)
+    worker = FakeWorker()
+    report = run_development.run(profile, tmp_path / "run", confirmed=True,
+        worker_factory=lambda *_: worker,
+        login=lambda *_: {"lobbyHost":"127.0.0.1", "lobbyPort":54994, "sId":"private"},
+        lease_root=tmp_path / "leases")
+    assert report["status"] == "failed" and report["lease_retained"]
+    assert report["lease_snapshot"]["state"] == "ambiguous"
+    assert report["lease_snapshot_matches_run_state"] is False
+    assert len(list((tmp_path / "leases").glob("*.lock"))) == 1
+
+
+def test_runner_cannot_pass_when_terminal_snapshot_is_unavailable(profile, tmp_path, monkeypatch):
+    monkeypatch.setattr(run_development, "terminal_account_lease_snapshot",
+                        lambda *_: {"state":"unavailable", "inspection_error_type":"OSError"})
+    worker = FakeWorker()
+    report = run_development.run(profile, tmp_path / "run", confirmed=True,
+        worker_factory=lambda *_: worker,
+        login=lambda *_: {"lobbyHost":"127.0.0.1", "lobbyPort":54994, "sId":"private"},
+        lease_root=tmp_path / "leases")
+    assert report["status"] == "failed" and not report["lease_retained"]
+    assert report["failure_stage"] == "terminal_lease_snapshot"
+    assert report["lease_snapshot_matches_run_state"] is False
+    assert not list((tmp_path / "leases").iterdir())
+
+
+def test_provisioner_cannot_publish_binding_when_terminal_snapshot_is_unavailable(server, tmp_path, monkeypatch):
+    monkeypatch.setattr(provision_development, "terminal_account_lease_snapshot",
+                        lambda *_: {"state":"unavailable", "inspection_error_type":"OSError"})
+    worker = ProvisionWorker()
+    result = provision_development.run(server, tmp_path / "private.json", tmp_path / "artifacts",
+        confirmed=True, worker_factory=lambda *_: worker, register=lambda *_: {},
+        login=lambda *_: {"lobbyHost":"127.0.0.1", "lobbyPort":54994, "sId":"private-session"},
+        lease_root=tmp_path / "leases")
+    assert result["status"] == "failed" and not result["lease_retained"]
+    assert result["failure_stage"] == "terminal_lease_snapshot"
+    assert result["lease_snapshot_matches_run_state"] is False
+    assert "provisioning_binding" not in result and "next_step" not in result
+    assert not list((tmp_path / "leases").iterdir())

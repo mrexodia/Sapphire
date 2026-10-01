@@ -20,6 +20,7 @@ from .support.worker import Bot, Worker
 from .support.development_binding import provisioning_binding
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 from .support.development_deadline import RunDeadline, DeadlineWorker
+from .support.development_lease import terminal_account_lease_snapshot
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -154,6 +155,23 @@ def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
             report["recovery"] = "Keep the private credential profile; inspect partial account/character state and verify bots offline before releasing this run's leases. Do not retry creation automatically."
     finally:
         report["run_deadline"] = deadline.report() if deadline is not None else {"enabled": False}
+        snapshot = terminal_account_lease_snapshot(profile, lease.root, run_id)
+        report["lease_snapshot"] = snapshot
+        if not acquired:
+            report["lease_snapshot_matches_run_state"] = None
+        elif report["lease_retained"]:
+            report["lease_snapshot_matches_run_state"] = (
+                snapshot.get("state") == "retained"
+                and snapshot.get("retained_receipts_match_run") is True)
+        else:
+            report["lease_snapshot_matches_run_state"] = snapshot.get("state") == "clear"
+        if report["status"] == "provisioned" and report["lease_snapshot_matches_run_state"] is not True:
+            report["status"] = "failed"
+            report["error_type"] = "DevelopmentError"
+            report["failure_stage"] = "terminal_lease_snapshot"
+            report["recovery"] = "Lease release cannot be verified; keep the private credentials and do not retry, reuse accounts or remove lease files without independent offline evidence."
+            report.pop("provisioning_binding", None)
+            report.pop("next_step", None)
         report["elapsed_seconds"] = time.monotonic() - start
         report["timings"] = timings.rows
         (artifacts / "provisioning-summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

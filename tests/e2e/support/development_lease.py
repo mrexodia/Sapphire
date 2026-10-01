@@ -104,3 +104,28 @@ def inspect_account_leases(profile, root=None):
         "cross_file_snapshot_atomic": False,
     }
     return report
+
+
+def terminal_account_lease_snapshot(profile, root, expected_run_id):
+    """Return sanitized terminal evidence even if inspection itself fails."""
+    try:
+        report = inspect_account_leases(profile, root)
+    except BaseException as error:
+        report = {
+            "version": 1,
+            "scope": _SCOPE,
+            "state": "unavailable",
+            "inspection_error_type": type(error).__name__,
+            "profile_or_account_values_disclosed": False,
+            "lease_paths_or_keys_disclosed": False,
+            "unrelated_entries_inspected": False,
+            "filesystem_mutation_performed": False,
+            "server_or_database_contacted": False,
+            "active_session_checked": False,
+            "offline_verified": False,
+            "release_authorized": False,
+            "cross_file_snapshot_atomic": False,
+        }
+    report["retained_receipts_match_run"] = (
+        report.get("state") == "retained" and report.get("retained_run_id") == expected_run_id)
+    return report

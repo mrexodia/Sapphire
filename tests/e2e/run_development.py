@@ -16,6 +16,7 @@ from .support.development import (AccountLease, DevelopmentError, Timings, authe
 from .support.worker import Bot, Worker
 from .support.development_deadline import RunDeadline, DeadlineWorker
 from .support.development_worker_exit import ObservedWorker
+from .support.development_lease import terminal_account_lease_snapshot
 from .support.development_reconnect import verify_position_reconnect
 from .support.development_party import require_bound_party_worker, verify_two_bot_party
 from .support.development_viewer import validate_viewer_name, viewer_checkpoint
@@ -248,6 +249,21 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
             report["recovery"] = "Verify both bots offline, then manually remove this run's local account leases. No automatic retry/reset."
     finally:
         report["run_deadline"] = deadline.report() if deadline is not None else {"enabled": False}
+        snapshot = terminal_account_lease_snapshot(profile, lease.root, run_id)
+        report["lease_snapshot"] = snapshot
+        if not acquired:
+            report["lease_snapshot_matches_run_state"] = None
+        elif report["lease_retained"]:
+            report["lease_snapshot_matches_run_state"] = (
+                snapshot.get("state") == "retained"
+                and snapshot.get("retained_receipts_match_run") is True)
+        else:
+            report["lease_snapshot_matches_run_state"] = snapshot.get("state") == "clear"
+        if report["status"] == "passed" and report["lease_snapshot_matches_run_state"] is not True:
+            report["status"] = "failed"
+            report["error_type"] = "DevelopmentError"
+            report["failure_stage"] = "terminal_lease_snapshot"
+            report["recovery"] = "Lease release cannot be verified; do not retry, reuse accounts or remove lease files without independent offline evidence."
         report["elapsed_seconds"] = time.monotonic() - start
         report["timings"] = timings.rows
         (artifacts / "development-summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

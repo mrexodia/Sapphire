@@ -107,6 +107,9 @@ def test_success_is_provisioning_not_public_world_ready(server, tmp_path):
     assert calls[0][1] == calls[1][1] and calls[2][1] == calls[3][1] and calls[0][1] != calls[2][1]
     assert fake.commands == ["login", "logout", "close", "remove"] * 2
     assert not result["lease_retained"] and not list((tmp_path / "leases").iterdir())
+    assert result["lease_snapshot"]["state"] == "clear"
+    assert result["lease_snapshot_matches_run_state"] is True
+    assert result["lease_snapshot"]["retained_receipts_match_run"] is False
     assert all(row["character_creation"] == "refreshed_lobby_and_world_verified"
                and row["account_creation"] == "fresh_login_verified"
                and row["logout_server_close_verified"] for row in result["accounts"])
@@ -129,6 +132,10 @@ def test_uncertain_creation_never_retries_adopts_or_deletes(server, tmp_path):
     assert result["accounts"][0]["account_creation"] == "requested_outcome_unknown"
     assert result["accounts"][0]["character_creation"] == "not_started"
     assert result["status"] == "failed" and result["credential_profile_saved"]
+    assert result["lease_snapshot"]["state"] == "retained"
+    assert result["lease_snapshot"]["retained_run_id"] == result["run_id"]
+    assert result["lease_snapshot"]["retained_receipts_match_run"] is True
+    assert result["lease_snapshot_matches_run_state"] is True
     assert attempts[0]["password"] not in json.dumps(result)
     assert len(list((tmp_path / "leases").glob("*.lock"))) == 2
 

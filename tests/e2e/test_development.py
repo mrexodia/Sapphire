@@ -128,6 +128,9 @@ def test_shared_smoke_lifecycle_and_timings(profile, tmp_path):
     assert report["scope"] == "shared-development-not-acceptance"
     assert report["worker_closed"] and fake.closed
     assert not report["lease_retained"] and not list((tmp_path / "leases").iterdir())
+    assert report["lease_snapshot"]["state"] == "clear"
+    assert report["lease_snapshot_matches_run_state"] is True
+    assert report["lease_snapshot"]["retained_receipts_match_run"] is False
     assert fake.commands.count("say") == 4
     assert fake.commands.count("logout") == 2
     assert set(fake.commands) == {"login", "say", "logout", "close", "remove"}
@@ -142,6 +145,10 @@ def test_failed_precondition_retains_leases_and_closes_worker(profile, tmp_path)
     fake.states["mover"]["territory"] = 141
     report, fake = execute(profile, tmp_path, fake)
     assert report["status"] == "failed" and report["lease_retained"]
+    assert report["lease_snapshot"]["state"] == "retained"
+    assert report["lease_snapshot"]["retained_run_id"] == report["run_id"]
+    assert report["lease_snapshot"]["retained_receipts_match_run"] is True
+    assert report["lease_snapshot_matches_run_state"] is True
     assert fake.closed and "say" not in fake.commands
     assert len(list((tmp_path / "leases").glob("*.lock"))) == 2
 
