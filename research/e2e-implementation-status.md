@@ -1906,6 +1906,17 @@ No service or account started. This proves current local byte availability and
 schema/route/mesh agreement only: it does not approve those private inputs, bind the
 existing executables to current source, or authorize/execute the combined gate.
 
+Fix **`e12ce2ae8`** closes two profile-parser ambiguities before treating that
+receipt as current: symlink rejection now occurs before path resolution, and JSON
+objects reject duplicate keys rather than silently using the last value. It also
+bounds bytes after the read. Frozen, remote-free source
+**`e12ce2ae827a45cb9ff7086da93c16b3605328e1`** passed **152
+CI/workflow-policy/profile-inspector tests in 8.43s**, including direct symlink and
+duplicate-key negatives. Test-log SHA-256:
+`bf4b27ff8c84fbc98ab13f85a4fc6ed66f5363117813c174b167d6dedf59a435`.
+The same private overlay remained accepted with the same sanitized receipt hash;
+no service/account/gameplay operation ran.
+
 Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
 to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
 inspection derives and requires each expected `(classname, name)` pair, including
