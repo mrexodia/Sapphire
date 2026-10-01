@@ -12,6 +12,81 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Short shared-development exact-peer decline: implemented and live verified
+
+Feature **`401e9322337f1025adac2fca8d0e1c44f6632c12`** adds
+`run_development --verify-party-decline`, the advertised native
+`decline_party_bound` method, typed context journaling, focused contracts and
+`support/development_decline.py`. This is one ordinary invitation and one explicit
+rejection between the two dedicated non-GM accounts, not administrative reset.
+The native wrapper compares the complete expected party/pending-invite context
+on the Asio publication thread before invoking the existing normal decline path.
+Its wire bytes remain the ordinary DENY request. Public/server behavior is unchanged.
+
+The controller binds exact received lobby character IDs, entity IDs and names;
+requires idle empty parties, unique visible non-GM peers and fresh empty invitation
+history; and requires **both** the recipient's received deny reply and the
+inviter's independent exact reject update. Local clearing of the pending invite,
+publication and invite-result acknowledgements cannot pass the check alone.
+Success must occur within the ten-second combined budget, with late observations
+rejected; in-flight RPCs retain their bounded worker timeout and cleanup is not
+hard-interrupted. Foreign/changed invitations are never declined as cleanup.
+Failures retain normal account leases and do not retry uncertain mutations.
+
+`--verify-party-decline` and `--verify-party` are deliberately mutually exclusive
+before authentication/artifact creation. Party creation's existing fresh-history
+requirement is not weakened or bypassed by clearing state. Separate fresh runs can
+reuse the accounts after normal closure. Other optional development checks remain
+separate; the viewer is never an invitation target.
+
+Focused Python contracts: **114 passed, 14 native-worker-dependent tests skipped,
+3.27s** in `.e2e-artifacts/development-decline-contracts-001.json`. Clean committed
+snapshot: **66 passed, 0.77s** in `development-decline-clean-timings.json`, with
+snapshot integrity checked afterward. Negative coverage includes missing worker
+capability before HTTP login, existing/outgoing/stale invitations, duplicate peers,
+foreign/raced inviter, missing/incorrect replies, changed identity/GM/membership,
+new foreign invitation, stale sequence and late successful observation. No forced
+social cleanup occurs in those cases. Targeted native protocol CTest **1/1 passed,
+0.04s total**, including exact ordinary DENY bytes and context-mismatch rejection.
+An initial build invocation named a nonexistent test target; that command failed
+and its log remains `development-decline-native-build.log`. The corrected targeted
+build/test logs are separate; no full native/platform gate ran.
+
+Bounded live `.e2e-artifacts/development-decline-live-001` used the product CLI
+from the clean snapshot, the unchanged clean placement backend `e665c041f` and
+new worker SHA-256
+`2ada8b0b3b04734ae6ee3f64313e32aa03a6fc5562d61b132c4e4922e3edbc48`.
+`development-decline-inputs.json` records separate backend/controller/worker
+identities and byte comparison of native client/protocol sources against the
+committed snapshot. Three new owned pre-connection fixtures are setup, not normal
+provisioning or progression. No existing DB or graphical client was used.
+
+The exact inviter was **Tester MPEBJPGHHK / 2097153 / 18014398526259201**;
+recipient **Tester OCDIKDNKBE / 2097154 / 18014398526259202**. Received journals
+match the full inviter ID/name in the pending request, recipient deny reply at
+sequence **124** (baseline120), and inviter reject update at **130** (baseline122).
+There was exactly one bound invitation and one bound decline, no party formation
+request/disband, and no received nonempty party state. All bots were non-GM.
+
+Decline **0.046s**; normal login/Say/decline/logout check **11.828s**; startup
+**17.328s**; complete owned driver **36.500s**. A third **headless** observer,
+entity2097155, received no party events; selected identity, territory, rank,
+position, party and invitation fields matched before/after. Both bot sessions
+and the observer have received normal server closure; worker/leases/runtime
+cleanup passed. Process inspection afterward found only pre-existing MySQL7764.
+This observer is not graphical evidence for the new flag or all-state invariance.
+
+`inspected-evidence.json` binds the exact driver, reports, native actions/events,
+viewer before/after, environment logs and post-cleanup process list. Product
+summary SHA-256:
+`80ef8492a9af1dd7722ff631f016892ced8803fd995e67bc622aa7f20a2f2c28`;
+aggregate SHA-256:
+`a499124f6e8b4d5dd29dcf1efe71c2b10b4df39fd384a39fc9e8dd55b0fcbefe`.
+No movement/party-creation/Tell/reconnect/placement/graphical scenario was repeated
+just to exercise this flag. No acceptance, soak or platform sweep ran. Existing
+reset/session-fence, shared deployment, broad gameplay/real-client, Linux and
+hosted-CI requirements remain pending; overall goal is incomplete.
+
 ## Owned-guest graphical co-presence bridge: live passed, limited scope
 
 Fresh `.e2e-artifacts/client-development-live-004` ran frozen coordinator

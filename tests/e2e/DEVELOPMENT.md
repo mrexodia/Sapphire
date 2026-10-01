@@ -361,9 +361,10 @@ invitation history, exact lobby/world identities, empty party state and unique
 visible non-GM peers. The native decline guard compares the exact pending invite
 and party context on the publication thread, not merely at the earlier snapshot.
 
-The ten-second combined publication/observation budget requires both the
+The ten-second combined publication/observation success budget requires both the
 recipient's exact received deny reply and the inviter's independent exact reject
-update, plus empty membership on both. Local clearing of a pending invitation or
+update, plus empty membership on both. Late observations fail; in-flight native
+RPCs retain their bounded worker timeout and cleanup is not hard-interrupted. Local clearing of a pending invitation or
 a publication receipt alone is not success. The summary records
 `decline_verification` and `party_decline_exact_peer_round_trip` timing. On any
 uncertainty the normal failure/retained-lease policy applies; no foreign invite
@@ -373,7 +374,10 @@ This flag is mutually exclusive with `--verify-party`: that check intentionally
 refuses prior invitation history. Use separate fresh runs, not cache clearing to
 combine them. Movement, Tell, reconnect and viewer checkpoints remain optional;
 the viewer is never invited. This is a narrow rejection check, not general social
-or reset coverage.
+or reset coverage. One owned-runtime CLI check verified the two received rejection
+endpoints in 0.046s within an 11.828s normal login/Say/logout check. Its separate
+headless observer received no invitation; this new option has no graphical live
+attestation. Exact artifacts and limitations are in the implementation audit.
 
 ### Optional owned two-bot party check
 
