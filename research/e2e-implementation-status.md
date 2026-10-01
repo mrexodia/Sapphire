@@ -2102,6 +2102,16 @@ No real process failure, service, account or gameplay operation ran; this proves
 failure policy/ownership contracts, not OS-level termination reliability or
 leak-freedom.
 
+Fix **`05ae63894`** extends that attempt-all/retain policy from ordinary exceptions
+to cooperative `BaseException` interruption. A synthetic `KeyboardInterrupt` from
+one owned teardown can no longer prevent attempts against the other exact owned
+services; the same poll-only recovery rule applies. Frozen, remote-free source
+**`05ae63894ce0423ba7b6dd8c838e541689674fdc`** passed **206 focused contracts
+with no skips in 17.00s**. Test-log SHA-256:
+`1728c4830713a0740fe9155091a421e2e09419d9a5f122f57fed8c888f98b2a1`.
+This is cooperative in-process failure handling only—not hard preemption, runner
+loss, hosted cancellation, VM disposal or proof that an unresponsive process exits.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
