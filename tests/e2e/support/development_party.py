@@ -2,6 +2,7 @@
 from .development import DevelopmentError, idle_state, received_character_identity, witnessed
 
 BOUND_METHODS = {"invite_party_bound", "accept_party_bound", "party_chat_bound", "disband_party_bound"}
+SCOPE = "owned-two-bot-party-not-general-social"
 EMPTY_PARTY = {"id": 0, "chat_channel": 0, "count": 0, "leader_index": 0, "members": []}
 
 
@@ -95,6 +96,6 @@ def verify_two_bot_party(profile, worker, leader, member, baseline_states, run_i
         for bot in bots:
             worker.wait_state(bot.name, lambda s: ungrouped(s, territory),
                               "exact empty party after owned disband", timeout=10)
-    return {"requested": True, "verified": True, "scope": "owned-two-bot-party-not-general-social",
+    return {"requested": True, "verified": True, "scope": SCOPE,
             "identities": identities, "party": party, "invitation_receipt": receipt,
             "received_chat": messages, "both_empty_after_disband": True}

@@ -11,6 +11,7 @@ from .development_viewer import CONTINUITY_SCOPE
 from .development_sprint import HISTORIES as SPRINT_HISTORIES, SCOPE as SPRINT_SCOPE
 from .development_equipment import BODY, BAG, SCOPE as EQUIPMENT_SCOPE
 from .development_tell import SCOPE as TELL_SCOPE
+from .development_party import SCOPE as PARTY_SCOPE
 
 
 def development_run_budget(activity_deadline):
@@ -168,6 +169,70 @@ def require_sprint_receipt(value, entities):
             raise DevelopmentError('invalid graphical Sprint start metadata')
     if receipts[0]['effect'] != receipts[1]['effect']:
         raise DevelopmentError('graphical Sprint observers disagree')
+    return value
+
+
+def require_party_receipt(value, entities, run_id, territory):
+    fields = {'requested', 'verified', 'scope', 'identities', 'party',
+              'invitation_receipt', 'received_chat', 'both_empty_after_disband'}
+    if (not isinstance(value, dict) or set(value) != fields
+            or value.get('requested') is not True or value.get('verified') is not True
+            or value.get('scope') != PARTY_SCOPE or value.get('both_empty_after_disband') is not True
+            or not isinstance(value.get('identities'), list) or len(value['identities']) != 2):
+        raise DevelopmentError('invalid graphical party receipt')
+    identities = value['identities']
+    for index, identity in enumerate(identities):
+        if (not isinstance(identity, dict)
+                or set(identity) != {'name', 'entity_id', 'character_id'}
+                or not isinstance(identity.get('name'), str) or not 1 <= len(identity['name']) <= 31
+                or type(identity.get('entity_id')) is not int or identity['entity_id'] != entities[index]
+                or type(identity.get('character_id')) is not int
+                or not 0 < identity['character_id'] < 2**64):
+            raise DevelopmentError('invalid graphical party identity')
+    if (identities[0]['name'] == identities[1]['name']
+            or identities[0]['character_id'] == identities[1]['character_id']):
+        raise DevelopmentError('graphical party identities are not distinct')
+    party = value.get('party')
+    if (not isinstance(party, dict)
+            or set(party) != {'id', 'chat_channel', 'count', 'leader_index', 'members'}
+            or type(party.get('id')) is not int or not 0 < party['id'] < 2**64
+            or type(party.get('chat_channel')) is not int
+            or not 0 < party['chat_channel'] < 2**64
+            or type(party.get('count')) is not int or party['count'] != 2
+            or type(party.get('leader_index')) is not int or party['leader_index'] != 0
+            or not isinstance(party.get('members'), list) or len(party['members']) != 2):
+        raise DevelopmentError('invalid graphical owned-party state')
+    for identity, member in zip(identities, party['members']):
+        if (not isinstance(member, dict)
+                or set(member) != {'entity_id', 'character_id', 'name', 'territory',
+                                   'class_job', 'level'}
+                or any(type(member.get(key)) is not int for key in ('entity_id', 'character_id'))
+                or {key: member.get(key) for key in ('entity_id', 'character_id', 'name')} != identity
+                or type(member.get('territory')) is not int or member['territory'] != territory
+                or type(member.get('class_job')) is not int or not 1 <= member['class_job'] <= 255
+                or type(member.get('level')) is not int or not 1 <= member['level'] <= 100):
+            raise DevelopmentError('invalid graphical owned-party member')
+    invitation = value.get('invitation_receipt')
+    if (not isinstance(invitation, dict) or set(invitation) != {'result', 'target'}
+            or type(invitation.get('result')) is not int or invitation['result'] != 0
+            or invitation.get('target') != identities[1]['name']):
+        raise DevelopmentError('invalid graphical party invitation receipt')
+    chats = value.get('received_chat')
+    if not isinstance(chats, list) or len(chats) != 2:
+        raise DevelopmentError('invalid graphical party chat receipts')
+    for index, (identity, chat) in enumerate(zip(identities, chats)):
+        if (not isinstance(chat, dict)
+                or set(chat) != {'actor', 'channel', 'character_id', 'message',
+                                 'name', 'party_id', 'token'}
+                or any(type(chat.get(key)) is not int
+                       for key in ('actor', 'channel', 'character_id', 'party_id', 'token'))
+                or chat['actor'] != identity['entity_id']
+                or chat['character_id'] != identity['character_id']
+                or chat.get('name') != identity['name']
+                or chat['party_id'] != party['id'] or chat['channel'] != party['chat_channel']
+                or not 0 < chat['token'] < 2**64
+                or chat.get('message') != f'Sapphire dev {run_id} party {index}'):
+            raise DevelopmentError('invalid graphical party chat receipt')
     return value
 
 
@@ -336,6 +401,7 @@ def require_graphical_check(result, viewer_name, entity):
     after = require_inventory_projection(inventory.get('after'))
     if before['inventory'] != after['inventory']:
         raise DevelopmentError('graphical reconnect inventory projection changed')
+    party = require_party_receipt(result['party_verification'], entities, run_id, territory)
     tell = require_tell_receipt(result['tell_verification'], entities, run_id)
     sprint = require_sprint_receipt(result['sprint_verification'], entities)
     equipment = require_equipment_receipt(
@@ -361,7 +427,8 @@ def require_graphical_check(result, viewer_name, entity):
         raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
-            'inventory_scope':INVENTORY_SCOPE, 'tell_scope':tell['scope'],
+            'inventory_scope':INVENTORY_SCOPE, 'party_scope':party['scope'],
+            'tell_scope':tell['scope'],
             'sprint_scope':sprint['scope'],
             'equipment_scope':equipment['scope'], 'continuous_presence':continuity,
             'rendered_bot_actions_verified':False,

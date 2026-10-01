@@ -95,6 +95,19 @@ def completed():
             'received':{'actor':sender['entity_id'],'character_id':sender['character_id'],
                 'message':f'Sapphire dev {run_id} tell {index} '+str(index)*16,
                 'name':sender['name'],'party_id':0,'token':sequence}})
+    party_id,channel=99,88
+    party={'requested':True,'verified':True,'scope':'owned-two-bot-party-not-general-social',
+        'identities':copy.deepcopy(tell_identities),
+        'party':{'id':party_id,'chat_channel':channel,'count':2,'leader_index':0,
+            'members':[{'entity_id':row['entity_id'],'character_id':row['character_id'],
+                        'name':row['name'],'territory':130,'class_job':1,'level':1}
+                       for row in tell_identities]},
+        'invitation_receipt':{'result':0,'target':'bot witness'},
+        'received_chat':[{'actor':row['entity_id'],'channel':channel,
+            'character_id':row['character_id'],'message':f'Sapphire dev {run_id} party {index}',
+            'name':row['name'],'party_id':party_id,'token':50+index}
+            for index,row in enumerate(tell_identities)],
+        'both_empty_after_disband':True}
     return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
             'entities':[1,2],'territory':130,'run_id':run_id,
             'worker_closed':True,
@@ -118,7 +131,7 @@ def completed():
                 'cleanup_may_exceed_deadline':True},
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
-            **{key:{'requested':True,'verified':True} for key in ('party_verification','reconnect_verification')},
+            'party_verification':party,'reconnect_verification':{'requested':True,'verified':True},
             'tell_verification':tell,'sprint_verification':sprint,'equipment_verification':equipment,
             'inventory_verification':{'requested':True,'verified':True,
                 'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
@@ -135,6 +148,7 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     report=completed(); proof=bridge.require_graphical_check(report,'Tester Viewer',3)
     assert proof['status']=='passed' and proof['rendered_bot_actions_verified'] is False
     assert proof['continuous_presence']==report['viewer_verification']['continuous_presence']
+    assert proof['party_scope']==report['party_verification']['scope']
     assert proof['tell_scope']==report['tell_verification']['scope']
     assert proof['sprint_scope']==report['sprint_verification']['scope']
     assert proof['equipment_scope']==report['equipment_verification']['scope']
@@ -194,6 +208,29 @@ def test_graphical_bridge_rejects_malformed_inventory_receipt():
     )
     for mutate in mutations:
         report=completed();mutate(report['inventory_verification'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_malformed_party_receipt():
+    mutations=(
+        lambda report: report['party_verification'].update(scope='general-social-proof'),
+        lambda report: report['party_verification'].update(both_empty_after_disband=False),
+        lambda report: report['party_verification']['identities'][0].update(entity_id=2),
+        lambda report: report['party_verification']['party'].update(id=True),
+        lambda report: report['party_verification']['party'].update(count=True),
+        lambda report: report['party_verification']['party']['members'][0].update(entity_id=True),
+        lambda report: report['party_verification']['party']['members'][1].update(territory=141),
+        lambda report: report['party_verification']['invitation_receipt'].update(target='foreign'),
+        lambda report: report['party_verification']['received_chat'].pop(),
+        lambda report: report['party_verification']['received_chat'][0].update(channel=1),
+        lambda report: report['party_verification']['received_chat'][0].update(token=True),
+        lambda report: report['party_verification']['received_chat'][1].update(message='stale'),
+        lambda report: report['party_verification']['received_chat'][0].update(extra=True),
+        lambda report: report['party_verification'].update(extra=True),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report)
         with pytest.raises(DevelopmentError):
             bridge.require_graphical_check(report,'Tester Viewer',3)
 
