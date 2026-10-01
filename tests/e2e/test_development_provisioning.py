@@ -11,6 +11,7 @@ import pytest
 
 from . import prepare_development, provision_development, run_development
 from .inspect_development_placement import main as inspect_placement_main
+from .inspect_development_scripted_placement import main as inspect_scripted_placement_main
 from .inspect_development_provisioning import main as inspect_provisioning_main
 from .support import development_artifact
 from .support.development import DevelopmentError, create_account
@@ -20,7 +21,10 @@ from .support.development_provisioning_result import (
 from .support import development_placement_result
 from .support.development_placement_result import (
     SCOPE as DEVELOPMENT_PLACEMENT_SCOPE, inspect_development_placement_chain)
+from .support.development_scripted_placement_result import (
+    SCOPE as SCRIPTED_PLACEMENT_SCOPE, inspect_development_scripted_placement)
 from .test_development import FakeWorker
+from .test_development_operator import OperatorWorker, invoke as invoke_operator
 
 
 @pytest.fixture
@@ -155,6 +159,13 @@ def test_external_placement_chain_inspector_correlates_exact_private_artifacts(
         "--profile",str(profile_path),"--provisioning-report",str(provisioning_summary),
         "--registry",str(registry),"--approve-fixture-placement"]) == 0
     capsys.readouterr()
+    registry_value = json.loads(registry.read_text())
+    operator_artifacts = tmp_path / "operator"; operator_artifacts.mkdir()
+    operator_worker = OperatorWorker(operator_artifacts)
+    invoke_operator(operator_worker, registry_value, operator_artifacts,
+                    approved=True, slot=0)
+    invoke_operator(operator_worker, registry_value, operator_artifacts,
+                    approved=True, slot=1)
 
     class Placed(FakeWorker):
         def __init__(self):
@@ -192,11 +203,30 @@ def test_external_placement_chain_inspector_correlates_exact_private_artifacts(
         "--provisioning-summary",str(provisioning_summary),"--registry",str(registry),
         "--development-summary",str(development_summary)]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+    composite = inspect_development_scripted_placement(
+        profile_path, provisioning_summary, registry, operator_artifacts,
+        development_summary)
+    assert composite["scope"] == SCRIPTED_PLACEMENT_SCOPE
+    assert composite["local_publication_verified"] is True
+    assert composite["received_placement_verified"] is True
+    assert composite["server_acknowledgement_verified"] is False
+    assert composite["command_causation_verified"] is False
+    assert composite["retry_authorized"] is False
+    assert "Tester Operator" not in json.dumps(composite)
+    assert inspect_scripted_placement_main(["--profile",str(profile_path),
+        "--provisioning-summary",str(provisioning_summary),"--registry",str(registry),
+        "--operator-artifact-dir",str(operator_artifacts),
+        "--development-summary",str(development_summary)]) == 0
+    assert json.loads(capsys.readouterr().out) == composite
     value = json.loads(registry.read_text()); value["approval_id"] = "e" * 32
     registry.write_text(json.dumps(value))
     with pytest.raises(DevelopmentError):
         inspect_development_placement_chain(
             profile_path, provisioning_summary, registry, development_summary)
+    with pytest.raises(DevelopmentError):
+        inspect_development_scripted_placement(
+            profile_path, provisioning_summary, registry, operator_artifacts,
+            development_summary)
 
 
 @pytest.mark.parametrize("mutation", ["status","managed","worker-tree","profile","duplicate",
