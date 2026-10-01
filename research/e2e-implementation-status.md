@@ -4927,6 +4927,70 @@ No full acceptance gate was run, as requested. Earlier uncommitted Linux
 scheduler/navigation/client-event experiments remain separate and unvalidated;
 the existing Linux, hosted-CI and real-client blockers are unchanged.
 
+## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
+
+This audit was performed read-only before any completion decision. It restates the
+active objective as concrete success criteria and layers its current evidence over
+the exhaustive plan-area checklist immediately below. The inspected checkout was
+`feature/headless-e2e` at `43ac64c80e8f0a79c76305a834cb8da2a0400417`.
+`git status --short` showed exactly the seven preserved experiments and no other
+change: `deps/recastnavigation`, `src/server_console/mainGameServer.cpp`,
+`src/test_client/Client.cpp`, `src/world/Territory/{Cell.cpp,Territory.cpp,
+Territory.h}`, and `tests/e2e/support/worker.py`.
+
+Completion requires **all** of these outcomes together: an external normal-
+protocol worker; isolated disposable fixtures and genuine HTTP/encrypted-lobby/
+world sessions; received/independent semantic assertions across the requested
+gameplay breadth; bounded authored/exploration/replay/soak/minimization lanes;
+fail-closed diagnostics/deadlines/cleanup and artifacts; safe authorized shared-
+development provisioning/reset boundaries; current Windows and Linux evidence;
+protected hosted execution; and independent current matching-client evidence.
+Historical, standalone, static-policy and contract artifacts retain only their
+stated scopes and cannot be composed into an unperformed acceptance run.
+
+| Objective requirement | Inspected concrete artifact/command | Audit verdict |
+| --- | --- | --- |
+| External C++ worker, Python coordinator and normal public behavior | `src/test_client`, `tests/e2e/support/{worker,environment}.py`, native/protocol and Python contracts; detailed plan rows below | **Implemented for the supported subset.** The seven dirty experiments were not staged or treated as evidence. |
+| Genuine HTTP, encrypted lobby, world-ready/keepalive/logout sessions | Historical clean full-session gates plus current retained rejected-login receipt | **Partial/currently stale as a combined run.** Current read-only `inspect_isolated_case` accepted the exact `6dbd1380e` rejected-login fixture; receipt SHA-256 `f83c2a8919ec1dcee149889281f217ea23a6da5b151a22ee68e8f97c86258681`. It is one no-account case, not current full-session acceptance. |
+| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, `support/ci_{result,private_result}.py`, `inspect_ci_{result,private_evidence}.py`; exact 16-case contracts | **Pending live gate.** Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
+| Intentional owned-process fault and cleanup diagnostics | Retained exact world-fault fixture, JUnit, pytest log, lifecycle and artifact tree | **Verified standalone only.** Current `inspect_isolated_fault` reinspection accepted it with SHA-256 `8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`; it is not gameplay, organic crash, dump, hosted cancellation or the combined sixteenth-case gate. |
+| Shared dedicated account/character provisioning and ordinary non-GM checks | `provision_development.py`, `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
+| Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |
+| Separate graphical viewer and current matching client | `run_client_smoke.py`, `support/client_result.py`, `REAL_CLIENT.md`, three exact manual review policies and Sandbox disposal inspector | **Pending current attended execution.** Historical `client-development-live-004` is revision `2a33024b6`, reports `rendered_bot_actions_verified:false`, and predates current interaction/account/input/environment/worker-tree policy. Its SHA-256 is `c044ae2f0288d3af48796189854dc6107e5d999b006bb22653e08446e77641d5`; it is not upgraded. |
+| Movement, scenes/quests/rewards/persistence, inventory/economy, zoning/discovery, social and representative combat | Exact historical scenarios and artifacts mapped in the detailed requirement and plan tables below | **Representative subset historically verified; breadth remains partial.** Current combined evidence is absent; instance entry, yield/resume, general triggers/doors, broader content/classes/cities/combat/social/economy remain missing or source-blocked as listed below. |
+| Seeded exploration, semantic replay, soak/load and minimization | `support/workload.py`, `run_workload.py`, `run_minimize.py`, retained bounded plans/outcomes | **Narrow historical evidence only.** No newly authorized soak/platform run occurred; this is not capacity, deterministic scheduling or universal leak-freedom. |
+| Deadlines, cancellation, exact cleanup and complete artifact ownership | Shared cooperative budgets, `Environment` process generations, terminal cleanup markers, strict tree primitive and public/private/failure inspectors | **Contract-verified plus two current standalone fixtures.** A current 16-case receipt set, hard-kill/cancellation infrastructure behavior, crash consistency and server-side offline/cache exclusion remain unverified. |
+| Windows/Linux verification | Current Windows controller contracts; older Windows gates and Ubuntu evidence; retained expanded-Linux failures | **Partial.** Current source has no full Windows gate and the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery. No platform sweep was authorized. |
+| Hosted CI controls and execution | `.github/workflows/{test-client,gameplay-e2e}.yml`, `inspect_workflow_policy`, exact checkout and hash-locked/plugin-isolated Python policy | **Static controls accepted; hosted execution blocked.** Current policy reports workflow SHA-256 values `bfbbe64fd4067162acde4b0dc3056988c40f32c06488d45c756dcc6e10a96732` and `df3683086e40e6bd98ed69592d93761b5387fdb4898172047f428f456a33c637`, while explicitly returning `hosted_execution_verified:false`, `runner_group_policy_verified:false`, and `ephemeral_vm_destruction_verified:false`. |
+| Independent packet/client compatibility and normalized traces | Byte fixtures and historical unmodified 3.3 DX11 pilot/manual evidence | **Partial.** No current three-review graphical run, graphical quest/scene agreement or independent normalized matching-client trace/exporter exists. |
+| Credentials/private assets untracked; historical failures preserved | Git status, ignored `.e2e-artifacts`, redacted inspectors and retained failed runs | **Verified for repository state inspected.** Hashes are correlation, not signatures, secure erasure, content truth or external-root completeness. |
+| Full objective and completion claim | This matrix plus the detailed requirement/plan checklists below | **NOT ACHIEVED. Do not call `update_goal`.** Missing live, platform, hosted, graphical, reset and breadth evidence is not waived. |
+
+### Exact next evidence needed
+
+1. **Combined isolated gate:** renewed explicit authorization for one account- and
+   gameplay-mutating 16-case run using the complete approved private profile and
+   current clean source; retain the exact private run and run both current public
+   and private inspectors. Never retry an uncertain mutation.
+2. **Current graphical lane:** approved matching 3.3 assets and an attended Windows
+   Sandbox execution, all three manual frame reviews, current result inspection,
+   process-absence evidence and explicit composite Sandbox disposal.
+3. **Hosted/platform lane:** an approved protected ephemeral runner group/environment,
+   private assets/endpoints and infrastructure destruction evidence; separately
+   diagnose and pass the expanded Linux gate rather than relabel historical Linux.
+4. **Reset/reprovisioning:** source-supported cross-process session admission fence
+   for characters, or dedicated actor creation ownership plus complete lifetime/work/
+   reward fencing on the world thread. Do not implement around the missing fence.
+5. **Compatibility/breadth:** an independent private matching-client trace exporter
+   and approved source/content paths for the still-partial instance, trigger, door,
+   quest, class/city, economy, social and combat rows.
+
+Until one of those inputs is supplied, further credential/profile/provenance wrappers
+would not close a remaining acceptance requirement. The exact detailed mapping of
+all numbered architecture, protocol, state, action, scene, navigation, autonomy,
+fixture, assertion, reliability, compatibility, staged-gate, CI and artifact
+requirements follows and remains normative.
+
 ## Requirement audit
 
 | Requirement | Evidence | Status |
