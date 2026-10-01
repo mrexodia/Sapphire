@@ -52,8 +52,9 @@ The shared runner's explicit `--await-placement` mode writes
 then requires received ready/position state followed by independent identities
 and position observations. Administrative wait timings remain separate from
 normal actions. Neither a registry nor a queued-warp response proves mutation;
-the runner does not attest administrative command execution or fresh-login
-placement persistence. General character reprovisioning and enemy/world-state
+the runner does not attest administrative command execution. Fresh-login position
+verification is now optional (below); actual shared-world persistence remains
+unverified. General character reprovisioning and enemy/world-state
 resets remain **not implemented**. No live shared-server/provisioning/placement
 run has been attempted: approved endpoint configuration, a feature-built dev
 server and an operator-approved registry/GM session are still needed.
@@ -66,6 +67,26 @@ unit compiled with Clang, recorded in
 `.e2e-artifacts/development-placement-{object-build,native-build,native-tests}.log`.
 This is policy/control-flow plus translation-unit evidence, not a linked/deployed
 server or live command/zoning/persistence claim. No full acceptance suite ran.
+
+At `3556c2496`, `--verify-reconnect` adds one explicitly requested fresh-login
+identity/position check without restarting the world. The witness stays online;
+normal logout/server closure and independent despawn precede new HTTP/lobby/world
+authentication. Exact lobby character/world entity/name identity, ready/non-GM
+state, received endpoint, independent respawn and unique post-login Say are
+required. Missing evidence fails without retries and retains the account leases.
+`development-summary.json` records requested/verified flags, received positions,
+identities and `fresh-login-position-not-world-restart` scope; timings separate
+authentication, despawn, respawn and liveness. This does not attest a GM command,
+full character state, restart or crash persistence.
+
+Reconnect-focused verification: **178 passed in 6.23s**, adding
+`test_development_reconnect.py` to the prior focused selection; evidence is
+`.e2e-artifacts/development-reconnect-focused-timings-1.json`. Negative cases
+cover missing server close/despawn, failed fresh authentication, changed IDs/name,
+wrong territory/position/GM rank, absent or misplaced independent respawn and
+missing fresh Say. These are synthetic/controller and existing-worker contracts,
+not live shared-world reconnect evidence. No server or character was modified
+for this verification; approved shared-world configuration is still needed.
 
 Focused verification: **127 passed in 5.59s**, running `test_development.py`,
 `test_policy.py`, `test_ci.py`, and `test_worker.py` with the existing MSVC worker.
