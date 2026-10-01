@@ -6,6 +6,9 @@ from .development import DevelopmentError, received_character_identity, witnesse
 from .development_party import ungrouped
 
 
+SCOPE = "visible-two-bot-tell-not-general-messaging"
+
+
 def require_visible_tell_worker(worker):
     methods = worker.request("capabilities").get("methods", [])
     if not isinstance(methods, list) or "tell_visible" not in methods:
@@ -68,5 +71,5 @@ def verify_visible_tells(profile, worker, mover, witness, baseline_states, run_i
             receipts.append({"sender": identities[index], "recipient": identities[other],
                              "baseline_seq": tokens[other], "received_seq": state["seq"],
                              "received": fresh_tell(state, identities[index], message, tokens[other])})
-    return {"requested": True, "verified": True, "scope": "visible-two-bot-tell-not-general-messaging",
+    return {"requested": True, "verified": True, "scope": SCOPE,
             "received_tells": receipts}

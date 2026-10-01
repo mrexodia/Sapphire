@@ -10,6 +10,7 @@ from .development_inventory import CONTAINERS, SCOPE as INVENTORY_SCOPE
 from .development_viewer import CONTINUITY_SCOPE
 from .development_sprint import HISTORIES as SPRINT_HISTORIES, SCOPE as SPRINT_SCOPE
 from .development_equipment import BODY, BAG, SCOPE as EQUIPMENT_SCOPE
+from .development_tell import SCOPE as TELL_SCOPE
 
 
 def development_run_budget(activity_deadline):
@@ -170,6 +171,54 @@ def require_sprint_receipt(value, entities):
     return value
 
 
+def require_tell_receipt(value, entities, run_id):
+    if (not isinstance(value, dict)
+            or set(value) != {'requested', 'verified', 'scope', 'received_tells'}
+            or value.get('requested') is not True or value.get('verified') is not True
+            or value.get('scope') != TELL_SCOPE
+            or not isinstance(value.get('received_tells'), list)
+            or len(value['received_tells']) != 2):
+        raise DevelopmentError('invalid graphical Tell receipt')
+    rows = value['received_tells']
+    for index, row in enumerate(rows):
+        if (not isinstance(row, dict)
+                or set(row) != {'sender', 'recipient', 'baseline_seq', 'received_seq', 'received'}):
+            raise DevelopmentError('invalid graphical Tell observation')
+        sender, recipient, received = row.get('sender'), row.get('recipient'), row.get('received')
+        for identity, expected_entity in ((sender, entities[index]), (recipient, entities[1-index])):
+            if (not isinstance(identity, dict)
+                    or set(identity) != {'name', 'entity_id', 'character_id'}
+                    or not isinstance(identity.get('name'), str)
+                    or not 1 <= len(identity['name']) <= 31
+                    or type(identity.get('entity_id')) is not int
+                    or identity['entity_id'] != expected_entity
+                    or type(identity.get('character_id')) is not int
+                    or not 0 < identity['character_id'] < 2**64):
+                raise DevelopmentError('invalid graphical Tell identity')
+        baseline, sequence = row.get('baseline_seq'), row.get('received_seq')
+        if (type(baseline) is not int or type(sequence) is not int
+                or not 0 <= baseline < sequence < 2**64 or not isinstance(received, dict)
+                or set(received) != {'actor', 'character_id', 'message', 'name', 'party_id', 'token'}
+                or any(type(received.get(key)) is not int
+                       for key in ('actor', 'character_id', 'party_id', 'token'))
+                or received['actor'] != sender['entity_id']
+                or received['character_id'] != sender['character_id']
+                or received.get('name') != sender['name'] or received['party_id'] != 0
+                or not baseline < received['token'] <= sequence):
+            raise DevelopmentError('invalid graphical Tell received row')
+        prefix = f'Sapphire dev {run_id} tell {index} '
+        message = received.get('message')
+        nonce = message[len(prefix):] if isinstance(message, str) and message.startswith(prefix) else ''
+        if len(nonce) != 16 or any(char not in '0123456789abcdef' for char in nonce):
+            raise DevelopmentError('graphical Tell challenge is not bound to this run')
+    if (rows[0]['sender'] != rows[1]['recipient']
+            or rows[0]['recipient'] != rows[1]['sender']
+            or rows[0]['sender']['name'] == rows[0]['recipient']['name']
+            or rows[0]['sender']['character_id'] == rows[0]['recipient']['character_id']):
+        raise DevelopmentError('graphical Tell peers are not exact reciprocal identities')
+    return value
+
+
 def require_reconnect_receipt(value, identity, territory):
     fields = {'requested', 'verified', 'scope', 'identity_before', 'identity_after',
               'territory', 'expected_position', 'witness_before', 'received_after',
@@ -265,10 +314,12 @@ def require_graphical_check(result, viewer_name, entity):
             or deadline.get('scope') != 'cooperative-success-deadline-not-hard-process-limit'
             or deadline.get('cleanup_may_exceed_deadline') is not True):
         raise DevelopmentError('bounded development run receipt missing or failed')
-    entities, territory = result.get('entities'), result.get('territory')
+    entities, territory, run_id = result.get('entities'), result.get('territory'), result.get('run_id')
     if (not isinstance(entities, list) or len(entities) != 2
             or any(type(value) is not int or value <= 0 for value in entities)
-            or len(set(entities)) != 2 or type(territory) is not int or territory != 130):
+            or len(set(entities)) != 2 or type(territory) is not int or territory != 130
+            or not isinstance(run_id, str) or len(run_id) != 32
+            or any(char not in '0123456789abcdef' for char in run_id)):
         raise DevelopmentError('normal development entities/territory missing or invalid')
     for key in ('party_verification', 'tell_verification', 'reconnect_verification',
                 'inventory_verification', 'sprint_verification', 'equipment_verification',
@@ -285,6 +336,7 @@ def require_graphical_check(result, viewer_name, entity):
     after = require_inventory_projection(inventory.get('after'))
     if before['inventory'] != after['inventory']:
         raise DevelopmentError('graphical reconnect inventory projection changed')
+    tell = require_tell_receipt(result['tell_verification'], entities, run_id)
     sprint = require_sprint_receipt(result['sprint_verification'], entities)
     equipment = require_equipment_receipt(
         result['equipment_verification'], entities, territory, before)
@@ -309,7 +361,8 @@ def require_graphical_check(result, viewer_name, entity):
         raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
-            'inventory_scope':INVENTORY_SCOPE, 'sprint_scope':sprint['scope'],
+            'inventory_scope':INVENTORY_SCOPE, 'tell_scope':tell['scope'],
+            'sprint_scope':sprint['scope'],
             'equipment_scope':equipment['scope'], 'continuous_presence':continuity,
             'rendered_bot_actions_verified':False,
             'note':'Persistent-witness continuity and bot Sprint/equipment receipts are received-state evidence, not server-session or rendered-action agreement.'}

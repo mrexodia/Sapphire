@@ -82,8 +82,21 @@ def completed():
         'reequip_receipt':{'context':2,'operation':8,'acknowledged':True,
                            'inventory_change_verified':False},
         'reequip_reconnect':copy.deepcopy(reconnect),'reequipped':projection(equipped_rows,33)}
+    run_id='a'*32
+    tell={'requested':True,'verified':True,'scope':'visible-two-bot-tell-not-general-messaging',
+        'received_tells':[]}
+    tell_identities=[{'name':'bot mover','entity_id':1,'character_id':11},
+                     {'name':'bot witness','entity_id':2,'character_id':12}]
+    for index in (0,1):
+        sender,recipient=tell_identities[index],tell_identities[1-index]
+        baseline,sequence=40+index*2,41+index*2
+        tell['received_tells'].append({'sender':copy.deepcopy(sender),'recipient':copy.deepcopy(recipient),
+            'baseline_seq':baseline,'received_seq':sequence,
+            'received':{'actor':sender['entity_id'],'character_id':sender['character_id'],
+                'message':f'Sapphire dev {run_id} tell {index} '+str(index)*16,
+                'name':sender['name'],'party_id':0,'token':sequence}})
     return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
-            'entities':[1,2],'territory':130,
+            'entities':[1,2],'territory':130,'run_id':run_id,
             'worker_closed':True,
             'worker_exit':{'scope':'owned-native-worker-exit-not-server-session-closure',
                            'context_entered':True,'context_exit_attempted':True,
@@ -105,8 +118,8 @@ def completed():
                 'cleanup_may_exceed_deadline':True},
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
-            **{key:{'requested':True,'verified':True} for key in ('party_verification','tell_verification','reconnect_verification')},
-            'sprint_verification':sprint,'equipment_verification':equipment,
+            **{key:{'requested':True,'verified':True} for key in ('party_verification','reconnect_verification')},
+            'tell_verification':tell,'sprint_verification':sprint,'equipment_verification':equipment,
             'inventory_verification':{'requested':True,'verified':True,
                 'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
                 'before':projection(unequipped_rows,120),'after':projection(unequipped_rows,118),
@@ -122,6 +135,7 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     report=completed(); proof=bridge.require_graphical_check(report,'Tester Viewer',3)
     assert proof['status']=='passed' and proof['rendered_bot_actions_verified'] is False
     assert proof['continuous_presence']==report['viewer_verification']['continuous_presence']
+    assert proof['tell_scope']==report['tell_verification']['scope']
     assert proof['sprint_scope']==report['sprint_verification']['scope']
     assert proof['equipment_scope']==report['equipment_verification']['scope']
     for key in ('party_verification','tell_verification','reconnect_verification','inventory_verification',
@@ -138,7 +152,8 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     ('run_deadline',None),('inventory_verification',None),('sprint_verification',None),
     ('equipment_verification',None),
     ('administrative_preparation_wait_enabled',True),('database_access',True),
-    ('world_restart_performed',True),('movement_waypoints_per_cycle',0),('territory',141)])
+    ('world_restart_performed',True),('movement_waypoints_per_cycle',0),('territory',141),
+    ('run_id','b'*31)])
 def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
     report=completed(); report[field]=value
     with pytest.raises(DevelopmentError): bridge.require_graphical_check(report,'Tester Viewer',3)
@@ -179,6 +194,27 @@ def test_graphical_bridge_rejects_malformed_inventory_receipt():
     )
     for mutate in mutations:
         report=completed();mutate(report['inventory_verification'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_malformed_tell_receipt():
+    mutations=(
+        lambda report: report['tell_verification'].update(scope='offline-message-proof'),
+        lambda report: report['tell_verification']['received_tells'].pop(),
+        lambda report: report['tell_verification']['received_tells'][0]['sender'].update(entity_id=2),
+        lambda report: report['tell_verification']['received_tells'][1].update(recipient={}),
+        lambda report: report['tell_verification']['received_tells'][0].update(baseline_seq=True),
+        lambda report: report['tell_verification']['received_tells'][0].update(received_seq=40),
+        lambda report: report['tell_verification']['received_tells'][0]['received'].update(actor=2),
+        lambda report: report['tell_verification']['received_tells'][0]['received'].update(party_id=False),
+        lambda report: report['tell_verification']['received_tells'][0]['received'].update(token=40),
+        lambda report: report['tell_verification']['received_tells'][0]['received'].update(message='stale'),
+        lambda report: report['tell_verification']['received_tells'][0]['received'].update(extra=True),
+        lambda report: report['tell_verification'].update(extra=True),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report)
         with pytest.raises(DevelopmentError):
             bridge.require_graphical_check(report,'Tester Viewer',3)
 

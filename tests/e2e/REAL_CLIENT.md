@@ -87,9 +87,10 @@ The coordinator normally logs out/closes its original headless witness before
 reusing that dedicated account as a bot. It creates a second separate non-GM
 pre-connection fixture on a validated corridor point, never an invented offset.
 The viewer's account/credentials are excluded from the two-account runner profile.
-The normal runner performs source-bound movement, party/chat/disband, visible
-Tell, one ordinary self-Sprint, a starter-body unequip/re-equip round trip, reconnect,
-a read-only complete received inventory projection comparison, and the two exact
+The normal runner performs source-bound movement, party/chat/disband, two
+reciprocal visible-only Tell messages, one ordinary self-Sprint, a starter-body
+unequip/re-equip round trip, reconnect, a read-only complete received inventory
+projection comparison, and the two exact
 viewer checkpoints. Sprint must produce matching fresh self-target action3/status50
 effects and zero-TP updates on both ordinary bot sessions plus the mover's fresh
 group56/recast start; its acknowledgement alone cannot pass. This proves neither
@@ -104,7 +105,8 @@ reset, resource grant/restoration or viewer UI control is performed. Fixture
 placement is administrative setup only.
 
 `development_check` in the graphical result references the exact normal-runner
-summary and requires every requested subcheck, including strict internally
+summary and requires every requested subcheck, including two exact reciprocal
+received Tell rows bound to the run/peer identities and strict internally
 consistent Sprint identities/baselines/request/effect/zero-TP/start observations,
 exact starter-body before/unequipped/re-equipped projections and all three
 fresh-login lifecycle receipts, an exact unchanged read-only reconnect-inventory
