@@ -138,9 +138,10 @@ both identities/positions independently before normal Say and per-waypoint
 movement checks. Administrative waiting is timed and labelled separately. It
 never sends the debug command itself and does not attest that the command fired:
 if the bots already satisfy the destination preconditions, that is not proof of
-an administrative mutation. Placement persistence across fresh login is not
-claimed by this run; a later normal shared check can separately observe reloaded
-positions. Failed/uncertain placements retain leases for inspection. Do not
+an administrative mutation. By default this run does not check fresh-login
+position persistence. Add `--verify-reconnect` (below) to check received positions
+across one fresh authentication without a server restart. Failed/uncertain
+placements retain leases for inspection. Do not
 regenerate approvals to hide failed outcomes. After server restart the in-memory
 one-shot set is lost; this is not crash-consistent/idempotent reset infrastructure.
 
@@ -180,6 +181,42 @@ No connecting route is invented if the mover starts elsewhere. If a run stops
 mid-route, inspect/reposition the offline bot through your development tools
 before the next run. There is no implicit recovery or successful-state fabrication.
 You can remain logged in nearby on your own character to watch.
+
+### Optional fresh-login position check
+
+Add `--verify-reconnect` to the normal shared check, with or without
+`--await-placement`:
+
+```powershell
+python -m tests.e2e.run_development --profile .e2e-dev.json `
+  --allow-shared-development --verify-reconnect `
+  --artifacts .e2e-artifacts/dev-reconnect-001
+```
+
+This authors **one** reconnect after successful Say/optional movement; it is not a
+retry/recovery mechanism. The witness remains connected. The runner requires:
+
+- An independently received mover endpoint before logout.
+- Normal logout **and server transport closure**, then witness-observed despawn.
+- Removal of the old worker bot, a new HTTP login and encrypted lobby/world entry.
+- The exact same lobby character ID, world entity ID and character name, still
+  non-GM/ready in the expected territory.
+- Received position within 0.15m of both the expected endpoint and the witness's
+  pre-logout position, followed by independently witnessed respawn there.
+- A unique post-login Say message received by the witness, then normal cleanup.
+
+`development-summary.json` includes `reconnect_verification` with before/after
+identities and received positions, explicit requested/verified flags and scope
+`fresh-login-position-not-world-restart`. Login, despawn, respawn and liveness
+phases are timed separately. No database access, server restart, administrative
+command or automatic second attempt is performed. Failures keep account leases;
+the command never falls back to resetting a character to make the check pass.
+
+This checks only the selected character's identity/position across a fresh
+session. It does not prove restart/crash persistence, full inventory/quest/EXP
+persistence, or that an administrative command actually ran. The shared-world
+run is still non-isolated. Current verification is synthetic controller/negative
+contracts; actual shared-world reconnect evidence remains pending.
 
 ### Leases and failed runs
 
@@ -233,5 +270,5 @@ coverage or acceptance verifier.
 Synthetic checks (no server, no credential profile):
 
 ```powershell
-python -m pytest tests/e2e/test_development.py tests/e2e/test_development_provisioning.py tests/e2e/test_development_placement.py -q
+python -m pytest tests/e2e/test_development.py tests/e2e/test_development_provisioning.py tests/e2e/test_development_placement.py tests/e2e/test_development_reconnect.py -q
 ```

@@ -14,15 +14,18 @@ import uuid
 from .support.development import (AccountLease, DevelopmentError, Timings, authenticate,
                                   idle_state, movement_route, validate_profile, witnessed)
 from .support.worker import Bot, Worker
+from .support.development_reconnect import verify_position_reconnect
 
 
-def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False, worker_factory=Worker,
-        login=authenticate, lease_root=None):
+def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
+        verify_reconnect=False, worker_factory=Worker, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
     validate_profile(profile)
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
+    if type(verify_reconnect) is not bool:
+        raise DevelopmentError("verify_reconnect must be a boolean")
     route, catalog_hash = movement_route(profile)
     if type(await_placement) is not bool or (await_placement and not route):
         raise DevelopmentError("administrative placement wait requires a source-bound quest route")
@@ -37,6 +40,8 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "account_reset_performed_by_runner": False, "cycles": cycles,
               "administrative_preparation_wait_enabled": await_placement,
               "administrative_command_execution_attested": False,
+              "reconnect_verification": {"requested": verify_reconnect, "verified": False},
+              "world_restart_performed": False,
               "protocol": profile["protocol"], "territory": profile["territory"],
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
               "catalog_sha256": catalog_hash, "movement_waypoints_per_cycle": len(route),
@@ -113,6 +118,11 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                                     lambda s: idle_state(s, profile["territory"])
                                     and witnessed(s, actor, names[0], point),
                                     "independently received waypoint", timeout=10)
+                if verify_reconnect:
+                    mover, report["reconnect_verification"] = verify_position_reconnect(
+                        profile, worker, mover, witness, states[0],
+                        route[0] if route else states[0]["observed_position"], run_id, timings, login)
+                    bots = [mover, witness]
                 with timings.phase("logout_and_independent_despawn"):
                     mover.logout(wait_server_close=True)
                     worker.wait_state(witness.name, lambda s: str(actor) not in s["actors"],
@@ -148,11 +158,13 @@ def main(argv=None):
     parser.add_argument("--cycles", type=int, default=1)
     parser.add_argument("--await-placement", action="store_true",
                         help="Allow up to 120s for separate GM-approved placement; requires quest_catalog")
+    parser.add_argument("--verify-reconnect", action="store_true",
+                        help="One explicit fresh-login identity/position check with the witness kept online; no restart")
     args = parser.parse_args(argv)
     try:
         profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
         result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles,
-                     await_placement=args.await_placement)
+                     await_placement=args.await_placement, verify_reconnect=args.verify_reconnect)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.
         print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))
