@@ -50,7 +50,7 @@ def _hex(value, length):
             and all(char in "0123456789abcdef" for char in value))
 
 
-def inspect_development_result(summary_path):
+def validate_development_evidence(summary_path):
     summary_path = Path(summary_path)
     raw, report = _read(summary_path)
     summary_path = summary_path.resolve()
@@ -75,13 +75,21 @@ def inspect_development_result(summary_path):
     checks = validate_requested_checks(report)
     if not checks:
         raise DevelopmentError("external shared-development result has no received scenario evidence")
-    return {"version":1,"status":"accepted","scope":SCOPE,"run_id":run_id,
-            "summary_sha256":hashlib.sha256(raw).hexdigest(),
+    return {"summary_path":summary_path,"raw":raw,"report":report,"run_id":run_id,
+            "binding":binding,"worker_artifacts":worker_artifacts,
+            "lease":lease,"checks":checks}
+
+
+def inspect_development_result(summary_path):
+    evidence = validate_development_evidence(summary_path)
+    report = evidence["report"]
+    return {"version":1,"status":"accepted","scope":SCOPE,"run_id":evidence["run_id"],
+            "summary_sha256":hashlib.sha256(evidence["raw"]).hexdigest(),
             "worker_sha256":report["worker_sha256"],
-            "worker_artifacts":worker_artifacts,
+            "worker_artifacts":evidence["worker_artifacts"],
             "run_worker_exit":report["worker_exit"],
             "run_deadline":report["run_deadline"],
-            "lease_snapshot":lease,"verified_checks":checks,
-            "managed_host":False,"managed_host_binding":binding,
+            "lease_snapshot":evidence["lease"],"verified_checks":evidence["checks"],
+            "managed_host":False,"managed_host_binding":evidence["binding"],
             "server_identity_verified":False,
             "note":"External shared-world received-state evidence only; not isolation, rendering, reset, offline, cleanup or acceptance proof."}

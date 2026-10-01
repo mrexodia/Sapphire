@@ -1,6 +1,7 @@
 """Synthetic administrative-placement guards; not live warp/reset evidence."""
 import copy
 import json
+import os
 
 import pytest
 
@@ -163,7 +164,7 @@ def test_placement_wait_is_explicit_and_requires_route(profile, tmp_path):
     assert not (tmp_path / "run").exists()
 
 
-@pytest.mark.parametrize("mutation", ["catalog","name","duplicate"])
+@pytest.mark.parametrize("mutation", ["catalog","name","duplicate","hardlink"])
 def test_placement_registry_is_exact_and_validated_before_login(
         profile, tmp_path, monkeypatch, mutation):
     monkeypatch.setattr(run_development, "movement_route",
@@ -173,10 +174,12 @@ def test_placement_registry_is_exact_and_validated_before_login(
     value = json.loads(registry.read_text())
     if mutation == "catalog": value["catalog_sha256"] = "b" * 64
     elif mutation == "name": value["bots"][0]["name"] = "Tester CCCCCCCCCCCC"
-    else:
+    elif mutation == "duplicate":
         registry.write_text(registry.read_text().replace(
             '{"version": 2,', '{"version": 2, "version": 2,', 1))
-    if mutation != "duplicate": registry.write_text(json.dumps(value))
+    else:
+        os.link(registry, tmp_path / "registry-alias.json")
+    if mutation not in {"duplicate","hardlink"}: registry.write_text(json.dumps(value))
     with pytest.raises(DevelopmentError):
         run_development.run(profile, tmp_path / "run", confirmed=True,
             await_placement=True, placement_registry=registry,

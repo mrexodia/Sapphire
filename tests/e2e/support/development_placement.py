@@ -6,6 +6,7 @@ import json
 import math
 from pathlib import Path
 import re
+import stat
 
 from .development import DevelopmentError
 from .development_operator import validate_placement_registry
@@ -25,7 +26,11 @@ def _pairs(pairs):
 def load_placement_registry(path, profile, catalog_sha256, route):
     try:
         path = Path(path)
-        if path.is_symlink() or not path.is_file() or not 0 < path.stat().st_size <= 64 * 1024:
+        metadata = path.lstat()
+        reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        if (path.is_symlink() or not stat.S_ISREG(metadata.st_mode)
+                or getattr(metadata, "st_file_attributes", 0) & reparse
+                or metadata.st_nlink != 1 or not 0 < metadata.st_size <= 64 * 1024):
             raise OSError()
         raw = path.read_bytes()
         if len(raw) > 64 * 1024:

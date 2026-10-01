@@ -9,13 +9,18 @@ from types import SimpleNamespace
 
 import pytest
 
-from . import prepare_development, provision_development
+from . import prepare_development, provision_development, run_development
+from .inspect_development_placement import main as inspect_placement_main
 from .inspect_development_provisioning import main as inspect_provisioning_main
 from .support import development_artifact
 from .support.development import DevelopmentError, create_account
 from .support.environment import artifact_tree_sha256
 from .support.development_provisioning_result import (
     SCOPE as DEVELOPMENT_PROVISIONING_SCOPE, inspect_development_provisioning)
+from .support import development_placement_result
+from .support.development_placement_result import (
+    SCOPE as DEVELOPMENT_PLACEMENT_SCOPE, inspect_development_placement_chain)
+from .test_development import FakeWorker
 
 
 @pytest.fixture
@@ -133,6 +138,65 @@ def test_placement_planner_cli_requires_current_complete_provisioning_evidence(
     foreign = tmp_path / "foreign-registry.json"
     args[args.index(str(registry))] = str(foreign)
     assert prepare_development.main(args) == 1 and not foreign.exists()
+
+
+def test_external_placement_chain_inspector_correlates_exact_private_artifacts(
+        server, tmp_path, monkeypatch, capsys):
+    execute(server, tmp_path, max_seconds=60)
+    profile_path = tmp_path / "private.json"
+    provisioning_summary = tmp_path / "artifacts/provisioning-summary.json"
+    profile = json.loads(profile_path.read_text())
+    provisioned = json.loads(provisioning_summary.read_text())
+    route = [[0,0,0],[1,0,0]]
+    for module in (prepare_development, run_development, development_placement_result):
+        monkeypatch.setattr(module, "movement_route", lambda _, route=route: (route, "a" * 64))
+    registry = tmp_path / "registry.json"
+    assert prepare_development.main([
+        "--profile",str(profile_path),"--provisioning-report",str(provisioning_summary),
+        "--registry",str(registry),"--approve-fixture-placement"]) == 0
+    capsys.readouterr()
+
+    class Placed(FakeWorker):
+        def __init__(self):
+            super().__init__()
+            for index, role in enumerate(("mover","witness")):
+                row = provisioned["accounts"][index]
+                state = self.states[role]
+                state["territory"] = 182
+                state["characters"] = [{"name":row["character"],
+                    "entity_id":row["entity_id"],"character_id":row["character_id"]}]
+            self.states["witness"]["actors"]["1"]["name"] = provisioned["accounts"][0]["character"]
+            self.states["mover"]["actors"]["2"]["name"] = provisioned["accounts"][1]["character"]
+        def wait_state(self, bot, predicate, description, timeout=30):
+            if description.startswith("operator-prepared"):
+                self.states[bot]["territory"] = 130
+                self.states[bot]["seq"] += 1
+            return super().wait_state(bot, predicate, description, timeout)
+    report = run_development.run(profile, tmp_path / "run", confirmed=True,
+        cycles=1, max_seconds=60, await_placement=True, placement_registry=registry,
+        worker_factory=lambda *_: Placed(), login=lambda *_: {
+            "lobbyHost":"127.0.0.1","lobbyPort":54994,"sId":"private-session"},
+        lease_root=tmp_path / "run-leases")
+    assert report["status"] == "passed"
+    development_summary = tmp_path / "run/development-summary.json"
+    proof = inspect_development_placement_chain(
+        profile_path, provisioning_summary, registry, development_summary)
+    assert proof["scope"] == DEVELOPMENT_PLACEMENT_SCOPE
+    assert proof["provisioning_run_id"] == provisioned["run_id"]
+    assert proof["development_run_id"] == report["run_id"]
+    assert set(proof["verified_checks"]) == {"say","movement","placement"}
+    rendered = json.dumps(proof)
+    assert all(account["username"] not in rendered and account["password"] not in rendered
+               for account in profile["accounts"])
+    assert inspect_placement_main(["--profile",str(profile_path),
+        "--provisioning-summary",str(provisioning_summary),"--registry",str(registry),
+        "--development-summary",str(development_summary)]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+    value = json.loads(registry.read_text()); value["approval_id"] = "e" * 32
+    registry.write_text(json.dumps(value))
+    with pytest.raises(DevelopmentError):
+        inspect_development_placement_chain(
+            profile_path, provisioning_summary, registry, development_summary)
 
 
 @pytest.mark.parametrize("mutation", ["status","managed","worker-tree","profile","duplicate",
