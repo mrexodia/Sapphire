@@ -1547,6 +1547,43 @@ No preparation, service, account, worker, client, Sandbox, gameplay, screenshot,
 remote or disposal operation ran. Current attended graphical execution and all
 broader blocked requirements remain pending.
 
+## Current graphical evidence rehashes every staged guest input
+
+Fix **`b38d0d5cb`** consumes the complete `inputs.json["inputs"]` map rather than
+using it only for `source.json`. After the strict source-manifest check, both the
+pre-launch Sandbox path and current result inspector recursively enumerate the
+exact private `input/` tree, reject symbolic or non-regular entries, rehash every
+file, and require typed dictionary equality with the preparation manifest. Missing,
+changed and unlisted extra files fail closed; the accepted proof retains only the
+file count and nested source provenance, not private paths or hashes.
+
+Scope is deliberately
+`all-exact-staged-graphical-input-files-match-preparation-manifest`: this covers
+staged server/worker binaries and libraries, compiled scripts, graphical client
+files, fixture/profile/bootstrap inputs and optional localized catalog/navigation
+copy. It does **not** cover the separately mounted sqpack, movie, MariaDB, Python,
+Git or navigation roots, prove that native binaries came from the source revision,
+provide a signature, or establish execution/rendering compatibility. Those inputs
+retain their existing separate identities and live evidence requirements.
+
+Frozen, remote-free source **`b38d0d5cb56e6618d7196ec1967456237828ef6b`**
+passed **572 tests in 21.49s**. New negatives mutate one listed non-source input and
+add one unlisted file at both pre-launch and current-result boundaries; existing
+source/hash/path/schema negatives and the complete graphical/disposal chains also
+pass. Test-log SHA-256:
+`81f3bdb64f1460279d85180dcaa7caf7c11ec70e46a667f36f0833ab0c22c6df`.
+Artifacts: `client-staged-input-binding-clean-{source.json,python.log}`.
+
+Historical `client-development-live-004` remains rejected before complete input
+rehashing because its obsolete extra `operator_control` field violates the current
+exact preparation schema. No historical evidence is upgraded. Read-only rejection
+artifact SHA-256:
+`8560311a8ec81765d29bac606f6667c44fb453bceba3f8b746bc7f8e39cf9b14`.
+
+No preparation, service, account, worker, client, Sandbox, gameplay, screenshot,
+remote or disposal operation ran. A fresh current prepared and manually attended
+run remains required; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -3431,7 +3468,7 @@ a nearby passing test does not close them.
 | Independent scenarios and no cached reset | each case creates/removes its owned environment; world is stopped before preserved-DB restart | Verified |
 | Observation hierarchy | acting-client messages, independent observers, reconnect/restart and diagnostic-only DB checks are separated in scenarios/artifacts | Verified |
 | Monotonic waits and application readiness | condition/event waits; world binds only after data/territory/script setup and clients require received world-ready | Verified |
-| Record build/script/fixture/protocol/data/nav identities | gate manifest and summary hashes; current graphical result additionally binds exact prepared source-manifest bytes/revision through strict input and guest-result hashes; game assets remain private | Verified; hashes identify inputs but do not prove compatibility, signatures, or native build provenance |
+| Record build/script/fixture/protocol/data/nav identities | gate manifest and summary hashes; current graphical policy additionally binds exact prepared source-manifest bytes/revision and rehashes every staged `input/` file through strict preparation/guest-result evidence; external read-only mappings and game assets remain separately identified/private | Verified; hashes identify inputs but do not prove compatibility, signatures, or native build provenance |
 | Step/run timeout and failure cleanup | worker, action, pytest/workload budgets; cleanup-fault matrix and `cleanup_verified` gate | Verified for tested failure modes; host-kill behavior remains infrastructure-owned |
 | No ambiguous retry of gameplay mutations | timeout marks worker failed; no automatic gameplay retry; receipts are not mutation proof | Verified |
 | Regression versus recovery behavior | strict gate rejects process loss/skips; reconnect occurs only in explicitly authored scenarios/plans | Verified |
