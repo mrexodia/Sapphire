@@ -2523,6 +2523,22 @@ This association remains editable correlation—not credential validity, a signa
 server-side exclusion, reset authority, graceful shutdown or shared-world cleanup.
 Historical managed-host/run/provisioning evidence lacks it and remains historical.
 
+Feature **`a6c44ea3f`** extends that retained managed-host association to the third,
+separately role-labelled viewer fixture. Association v2 requires all three
+normalized usernames and character names to be pairwise distinct while continuing
+to omit passwords and worker paths; bot-run digests still cover only the ordered
+two bot accounts. Terminal, managed-run and managed-provisioning inspectors expose
+only a viewer-identity SHA-256 and exact fixture count. A viewer reusing either bot
+identity fails semantically even when an attacker recomputes the file/status hash.
+
+Frozen, remote-free source **`a6c44ea3fe17826f0dac1c0ae91e0ee6fa7a926c`**
+passed **1086 focused contracts with no skips in 41.90s**. Test-log SHA-256:
+`e924dce869ea93ad163d1a85d6166ec3110d22d478d4b403be0aeac062a1eb90`.
+No service, endpoint, account, session, viewer, client, Sandbox or gameplay
+operation ran. This proves retained fixture-identity separation only—not that a
+viewer authenticated, remained present, rendered pixels, stayed uninterrupted,
+was offline later, or used a compatible matching client.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

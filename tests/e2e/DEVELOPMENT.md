@@ -61,9 +61,11 @@ checkout). It contains:
   provisioning. This does not attest that GM placement is deployed.
 - `status.json`: identity, expiry, process IDs, lifecycle/timing and cleanup
   diagnostics, without account credentials.
-- `account-association.json`: retained normalized bot usernames/character names,
-  loopback endpoints and exact host-session identity, without passwords or worker
-  paths. Unlike credential-bearing profiles, this survives normal host cleanup.
+- `account-association.json`: retained normalized identities for both bots and the
+  separately role-labelled third viewer, plus loopback endpoints and exact host-
+  session identity, without passwords or worker paths. All three usernames and
+  character names must be pairwise distinct. Unlike credential-bearing profiles,
+  this survives normal host cleanup.
 - `process-lifecycle.json`: terminal private exact database/API/lobby/world
   generation/teardown rows, created only after owned cleanup.
 
@@ -104,7 +106,9 @@ absolute, separate original `Environment` artifact directory, rejects aliases to
 session tree, requires its lifecycle object to equal the retained session copy, and
 recomputes the producer-recorded bounded complete artifact-tree SHA-256. It also
 requires the bounded, duplicate-free, single-link `account-association.json`, its
-status-recorded digest, exact loopback ports and exact session/status identity.
+status-recorded digest, exact loopback ports, exact session/status identity and
+three pairwise-distinct bot/bot/viewer identities. It returns only the viewer-
+identity digest, never its username or character name.
 That artifact-tree identity and password-free account-association digest are also
 returned by the composite managed-run/provisioning inspectors; checking only the
 copied lifecycle is insufficient. Host status/lifecycle files and
