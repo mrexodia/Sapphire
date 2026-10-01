@@ -1657,6 +1657,25 @@ No fixture/service was started and no full gate ran. All earlier 15-case summari
 are historical and fail the current strict schema; current positive fault-lane,
 per-case process and artifact-tree evidence requires a newly authorized gate.
 
+Feature **`c88c5e93c`** makes private result inspection interpret the sixteenth case
+rather than trusting only its artifact-tree identity and passed pytest phase. It
+requires exact fault-classification and verification schemas; correlates process,
+generation, PID and integer return code to exactly one validated world teardown;
+and independently hashes the bounded world log, manifest and lifecycle bytes.
+Runtime removal, log-redaction result and the deliberately narrow non-crash scope
+must be exact. The returned public-safe inspection receipt contains only
+`fault_evidence_verified: true`, never the private PID, generation or filenames.
+
+Frozen, remote-free source **`c88c5e93ca1adb86a70f39d9db2761e77cc1b739`**
+passed **107 CI/workflow-policy tests in 4.65s**. The main negative changes fault
+semantics, then recomputes its artifact-tree row, synchronizes diagnostics and
+rehashes those bytes; private semantic inspection still rejects it. Existing
+lifecycle/input/database semantic negatives now likewise synchronize surrounding
+hashes before rejection. Test-log SHA-256:
+`1ffc8a9edaaec17fbfc565dba4fe146f575273b1aa3403c182b9e2b57de287f7`.
+This validates retained private evidence only and does not prove an unexecuted
+current fault case. No fixture, service, gate or gameplay operation ran.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
@@ -4009,7 +4028,7 @@ a nearby passing test does not close them.
 | Manual/scheduled real-client tier | strict three-frame-review current policy plus historical completed isolated Sandbox lane | Historical lane verified once locally; current combined bot-interaction review policy and scheduled breadth are unverified |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
 | Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and automatic sanitized exact-lease snapshots in shared runner/provisioner summaries | Verified for implemented paths, including current live producer→planner→runner consumption; lease snapshots do not establish server session state |
-| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured exact-generation intentional-owned-process-exit metadata are retained; the current strict allowlist includes this as its sixteenth isolated fixture | **Partial:** focused contracts and historical owned-world termination exist, but the current 16-case lane awaits execution and platform crash dumps are only retained where externally produced |
+| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured exact-generation intentional-owned-process-exit metadata are retained; the current strict allowlist includes this as its sixteenth isolated fixture and private inspection semantically correlates its classification, hashes and teardown | **Partial:** focused contracts and historical owned-world termination exist, but the current 16-case lane awaits execution and platform crash dumps are only retained where externally produced |
 | Fixture/persistence evidence, redaction, JUnit and summary | scenario JSON snapshots, restart state, redaction contracts, `live.xml` and CI JSON summary | Verified |
 | Bounded soak logs and generator saturation | capped plans/journals, checkpoints, action percentiles and API/lobby/world/DB/worker/runner resource samples | Verified; scenario coverage remains reported separately from concurrency |
 | Initial design decisions | Headless primary + separate real client; Python; 3.3 profile; Ul'dah/Motivational Speaking; local-first; regression then bounded exploration/soak | Resolved and documented |
