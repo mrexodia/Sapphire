@@ -879,7 +879,7 @@ def test_standalone_isolated_case_inspector_binds_runner_fixture_and_cleanup(tmp
 
 @pytest.mark.parametrize("mutation", ["foreign-case","junit-case","junit-failure","runtime",
                                       "lifecycle","revision","http-receipt","cleanup-failure",
-                                      "missing-log"])
+                                      "nested-cleanup-failure","missing-log"])
 def test_standalone_isolated_case_inspector_rejects_foreign_or_incomplete_evidence(
         tmp_path, mutation):
     case, artifact, junit, log = standalone_case_files(tmp_path, current_public_summary())
@@ -900,6 +900,9 @@ def test_standalone_isolated_case_inspector_rejects_foreign_or_incomplete_eviden
         value["session_returned"] = True; path.write_text(json.dumps(value))
     elif mutation == "cleanup-failure":
         (artifact / "cleanup-failure.json").write_text("{}")
+    elif mutation == "nested-cleanup-failure":
+        nested = artifact / "retained"; nested.mkdir()
+        (nested / "Cleanup-Failure.JSON").write_text("{}")
     else: log.unlink()
     with pytest.raises(SetupError):
         inspect_isolated_case(artifact, junit, log, expected, "a" * 40)
@@ -1061,7 +1064,7 @@ def test_standalone_isolated_fault_inspector_rejects_foreign_or_incomplete_evide
         inspect_isolated_fault(artifact, junit, log, "a" * 40)
 
 
-@pytest.mark.parametrize("mutation", ["changed-bytes","missing","profile","pytest-log","junit","junit-case","diagnostics","lifecycle","inputs","database","fault-evidence","rejected-receipt","cleanup-failure","runtime-retained"])
+@pytest.mark.parametrize("mutation", ["changed-bytes","missing","profile","pytest-log","junit","junit-case","diagnostics","lifecycle","inputs","database","fault-evidence","rejected-receipt","cleanup-failure","nested-cleanup-failure","runtime-retained"])
 def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_private_bytes(
         tmp_path, mutation):
     report = current_public_summary(); private, directories = private_gate_evidence(tmp_path, report)
@@ -1114,13 +1117,17 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
         path = target / "rejected-credentials.json"
         value = json.loads(path.read_text()); value["received_status"] = 200
         path.write_text(json.dumps(value)); rehash_private_row(report, target, index)
-    elif mutation == "cleanup-failure":
-        (target / "cleanup-failure.json").write_text("{}")
+    elif mutation in {"cleanup-failure","nested-cleanup-failure"}:
+        marker_parent = target if mutation == "cleanup-failure" else target / "retained"
+        marker_parent.mkdir(exist_ok=True)
+        marker_name = "cleanup-failure.json" if mutation == "cleanup-failure" else "Cleanup-Failure.JSON"
+        (marker_parent / marker_name).write_text("{}")
         rehash_private_row(report, target, 0)
     else:
         runtime = Path(json.loads((target / "manifest.json").read_text())["runtime"])
         runtime.mkdir(parents=True)
-    if mutation in {"lifecycle","inputs","database","fault-evidence","rejected-receipt","cleanup-failure"}:
+    if mutation in {"lifecycle","inputs","database","fault-evidence","rejected-receipt",
+                    "cleanup-failure","nested-cleanup-failure"}:
         sync_private_diagnostics(report, private)
     summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report))
     with pytest.raises(SetupError):

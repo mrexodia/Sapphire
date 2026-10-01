@@ -116,6 +116,15 @@ def artifact_tree_sha256(root):
     return digest.hexdigest()
 
 
+def has_cleanup_failure_marker(root):
+    """Find terminal cleanup markers independent of host filename casing/location."""
+    try:
+        return any(path.name.casefold() == "cleanup-failure.json"
+                   for path in Path(root).rglob("*"))
+    except OSError as error:
+        raise SetupError("cannot inspect private cleanup-failure markers") from error
+
+
 def redact_runtime_log(text, secrets=()):
     for value in sorted((value for value in secrets if value), key=len, reverse=True):
         text = text.replace(value, "<redacted>")

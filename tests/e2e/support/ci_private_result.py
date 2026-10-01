@@ -8,7 +8,8 @@ import xml.etree.ElementTree as ET
 
 from ..run_ci import PATH_KEYS, inputs_match
 from .ci_result import EXPECTED_CASES, inspect_ci_result
-from .environment import SetupError, artifact_tree_sha256, require_process_teardowns
+from .environment import (SetupError, artifact_tree_sha256,
+                          has_cleanup_failure_marker, require_process_teardowns)
 
 SCOPE = "current-isolated-public-summary-to-private-per-case-evidence-correlation"
 FAULT_CASE = ("tests/e2e/test_live_fault_diagnostics.py::"
@@ -183,7 +184,7 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
                 for row in public["environment_evidence"]}
     found, databases, runtimes = {}, set(), set()
     for child in children:
-        if (child / "cleanup-failure.json").exists():
+        if has_cleanup_failure_marker(child):
             raise SetupError("private isolated evidence records uncertain process cleanup")
         manifest_raw, manifest = _read(child / "manifest.json", 1024 * 1024, "manifest")
         lifecycle_raw, lifecycle = _read(child / "process-lifecycle.json", 256 * 1024, "lifecycle")
