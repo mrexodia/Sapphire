@@ -251,6 +251,22 @@ int main()
                          {"leader_index", 0},
                          {"members", {{{"entity_id", 2097153}, {"name", "E2E Leader"}},
                                       {{"entity_id", 2097154}, {"name", "E2E Target"}}}}};
+    nlohmann::json boundContext{{"expected_party", party}, {"expected_invite", nullptr}};
+    requirePartyContext(party, nullptr, boundContext);
+    rejects([&] { requirePartyContext(party, nullptr, nlohmann::json::object()); });
+    rejects([&] { requirePartyContext(party, {{"character_id", 999}}, boundContext); });
+    for(const auto key : {"id", "chat_channel", "count", "leader_index"})
+    {
+      auto changed = party; changed[key] = 999;
+      rejects([&] { requirePartyContext(changed, nullptr, boundContext); });
+    }
+    auto foreignRoster = party; foreignRoster["members"][1]["entity_id"] = 999;
+    rejects([&] { requirePartyContext(foreignRoster, nullptr, boundContext); });
+    nlohmann::json exactInvite{{"character_id", uint64_t{123}}, {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}};
+    boundContext["expected_invite"] = exactInvite;
+    requirePartyContext(party, exactInvite, boundContext);
+    auto foreignInvite = exactInvite; foreignInvite["character_id"] = 124;
+    rejects([&] { requirePartyContext(party, foreignInvite, boundContext); });
     require(partyLeaveRequest(party, 2097153) == Bytes(4, 0), "party leave exact byte fixture");
     rejects([&] { partyLeaveRequest(party, 2097155); });
     require(partyDisbandRequest(party, 2097153) == Bytes(4, 0), "party disband exact byte fixture");

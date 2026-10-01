@@ -14,12 +14,28 @@ def test_worker_rejects_unbounded_deadline_scale(tmp_path):
         Worker(tmp_path / "unused", tmp_path / "artifacts", deadline_scale=4)
 
 
+def test_bound_party_journal_records_context_not_unrelated_secrets(worker):
+    context = {"id": 0, "chat_channel": 0, "count": 0, "leader_index": 0, "members": []}
+    with pytest.raises(WorkerError):
+        worker.request("accept_party_bound", "absent-bot", expected_party=context,
+                       expected_invite={"character_id": 101, "auth_type": 1, "result": 1, "name": "Bot Leader"},
+                       sId="not-for-the-journal")
+    worker.close()
+    text = (worker.artifacts / "actions.jsonl").read_text()
+    rows = [json.loads(line) for line in text.splitlines()]
+    assert rows[-1]["method"] == "accept_party_bound"
+    assert rows[-1]["args"]["expected_party"] == context
+    assert rows[-1]["args"]["expected_invite"]["character_id"] == 101
+    assert "not-for-the-journal" not in text and "sId" not in rows[-1]["args"]
+
+
 def test_capabilities(worker):
     caps = worker.request("capabilities")
     assert caps["profile"] == "sapphire-3.3"
     assert caps["scope"] == "loopback-only"
     assert "general_navigation" in caps["unsupported"]
     assert "general_combat" in caps["unsupported"]
+    assert {"invite_party_bound", "accept_party_bound", "party_chat_bound", "disband_party_bound"} <= set(caps["methods"])
     assert "cast_return" in caps["methods"]
     assert "sprint" in caps["methods"]
     assert "fast_blade" in caps["methods"]

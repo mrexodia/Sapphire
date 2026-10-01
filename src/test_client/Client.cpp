@@ -861,6 +861,14 @@ namespace Sapphire::Testing
     }
     if(method == "close") { close(); phase("closed"); return Json::object(); }
     if(m_state["phase"] != "ready") throw ProtocolError("action requires a world-ready bot");
+    if(method == "invite_party_bound" || method == "accept_party_bound" ||
+       method == "party_chat_bound" || method == "disband_party_bound")
+    {
+      // Validate and publish on this same Asio thread. Distinct method names
+      // make old workers reject the operation instead of ignoring new guards.
+      requirePartyContext(m_state["party"], m_state["pending_party_invite"], args);
+      return command(method.substr(0, method.size() - 6), args);
+    }
     if(method == "walk_to")
     {
       if(m_moving || !m_state["scene"].is_null()) throw ProtocolError("movement/event already in progress");

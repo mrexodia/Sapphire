@@ -7,6 +7,15 @@
 
 namespace Sapphire::Testing
 {
+  void requirePartyContext(const nlohmann::json& party, const nlohmann::json& pendingInvite,
+                           const nlohmann::json& args)
+  {
+    if(!args.contains("expected_party") || !args.contains("expected_invite") ||
+       !args.at("expected_party").is_object() || args.at("expected_party") != party ||
+       args.at("expected_invite") != pendingInvite)
+      throw ProtocolError("received party/invitation context changed before command publication");
+  }
+
   static void requireName(const std::string& name)
   {
     if(name.empty() || name.size() >= 32 ||

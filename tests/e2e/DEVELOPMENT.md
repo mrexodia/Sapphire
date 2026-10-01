@@ -182,6 +182,51 @@ mid-route, inspect/reposition the offline bot through your development tools
 before the next run. There is no implicit recovery or successful-state fabrication.
 You can remain logged in nearby on your own character to watch.
 
+### Optional owned two-bot party check
+
+Add `--verify-party` to exercise normal invitation, membership, party chat and
+disband without creating another server. It can be combined with placement,
+movement and reconnect; party cleanup precedes the optional reconnect.
+
+```powershell
+python -m tests.e2e.run_development --profile .e2e-dev.json `
+  --allow-shared-development --verify-party --verify-reconnect `
+  --artifacts .e2e-artifacts/dev-party-001
+```
+
+**Rebuild the worker first.** This check requires the separately advertised
+`invite_party_bound`, `accept_party_bound`, `party_chat_bound` and
+`disband_party_bound` methods. A worker lacking them is rejected before HTTP
+login; there is no fallback to unbound commands. The methods validate the exact
+expected received party/invitation context on the worker's Asio thread immediately
+before invoking the ordinary protocol operation. Older methods retain their
+existing behavior. No server protocol change or GM operation is involved.
+
+Both dedicated bots must be idle, mutually visible, modelled as completely
+ungrouped, and have no pending invitation or prior invite result/update/reply.
+The check binds exact lobby character IDs, world entity IDs and names. The
+received invitation must name the exact dedicated inviter before acceptance;
+both clients must then receive the same two-member roster, leader, party ID and
+chat-channel ID. Unique messages must be received in both directions with exact
+sender/party/channel identities. Disband is sent only while both received rosters
+still match that owned party, and both must subsequently receive exact empty
+party state. An invite receipt alone proves neither membership nor disband.
+
+If context changes (including between a Python snapshot and worker publication),
+the operation fails closed. No foreign invite is intentionally accepted and no
+changed/expanded party is automatically disbanded. On failure the leases remain;
+a partially created party may remain for manual inspection. There is no forced
+cleanup, retry, leave/kick fallback or world reset to conceal the failure.
+The guard binds **received state**, not a server-side transaction/version lock;
+local leases do not exclude manual or cross-host account use. Keep these accounts
+exclusive to the runner and do not manually invite or operate them during a run.
+
+`party_verification` records the actual received roster/channel, invitation receipt,
+chat records and requested/verified flags. Five action phases plus worker-capability
+preflight are timed. The scope is only this two-bot lifecycle, not full social
+compatibility, persistence or isolation. Native context/packet tests and synthetic
+runner tests exist; live shared-world party evidence remains pending.
+
 ### Optional fresh-login position check
 
 Add `--verify-reconnect` to the normal shared check, with or without
@@ -270,5 +315,5 @@ coverage or acceptance verifier.
 Synthetic checks (no server, no credential profile):
 
 ```powershell
-python -m pytest tests/e2e/test_development.py tests/e2e/test_development_provisioning.py tests/e2e/test_development_placement.py tests/e2e/test_development_reconnect.py -q
+python -m pytest tests/e2e/test_development.py tests/e2e/test_development_provisioning.py tests/e2e/test_development_placement.py tests/e2e/test_development_reconnect.py tests/e2e/test_development_party.py -q
 ```

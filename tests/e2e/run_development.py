@@ -15,17 +15,18 @@ from .support.development import (AccountLease, DevelopmentError, Timings, authe
                                   idle_state, movement_route, validate_profile, witnessed)
 from .support.worker import Bot, Worker
 from .support.development_reconnect import verify_position_reconnect
+from .support.development_party import require_bound_party_worker, verify_two_bot_party
 
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
-        verify_reconnect=False, worker_factory=Worker, login=authenticate, lease_root=None):
+        verify_reconnect=False, verify_party=False, worker_factory=Worker, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
     validate_profile(profile)
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
-    if type(verify_reconnect) is not bool:
-        raise DevelopmentError("verify_reconnect must be a boolean")
+    if type(verify_reconnect) is not bool or type(verify_party) is not bool:
+        raise DevelopmentError("verification flags must be boolean")
     route, catalog_hash = movement_route(profile)
     if type(await_placement) is not bool or (await_placement and not route):
         raise DevelopmentError("administrative placement wait requires a source-bound quest route")
@@ -41,6 +42,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "administrative_preparation_wait_enabled": await_placement,
               "administrative_command_execution_attested": False,
               "reconnect_verification": {"requested": verify_reconnect, "verified": False},
+              "party_verification": {"requested": verify_party, "verified": False},
               "world_restart_performed": False,
               "protocol": profile["protocol"], "territory": profile["territory"],
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
@@ -55,6 +57,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         # Scope of this context includes worker cleanup; passing requires clean exit.
         with timings.phase("worker_session_including_close"):
             with worker_factory(Path(profile["worker"]), artifacts / "worker") as worker:
+                if verify_party:
+                    with timings.phase("party_worker_capability"):
+                        require_bound_party_worker(worker)
                 bots = [Bot(worker, "mover"), Bot(worker, "witness")]
                 states = []
                 for index, (bot, account) in enumerate(zip(bots, profile["accounts"])):
@@ -118,6 +123,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                                     lambda s: idle_state(s, profile["territory"])
                                     and witnessed(s, actor, names[0], point),
                                     "independently received waypoint", timeout=10)
+                if verify_party:
+                    report["party_verification"] = verify_two_bot_party(
+                        profile, worker, mover, witness, states, run_id, timings)
                 if verify_reconnect:
                     mover, report["reconnect_verification"] = verify_position_reconnect(
                         profile, worker, mover, witness, states[0],
@@ -160,11 +168,14 @@ def main(argv=None):
                         help="Allow up to 120s for separate GM-approved placement; requires quest_catalog")
     parser.add_argument("--verify-reconnect", action="store_true",
                         help="One explicit fresh-login identity/position check with the witness kept online; no restart")
+    parser.add_argument("--verify-party", action="store_true",
+                        help="One owned two-bot invite/chat/disband check; refuses existing social state")
     args = parser.parse_args(argv)
     try:
         profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
         result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles,
-                     await_placement=args.await_placement, verify_reconnect=args.verify_reconnect)
+                     await_placement=args.await_placement, verify_reconnect=args.verify_reconnect,
+                     verify_party=args.verify_party)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.
         print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))
