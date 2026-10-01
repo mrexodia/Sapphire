@@ -2003,6 +2003,27 @@ No executable, database, service, account or gameplay operation ran. This is act
 staging/manifest/root-removal evidence, not process isolation, service cleanup,
 gameplay, compatibility or secure-erasure proof.
 
+The smallest non-account current-profile live check then ran only
+`test_rejected_credentials` from the same frozen source: **1 passed in 24.78s**.
+The committed standalone inspector accepted the exact single JUnit identity, clean
+fixture-v2 manifest, all four single-generation service teardowns, absent runtime/
+root, complete artifact tree, and sanitized HTTP receipt. The expected/received 400
+response still returned no session; receipt SHA-256 remains exactly
+`0a3e49408fb4f38a1602d6bd57983311feea5017bd728cb75a4577562b55f37b`.
+Inspection/pytest/JUnit SHA-256 values are respectively
+`f83c2a8919ec1dcee149889281f217ea23a6da5b151a22ee68e8f97c86258681`,
+`c6afaba1288f5fbf19c02201b9255d3d1e6abe46744c60f5ede3d464a223d324`,
+and `7787d28572a118e20c3d463b5b0fd0bb0f90a14d6df9e4e1136f194e840cdf90`.
+No account, worker, lobby/world gameplay session or other case ran.
+
+Two preceding invocations supplied a nonexistent `--e2e-live` option and failed
+with pytest exit 4 before collection/fixture construction; the frozen harness uses
+only `--e2e-profile` for opt-in. Their sanitized retained failure receipt SHA-256 is
+`72dd63920876e651d20599f41b31e0515b09d11869a63067abaf101944a95d37`.
+Neither started a service. The corrected pass is current isolated service/HTTP and
+cleanup evidence only; its harness-recorded response metadata is not an independent
+server trace, broad authentication proof, gameplay truth or the combined 16-case gate.
+
 Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
 to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
 inspection derives and requires each expected `(classname, name)` pair, including
