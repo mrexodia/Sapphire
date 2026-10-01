@@ -2024,6 +2024,21 @@ Neither started a service. The corrected pass is current isolated service/HTTP a
 cleanup evidence only; its harness-recorded response metadata is not an independent
 server trace, broad authentication proof, gameplay truth or the combined 16-case gate.
 
+The second and only other no-account standalone case then ran against the same
+clean-built profile: `test_owned_world_exit_preserves_classification_logs_and_cleanup`
+**passed in 23.94s**. The scenario-specific inspector accepted exact classification
+`intentional_owned_process_exit`, one PID/generation-correlated world teardown, all
+four final single-generation service teardowns, secret-free retained logs and absent
+runtime/root. Inspection/pytest/JUnit SHA-256 values are respectively
+`b0baa911737dedeb934da5508a7c6c5c19ffb6b5829880d7cb96da902e6df478`,
+`ec48ee19c502c631571282f0ce2df43834d34224e3129f6de9e9e50409f76d85`,
+and `985884bbb9da61b26fb7308dc9f63b9ebec91b421193de93b9782ae54a04448b`;
+artifact-tree SHA-256 is
+`f5f19cc4027af912375cbf7d4def2bdba0c8beb9a2a2299a9932fc5beeb40074`.
+No account, worker or gameplay session was created. This is intentional owned-fault
+classification/cleanup evidence only—not an organic crash, crash dump, gameplay,
+hosted cancellation, leak-freedom or combined-gate result.
+
 Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
 to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
 inspection derives and requires each expected `(classname, name)` pair, including
