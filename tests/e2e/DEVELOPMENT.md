@@ -370,6 +370,42 @@ that run's `run_id`. There is deliberately no timed lease stealing or automatic
 reset. These locks coordinate **cooperating local runners only**: they do not
 exclude manual logins, other machines/users, or aliases for the same server.
 
+## Confirm a separate viewer at the scenario endpoints
+
+Add `--viewer-name "Exact Playername"` to require a separate, already-online
+player in view of **both** bots. The name must be exact printable ASCII (1–31
+characters), not either bot's name. The runner never authenticates, moves,
+invites, resets, or otherwise controls the viewer. A GM viewer is allowed, but
+the two test bots must remain non-GM.
+
+1. Connect your viewer normally and remain near the two bots.
+2. Start the usual development command with `--viewer-name`.
+3. Read `viewer-start.json` in that run's private artifact directory. Copy its
+   `reply_in_say` text into **ordinary Say** from the named viewer, once.
+4. Watch the requested scenarios. After they finish, read `viewer-finish.json`
+   and send its **new** `reply_in_say` text, once. Both bots must receive it.
+
+Each checkpoint allows 10 seconds total to bind the same unambiguous player
+spawn on both bot clients, then 60 seconds total for both to receive the reply.
+A fresh random nonce is generated only after the baseline observations; received
+chat tokens must advance beyond each observer's baseline. Old messages, another
+speaker, another chat channel, a reply seen by only one bot, changed viewer
+identity/GM rank, NPC lookalikes and ambiguous identities fail closed. Late
+successful waits are also rejected. Failure retains bot leases for manual
+recovery; there is no automatic retry or forced viewer cleanup.
+
+Viewer movement is allowed while both bots can still observe that player.
+Positions are recorded, not held fixed or restored. With `--verify-reconnect`,
+the finish reply must reach the newly authenticated mover as well as the
+original witness. The summary records both checkpoints under
+`viewer_verification`.
+
+**Scope:** this proves received presence/liveness at two endpoints, not continuous
+presence, unchanged viewer gameplay state, a particular client executable,
+rendered appearance, screenshots, or graphical compatibility. A third headless
+client can exercise this contract but cannot substitute for the independent
+real-client lane. Allow enough managed-host lifetime for operator replies.
+
 ## Evidence and limitations
 
 `development-summary.json` records worker/catalog hashes, entities, scope,

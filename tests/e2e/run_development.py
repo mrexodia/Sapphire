@@ -16,14 +16,17 @@ from .support.development import (AccountLease, DevelopmentError, Timings, authe
 from .support.worker import Bot, Worker
 from .support.development_reconnect import verify_position_reconnect
 from .support.development_party import require_bound_party_worker, verify_two_bot_party
+from .support.development_viewer import validate_viewer_name, viewer_checkpoint
 
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
-        verify_reconnect=False, verify_party=False, worker_factory=Worker, login=authenticate, lease_root=None):
+        verify_reconnect=False, verify_party=False, viewer_name=None,
+        worker_factory=Worker, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
     validate_profile(profile)
     check_managed_host(profile)
+    validate_viewer_name(viewer_name, profile["accounts"])
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
     if type(verify_reconnect) is not bool or type(verify_party) is not bool:
@@ -44,6 +47,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "administrative_command_execution_attested": False,
               "reconnect_verification": {"requested": verify_reconnect, "verified": False},
               "party_verification": {"requested": verify_party, "verified": False},
+              "viewer_verification": {"requested": viewer_name is not None, "verified": False,
+                                      "scope": "two-checkpoint-presence-not-graphical-attestation",
+                                      "viewer_login_or_control_performed": False},
               "world_restart_performed": False,
               "protocol": profile["protocol"], "territory": profile["territory"],
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
@@ -106,6 +112,10 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                     worker.wait_state(mover.name,
                         lambda s: idle_state(s, profile["territory"]) and witnessed(s, observer, names[1],
                             states[1]["observed_position"]), "exact witness identity", timeout=10)
+                if viewer_name is not None:
+                    report["viewer_verification"]["start"] = viewer_checkpoint(
+                        worker, [mover, witness], [actor, observer], profile["territory"],
+                        viewer_name, run_id, "start", artifacts, timings)
                 for cycle in range(cycles):
                     with timings.phase(f"say_round_trip_{cycle}"):
                         for sender, receiver, identity in ((mover, witness, actor), (witness, mover, observer)):
@@ -132,6 +142,12 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                         profile, worker, mover, witness, states[0],
                         route[0] if route else states[0]["observed_position"], run_id, timings, login)
                     bots = [mover, witness]
+                if viewer_name is not None:
+                    report["viewer_verification"]["finish"] = viewer_checkpoint(
+                        worker, [mover, witness], [actor, observer], profile["territory"],
+                        viewer_name, run_id, "finish", artifacts, timings,
+                        expected=report["viewer_verification"]["start"]["identity"])
+                    report["viewer_verification"]["verified"] = True
                 with timings.phase("logout_and_independent_despawn"):
                     mover.logout(wait_server_close=True)
                     worker.wait_state(witness.name, lambda s: str(actor) not in s["actors"],
@@ -171,12 +187,13 @@ def main(argv=None):
                         help="One explicit fresh-login identity/position check with the witness kept online; no restart")
     parser.add_argument("--verify-party", action="store_true",
                         help="One owned two-bot invite/chat/disband check; refuses existing social state")
+    parser.add_argument("--viewer-name", help="Exact separate visible player name; requires unique Say replies at start/finish")
     args = parser.parse_args(argv)
     try:
         profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
         result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles,
                      await_placement=args.await_placement, verify_reconnect=args.verify_reconnect,
-                     verify_party=args.verify_party)
+                     verify_party=args.verify_party, viewer_name=args.viewer_name)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.
         print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))
