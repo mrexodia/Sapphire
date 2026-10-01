@@ -551,7 +551,7 @@ class Environment:
         for name in reversed(list(self.processes)):
             try:
                 self._stop(name)
-            except Exception:
+            except BaseException:
                 failures.append(name)
         self._write_lifecycle()
         if failures:

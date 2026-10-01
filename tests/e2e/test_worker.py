@@ -391,14 +391,15 @@ def test_exact_owned_process_stop_records_terminate_and_kill_fallback():
         "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}]
 
 
-def test_close_attempts_all_owned_processes_and_only_observes_uncertain_retry(tmp_path):
+@pytest.mark.parametrize("failure", [OSError("synthetic uncertain termination"), KeyboardInterrupt()])
+def test_close_attempts_all_owned_processes_and_only_observes_uncertain_retry(tmp_path, failure):
     class Process:
         def __init__(self, pid, fail=False):
             self.pid, self.fail, self.returncode, self.calls = pid, fail, None, []
         def poll(self): return self.returncode
         def terminate(self):
             self.calls.append("terminate")
-            if self.fail: raise OSError("synthetic uncertain termination")
+            if self.fail: raise failure
             self.returncode = -15
         def wait(self, timeout):
             self.calls.append(("wait", timeout)); return self.returncode
