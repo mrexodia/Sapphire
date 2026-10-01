@@ -88,11 +88,16 @@ reusing that dedicated account as a bot. It creates a second separate non-GM
 pre-connection fixture on a validated corridor point, never an invented offset.
 The viewer's account/credentials are excluded from the two-account runner profile.
 The normal runner performs source-bound movement, party/chat/disband, visible
-Tell, reconnect and the two exact viewer checkpoints. No GM action, reset or
-viewer UI control is performed. Fixture placement is administrative setup only.
+Tell, reconnect, a read-only complete received inventory projection comparison
+across that fresh login, and the two exact viewer checkpoints. The inventory
+check covers bags0–3, equipment1000 and Currency2000 by slot/catalog/count; it
+performs no item operation and does not claim item-instance identity, other
+containers or restart persistence. No GM action, reset or viewer UI control is
+performed. Fixture placement is administrative setup only.
 
 `development_check` in the graphical result references the exact normal-runner
-summary and requires every requested subcheck, released leases, the exact versioned
+summary and requires every requested subcheck, including an exact unchanged
+read-only reconnect-inventory receipt, released leases, the exact versioned
 `clear` terminal lease snapshot, a strict normal exit receipt for the exact owned
 native worker, and the same non-GM graphical fixture identity at both checkpoints.
 Legacy summaries without the terminal snapshot or with only `worker_closed:true`,

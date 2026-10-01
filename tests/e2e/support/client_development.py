@@ -6,6 +6,7 @@ from .development import (DevelopmentError, validate_profile, movement_route,
                           require_normal_worker_exit)
 from .worker import Worker, WorkerError
 from .development_lease import require_clear_terminal_account_leases
+from .development_inventory import CONTAINERS, SCOPE as INVENTORY_SCOPE
 
 
 def development_run_budget(activity_deadline):
@@ -47,7 +48,7 @@ def run_graphical_development(runner, profile, artifacts, *, viewer_name, activi
     """Invoke the exact normal-bot scenario with nested and outer deadline guards."""
     budget = development_run_budget(activity_deadline)
     return runner(profile, artifacts, confirmed=True, verify_party=True, verify_tell=True,
-                  verify_reconnect=True, viewer_name=viewer_name,
+                  verify_reconnect=True, verify_inventory=True, viewer_name=viewer_name,
                   worker_factory=lambda executable, output: ActivityWorker(
                       executable, output, deadline=activity_deadline),
                   login=login, max_seconds=budget)
@@ -67,6 +68,28 @@ def development_profile(env, witness, peer, viewer, catalog):
     validate_profile(profile)
     movement_route(profile)  # Reject unsupported/malformed source corridors before bot login.
     return profile
+
+
+def require_inventory_projection(value):
+    if (not isinstance(value, dict) or set(value) != {'containers', 'inventory', 'received_sequence'}
+            or value.get('containers') != list(CONTAINERS)
+            or type(value.get('received_sequence')) is not int
+            or not 0 <= value['received_sequence'] < 2**64
+            or not isinstance(value.get('inventory'), dict)):
+        raise DevelopmentError('malformed graphical reconnect inventory projection')
+    for key, row in value['inventory'].items():
+        if (not isinstance(key, str) or not isinstance(row, dict)
+                or set(row) != {'storage', 'slot', 'id', 'count'}):
+            raise DevelopmentError('malformed graphical reconnect inventory row')
+        storage, slot = row.get('storage'), row.get('slot')
+        if (type(storage) is not int or storage not in CONTAINERS
+                or type(slot) is not int or not 0 <= slot <= 65535
+                or (storage < 4 and slot >= 25) or (storage == 1000 and slot > 13)
+                or key != f'{storage}:{slot}'
+                or type(row.get('id')) is not int or not 0 < row['id'] < 2**32
+                or type(row.get('count')) is not int or not 0 < row['count'] < 2**32):
+            raise DevelopmentError('malformed graphical reconnect inventory row')
+    return value
 
 
 def require_graphical_check(result, viewer_name, entity):
@@ -92,10 +115,20 @@ def require_graphical_check(result, viewer_name, entity):
             or deadline.get('scope') != 'cooperative-success-deadline-not-hard-process-limit'
             or deadline.get('cleanup_may_exceed_deadline') is not True):
         raise DevelopmentError('bounded development run receipt missing or failed')
-    for key in ('party_verification', 'tell_verification', 'reconnect_verification', 'viewer_verification'):
+    for key in ('party_verification', 'tell_verification', 'reconnect_verification',
+                'inventory_verification', 'viewer_verification'):
         value = result.get(key, {})
-        if value.get('requested') is not True or value.get('verified') is not True:
+        if (not isinstance(value, dict) or value.get('requested') is not True
+                or value.get('verified') is not True):
             raise DevelopmentError('required development subcheck missing or failed')
+    inventory = result['inventory_verification']
+    if (set(inventory) != {'requested', 'verified', 'scope', 'before', 'after', 'changed_slots'}
+            or inventory.get('scope') != INVENTORY_SCOPE or inventory.get('changed_slots') != []):
+        raise DevelopmentError('invalid graphical reconnect inventory receipt')
+    before = require_inventory_projection(inventory.get('before'))
+    after = require_inventory_projection(inventory.get('after'))
+    if before['inventory'] != after['inventory']:
+        raise DevelopmentError('graphical reconnect inventory projection changed')
     viewer = result['viewer_verification']
     if viewer.get('viewer_login_or_control_performed') is not False:
         raise DevelopmentError('runner must not control the graphical viewer')
@@ -103,5 +136,6 @@ def require_graphical_check(result, viewer_name, entity):
     if any(viewer.get(stage, {}).get('identity') != expected for stage in ('start','finish')):
         raise DevelopmentError('development checkpoints do not bind the same graphical fixture')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
-            'viewer':expected, 'run_deadline':deadline, 'rendered_bot_actions_verified':False,
+            'viewer':expected, 'run_deadline':deadline,
+            'inventory_scope':INVENTORY_SCOPE, 'rendered_bot_actions_verified':False,
             'note':'Endpoint replies are received-state evidence, not continuous presence or rendered-action agreement.'}

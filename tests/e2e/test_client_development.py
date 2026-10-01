@@ -58,6 +58,15 @@ def completed():
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
             **{key:{'requested':True,'verified':True} for key in ('party_verification','tell_verification','reconnect_verification')},
+            'inventory_verification':{'requested':True,'verified':True,
+                'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
+                'before':{'containers':[0,1,2,3,1000,2000],
+                          'inventory':{'1000:0':{'storage':1000,'slot':0,'id':1601,'count':1}},
+                          'received_sequence':120},
+                'after':{'containers':[0,1,2,3,1000,2000],
+                         'inventory':{'1000:0':{'storage':1000,'slot':0,'id':1601,'count':1}},
+                         'received_sequence':118},
+                'changed_slots':[]},
             'viewer_verification':{'requested':True,'verified':True,'viewer_login_or_control_performed':False,
                                    'start':{'identity':copy.deepcopy(identity)},'finish':{'identity':copy.deepcopy(identity)}}}
 
@@ -65,7 +74,7 @@ def completed():
 def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     report=completed(); proof=bridge.require_graphical_check(report,'Tester Viewer',3)
     assert proof['status']=='passed' and proof['rendered_bot_actions_verified'] is False
-    for key in ('party_verification','tell_verification','reconnect_verification','viewer_verification'):
+    for key in ('party_verification','tell_verification','reconnect_verification','inventory_verification','viewer_verification'):
         wrong=copy.deepcopy(report); wrong[key]['verified']=False
         with pytest.raises(DevelopmentError): bridge.require_graphical_check(wrong,'Tester Viewer',3)
     for stage in ('start','finish'):
@@ -75,7 +84,8 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
 
 @pytest.mark.parametrize('field,value',[('status','failed'),('lease_retained',True),('worker_closed',False),
     ('worker_exit',None),('lease_snapshot',None),('lease_snapshot_matches_run_state',False),
-    ('run_deadline',None),('administrative_preparation_wait_enabled',True),('database_access',True),
+    ('run_deadline',None),('inventory_verification',None),
+    ('administrative_preparation_wait_enabled',True),('database_access',True),
     ('world_restart_performed',True),('movement_waypoints_per_cycle',0)])
 def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
     report=completed(); report[field]=value
@@ -101,6 +111,24 @@ def test_graphical_bridge_requires_exact_successful_run_deadline(field,value):
     report=completed();report['run_deadline'][field]=value
     with pytest.raises(DevelopmentError):
         bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_malformed_inventory_receipt():
+    mutations=(
+        lambda value: value.update(scope='wrong'),
+        lambda value: value.update(changed_slots=['1000:0']),
+        lambda value: value.pop('before'),
+        lambda value: value.update(before=None),
+        lambda value: value['before'].update(containers=[0,1,2,3,2000,1000]),
+        lambda value: value['before'].update(received_sequence=True),
+        lambda value: value['before']['inventory']['1000:0'].update(extra=True),
+        lambda value: value['before']['inventory']['1000:0'].update(id=True),
+        lambda value: value['after']['inventory']['1000:0'].update(count=2),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report['inventory_verification'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
 
 
 def test_graphical_bridge_rejects_changed_deadline_shape():
@@ -135,6 +163,7 @@ def test_graphical_scenario_forwards_nested_deadline_and_exact_flags(monkeypatch
     assert args==({'profile':True},tmp_path/'output')
     assert kwargs['confirmed'] is True and kwargs['verify_party'] is True
     assert kwargs['verify_tell'] is True and kwargs['verify_reconnect'] is True
+    assert kwargs['verify_inventory'] is True
     assert kwargs['viewer_name']=='Tester Viewer' and kwargs['login'] is login
     assert kwargs['max_seconds']==399 and callable(kwargs['worker_factory'])
 
