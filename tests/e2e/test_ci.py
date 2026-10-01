@@ -353,6 +353,21 @@ def test_service_free_profile_staging_rejects_dirty_source_and_still_removes_run
     assert not runtime.exists() and not runtime.parent.exists()
 
 
+def test_service_free_profile_staging_rejects_terminal_cleanup_marker(
+        profile, tmp_path, monkeypatch):
+    _clean_staging_git(monkeypatch)
+    original = environment_support.Environment.close
+    def close_with_terminal_marker(environment):
+        original(environment)
+        retained = environment.artifacts / "retained"; retained.mkdir()
+        (retained / "Cleanup-Failure.JSON").write_text("{}")
+    monkeypatch.setattr(environment_support.Environment, "close", close_with_terminal_marker)
+    path = tmp_path / "profile.json"; path.write_text(json.dumps(profile))
+    private = (tmp_path / "private-stage").resolve()
+    with pytest.raises(SetupError, match="terminal cleanup failure"):
+        stage_ci_profile(path, private, "a" * 40, suffix=".exe")
+
+
 def test_service_free_profile_staging_rejects_foreign_sibling_after_cleanup(
         profile, tmp_path, monkeypatch):
     _clean_staging_git(monkeypatch)

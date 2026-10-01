@@ -351,6 +351,8 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
     lambda root, report: json_file(root /
         "artifacts/sapphire-e2e-synthetic/process-lifecycle.json",
         lambda value:value["teardowns"][0].update(returncode=True)),
+    lambda root, report: write_json(root /
+        "artifacts/sapphire-e2e-synthetic/retained/Cleanup-Failure.JSON", {}),
     lambda root, report: report["fixture"].update(catalog_sha256="e" * 64),
     lambda root, report: report["development_check"].update(summary_sha256="0" * 64),
     lambda root, report: report["development_run_pair"]["identities"][0].update(entity_id=True),

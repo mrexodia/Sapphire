@@ -7,7 +7,8 @@ from pathlib import Path
 
 from ..run_ci import inputs_match
 from .ci_profile_result import _validated_profile
-from .environment import Environment, SetupError, artifact_tree_sha256, sha256
+from .environment import (Environment, SetupError, artifact_tree_sha256,
+                          has_cleanup_failure_marker, sha256)
 
 SCOPE = "clean-exact-revision-environment-staging-and-root-removal-only"
 
@@ -51,6 +52,8 @@ def stage_ci_profile(profile_path, private_artifacts, expected_revision, *,
     if (requested.is_symlink() or len(entries) != 1 or entries[0].is_symlink()
             or not entries[0].is_dir() or entries[0].resolve() != artifact.resolve()):
         raise SetupError("private staging artifact root is ambiguous or foreign")
+    if has_cleanup_failure_marker(artifact):
+        raise SetupError("service-free staging records terminal cleanup failure")
     lifecycle_path = artifact / "process-lifecycle.json"
     try:
         lifecycle = json.loads(lifecycle_path.read_text(encoding="utf-8"))

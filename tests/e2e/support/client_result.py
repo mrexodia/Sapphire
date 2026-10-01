@@ -26,7 +26,8 @@ from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                            validate_review, witness_say_challenge)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
-from .environment import require_process_teardowns
+from .environment import (SetupError, has_cleanup_failure_marker,
+                          require_process_teardowns)
 
 
 RESULT_SCOPE = "current-graphical-development-result-before-separate-sandbox-disposal"
@@ -159,6 +160,11 @@ def _environment_teardown(output, value):
             or relative.parts[2] != "process-lifecycle.json"):
         raise DevelopmentError("graphical environment teardown path is foreign")
     path = Path(output).joinpath(*relative.parts)
+    try:
+        if has_cleanup_failure_marker(path.parent):
+            raise DevelopmentError("graphical environment records terminal cleanup failure")
+    except SetupError as error:
+        raise DevelopmentError("cannot inspect graphical cleanup-failure markers") from error
     lifecycle = _read_json(path)
     if (set(lifecycle) != {"version", "scope", "starts", "teardowns"}
             or type(lifecycle.get("version")) is not int or lifecycle["version"] != 1

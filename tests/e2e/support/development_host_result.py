@@ -12,7 +12,8 @@ import math
 from pathlib import Path
 
 from .development import DevelopmentError, require_normal_worker_exit
-from .environment import require_process_teardowns
+from .environment import (SetupError, has_cleanup_failure_marker,
+                          require_process_teardowns)
 
 SCOPE = "terminal-owned-warm-host-cleanup-not-external-server-or-offline-proof"
 TEARDOWN_SCOPE = "exact-owned-warm-host-service-teardown-not-server-offline-proof"
@@ -53,6 +54,11 @@ def _typed_equal(left, right):
 
 def inspect_owned_development_host(session_dir):
     session_dir = Path(session_dir).resolve()
+    try:
+        if has_cleanup_failure_marker(session_dir):
+            raise DevelopmentError("owned host records terminal cleanup failure")
+    except SetupError as error:
+        raise DevelopmentError("cannot inspect owned-host cleanup-failure markers") from error
     status = _read(session_dir / "status.json", "terminal status")
     fields = {"version", "kind", "session_id", "status", "scope", "protocol",
               "maximum_seconds", "owner_pid", "owner_created", "existing_database_access",

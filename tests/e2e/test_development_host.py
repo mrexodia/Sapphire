@@ -393,6 +393,14 @@ def test_terminal_host_inspector_rejects_partial_or_type_confused_status(
         inspect_owned_development_host(session)
 
 
+def test_terminal_host_inspector_rejects_nested_renamed_cleanup_marker(assets, tmp_path):
+    _, _, session = run_host(assets, tmp_path)
+    retained = session / "retained"; retained.mkdir()
+    (retained / "Cleanup-Failure.JSON").write_text("{}")
+    with pytest.raises(DevelopmentError, match="terminal cleanup failure"):
+        inspect_owned_development_host(session)
+
+
 def test_terminal_host_inspector_rejects_changed_lifecycle_record(assets, tmp_path):
     _, _, session = run_host(assets, tmp_path)
     path = session / "process-lifecycle.json"
