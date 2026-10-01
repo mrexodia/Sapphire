@@ -23,7 +23,7 @@ def _pairs(pairs):
     return value
 
 
-def load_placement_registry(path, profile, catalog_sha256, route):
+def read_placement_registry(path):
     try:
         path = Path(path)
         metadata = path.lstat()
@@ -33,12 +33,17 @@ def load_placement_registry(path, profile, catalog_sha256, route):
                 or metadata.st_nlink != 1 or not 0 < metadata.st_size <= 64 * 1024):
             raise OSError()
         raw = path.read_bytes()
-        if len(raw) > 64 * 1024:
+        if not 0 < len(raw) <= 64 * 1024:
             raise OSError()
         registry = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs)
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise DevelopmentError("cannot read private placement registry") from error
     bindings = validate_placement_registry(registry)
+    return raw, registry, bindings
+
+
+def load_placement_registry(path, profile, catalog_sha256, route):
+    raw, registry, bindings = read_placement_registry(path)
     names = [account["character"] for account in profile["accounts"]]
     if ([row["name"] for row in bindings] != names
             or registry["territory"] != profile["territory"]

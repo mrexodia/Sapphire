@@ -1,12 +1,16 @@
 """Administrative request contracts; never gameplay/mutation proof."""
 import copy
 import json
+import os
 from types import SimpleNamespace
 
 import pytest
 
+from .inspect_development_operator import main as inspect_operator_main
 from .support.development import DevelopmentError
 from .support.development_operator import DevelopmentOperator, request_registered_placement
+from .support.development_operator_result import (
+    SCOPE as OPERATOR_RESULT_SCOPE, inspect_development_operator_publications)
 from .support.worker import Bot, WorkerError
 
 
@@ -20,7 +24,7 @@ class OperatorWorker:
         self.supported = True
         self.fail = False
         self.identity = {"name": "Tester Operator", "entity_id": 3, "character_id": 300}
-        self.state = {"phase": "ready", "territory": 130, "entity_id": 3, "gm_rank": 1,
+        self.state = {"phase": "ready", "territory": 130, "entity_id": 3, "gm_rank": 1, "seq":10,
                       "moving": False, "between_areas": False, "event_id": None, "scene": None,
                       "party": {"count": 0, "id": 0}, "pending_party_invite": None,
                       "characters": [self.identity]}
@@ -71,12 +75,27 @@ def test_explicit_setup_and_local_only_receipt(tmp_path, registry):
     result = invoke(worker, registry, tmp_path, approved=True)
     assert not result["placement_verified"] and result["status"] == "local_publication_only"
     assert result["provisioning_run_id"] == registry["provisioning_run_id"]
-    intent = json.loads(next(tmp_path.glob("*.json")).read_text())
+    intent = json.loads(next(tmp_path.glob("placement-request-*.json")).read_text())
     assert intent["provisioning_run_id"] == registry["provisioning_run_id"]
     assert worker.requests[0]["expected_operator"] == worker.identity
     assert worker.requests[0]["administrative_setup"] is True
+    publication = json.loads(next(tmp_path.glob("placement-publication-*.json")).read_text())
+    assert publication["status"] == "local_publication_only"
+    assert publication["intent_sha256"]
     with pytest.raises(FileExistsError): invoke(worker, registry, tmp_path, approved=True)
     assert len(worker.requests) == 1
+
+
+def test_terminal_publication_failure_keeps_intent_and_never_retries(tmp_path, registry):
+    worker = OperatorWorker(tmp_path)
+    terminal = tmp_path / f"placement-publication-{registry['approval_id']}-0.json"
+    terminal.write_text("foreign")
+    with pytest.raises(FileExistsError): invoke(worker, registry, tmp_path, approved=True)
+    with pytest.raises(FileExistsError): invoke(worker, registry, tmp_path, approved=True)
+    assert len(worker.requests) == 1
+    intent = json.loads(next(tmp_path.glob("placement-request-*.json")).read_text())
+    assert intent["status"] == "publication_outcome_unknown"
+    assert terminal.read_text() == "foreign"
 
 
 def test_uncertain_dispatch_keeps_intent_and_never_retries(tmp_path, registry):
@@ -84,10 +103,62 @@ def test_uncertain_dispatch_keeps_intent_and_never_retries(tmp_path, registry):
     with pytest.raises(TimeoutError): invoke(worker, registry, tmp_path, approved=True)
     with pytest.raises(FileExistsError): invoke(worker, registry, tmp_path, approved=True)
     assert len(worker.requests) == 1
-    assert json.loads(next(tmp_path.glob("*.json")).read_text())["status"] == "publication_outcome_unknown"
+    assert json.loads(next(tmp_path.glob("placement-request-*.json")).read_text())["status"] == "publication_outcome_unknown"
+    assert not list(tmp_path.glob("placement-publication-*.json"))
+
+
+def test_operator_publication_inspector_is_sanitized_read_only_and_cli_matches(
+        tmp_path, registry, capsys):
+    artifacts = tmp_path / "operator"; artifacts.mkdir()
+    registry_path = tmp_path / "registry.json"; registry_path.write_text(json.dumps(registry))
+    worker = OperatorWorker(artifacts)
+    invoke(worker, registry, artifacts, approved=True, slot=0)
+    invoke(worker, registry, artifacts, approved=True, slot=1)
+    before = {path: path.read_bytes() for path in artifacts.iterdir()}
+    proof = inspect_development_operator_publications(registry_path, artifacts)
+    assert proof["scope"] == OPERATOR_RESULT_SCOPE
+    assert proof["status"] == "accepted_local_publication_only"
+    assert not proof["server_acknowledgement_verified"] and not proof["placement_verified"]
+    assert "Tester Operator" not in json.dumps(proof)
+    assert before == {path:path.read_bytes() for path in before}
+    assert inspect_operator_main(
+        ["--registry",str(registry_path),"--artifact-dir",str(artifacts)]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutation", ["intent","receipt","operator","duplicate","hardlink","foreign"])
+def test_operator_publication_inspector_rejects_foreign_or_incomplete_evidence(
+        tmp_path, registry, mutation):
+    artifacts = tmp_path / "operator"; artifacts.mkdir()
+    registry_path = tmp_path / "registry.json"; registry_path.write_text(json.dumps(registry))
+    worker = OperatorWorker(artifacts)
+    invoke(worker, registry, artifacts, approved=True, slot=0)
+    invoke(worker, registry, artifacts, approved=True, slot=1)
+    intent = artifacts / f"placement-request-{registry['approval_id']}-0.json"
+    publication = artifacts / f"placement-publication-{registry['approval_id']}-0.json"
+    if mutation == "intent":
+        value=json.loads(intent.read_text());value["operator_received_sequence"]+=1
+        intent.write_text(json.dumps(value))
+    elif mutation == "receipt":
+        value=json.loads(publication.read_text());value["receipt"]["placement_verified"]=True
+        publication.write_text(json.dumps(value))
+    elif mutation == "operator":
+        second=artifacts / f"placement-request-{registry['approval_id']}-1.json"
+        value=json.loads(second.read_text());value["operator"]["character_id"]+=1
+        second.write_text(json.dumps(value))
+    elif mutation == "duplicate":
+        publication.write_text(publication.read_text().replace(
+            '{\n  "version": 1,','{\n  "version": 1,\n  "version": 1,',1))
+    elif mutation == "hardlink":
+        os.link(publication, tmp_path / "publication-alias.json")
+    else:
+        (artifacts / "Placement-Publication-foreign.json").write_text("{}")
+    with pytest.raises(DevelopmentError):
+        inspect_development_operator_publications(registry_path, artifacts)
 
 
 @pytest.mark.parametrize("field,value", [("gm_rank", 0), ("gm_rank", True), ("gm_rank", 256),
+    ("seq", True), ("seq", -1),
     ("phase", "loading"), ("moving", True), ("between_areas", True), ("scene", {}),
     ("event_id", 1), ("territory", 182), ("party", {"id": 3, "count": 2}),
     ("pending_party_invite", {}), ("entity_id", 4), ("characters", [])])

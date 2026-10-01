@@ -5,6 +5,7 @@ an explicit administrative login, not the ordinary non-GM Bot API. The placement
 helper never logs in, discovers arbitrary targets or retries. Actual placement
 must be observed independently by the normal non-GM runner.
 """
+import hashlib
 import json
 import math
 import os
@@ -132,16 +133,23 @@ def request_registered_placement(worker, operator, operator_name, registry, slot
     if any(identity["character_id"] == row["character_id"] or identity["entity_id"] == row["entity_id"]
            for row in bindings):
         raise DevelopmentError("operator must be separate from both registered targets")
-    report = {"scope": "administrative-preparation-not-gameplay", "approval_id": registry["approval_id"],
+    sequence = state.get("seq")
+    if type(sequence) is not int or not 0 <= sequence < 2**64:
+        raise DevelopmentError("preparation operator lacks a received sequence")
+    report = {"version":1,"scope": "administrative-preparation-not-gameplay",
+              "approval_id": registry["approval_id"],
               "provisioning_run_id": registry["provisioning_run_id"],
-              "slot": slot, "operator": identity, "expected_target": bindings[slot],
+              "slot": slot, "operator": identity,
+              "operator_gm_rank":state["gm_rank"],"operator_received_sequence":sequence,
+              "expected_target": bindings[slot],
               "status": "publication_outcome_unknown", "placement_verified": False,
               "note": "Never retry an uncertain request; require normal-client received-state evidence."}
     # Flushed exclusive intent before dispatch. Same journal path cannot be reused,
     # including after a request timeout. Not cross-host/crash-consistent exclusion.
     path = Path(artifacts) / f"placement-request-{registry['approval_id']}-{slot}.json"
-    with path.open("x", encoding="utf-8") as stream:
-        json.dump(report, stream, indent=2)
+    intent_bytes = json.dumps(report, indent=2).encode("utf-8")
+    with path.open("xb") as stream:
+        stream.write(intent_bytes)
         stream.flush()
         os.fsync(stream.fileno())
     receipt = worker.request("development_place_registered", operator.name,
@@ -149,6 +157,22 @@ def request_registered_placement(worker, operator, operator_name, registry, slot
                             slot=slot, expected_operator=identity)
     if receipt != {"scope": "administrative-preparation-not-gameplay", "publication": "local-only", "placement_verified": False}:
         raise DevelopmentError("unexpected administrative publication receipt; do not retry")
-    # Keep the pre-dispatch intent file unchanged, even on success. This receipt
-    # is local publication only, not a server acknowledgement or mutation proof.
-    return {**report, "status": "local_publication_only", "receipt": receipt, "intent_path": str(path)}
+    # Keep the pre-dispatch intent file unchanged, even on success. A separate
+    # exclusive terminal file makes local publication auditable. Failure to write
+    # it is uncertain and must never cause a second dispatch.
+    publication = {"version":1,"scope":"administrative-preparation-not-gameplay",
+        "approval_id":registry["approval_id"],
+        "provisioning_run_id":registry["provisioning_run_id"],"slot":slot,
+        "intent_sha256":hashlib.sha256(intent_bytes).hexdigest(),
+        "operator":identity,"operator_gm_rank":state["gm_rank"],
+        "operator_received_sequence":sequence,"expected_target":bindings[slot],
+        "status":"local_publication_only","receipt":receipt,"placement_verified":False,
+        "note":"Local worker publication only; require normal-client received-state evidence."}
+    publication_path = Path(artifacts) / f"placement-publication-{registry['approval_id']}-{slot}.json"
+    publication_bytes = json.dumps(publication, indent=2).encode("utf-8")
+    with publication_path.open("xb") as stream:
+        stream.write(publication_bytes)
+        stream.flush()
+        os.fsync(stream.fileno())
+    return {**report, "status": "local_publication_only", "receipt": receipt,
+            "intent_path": str(path), "publication_path":str(publication_path)}
