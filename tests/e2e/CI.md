@@ -118,10 +118,13 @@ separate evidence that its binaries came from the checkout.
 - The entry point collects the nine whole live modules and requires exactly the
   fifteen expected cases. Added/removed cases require explicit review of `CASES`.
   Inherited pytest selection options and automatic third-party plugins are
-  disabled. Every allowlisted case provisions and removes its own disposable
-  database/API/lobby/world environment, preventing an earlier case's sessions,
-  roaming actors, or teardown backlog from becoming a later case's fixture. No
-  tests, skipped cases, missing/duplicate phase reports, unexpected tests, failing
+  disabled. The gate records the exact fixture object used by each node ID and
+  requires exactly fifteen pairwise-distinct environments mapped one-to-one to the
+  exact fifteen cases. Every allowlisted case therefore provisions and removes its
+  own disposable database/API/lobby/world environment, preventing an earlier case's
+  sessions, roaming actors, or teardown backlog from becoming a later case's
+  fixture. The public summary exposes only `environment_isolation_verified`; private
+  object identities remain private. No tests, skipped cases, missing/duplicate phase reports, unexpected tests, failing
   setup/call/teardown, nonzero pytest exit, live child processes, missing/foreign/
   type-confused process generations or teardown receipts, or a retained private
   runtime prevent a passing summary. `process_cleanup_verified` requires every

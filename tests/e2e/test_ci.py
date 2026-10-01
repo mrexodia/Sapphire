@@ -321,12 +321,15 @@ def write_lifecycle(environment):
 def complete_gate(tmp_path):
     gate = run_ci.EvidenceGate()
     gate.collected = list(run_ci.CASES)
-    starts, teardowns = lifecycle_rows()
-    gate.environment = SimpleNamespace(_closed=True, root=tmp_path / "removed", processes={},
-        artifacts=tmp_path / "process-evidence", process_starts=starts,
-        process_teardowns=teardowns)
-    write_lifecycle(gate.environment)
-    for case in run_ci.CASES:
+    for index, case in enumerate(run_ci.CASES):
+        starts, teardowns = lifecycle_rows()
+        environment = SimpleNamespace(_closed=True, root=tmp_path / f"removed-{index}", processes={},
+            artifacts=tmp_path / f"process-evidence-{index}", process_starts=starts,
+            process_teardowns=teardowns)
+        write_lifecycle(environment)
+        gate.environments.append(environment)
+        gate.case_environments[case] = environment
+        gate.environment = environment
         for when in ("setup", "call", "teardown"):
             gate.pytest_runtest_logreport(SimpleNamespace(nodeid=case, when=when, outcome="passed",
                                                         longrepr="PRIVATE_MARKER"))
@@ -337,6 +340,7 @@ def test_report_is_allowlisted_and_requires_actual_reports(tmp_path):
     gate = complete_gate(tmp_path)
     report = gate.summary(0)
     assert report["status"] == "passed" and all(report["cases"].values())
+    assert report["environment_isolation_verified"]
     assert report["cleanup_verified"] and report["process_cleanup_verified"]
     assert "PRIVATE_MARKER" not in json.dumps(report)
     assert run_ci.EvidenceGate().summary(0)["status"] == "failed"
@@ -346,15 +350,22 @@ def test_report_requires_cleanup_of_every_case_environment(tmp_path):
     gate = complete_gate(tmp_path)
     retained = tmp_path / "retained"
     retained.mkdir()
-    starts, teardowns = lifecycle_rows()
-    second = SimpleNamespace(_closed=True, root=retained, processes={},
-        artifacts=tmp_path / "second-process-evidence", process_starts=starts,
-        process_teardowns=teardowns)
-    write_lifecycle(second)
-    gate.environments = [gate.environment, second]
+    gate.environments[0].root = retained
     assert gate.summary(0)["cleanup_verified"] is False
     retained.rmdir()
     assert gate.summary(0)["cleanup_verified"] is True
+
+
+def test_report_requires_one_distinct_environment_per_exact_case(tmp_path):
+    gate = complete_gate(tmp_path)
+    first, second = run_ci.CASES[:2]
+    gate.case_environments[second] = gate.case_environments[first]
+    report = gate.summary(0)
+    assert report["status"] == "failed"
+    assert report["environment_isolation_verified"] is False
+    gate = complete_gate(tmp_path / "missing")
+    gate.case_environments.pop(first)
+    assert gate.summary(0)["environment_isolation_verified"] is False
 
 
 @pytest.mark.parametrize("mutation", ["skip", "missing", "duplicate", "foreign",
@@ -399,15 +410,16 @@ def test_entry_point_isolates_pytest_options_and_output(profile, tmp_path, monke
         assert all(suite in args for suite in run_ci.SUITES)
         assert not any("::" in arg for arg in args)
         gate = complete_gate(tmp_path)
-        artifacts = tmp_path / "staged-evidence"
-        artifacts.mkdir()
         manifest = {"worker_sha256": identities["worker"], "binaries": identities["binaries"],
                     "scripts": {"fixture.dll": identities["script_modules"][0]},
                     "server_navigation": {f"{key}/{key}.nav": value for key, value in identities["meshes"].items()},
                     **{key: {"sha256": value} for key, value in identities["catalogs"].items()}}
-        (artifacts / "manifest.json").write_text(json.dumps(manifest))
-        gate.environment.artifacts = artifacts
-        write_lifecycle(gate.environment)
+        for index, environment in enumerate(gate.environments):
+            artifacts = tmp_path / f"staged-evidence-{index}"
+            artifacts.mkdir()
+            (artifacts / "manifest.json").write_text(json.dumps(manifest))
+            environment.artifacts = artifacts
+            write_lifecycle(environment)
         plugins[0].__dict__.update(gate.__dict__)
         print("PRIVATE_MARKER")
         return 0
@@ -451,6 +463,7 @@ def current_public_summary(revision="a" * 40):
     return {"version":1,"status":"passed","stage":"verified",
         "scope":"headless-live-not-real-client","revision":revision,"source_dirty":False,
         "identities":identities,"deadline_scale":1,"collection_verified":True,
+        "environment_isolation_verified":True,
         "cleanup_verified":True,"process_cleanup_verified":True,
         "cases":{case:True for case in run_ci.CASES},"pytest_exit_code":0,
         "inputs_verified":True}
@@ -478,6 +491,7 @@ def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp
     lambda report:report.update(stage="verification"),
     lambda report:report.update(source_dirty=0),
     lambda report:report.update(process_cleanup_verified=1),
+    lambda report:report.update(environment_isolation_verified=1),
     lambda report:report.update(cleanup_verified=False),
     lambda report:report.update(deadline_scale=True),
     lambda report:report["cases"].pop(run_ci.CASES[0]),

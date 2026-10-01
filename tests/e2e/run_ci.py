@@ -128,6 +128,7 @@ class EvidenceGate:
         self.unexpected = 0
         self.environment = None
         self.environments = []
+        self.case_environments = {}
 
     def pytest_collection_finish(self, session):
         self.collected = [item.nodeid for item in session.items]
@@ -143,6 +144,10 @@ class EvidenceGate:
     def pytest_runtest_call(self, item):
         if "environment" in item.funcargs:
             self.environment = item.funcargs["environment"]
+            prior = self.case_environments.get(item.nodeid)
+            if prior is not None and prior is not self.environment:
+                self.unexpected += 1
+            self.case_environments[item.nodeid] = self.environment
             if all(environment is not self.environment for environment in self.environments):
                 self.environments.append(self.environment)
 
@@ -151,6 +156,9 @@ class EvidenceGate:
                  for case, phases in self.reports.items()}
         collection_ok = len(self.collected) == len(CASES) and set(self.collected) == set(CASES)
         environments = self.environments or ([self.environment] if self.environment is not None else [])
+        environment_isolation_ok = (set(self.case_environments) == set(CASES)
+            and len({id(environment) for environment in self.case_environments.values()}) == len(CASES)
+            and len(environments) == len(CASES))
         process_cleanup_ok = bool(environments)
         for environment in environments:
             try:
@@ -169,8 +177,10 @@ class EvidenceGate:
             env._closed and not env.root.exists()
             and all(p.poll() is not None for p in env.processes.values())
             for env in environments))
-        passed = exit_code == 0 and collection_ok and not self.unexpected and all(cases.values()) and cleanup_ok
+        passed = (exit_code == 0 and collection_ok and environment_isolation_ok
+                  and not self.unexpected and all(cases.values()) and cleanup_ok)
         return {"status": "passed" if passed else "failed", "collection_verified": collection_ok,
+                "environment_isolation_verified": environment_isolation_ok,
                 "cleanup_verified": cleanup_ok,
                 "process_cleanup_verified": process_cleanup_ok,
                 "cases": cases, "pytest_exit_code": int(exit_code)}
@@ -228,6 +238,7 @@ def run(profile_path, private_root, summary_path, *, worker=None, binaries=None,
                     "reports": gate.reports,
                     "unexpected": gate.unexpected,
                     "environment_count": len(gate.environments),
+                    "case_environment_count": len(gate.case_environments),
                 }, indent=2), encoding="utf-8")
                 environments = gate.environments or ([gate.environment] if gate.environment is not None else [])
                 report["inputs_verified"] = bool(environments) and all(
