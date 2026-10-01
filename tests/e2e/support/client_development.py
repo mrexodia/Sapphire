@@ -623,6 +623,36 @@ def require_graphical_run_pair(comprehensive, decline, expected_names, expected_
             'identities': main_identities}
 
 
+def require_graphical_witness_handoff(initial_state, retirement, run_pair, expected_name):
+    """Join the original observer's identity/closure to the paired mover identity."""
+    identities = run_pair.get('identities') if isinstance(run_pair, dict) else None
+    if (not isinstance(identities, list) or len(identities) != 2
+            or run_pair.get('verified') is not True
+            or run_pair.get('scope') !=
+                'same-dedicated-bot-identities-across-distinct-runs-not-offline-or-reset-proof'
+            or not isinstance(expected_name, str) or not expected_name
+            or not isinstance(initial_state, dict)
+            or initial_state.get('phase') != 'ready' or initial_state.get('territory') != 130
+            or initial_state.get('gm_rank') != 0 or initial_state.get('party') != EMPTY_PARTY
+            or initial_state.get('pending_party_invite') is not None
+            or not isinstance(retirement, dict)
+            or set(retirement) != {'bot', 'server_close_observed', 'native_bot_removed', 'scope'}
+            or retirement.get('bot') != 'witness'
+            or retirement.get('server_close_observed') is not True
+            or retirement.get('native_bot_removed') is not True
+            or retirement.get('scope') !=
+                'normal-witness-session-retirement-not-offline-exclusion'):
+        raise DevelopmentError('graphical witness handoff lacks exact identity/closure provenance')
+    identity = received_character_identity(initial_state, expected_name)
+    if identity != identities[0] or initial_state.get('entity_id') != identity['entity_id']:
+        raise DevelopmentError('original graphical witness differs from paired mover')
+    return {'verified': True,
+            'scope': 'same-dedicated-witness-across-normal-handoff-not-offline-exclusion',
+            'identity': identity, 'retirement_scope': retirement['scope'],
+            'comprehensive_run_id': run_pair['comprehensive_run_id'],
+            'decline_run_id': run_pair['decline_run_id']}
+
+
 def require_graphical_logout_witness(state, run_pair, viewer_name, viewer_entity):
     """Bind the fresh final observer to the paired mover and received viewer."""
     fields = {'verified', 'scope', 'comprehensive_run_id', 'decline_run_id',

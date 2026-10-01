@@ -335,6 +335,48 @@ def restored_witness_state():
         'known_players':{'3':{'name':'Tester Viewer','spawned':True,'last_seen_token':19}}}
 
 
+def witness_retirement():
+    return {'bot':'witness','server_close_observed':True,'native_bot_removed':True,
+            'scope':'normal-witness-session-retirement-not-offline-exclusion'}
+
+
+def test_original_witness_handoff_binds_identity_closure_and_paired_mover():
+    comprehensive, decline = completed(), declined(); decline['run_id']='b'*32
+    pair = bridge.require_graphical_run_pair(
+        comprehensive, decline, ['bot mover','bot witness'], 'd'*64)
+    proof = bridge.require_graphical_witness_handoff(
+        restored_witness_state(), witness_retirement(), pair, 'bot mover')
+    assert proof == {'verified':True,
+        'scope':'same-dedicated-witness-across-normal-handoff-not-offline-exclusion',
+        'identity':{'name':'bot mover','entity_id':1,'character_id':11},
+        'retirement_scope':'normal-witness-session-retirement-not-offline-exclusion',
+        'comprehensive_run_id':'a'*32,'decline_run_id':'b'*32}
+
+
+def test_original_witness_handoff_rejects_foreign_or_ambiguous_lifecycle():
+    comprehensive, decline = completed(), declined(); decline['run_id']='b'*32
+    pair = bridge.require_graphical_run_pair(
+        comprehensive, decline, ['bot mover','bot witness'], 'd'*64)
+    mutations = (
+        lambda state, retirement, receipt: state.update(phase='loading'),
+        lambda state, retirement, receipt: state.update(gm_rank=1),
+        lambda state, retirement, receipt: state['characters'][0].update(character_id=99),
+        lambda state, retirement, receipt: state['party'].update(count=1),
+        lambda state, retirement, receipt: state.update(pending_party_invite={}),
+        lambda state, retirement, receipt: retirement.update(server_close_observed=1),
+        lambda state, retirement, receipt: retirement.update(native_bot_removed=False),
+        lambda state, retirement, receipt: retirement.update(bot='foreign'),
+        lambda state, retirement, receipt: receipt['identities'][0].update(character_id=99),
+    )
+    for mutate in mutations:
+        state, retirement, receipt = (restored_witness_state(), witness_retirement(),
+                                      copy.deepcopy(pair))
+        mutate(state, retirement, receipt)
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_witness_handoff(
+                state, retirement, receipt, 'bot mover')
+
+
 def test_final_logout_witness_is_exact_paired_mover_with_received_viewer():
     comprehensive, decline = completed(), declined(); decline['run_id']='b'*32
     pair = bridge.require_graphical_run_pair(

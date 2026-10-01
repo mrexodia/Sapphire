@@ -521,8 +521,10 @@ requires this option in a second route-free fresh bot run after the comprehensiv
 party run, with separate viewer checkpoints, deadline, worker-exit and lease
 evidence. The outer coordinator also requires distinct run IDs and exact equality
 of both ordered name/entity/character identities plus the staged-worker digest
-across the two runs. The final outer logout observer must then freshly authenticate
-as that paired mover and receive the exact non-GM viewer in idle nonparty state;
+across the two runs. The original outer witness's received lobby/world identity
+and exact normal closure/removal receipt must bind to that mover before reuse. The
+final outer logout observer must then freshly authenticate as the paired mover and
+receive the exact non-GM viewer in idle nonparty state;
 its new spawn token is not asserted continuous with either nested runner. This is
 provenance, not server-offline or reset authority. That policy has focused
 contracts but still has no current graphical live

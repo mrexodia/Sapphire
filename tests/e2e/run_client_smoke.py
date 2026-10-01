@@ -23,6 +23,7 @@ from .support.client_development import (development_profile, require_graphical_
                                          require_graphical_decline_check,
                                          require_graphical_logout_witness,
                                          require_graphical_run_pair,
+                                         require_graphical_witness_handoff,
                                          run_graphical_development, run_graphical_decline)
 from .support.development import authenticate, movement_route
 from .run_development import run as run_development
@@ -99,6 +100,8 @@ def run():
         report["development_check"] = {"requested": development_enabled, "status": "not_run"}
         report["decline_check"] = {"requested": development_enabled, "status": "not_run"}
         report["development_run_pair"] = {"requested": development_enabled, "verified": False}
+        report["development_witness_handoff"] = {"requested": development_enabled,
+                                                   "verified": False}
         report["logout_witness_restoration"] = {"requested": development_enabled,
                                                   "verified": False}
         with ObservedWorker(Worker(env.worker, env.artifacts / "observer", env.deadline_scale),
@@ -182,7 +185,8 @@ def run():
                     raise RuntimeError("graphical process/activity unavailable before bot scenario")
                 # Reuse only the owned headless witness account, after ordinary closure.
                 # The graphical viewer account is never passed to the normal runner.
-                report["witness_retirements"].append(retire_witness(bot))
+                initial_witness_retirement = retire_witness(bot)
+                report["witness_retirements"].append(initial_witness_retirement)
                 # Read the validated prefix, never invent an offset for the second bot.
                 route, _ = movement_route({"territory": 130, "quest_catalog": profile["quest_catalog"]})
                 if time.monotonic() >= deadline:
@@ -221,6 +225,8 @@ def run():
                     result, decline, [account["character"] for account in shared["accounts"]],
                     sha256(env.worker))
                 report["development_run_pair"] = run_pair
+                report["development_witness_handoff"] = require_graphical_witness_handoff(
+                    spawned, initial_witness_retirement, run_pair, witness["name"])
                 # Restore the exact paired mover as an independent final logout witness.
                 bot = Bot(worker, "witness-after-development")
                 state = bot.login_via_lobby(bounded_login(shared, shared["accounts"][0]), witness["name"])
