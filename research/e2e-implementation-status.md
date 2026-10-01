@@ -1945,6 +1945,28 @@ No service/account/gameplay operation ran. Clean source plus logs and exact tool
 output hashes provide reproducible correlation, not a signature, complete external
 asset-root hash, compiler trust, compatibility, gate execution or gameplay proof.
 
+The same frozen clean tree then built only the exact isolated-profile runtime inputs:
+`api`, `lobby`, `server`, `dbm`, `sapphire_test_client`, and seven script modules.
+This added 224 bounded Ninja compile/link steps; no executable was launched. The
+resulting hashes are worker
+`d155c0229c733bf965bc3c3b630cd0374e0f90e8b1f8a7b8152bcd88f0fc978b`, API
+`65355f75a45d0e4a1dfd6e6e6cda3295819b772b536c99b3e6de08bb36864b54`, lobby
+`46fbd41b0cd1c5be217ad37c7f5c820a37bfa76ec05c6260ba92ea6c15c18343`, world
+`7c548df1ada09c92faffa5e9101514be120c25a52ce59525e60456cb4a462665`, and DBM
+`f8d683ea898a3cd0523c20298873647013df1604ebf4c013b3e9787cb6597683`.
+Build-log SHA-256:
+`840981dedc29b5282b7f4ab2069294fcdaf838df9fe98090eae96ed51c78fb46`.
+
+A new private profile combining those clean-built bytes, all seven modules and the
+four newly generated catalogs passed complete static inspection. Sanitized receipt
+SHA-256: `b7116dd40de7457d1654d975d0f0965f68115882e0f6eaf1c85509be4d60338e`;
+private profile SHA-256:
+`c2ba6a258169ac21bb4589509d564e6cd04282a3b020c8763dc1cdb2b8363bb4`.
+This removes reliance on the older local service/worker executables for a future
+current gate configuration. It remains a build/preflight receipt—not execution,
+service startup, isolated-fixture, gameplay, compiler-trust or compatibility proof;
+the 16-case gate still requires explicit renewed authorization.
+
 Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
 to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
 inspection derives and requires each expected `(classname, name)` pair, including
