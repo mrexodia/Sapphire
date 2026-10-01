@@ -2,13 +2,14 @@
 import math
 import time
 
-from .development import (DevelopmentError, validate_profile, movement_route,
+from .development import (DevelopmentError, validate_profile, movement_route, position,
                           require_normal_worker_exit)
 from .worker import Worker, WorkerError
 from .development_lease import require_clear_terminal_account_leases
 from .development_inventory import CONTAINERS, SCOPE as INVENTORY_SCOPE
 from .development_viewer import CONTINUITY_SCOPE
 from .development_sprint import HISTORIES as SPRINT_HISTORIES, SCOPE as SPRINT_SCOPE
+from .development_equipment import BODY, BAG, SCOPE as EQUIPMENT_SCOPE
 
 
 def development_run_budget(activity_deadline):
@@ -50,7 +51,8 @@ def run_graphical_development(runner, profile, artifacts, *, viewer_name, activi
     """Invoke the exact normal-bot scenario with nested and outer deadline guards."""
     budget = development_run_budget(activity_deadline)
     return runner(profile, artifacts, confirmed=True, verify_party=True, verify_tell=True,
-                  verify_sprint=True, verify_reconnect=True, verify_inventory=True, viewer_name=viewer_name,
+                  verify_sprint=True, verify_reconnect=True, verify_inventory=True,
+                  verify_equipment=True, viewer_name=viewer_name,
                   worker_factory=lambda executable, output: ActivityWorker(
                       executable, output, deadline=activity_deadline),
                   login=login, max_seconds=budget)
@@ -168,6 +170,78 @@ def require_sprint_receipt(value, entities):
     return value
 
 
+def require_reconnect_receipt(value, identity, territory):
+    fields = {'requested', 'verified', 'scope', 'identity_before', 'identity_after',
+              'territory', 'expected_position', 'witness_before', 'received_after',
+              'witness_after', 'old_server_close_observed', 'independent_despawn_observed',
+              'post_login_say_observed', 'world_restart_performed'}
+    if (not isinstance(value, dict) or set(value) != fields
+            or value.get('requested') is not True or value.get('verified') is not True
+            or value.get('scope') != 'fresh-login-position-not-world-restart'
+            or value.get('identity_before') != identity or value.get('identity_after') != identity
+            or type(value.get('territory')) is not int or value['territory'] != territory
+            or any(not position(value.get(key)) for key in
+                   ('expected_position', 'witness_before', 'received_after', 'witness_after'))
+            or any(math.dist(value['expected_position'], value[key]) > 0.15 for key in
+                   ('witness_before', 'received_after', 'witness_after'))
+            or value.get('old_server_close_observed') is not True
+            or value.get('independent_despawn_observed') is not True
+            or value.get('post_login_say_observed') is not True
+            or value.get('world_restart_performed') is not False):
+        raise DevelopmentError('invalid graphical equipment reconnect receipt')
+    return value
+
+
+def require_equipment_receipt(value, entities, territory, normal_inventory):
+    fields = {'requested', 'verified', 'identity', 'scope', 'reconnects_required',
+              'mutation_observation', 'before', 'class_job', 'unequip_expected',
+              'unequip_publication_attempted', 'unequip_receipt', 'unequip_reconnect',
+              'unequipped', 'before_reequip', 'reequip_publication_attempted',
+              'reequip_receipt', 'reequip_reconnect', 'reequipped'}
+    if (not isinstance(value, dict) or set(value) != fields
+            or value.get('requested') is not True or value.get('verified') is not True
+            or value.get('scope') != EQUIPMENT_SCOPE or value.get('reconnects_required') != 3
+            or value.get('mutation_observation') != 'fresh-login-not-current-session-acknowledgement'
+            or value.get('unequip_publication_attempted') is not True
+            or value.get('reequip_publication_attempted') is not True):
+        raise DevelopmentError('invalid graphical equipment receipt')
+    identity = value.get('identity')
+    if (not isinstance(identity, dict) or set(identity) != {'name', 'entity_id', 'character_id'}
+            or not isinstance(identity.get('name'), str) or not 1 <= len(identity['name']) <= 31
+            or type(identity.get('entity_id')) is not int or identity['entity_id'] != entities[0]
+            or type(identity.get('character_id')) is not int
+            or not 0 < identity['character_id'] < 2**64
+            or type(value.get('class_job')) is not int or value['class_job'] not in {1, 2, 7}):
+        raise DevelopmentError('invalid graphical equipment identity/class')
+    before = require_inventory_projection(value.get('before'))
+    unequipped = require_inventory_projection(value.get('unequipped'))
+    before_reequip = require_inventory_projection(value.get('before_reequip'))
+    reequipped = require_inventory_projection(value.get('reequipped'))
+    before_rows = before['inventory']
+    if before_rows.get('1000:3') != BODY or '0:0' in before_rows:
+        raise DevelopmentError('graphical equipment starter-body precondition missing')
+    expected = dict(before_rows)
+    del expected['1000:3']
+    expected['0:0'] = dict(BAG)
+    if (value.get('unequip_expected') != expected
+            or unequipped['inventory'] != expected or before_reequip['inventory'] != expected
+            or normal_inventory['inventory'] != expected
+            or reequipped['inventory'] != before_rows):
+        raise DevelopmentError('graphical equipment fresh-login projections disagree')
+    for key in ('unequip_receipt', 'reequip_receipt'):
+        receipt = value.get(key)
+        if (not isinstance(receipt, dict)
+                or set(receipt) != {'context', 'operation', 'acknowledged', 'inventory_change_verified'}
+                or type(receipt.get('context')) is not int or not 1 <= receipt['context'] < 2**32
+                or type(receipt.get('operation')) is not int or receipt['operation'] != 8
+                or receipt.get('acknowledged') is not True
+                or receipt.get('inventory_change_verified') is not False):
+            raise DevelopmentError('invalid graphical equipment publication receipt')
+    require_reconnect_receipt(value.get('unequip_reconnect'), identity, territory)
+    require_reconnect_receipt(value.get('reequip_reconnect'), identity, territory)
+    return value
+
+
 def require_graphical_check(result, viewer_name, entity):
     """No acknowledgement-only or foreign-viewer result can close this bridge."""
     if (result.get('status') != 'passed' or result.get('scope') != 'shared-development-not-acceptance'
@@ -191,13 +265,14 @@ def require_graphical_check(result, viewer_name, entity):
             or deadline.get('scope') != 'cooperative-success-deadline-not-hard-process-limit'
             or deadline.get('cleanup_may_exceed_deadline') is not True):
         raise DevelopmentError('bounded development run receipt missing or failed')
-    entities = result.get('entities')
+    entities, territory = result.get('entities'), result.get('territory')
     if (not isinstance(entities, list) or len(entities) != 2
             or any(type(value) is not int or value <= 0 for value in entities)
-            or len(set(entities)) != 2):
-        raise DevelopmentError('normal development entities missing or invalid')
+            or len(set(entities)) != 2 or type(territory) is not int or territory != 130):
+        raise DevelopmentError('normal development entities/territory missing or invalid')
     for key in ('party_verification', 'tell_verification', 'reconnect_verification',
-                'inventory_verification', 'sprint_verification', 'viewer_verification'):
+                'inventory_verification', 'sprint_verification', 'equipment_verification',
+                'viewer_verification'):
         value = result.get(key, {})
         if (not isinstance(value, dict) or value.get('requested') is not True
                 or value.get('verified') is not True):
@@ -211,6 +286,8 @@ def require_graphical_check(result, viewer_name, entity):
     if before['inventory'] != after['inventory']:
         raise DevelopmentError('graphical reconnect inventory projection changed')
     sprint = require_sprint_receipt(result['sprint_verification'], entities)
+    equipment = require_equipment_receipt(
+        result['equipment_verification'], entities, territory, before)
     viewer = result['viewer_verification']
     if viewer.get('viewer_login_or_control_performed') is not False:
         raise DevelopmentError('runner must not control the graphical viewer')
@@ -233,5 +310,6 @@ def require_graphical_check(result, viewer_name, entity):
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
             'inventory_scope':INVENTORY_SCOPE, 'sprint_scope':sprint['scope'],
-            'continuous_presence':continuity, 'rendered_bot_actions_verified':False,
-            'note':'Persistent-witness continuity and Sprint receipts are received-state evidence, not server-session or rendered-action agreement.'}
+            'equipment_scope':equipment['scope'], 'continuous_presence':continuity,
+            'rendered_bot_actions_verified':False,
+            'note':'Persistent-witness continuity and bot Sprint/equipment receipts are received-state evidence, not server-session or rendered-action agreement.'}

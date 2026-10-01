@@ -53,8 +53,37 @@ def completed():
                      'received_seq':20},
                     {'effect':copy.deepcopy(effect),'zero_tp':{'target':1,'hp':94,'hp_max':94,
                        'mp':52,'mp_max':52,'tp':0},'start':None,'received_seq':21}]}
+    containers=[0,1,2,3,1000,2000]
+    equipped_rows={'1000:0':{'storage':1000,'slot':0,'id':1601,'count':1},
+                   '1000:3':{'storage':1000,'slot':3,'id':2983,'count':1}}
+    unequipped_rows={'1000:0':{'storage':1000,'slot':0,'id':1601,'count':1},
+                     '0:0':{'storage':0,'slot':0,'id':2983,'count':1}}
+    def projection(rows, sequence):
+        return {'containers':list(containers),'inventory':copy.deepcopy(rows),
+                'received_sequence':sequence}
+    reconnect={'requested':True,'verified':True,'scope':'fresh-login-position-not-world-restart',
+        'identity_before':{'name':'bot mover','entity_id':1,'character_id':11},
+        'identity_after':{'name':'bot mover','entity_id':1,'character_id':11},
+        'territory':130,'expected_position':[0,0,0],'witness_before':[0,0,0],
+        'received_after':[0,0,0],'witness_after':[0,0,0],
+        'old_server_close_observed':True,'independent_despawn_observed':True,
+        'post_login_say_observed':True,'world_restart_performed':False}
+    equipment={'requested':True,'verified':True,
+        'identity':{'name':'bot mover','entity_id':1,'character_id':11},
+        'scope':'starter-body-slot-count-roundtrip-not-item-instances-or-world-restart',
+        'reconnects_required':3,
+        'mutation_observation':'fresh-login-not-current-session-acknowledgement',
+        'before':projection(equipped_rows,30),'class_job':1,
+        'unequip_expected':copy.deepcopy(unequipped_rows),'unequip_publication_attempted':True,
+        'unequip_receipt':{'context':1,'operation':8,'acknowledged':True,
+                           'inventory_change_verified':False},
+        'unequip_reconnect':copy.deepcopy(reconnect),'unequipped':projection(unequipped_rows,31),
+        'before_reequip':projection(unequipped_rows,32),'reequip_publication_attempted':True,
+        'reequip_receipt':{'context':2,'operation':8,'acknowledged':True,
+                           'inventory_change_verified':False},
+        'reequip_reconnect':copy.deepcopy(reconnect),'reequipped':projection(equipped_rows,33)}
     return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
-            'entities':[1,2],
+            'entities':[1,2],'territory':130,
             'worker_closed':True,
             'worker_exit':{'scope':'owned-native-worker-exit-not-server-session-closure',
                            'context_entered':True,'context_exit_attempted':True,
@@ -77,15 +106,10 @@ def completed():
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
             **{key:{'requested':True,'verified':True} for key in ('party_verification','tell_verification','reconnect_verification')},
-            'sprint_verification':sprint,
+            'sprint_verification':sprint,'equipment_verification':equipment,
             'inventory_verification':{'requested':True,'verified':True,
                 'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
-                'before':{'containers':[0,1,2,3,1000,2000],
-                          'inventory':{'1000:0':{'storage':1000,'slot':0,'id':1601,'count':1}},
-                          'received_sequence':120},
-                'after':{'containers':[0,1,2,3,1000,2000],
-                         'inventory':{'1000:0':{'storage':1000,'slot':0,'id':1601,'count':1}},
-                         'received_sequence':118},
+                'before':projection(unequipped_rows,120),'after':projection(unequipped_rows,118),
                 'changed_slots':[]},
             'viewer_verification':{'requested':True,'verified':True,'viewer_login_or_control_performed':False,
                 'continuous_presence':copy.deepcopy(continuity),
@@ -99,7 +123,9 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     assert proof['status']=='passed' and proof['rendered_bot_actions_verified'] is False
     assert proof['continuous_presence']==report['viewer_verification']['continuous_presence']
     assert proof['sprint_scope']==report['sprint_verification']['scope']
-    for key in ('party_verification','tell_verification','reconnect_verification','inventory_verification','sprint_verification','viewer_verification'):
+    assert proof['equipment_scope']==report['equipment_verification']['scope']
+    for key in ('party_verification','tell_verification','reconnect_verification','inventory_verification',
+                'sprint_verification','equipment_verification','viewer_verification'):
         wrong=copy.deepcopy(report); wrong[key]['verified']=False
         with pytest.raises(DevelopmentError): bridge.require_graphical_check(wrong,'Tester Viewer',3)
     for stage in ('start','finish'):
@@ -110,8 +136,9 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
 @pytest.mark.parametrize('field,value',[('status','failed'),('lease_retained',True),('worker_closed',False),
     ('worker_exit',None),('lease_snapshot',None),('lease_snapshot_matches_run_state',False),
     ('run_deadline',None),('inventory_verification',None),('sprint_verification',None),
+    ('equipment_verification',None),
     ('administrative_preparation_wait_enabled',True),('database_access',True),
-    ('world_restart_performed',True),('movement_waypoints_per_cycle',0)])
+    ('world_restart_performed',True),('movement_waypoints_per_cycle',0),('territory',141)])
 def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
     report=completed(); report[field]=value
     with pytest.raises(DevelopmentError): bridge.require_graphical_check(report,'Tester Viewer',3)
@@ -152,6 +179,29 @@ def test_graphical_bridge_rejects_malformed_inventory_receipt():
     )
     for mutate in mutations:
         report=completed();mutate(report['inventory_verification'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_malformed_equipment_receipt():
+    mutations=(
+        lambda report: report['equipment_verification'].update(scope='appearance-proof'),
+        lambda report: report['equipment_verification'].update(reconnects_required=True),
+        lambda report: report['equipment_verification']['identity'].update(entity_id=2),
+        lambda report: report['equipment_verification'].update(class_job=True),
+        lambda report: report['equipment_verification']['before']['inventory'].pop('1000:3'),
+        lambda report: report['equipment_verification']['unequip_expected'].pop('0:0'),
+        lambda report: report['equipment_verification']['unequipped']['inventory'].pop('0:0'),
+        lambda report: report['equipment_verification']['reequipped']['inventory'].pop('1000:3'),
+        lambda report: report['equipment_verification']['unequip_receipt'].update(operation=True),
+        lambda report: report['equipment_verification']['reequip_receipt'].update(acknowledged=False),
+        lambda report: report['equipment_verification']['unequip_reconnect'].update(old_server_close_observed=False),
+        lambda report: report['equipment_verification']['reequip_reconnect'].update(received_after=[2,0,0]),
+        lambda report: report['inventory_verification']['before']['inventory'].pop('0:0'),
+        lambda report: report['equipment_verification'].update(extra=True),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report)
         with pytest.raises(DevelopmentError):
             bridge.require_graphical_check(report,'Tester Viewer',3)
 
@@ -229,7 +279,8 @@ def test_graphical_scenario_forwards_nested_deadline_and_exact_flags(monkeypatch
     assert args==({'profile':True},tmp_path/'output')
     assert kwargs['confirmed'] is True and kwargs['verify_party'] is True
     assert kwargs['verify_tell'] is True and kwargs['verify_reconnect'] is True
-    assert kwargs['verify_inventory'] is True and kwargs['verify_sprint'] is True
+    assert (kwargs['verify_inventory'] is True and kwargs['verify_sprint'] is True
+            and kwargs['verify_equipment'] is True)
     assert kwargs['viewer_name']=='Tester Viewer' and kwargs['login'] is login
     assert kwargs['max_seconds']==399 and callable(kwargs['worker_factory'])
 

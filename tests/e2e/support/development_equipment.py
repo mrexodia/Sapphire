@@ -7,6 +7,7 @@ from .development_inventory import capture_inventory, inventory_projection
 from .development_party import ungrouped
 
 METHODS = {"request_item_unequip", "request_item_reequip_starter"}
+SCOPE = "starter-body-slot-count-roundtrip-not-item-instances-or-world-restart"
 BODY = {"storage": 1000, "slot": 3, "id": 2983, "count": 1}
 BAG = {"storage": 0, "slot": 0, "id": 2983, "count": 1}
 
@@ -36,7 +37,7 @@ def check_receipt(receipt, deadline):
 def begin_roundtrip(profile, worker, mover, initial, report, timings):
     identity = received_character_identity(initial, profile["accounts"][0]["character"])
     territory = profile["territory"]
-    report.update(identity=identity, scope="starter-body-slot-count-roundtrip-not-item-instances-or-world-restart",
+    report.update(identity=identity, scope=SCOPE,
                   reconnects_required=3, mutation_observation="fresh-login-not-current-session-acknowledgement")
     with timings.phase("equipment_before_unequip"):
         capture_inventory(worker, mover, identity, territory)

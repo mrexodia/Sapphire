@@ -88,21 +88,27 @@ reusing that dedicated account as a bot. It creates a second separate non-GM
 pre-connection fixture on a validated corridor point, never an invented offset.
 The viewer's account/credentials are excluded from the two-account runner profile.
 The normal runner performs source-bound movement, party/chat/disband, visible
-Tell, one ordinary self-Sprint, reconnect, a read-only complete received inventory
-projection comparison across that fresh login, and the two exact viewer checkpoints.
-Sprint must produce matching fresh self-target action3/status50 effects and zero-TP
-updates on both ordinary bot sessions plus the mover's fresh group56/recast start;
-its acknowledgement alone cannot pass. This proves neither speed nor rendering,
-status expiry, exact net TP debit, persistence or cooldown readiness. The inventory
-check covers bags0–3, equipment1000 and Currency2000 by slot/catalog/count; it
-performs no item operation and does not claim item-instance identity, other
-containers or restart persistence. No GM action, reset, resource grant/restoration
-or viewer UI control is performed. Fixture placement is administrative setup only.
+Tell, one ordinary self-Sprint, a starter-body unequip/re-equip round trip, reconnect,
+a read-only complete received inventory projection comparison, and the two exact
+viewer checkpoints. Sprint must produce matching fresh self-target action3/status50
+effects and zero-TP updates on both ordinary bot sessions plus the mover's fresh
+group56/recast start; its acknowledgement alone cannot pass. This proves neither
+speed nor rendering, status expiry, exact net TP debit, persistence or cooldown
+readiness. The equipment operation moves exact starter body item2983 between
+body slot1000:3 and empty bag slot0:0, requiring fresh-login projection after each
+mutation and a third total reconnect; acknowledgements are explicitly not mutation
+evidence. The inventory check covers bags0–3, equipment1000 and Currency2000 by
+slot/catalog/count. Neither check claims item-instance identity, appearance,
+quality/durability, other containers or world-restart persistence. No GM action,
+reset, resource grant/restoration or viewer UI control is performed. Fixture
+placement is administrative setup only.
 
 `development_check` in the graphical result references the exact normal-runner
 summary and requires every requested subcheck, including strict internally
 consistent Sprint identities/baselines/request/effect/zero-TP/start observations,
-an exact unchanged read-only reconnect-inventory receipt, released leases, the exact versioned
+exact starter-body before/unequipped/re-equipped projections and all three
+fresh-login lifecycle receipts, an exact unchanged read-only reconnect-inventory
+receipt, released leases, the exact versioned
 `clear` terminal lease snapshot, a strict normal exit receipt for the exact owned
 native worker, and the same non-GM graphical fixture identity at both checkpoints.
 The original continuously connected witness must retain the same received viewer
@@ -129,7 +135,7 @@ original catalog, both catalog hashes and mesh hash are retained. No corridor,
 actor, quest or route-length fields are regenerated or weakened.
 
 The prior screenshot review does **not** certify rendering of these added bot
-actions, including Sprint. A current successful bridge would add absence of received viewer despawn/
+actions, including Sprint and equipment changes. A current successful bridge would add absence of received viewer despawn/
 respawn on one persistent witness between endpoint replies, but not a server-side
 continuous-session oracle, continuous rendering, visual quest/combat agreement,
 normal opening progression, shared-database cleanliness or full acceptance. One owned-guest bridge has actual graphical
