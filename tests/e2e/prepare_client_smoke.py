@@ -60,7 +60,8 @@ def approve(output):
 def stage_guest_catalog(catalog_path, inputs):
     """Localize only provenance's mesh path; preserve route/content and exact mesh bytes."""
     catalog_path, inputs = Path(catalog_path), Path(inputs)
-    original = load_quest_catalog(catalog_path)
+    load_quest_catalog(catalog_path)  # Validate; do not serialize its derived giver/recipient fields.
+    original = json.loads(catalog_path.read_text(encoding="utf-8"))
     navigation = original.get("navigation", {})
     if (navigation.get("format") != "TSET-v1" or type(navigation.get("polyref_bits")) is not int
             or navigation["polyref_bits"] != 64 or not isinstance(navigation.get("mesh"), str)):
@@ -83,7 +84,23 @@ def stage_guest_catalog(catalog_path, inputs):
     return proof
 
 
-def prepare(profile_path, client_path, destination, crt_dirs=(), *, development_check=False):
+def crt_inputs(crt_dirs, release_crt_dirs, system):
+    copies = []
+    for directory in (*crt_dirs, *release_crt_dirs):
+        directory = Path(directory).resolve()
+        libraries = sorted(directory.glob("*.dll"))
+        if not directory.is_dir() or not libraries:
+            raise ValueError("CRT directory must contain DLLs")
+        if directory in [Path(p).resolve() for p in release_crt_dirs]:
+            if not all((directory / name).is_file() for name in ("msvcp140.dll", "vcruntime140.dll")):
+                raise ValueError("release CRT directory must contain MSVC C++ and runtime DLLs")
+        copies += [(p, "bin/" + p.name) for p in libraries]
+    if crt_dirs:
+        copies.append((Path(system) / "ucrtbased.dll", "bin/ucrtbased.dll"))
+    return copies
+
+
+def prepare(profile_path, client_path, destination, crt_dirs=(), *, development_check=False, release_crt_dirs=()):
     if type(development_check) is not bool:
         raise ValueError("development-check must be an explicit boolean")
     if os.name != "nt":
@@ -125,13 +142,7 @@ def prepare(profile_path, client_path, destination, crt_dirs=(), *, development_
               for name in ("api", "lobby", "server", "dbm")]
     copies += [(p, "bin/" + p.name) for p in binary_root.glob("*.dll")]
     copies += [(Path(profile["worker"]).resolve(), "bin/sapphire_test_client.exe")]
-    for directory in crt_dirs:
-        directory = Path(directory).resolve()
-        if not directory.is_dir() or not list(directory.glob("*.dll")):
-            raise ValueError("CRT directory must contain DLLs")
-        copies += [(p, "bin/" + p.name) for p in directory.glob("*.dll")]
-    if crt_dirs:  # Debug CRT needs this SDK component in addition to compiler redists.
-        copies.append((system / "ucrtbased.dll", "bin/ucrtbased.dll"))
+    copies += crt_inputs(crt_dirs, release_crt_dirs, system)
     copies += [(client, "client/ffxiv_dx11.exe")]
     copies += [(game / name, "client/" + name) for name in ("bink2w64.dll", "ffxivgame.ver", "fileinfo.fiin")]
     copies += [(system / name, "client/" + name) for name in LEGACY_DLLS]
@@ -200,6 +211,8 @@ def main():
     for name in ("profile", "client", "output"):
         setup.add_argument("--" + name, required=True)
     setup.add_argument("--crt-dir", action="append", default=[])
+    setup.add_argument("--release-crt-dir", action="append", default=[],
+                       help="Explicit matching x64 MSVC Release CRT folder; copied privately, never installed")
     setup.add_argument("--development-check", action="store_true",
                        help="After manual rendering review, run two separate bots with manual viewer Say checkpoints")
     review = modes.add_parser("approve-rendering", help="ONLY after manually examining the requested evidence")
@@ -207,7 +220,7 @@ def main():
     review.add_argument("--reviewed-all-checks", action="store_true", required=True)
     args = parser.parse_args()
     if args.mode == "prepare":
-        print(prepare(args.profile, args.client, args.output, args.crt_dir, development_check=args.development_check))
+        print(prepare(args.profile, args.client, args.output, args.crt_dir, development_check=args.development_check, release_crt_dirs=args.release_crt_dir))
     else:
         approve(args.output)
 

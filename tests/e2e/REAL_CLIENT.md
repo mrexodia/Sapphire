@@ -37,6 +37,12 @@ python -m tests.e2e.prepare_client_smoke prepare \
   --output .e2e-artifacts/<fresh-private-run>
 ```
 
+For MSVC-compatible Release builds (including clang-cl), supply the matching
+compiler's **x64** runtime folder with `--release-crt-dir`. This copies its DLLs
+into the private bundle without requiring Debug UCRT, installing anything or
+assuming the Sandbox already has the host's runtime. Missing/incomplete folders
+fail; runtime dependency compatibility still requires guest execution.
+
 For Debug builds, also supply the matching compiler's **x64** DebugCRT and CRT
 folders using repeated `--crt-dir`. This additionally stages `ucrtbased.dll` from
 System32. Conflicting DLL bytes and reused output directories fail. Nothing is

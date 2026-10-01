@@ -16,7 +16,9 @@ def catalog(tmp_path, monkeypatch):
     source=tmp_path/'catalog.json'; source.write_text(json.dumps(value))
     inputs=tmp_path/'input'; inputs.mkdir()
     # Route validation is covered by catalog tests; isolate the staging transform.
-    monkeypatch.setattr(prepare,'load_quest_catalog',lambda path:json.loads(path.read_text()))
+    monkeypatch.setattr(prepare,'load_quest_catalog',lambda path:{**json.loads(path.read_text()),
+                                                                'giver':{'derived':'must not be copied'},
+                                                                'recipient':{'derived':'must not be copied'}})
     return source,inputs,value,mesh
 
 
