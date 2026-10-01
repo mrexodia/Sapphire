@@ -1811,6 +1811,34 @@ current genuine HTTP rejection path plus runner/fixture cleanup, not encrypted
 lobby/world handoff, broader authentication policy, build provenance or the full
 gate.
 
+Feature **`9e0b9ad71`** adds a structured receipt at the genuine `Environment.api`
+boundary. Every API call now retains only method, expected/received status, response
+byte count/hash and whether a session field was returned under an exact no-content
+scope—never request credentials or response content. The rejected-credentials case
+requires exact login/400/400/no-session values and publishes that private receipt.
+Both combined private inspection and standalone inspection independently validate
+its exact schema; scope drift is contract-tested.
+
+Frozen, remote-free source **`9e0b9ad716f01e15e88b65b4673098872c301c36`**
+passed **151 focused contracts with 14 declared skips in 9.66s**. Negatives rewrite
+the HTTP status/session result while recomputing surrounding artifact-tree and gate
+diagnostic hashes. Test-log SHA-256:
+`a922d8393a204a0de309a00edc10403ac9b4047e491f2b61b6f67ca3fdda838f`.
+
+The same frozen source then passed the no-account live rejection in **25.81s**
+(25.08s setup, 0.02s call, 0.61s teardown). The committed standalone inspector
+accepted exact JUnit, receipt, manifest, all four one-generation service teardowns,
+artifact tree and absent runtime/root. Inspection/receipt/test/JUnit/tree SHA-256
+values respectively:
+`b800b49ad9d33977265e14af1d66bebdd1de338b03b06f45a83d8afd23bee1e6`,
+`0a3e49408fb4f38a1602d6bd57983311feea5017bd728cb75a4577562b55f37b`,
+`4f68f8bb16faf3c54b17e42c6a0b6f1e5797efd80d8f7750998824293684eb1e`,
+`f057b24d98ee1ba02c14ccbaf6a9cb76b805231fa597e8d1fe4e8bf7eef3dd4c`,
+`fcbad7e51b53ddf3fed46347b73092a15e4fdd9b11ce3194ccf962023eddf0e2`.
+The receipt is harness-recorded response metadata, not an independent server trace;
+`scenario_semantics_independently_verified` remains false. No account, worker,
+lobby/world gameplay session or broad gate ran.
+
 Feature **`78b7cb4bb`** closes a separate private cleanup-inspection gap. For every
 case, the read-only inspector now requires an absolute `.../runtime` identity,
 rejects overlap with its retained artifact directory, and requires both that
