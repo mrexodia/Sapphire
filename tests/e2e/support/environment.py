@@ -546,6 +546,16 @@ class Environment:
         (self.artifacts / "process-lifecycle.json").write_text(
             json.dumps(lifecycle, indent=2), encoding="utf-8")
 
+    def _write_cleanup_failure(self):
+        services = sorted(getattr(self, "_cleanup_failure_services", set()))
+        classification = ("owned_process_cleanup_incomplete" if services else
+                          "owned_process_cleanup_evidence_incomplete")
+        (self.artifacts / "cleanup-failure.json").write_text(json.dumps({
+            "version":1,"classification":classification,
+            "services":services,"runtime_retained":self.root.exists(),
+            "retry_policy":"exact-process-poll-only-no-second-termination",
+        }, indent=2), encoding="utf-8")
+
     def close(self):
         if self._closed:
             return
@@ -569,30 +579,54 @@ class Environment:
             self._cleanup_evidence_failed = True
             publication_failed = True
         if getattr(self, "_cleanup_evidence_failed", False):
-            services = sorted(getattr(self, "_cleanup_failure_services", set()))
-            classification = ("owned_process_cleanup_incomplete" if services else
-                              "owned_process_cleanup_evidence_incomplete")
             try:
                 # Retry publication, never process termination, on a later close.
-                (self.artifacts / "cleanup-failure.json").write_text(json.dumps({
-                    "version":1,"classification":classification,
-                    "services":services,"runtime_retained":True,
-                    "retry_policy":"exact-process-poll-only-no-second-termination",
-                }, indent=2), encoding="utf-8")
+                self._write_cleanup_failure()
             except BaseException:
                 publication_failed = True
         if failures or publication_failed:
             # Keep streams, logs and runtime for exact retained-process diagnosis.
             names = ", ".join(failures) if failures else "evidence publication"
             raise SetupError("owned process cleanup incomplete; inspect private lifecycle: " + names)
+        cleanup_evidence_failed = False
         for stream in self.streams:
-            stream.close()
+            try:
+                stream.close()
+            except BaseException:
+                # One stream must not prevent attempts against independent streams.
+                cleanup_evidence_failed = True
         # Only publish redacted text logs, never DB files, game assets or credentials/configs.
-        for path in self.runtime.rglob("*.log"):
-            text = path.read_text(encoding="utf-8", errors="replace")
-            text = redact_runtime_log(text, self.redactions)
-            target = self.artifacts / path.relative_to(self.runtime)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(text, encoding="utf-8")
-        remove_runtime(self.root)
+        try:
+            logs = list(self.runtime.rglob("*.log"))
+        except BaseException:
+            logs = []
+            cleanup_evidence_failed = True
+        for path in logs:
+            try:
+                text = path.read_text(encoding="utf-8", errors="replace")
+                text = redact_runtime_log(text, self.redactions)
+                target = self.artifacts / path.relative_to(self.runtime)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(text, encoding="utf-8")
+            except BaseException:
+                # Preserve the private runtime and continue publishing independent logs.
+                cleanup_evidence_failed = True
+        if cleanup_evidence_failed:
+            self._cleanup_evidence_failed = True
+            try:
+                self._write_cleanup_failure()
+            except BaseException:
+                pass
+            raise SetupError("owned process cleanup incomplete; inspect private lifecycle: "
+                             "evidence publication")
+        try:
+            remove_runtime(self.root)
+        except BaseException:
+            self._cleanup_evidence_failed = True
+            try:
+                self._write_cleanup_failure()
+            except BaseException:
+                pass
+            raise SetupError("owned process cleanup incomplete; inspect private lifecycle: "
+                             "runtime removal") from None
         self._closed = True

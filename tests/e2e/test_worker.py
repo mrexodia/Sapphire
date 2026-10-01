@@ -476,6 +476,58 @@ def test_close_retains_terminal_marker_when_lifecycle_publication_fails(tmp_path
     assert marker.exists() and not env.root.exists() and env._closed is True
 
 
+@pytest.mark.parametrize("failure_phase", ["stream", "log", "runtime"])
+def test_close_marks_post_process_cleanup_failure_terminal(tmp_path, monkeypatch, failure_phase):
+    env = object.__new__(Environment)
+    env.root = tmp_path / "root"; env.runtime = env.root / "runtime"
+    env.runtime.mkdir(parents=True)
+    env.artifacts = tmp_path / "artifacts"; env.artifacts.mkdir()
+    env.redactions, env._closed = set(), False
+    env.processes, env.process_starts, env.process_teardowns = {}, [], []
+    env._cleanup_evidence_failed, env._cleanup_failure_services = False, set()
+    attempts = []
+    class Stream:
+        def __init__(self, fail): self.fail = fail
+        def close(self):
+            attempts.append(self.fail)
+            if self.fail:
+                self.fail = False
+                raise OSError("synthetic stream close failure")
+    env.streams = [Stream(failure_phase == "stream"), Stream(False)]
+    if failure_phase == "log":
+        (env.runtime / "world.log").write_text("bounded log")
+        original_write_text = Path.write_text
+        remaining_failures = [1]
+        def write_text(path, *args, **kwargs):
+            if path == env.artifacts / "world.log" and remaining_failures:
+                remaining_failures.pop()
+                raise OSError("synthetic log publication failure")
+            return original_write_text(path, *args, **kwargs)
+        monkeypatch.setattr(Path, "write_text", write_text)
+    elif failure_phase == "runtime":
+        actual_remove_runtime = environment_support.remove_runtime
+        remaining_failures = [1]
+        def remove_runtime(root, *args, **kwargs):
+            if remaining_failures:
+                remaining_failures.pop()
+                raise OSError("synthetic runtime removal failure")
+            return actual_remove_runtime(root, *args, **kwargs)
+        monkeypatch.setattr(environment_support, "remove_runtime", remove_runtime)
+    match = "runtime removal" if failure_phase == "runtime" else "evidence publication"
+    with pytest.raises(SetupError, match=match):
+        env.close()
+    marker = env.artifacts / "cleanup-failure.json"
+    assert env.root.exists() and env._closed is False and marker.exists()
+    assert json.loads(marker.read_text()) == {
+        "version":1,"classification":"owned_process_cleanup_evidence_incomplete",
+        "services":[],"runtime_retained":True,
+        "retry_policy":"exact-process-poll-only-no-second-termination"}
+    if failure_phase == "stream":
+        assert attempts == [True, False]
+    env.close()
+    assert marker.exists() and not env.root.exists() and env._closed is True
+
+
 def test_owned_world_fault_is_exact_bounded_and_not_repeatable(tmp_path):
     class Process:
         pid = 45
