@@ -2447,6 +2447,23 @@ verification and no retry authority. File flushing/local worker publication is
 not crash consistency, transport delivery, server execution, received mutation,
 offline exclusion, natural progression or reset evidence.
 
+Feature **`689601886`** adds a final optional scripted-placement correlation command,
+`python -m tests.e2e.inspect_development_scripted_placement`. It composes the strict
+operator and external provisioning→registry→received-placement consumers and
+requires their approval, provisioning run, registry digest and ordered targets to
+match exactly. The sanitized output distinguishes
+`local_publication_verified:true` and `received_placement_verified:true` from
+`server_acknowledgement_verified:false`, `command_causation_verified:false` and
+`retry_authorized:false`.
+
+Frozen, remote-free source **`689601886f38e6812f2d0c76a786b9198af70139`**
+passed **1036 focused contracts with no skips in 40.24s**. Test-log SHA-256:
+`9b8c28ccf013f71b5e4868a799eee7d3af37b66cd11b01a31af57288b8f7d99d`.
+No live account, endpoint, GM command, placement, service, gameplay or graphical
+action ran. A matching before/after correlation does not establish transport
+receipt, server execution, causal attribution, exclusive sessions, natural
+progression, reset authority or permission to replay an uncertain request.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

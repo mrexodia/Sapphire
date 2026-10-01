@@ -511,9 +511,24 @@ publication pairs, one unchanged authorized GM identity distinct from both targe
 nondecreasing received sequences, exact intent hashes and only the fixed local-only
 receipt. It never exposes the operator identity. The result is explicitly **local
 publication only**, with `server_acknowledgement_verified:false`,
-`placement_verified:false`, and `retry_authorized:false`. Keep all files and do not
-retry uncertain requests. Only the normal
-runner's independently received positions, identities, gameplay and optional
+`placement_verified:false`, and `retry_authorized:false`. After a successful normal
+runner inspection, correlate both scopes without claiming causation:
+
+```powershell
+python -m tests.e2e.inspect_development_scripted_placement `
+  --profile .e2e-dev.json `
+  --provisioning-summary .e2e-artifacts/dev-provision-001/provisioning-summary.json `
+  --registry .e2e-bot-placement.json `
+  --operator-artifact-dir .e2e-artifacts/private-operator-publications `
+  --development-summary .e2e-artifacts/dev-prepare-001/development-summary.json
+```
+
+This requires the exact registry/provisioning run, approval, targets and digest to
+match both strict child inspectors. It reports local publication and later received
+placement separately, with `server_acknowledgement_verified:false` and
+`command_causation_verified:false`. Keep all files and do not retry uncertain
+requests. Only the normal runner's independently received positions, identities,
+gameplay and optional
 fresh-login checks can verify the corresponding outcomes. Administrative setup
 is never natural progression or normal movement evidence.
 
