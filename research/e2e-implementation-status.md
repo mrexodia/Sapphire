@@ -43,7 +43,7 @@ focused selection is **144 passed, 0.95s**; the final frozen committed selection
 and timing files. The failed first clean result remains preserved.
 
 A separate control-only native diagnostic used worker revision `899cfa747`
-(SHA-256 `b0400f61813c3ee9f6f978014eb40b8dd23f0742b1ab84d5bfc0b2861ab138817`)
+(SHA-256 `b0400f61813c3ee9c7ae1f1b8bdd945b296d1410628e0bf301d937cc11cd0099`)
 and controller `90b4f527c`. It started no server and used no account, endpoint or
 gameplay action. One fresh worker completed a capabilities request and normal
 context teardown with return code0 in **0.015s**. A second fresh owned worker was
@@ -58,6 +58,77 @@ No live HTTP/lobby/world session was rerun for this lifecycle-only increment, an
 the earlier deadline live evidence predates it. Therefore there is no new gameplay,
 server-session closure, character-reuse, hard-kill recovery or leak-freedom claim.
 No full gate, soak or platform sweep ran; overall goal remains incomplete.
+
+## Provisioning requires exact owned-worker exit before lease release
+
+Feature **`74e2da62d`** reuses the owned-worker wrapper in
+`provision_development.py`. Provisioning reports begin with explicit unknown exit
+state; only completed context teardown with a positive integer PID and return code
+zero can reach `worker_closed:true`, release the two account leases, emit the
+account/identity association and return `provisioned`. Constructor failure,
+nonzero/unknown/boolean PID or return code, observation failure and teardown errors
+retain credentials/evidence and leases without retrying creation. The report keeps
+only sanitized process metadata.
+
+`support/development_worker_exit.py::require_normal_worker_exit` centralizes the
+strict receipt validation. `prepare_development.py` now rejects legacy, missing,
+malformed or failed receipts before generating a placement registry. This receipt
+is still separate from each character's required `logout_server_close_verified`;
+it does not establish server-offline exclusion, cache quiescence or reset authority.
+`DEVELOPMENT.md` documents that boundary.
+
+While selecting these contracts, two existing placement tests exposed a regression
+from the aggregate deadline increment: `run_development` reused `deadline` for the
+120-second placement timestamp, then attempted `.report()` on that float. Minimal
+fix **`99ef17666`** renames the local timestamp to `placement_deadline`; no timing,
+placement or gameplay policy changed. The focused placement selection then passed
+**34 tests, 0.27s**.
+
+Final combined provisioning/placement/binding/deadline/viewer contracts passed
+**203 tests, 1.30s** in the feature worktree and **203 tests, 1.36s** from frozen
+clean commit `74e2da62d`. Tests cover successful receipts, exact ordering, retained
+leases after fully completed creation with abnormal worker exit, constructor
+failure, strict integer fields, sanitized reports, rejected legacy planner inputs
+and unchanged negative ownership/lifecycle policies. Artifacts:
+`development-provisioning-worker-exit-{contracts-001,clean-timings,source}.json`
+and its frozen source.
+
+Post-commit native control `development-provisioning-worker-exit-native-002` used
+the unchanged worker `899cfa747` / SHA-256
+`b0400f61813c3ee9c7ae1f1b8bdd945b296d1410628e0bf301d937cc11cd0099`.
+One capabilities-only worker exited zero and was accepted in **0.016s**; another
+fresh exact-owned child was terminated, returned1 and was rejected in **0.016s**.
+No server, endpoint, account, provisioning or gameplay action was used; all native
+journals are empty and only pre-existing MySQL7764 remained. Summary SHA-256:
+`2a502627fd4267cb383ec2a2a596a5e288282eab0147d28c0a18733ca1d6b71d`.
+The preceding `native-001` preflight failed before worker creation because its
+private driver transcribed the expected SHA-256 incorrectly; that failure remains
+retained and was not upgraded or overwritten.
+
+Bounded **`development-provisioning-worker-exit-live-001` passed** on a fresh owned
+disposable runtime using controller `74e2da62d`, the same worker and unchanged clean
+backend `e665c041f` with checked hashes. Normal HTTP account creation, fresh HTTP
+login and encrypted lobby creation produced two new GM0 Gladiators in private182:
+**Tester NFLDNKKKKZCW /2097153/18014398526259201** and
+**Tester AKUGJRBATUBE /2097154/18014398526259202**. Each had a distinct received
+identity and normal server closure. The exact eight actions are login/logout/
+close/remove for each bot; raw events contain both `server_logout_complete`
+observations.
+
+The native worker exited with PID471876/return code0 before leases were released.
+The offline planner accepted that report and wrote but did not execute a placement
+registry; missing, nonzero, boolean-PID and incomplete receipts were independently
+rejected. Startup took **17.562s**, provisioning **12.063s**, whole owned check
+**30.547s**. Source integrity, exact lease absence, owned-runtime removal and
+process cleanup were inspected; only pre-existing MySQL7764 remained. Private
+`inspected-evidence.json` binds the summary, journals, manifest and process list;
+provisioning-summary SHA-256 is
+`a7bcf5f51a161f8a71b2923d593779a0873c36b7c37ca6d74233c1098cae94f0`.
+
+This is provisioning/lifecycle evidence, not public placement execution, opening
+progression, normal gameplay, existing-database access, graphical compatibility,
+general reprovisioning/reset or a server-side session fence. No full gate, soak or
+platform sweep ran; overall goal remains incomplete.
 
 ## Shared CLI cooperative deadline: session success budget
 
@@ -453,7 +524,7 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`; provisioning/binding live audits | Implemented and live-verified on owned runtimes; not adoption/reset authority |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit receipt; provisioning/binding live audits | Implemented and live-verified on owned runtimes; normal worker exit and per-character server closure are distinct, neither grants adoption/reset authority |
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
