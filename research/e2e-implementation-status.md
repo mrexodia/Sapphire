@@ -1187,6 +1187,50 @@ No server, account, worker, Sandbox, matching client, endpoint, gameplay or
 disposal operation ran. Current manually attended execution and separate disposal
 remain pending; no full gate, soak or platform sweep ran.
 
+## Title-screen rendering requires separate exact-frame manual review
+
+Feature **`6ba302459`** closes the prior gap where a nonempty `logout.png` was
+accepted without the documented human title-screen check. After the exact ordinary
+logout marker, fresh received absence and still-running client check, the
+coordinator now hashes the captured frame and publishes `logout-ticket.json` with
+exact run/hash/scope. Only after terminal `status=passed` may the operator run:
+
+```
+python -m tests.e2e.prepare_client_smoke approve-logout \
+  --output <output> --reviewed-title-screen
+```
+
+That command rehashes the frame, requires the exact passing terminal run and
+atomically writes `logout-review.json` with the sole explicit
+`client_title_screen_rendered` check. The current-result inspector requires and
+revalidates the report hash, ticket, receipt and bytes before accepting pre-disposal
+evidence. This remains distinct from the ordinary server logout marker, received
+despawn, process liveness, first rendering review and later Sandbox disposal.
+Neither a receipt nor a hash performs pixel recognition or proves server-offline
+exclusion.
+
+Frozen, remote-free source **`6ba302459b57cf6bb322810f710e0ae64b339ab1`**
+passed **517 tests in 4.81s**. Negatives cover wrong/failed terminal runs, changed
+frame, malformed/foreign run/hash/scope, false or type-confused manual approval,
+incomplete checks, report/hash mismatch and modified frame bytes. An initial
+focused collection exposed a development `SyntaxError` from stray `},{` after the
+logout-marker assignment; it was corrected before commit and never represented as
+a passing run. Test-log SHA-256:
+`9102b2102111c7f8dd2d8eafda2e6c7b8703de9ea008cdec7816a9abb0850d64`.
+Artifacts: `client-title-review-clean-{source.json,python.log}`.
+
+Read-only inspection of `client-development-live-004` found a nonempty historical
+logout frame but no title-screen ticket or receipt, so current policy rejects it.
+Artifact `client-title-review-historical-rejection.json` has SHA-256
+`e4849417bada7411f7dbf2d35d1b6f1537a09e899a1ca27831e613eeb6d7bf1f`.
+Its older disposal confirmation is not silently upgraded into this missing manual
+rendering attestation.
+
+No server, account, worker, Sandbox, matching client, endpoint, gameplay or
+disposal operation ran. Current manually attended execution, both manual rendering
+reviews and separate disposal remain pending; no full gate, soak or platform sweep
+ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1993,7 +2037,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, an empty pre-launch baseline plus fresh exact-name graphical spawn, sequence-bound ordinary movement and Say receipts, a run-bound rendered-witness Say challenge, and strict outer review plus fresh post-phase logout consumers, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, clear leases and exact worker exits, followed by a committed read-only current-result inspector before separate disposal; current graphical execution remains pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, an empty pre-launch baseline plus fresh exact-name graphical spawn, sequence-bound ordinary movement and Say receipts, a run-bound rendered-witness Say challenge, strict outer review plus fresh post-phase logout consumers, and a separate exact-frame manual title-screen review receipt, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, clear leases and exact worker exits, followed by a committed read-only current-result inspector before separate disposal; current graphical execution remains pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; separate exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage but is now required as a separate fresh current graphical-policy run; all current graphical execution awaits manual approval/assets |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
