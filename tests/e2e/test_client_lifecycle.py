@@ -114,6 +114,7 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
                              if failure == "stale_real_say" else [])
             self.snapshots = iter([
                 {"actors": {"2": {"position": [0, 0, 0]}}},
+                {"actors": {"2": {"position": [0, 0, 0]}}, "seq": 8, "chat": []},
                 {"actors": {"2": {"position": [2, 0, 0]}}, "seq": 9, "chat": []},
                 {"actors": {"2": {}}, "seq": 10, "chat": baseline_chat},
                 {"actors": {"2": {}}, "seq": 11,
@@ -154,6 +155,15 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     monkeypatch.setattr(guest, "Environment", Environment)
     monkeypatch.setattr(guest, "Worker", Worker); monkeypatch.setattr(guest, "Bot", Witness)
     monkeypatch.setattr(guest, "other_player", lambda s, *a, **k: (2, s["actors"]["2"]) if "2" in s["actors"] else None)
+    monkeypatch.setattr(guest, "real_movement_baseline", lambda state, entity, origin:
+        {"sequence":state["seq"],"position":state["actors"][str(entity)]["position"]})
+    monkeypatch.setattr(guest, "received_real_movement", lambda state, entity, origin, baseline:
+        ({"verified":True,
+          "scope":"fresh-bounded-real-client-movement-received-by-independent-witness",
+          "actor":entity,"origin":origin,"baseline_position":baseline["position"],
+          "received_position":state["actors"][str(entity)]["position"],
+          "baseline_sequence":baseline["sequence"],"received_sequence":state["seq"],
+          "movement_metres":2.0} if state["actors"][str(entity)]["position"] == [2,0,0] else None))
     def say_baseline(state, entity):
         if state["chat"]:
             raise ValueError("synthetic stale real Say")
@@ -202,6 +212,13 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     else:
         assert report["witness_retirements"] == [{"bot": "owned-witness", "server_close_observed": True,
             "native_bot_removed": True, "scope": "normal-witness-session-retirement-not-offline-exclusion"}]
+    assert report["movement_baseline"]["seq"] == 8
+    assert report["real_movement_receipt"] == {
+        "verified":True,
+        "scope":"fresh-bounded-real-client-movement-received-by-independent-witness",
+        "actor":2,"origin":[0,0,0],"baseline_position":[0,0,0],
+        "received_position":[2,0,0],"baseline_sequence":8,"received_sequence":9,
+        "movement_metres":2.0}
     assert report["say_baseline"]["seq"] == 10
     if failure == "stale_real_say":
         assert "real_say_receipt" not in report

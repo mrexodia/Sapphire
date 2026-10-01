@@ -13,8 +13,9 @@ from pathlib import Path
 
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
-from .client_smoke import (CLIENT_SHA256, REAL_SAY, moved, other_player,
-                           real_say_baseline, received_real_say, validate_review)
+from .client_smoke import (CLIENT_SHA256, other_player,
+                           real_movement_baseline, real_say_baseline,
+                           received_real_movement, received_real_say, validate_review)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
 
@@ -117,7 +118,8 @@ def _timing(value):
 
 def _outer_journey(report, pair, fixture):
     states = {key: report.get(key) for key in
-              ("spawn", "movement", "say_baseline", "say", "review", "logout")}
+              ("spawn", "movement_baseline", "movement", "say_baseline",
+               "say", "review", "logout")}
     if any(not isinstance(value, dict) for value in states.values()):
         raise DevelopmentError("graphical outer received-state journey is incomplete")
     expected_self = pair["identities"][0]
@@ -126,7 +128,7 @@ def _outer_journey(report, pair, fixture):
         if not _typed_equal(initial_identity, expected_self):
             raise DevelopmentError("graphical initial witness differs from paired mover")
         observations = {}
-        for stage in ("spawn", "movement", "say_baseline", "say", "review"):
+        for stage in ("spawn", "movement_baseline", "movement", "say_baseline", "say", "review"):
             state = states[stage]
             if (type(state.get("entity_id")) is not int
                     or state["entity_id"] != expected_self["entity_id"]):
@@ -137,11 +139,15 @@ def _outer_journey(report, pair, fixture):
             observations[stage] = (entity, actor)
         if math.dist(observations["spawn"][1]["position"], fixture["position"]) > 1:
             raise DevelopmentError("graphical viewer did not spawn at the bounded fixture")
-        distance = math.dist(observations["spawn"][1]["position"],
-                             observations["movement"][1]["position"])
-        if not moved(observations["spawn"][1]["position"],
-                     observations["movement"][1]["position"]):
-            raise DevelopmentError("graphical viewer movement is below the required bound")
+        origin = observations["spawn"][1]["position"]
+        movement_baseline = real_movement_baseline(
+            states["movement_baseline"], report["real_entity"], origin)
+        movement_receipt = received_real_movement(
+            states["movement"], report["real_entity"], origin, movement_baseline)
+        if (movement_receipt is None
+                or not _typed_equal(report.get("real_movement_receipt"), movement_receipt)):
+            raise DevelopmentError("graphical result lacks exact fresh movement evidence")
+        distance = movement_receipt["movement_metres"]
         recorded_distance = report.get("observed_movement_metres")
         if (type(recorded_distance) not in (int, float) or not math.isfinite(recorded_distance)
                 or not math.isclose(recorded_distance, distance, rel_tol=0, abs_tol=1e-9)):
@@ -160,6 +166,7 @@ def _outer_journey(report, pair, fixture):
     return {"verified": True,
             "scope": "received-real-client-spawn-movement-say-review-logout-not-rendering",
             "viewer_entity": report["real_entity"], "movement_metres": distance,
+            "movement_scope": movement_receipt["scope"],
             "say_scope": say_receipt["scope"]}
 
 

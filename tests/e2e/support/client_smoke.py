@@ -48,6 +48,42 @@ def moved(origin, current):
     return distance >= 1
 
 
+def real_movement_baseline(state, expected_entity, origin):
+    """Reject displacement that occurred before the authored movement window."""
+    _, actor = other_player(state, expected_entity)
+    sequence = state.get("seq")
+    if (type(sequence) is not int or not 0 <= sequence < 2**64
+            or math.dist(position(origin), position(actor.get("position"))) > 0.15):
+        raise ValueError("real-client movement baseline is stale or displaced")
+    return {"sequence": sequence, "position": list(actor["position"])}
+
+
+def received_real_movement(state, expected_entity, origin, baseline):
+    """Return one independently received bounded displacement, or None while waiting."""
+    if (not isinstance(baseline, dict) or set(baseline) != {"sequence", "position"}
+            or type(baseline.get("sequence")) is not int
+            or not 0 <= baseline["sequence"] < 2**64
+            or not position(baseline.get("position"))
+            or math.dist(position(origin), baseline["position"]) > 0.15):
+        raise ValueError("real-client movement baseline receipt is invalid")
+    _, actor = other_player(state, expected_entity)
+    sequence = state.get("seq")
+    if type(sequence) is not int or not baseline["sequence"] <= sequence < 2**64:
+        raise ValueError("real-client movement observation lacks a valid sequence")
+    current = position(actor.get("position"))
+    distance = math.dist(position(origin), current)
+    if distance < 1:
+        return None
+    if not moved(origin, current) or sequence <= baseline["sequence"]:
+        raise ValueError("real-client movement is stale, excessive, or not freshly received")
+    return {"verified": True,
+            "scope": "fresh-bounded-real-client-movement-received-by-independent-witness",
+            "actor": expected_entity, "origin": list(origin),
+            "baseline_position": list(baseline["position"]),
+            "received_position": list(current), "baseline_sequence": baseline["sequence"],
+            "received_sequence": sequence, "movement_metres": distance}
+
+
 def real_say_baseline(state, expected_entity):
     """Reject a pre-sent fixed challenge before opening its received-state window."""
     other_player(state, expected_entity)

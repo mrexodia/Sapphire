@@ -7,7 +7,8 @@ import pytest
 
 from .prepare_client_smoke import approve, sandbox_xml
 from .support.client_smoke import (REAL_SAY, REVIEW_CHECKS, moved, other_player, position,
-                                   real_say_baseline, received_real_say, validate_review)
+                                   real_movement_baseline, real_say_baseline,
+                                   received_real_movement, received_real_say, validate_review)
 from .support.environment import sha256
 
 
@@ -70,6 +71,35 @@ def test_fixture_placement_and_excess_movement_are_not_success():
     assert moved([0, 0, 0], [3, 4, 0])
     with pytest.raises(ValueError):
         moved([0, 0, 0], [5.01, 0, 0])
+
+
+def test_real_movement_requires_post_phase_baseline_and_advancing_received_state():
+    baseline_state = state(); baseline_state["actors"]["12"]["position"] = [0,0,0]
+    baseline = real_movement_baseline(baseline_state, 12, [0,0,0])
+    waiting = copy.deepcopy(baseline_state)
+    assert received_real_movement(waiting, 12, [0,0,0], baseline) is None
+    received = copy.deepcopy(baseline_state); received["seq"] = 11
+    received["actors"]["12"]["position"] = [1,0,0]
+    assert received_real_movement(received, 12, [0,0,0], baseline) == {
+        "verified":True,
+        "scope":"fresh-bounded-real-client-movement-received-by-independent-witness",
+        "actor":12,"origin":[0,0,0],"baseline_position":[0,0,0],
+        "received_position":[1,0,0],"baseline_sequence":10,
+        "received_sequence":11,"movement_metres":1.0}
+
+
+def test_real_movement_rejects_stale_displaced_or_excessive_evidence():
+    displaced = state(); displaced["actors"]["12"]["position"] = [0.16,0,0]
+    with pytest.raises(ValueError, match="baseline"):
+        real_movement_baseline(displaced, 12, [0,0,0])
+    baseline = {"sequence":10,"position":[0,0,0]}
+    for sequence, point in ((10,[1,0,0]), (11,[5.01,0,0])):
+        received = state(); received["seq"] = sequence
+        received["actors"]["12"]["position"] = point
+        with pytest.raises(ValueError):
+            received_real_movement(received, 12, [0,0,0], baseline)
+    with pytest.raises(ValueError):
+        received_real_movement(state(), 12, [0,0,0], {"sequence":True,"position":[0,0,0]})
 
 
 def test_real_say_requires_one_fresh_sequence_bound_ordinary_message():

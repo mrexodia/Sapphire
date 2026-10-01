@@ -199,8 +199,11 @@ are absent, not passing. On completion or failure, `status.json` changes to
    when the named fixture already exists. The witness requires exactly one other level-one,
    living, non-GM player in public territory 130, near the fixture position.
 2. At `movement`, move that character **1–5 metres** using normal movement keys.
-   The witness must receive displacement from the original spawn position.
-   Catalog-derived starting placement is fixture setup, **not tested travel**.
+   After publishing the phase, the coordinator first requires a received baseline
+   still within 0.15m of the original spawn. The final position must arrive at a
+   strictly newer witness sequence and remain within the five-metre bound; pre-
+   phase displacement or cached position cannot pass. Catalog-derived starting
+   placement is fixture setup, **not tested travel**.
 3. At `say`, send exactly `E2E real client verified` using ordinary Say. The
    coordinator first captures a received sequence baseline and rejects that exact
    message if it was pre-sent. Success requires exactly one kind-10 Say row from
@@ -259,8 +262,9 @@ are absent, not passing. On completion or failure, `status.json` changes to
      --output .e2e-artifacts/<run>/output
    ```
 
-   It revalidates the outer received spawn, bounded displacement, fresh sequence-
-   bound Say, review presence and logout absence; both nested summaries/hashes and
+   It revalidates the outer received spawn, fresh sequence-bound bounded
+   displacement, fresh sequence-bound Say, review presence and logout absence;
+   both nested summaries/hashes and
    strict consumers; pair/handoff/restoration receipts; review-frame binding,
    retirements, outer deadline/worker exit, terminal status and reported runtime
    removal. `accepted` explicitly leaves
