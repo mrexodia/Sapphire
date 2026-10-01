@@ -15,6 +15,7 @@ from .support.development import (AccountLease, DevelopmentError, Timings, authe
                                   idle_state, movement_route, validate_profile, witnessed)
 from .support.worker import Bot, Worker
 from .support.development_deadline import RunDeadline, DeadlineWorker
+from .support.development_worker_exit import ObservedWorker
 from .support.development_reconnect import verify_position_reconnect
 from .support.development_party import require_bound_party_worker, verify_two_bot_party
 from .support.development_viewer import validate_viewer_name, viewer_checkpoint
@@ -80,7 +81,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "protocol": profile["protocol"], "territory": profile["territory"],
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
               "catalog_sha256": catalog_hash, "movement_waypoints_per_cycle": len(route),
-              "lease_retained": False, "worker_closed": False}
+              "lease_retained": False, "worker_closed": False,
+              "worker_exit": {"context_entered": False, "context_exit_attempted": False,
+                              "context_exit_completed": False, "process_exit_observed": False}}
     acquired = False
     try:
         with timings.phase("account_lease"):
@@ -93,7 +96,8 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         with timings.phase("worker_session_including_close"):
             if deadline is not None:
                 deadline.check()
-            with worker_factory(Path(profile["worker"]), artifacts / "worker") as raw_worker:
+            with ObservedWorker(worker_factory(Path(profile["worker"]), artifacts / "worker"),
+                                report["worker_exit"]) as raw_worker:
                 if deadline is not None:
                     deadline.check()
                 worker = DeadlineWorker(raw_worker, deadline) if deadline is not None else raw_worker

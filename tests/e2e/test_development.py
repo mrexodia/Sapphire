@@ -73,6 +73,8 @@ class FakeWorker:
     def __init__(self, *args):
         self.commands = []
         self.closed = False
+        # Synthetic process lifecycle for runner teardown contracts, not an OS process.
+        self.process = SimpleNamespace(pid=12345, poll=lambda: 0 if self.closed else None)
         self.states = {}
         for index, name in enumerate(("mover", "witness")):
             self.states[name] = {"phase": "ready", "entity_id": index + 1, "gm_rank": 0,

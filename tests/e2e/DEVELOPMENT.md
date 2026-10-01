@@ -366,6 +366,26 @@ per-step bounds without this aggregate budget; pass an explicit integer to enabl
 it. The graphical bridge independently retains its existing twenty-minute
 activity cap. Neither boundary establishes hard-kill/crash-consistent cleanup.
 
+### Native worker exit evidence
+
+`worker_exit` distinguishes owned-process teardown from server-session logout.
+After the worker context exits—even on a scenario failure—the runner polls that
+worker's owned process handle and records only its numeric PID/return code,
+context-exit attempts/completion and sanitized error types. A nominally successful
+scenario cannot release its leases or pass with a nonzero, unknown or unbound
+worker exit. An earlier scenario/deadline failure remains the primary failure;
+cleanup errors are recorded separately rather than masking it. No cleanup retry
+or error suppression converts the run into success.
+
+The legacy `worker_closed` flag is still set only after the normal successful
+context path. Thus a failed run can have `worker_closed=false` while its new exit
+record establishes that the local process exited. A constructor that never
+returns a worker leaves exit observation unknown. The scope is **native process
+exit**, not normal server logout, offline exclusion, world-cache quiescence,
+complete thread/handle reclamation or permission to reset/reuse characters.
+Failed-run leases remain retained even when native return code is zero. Inspect
+the separate normal logout/despawn evidence before any offline recovery action.
+
 ### Optional observed movement
 
 Add `"quest_catalog": "C:/private/motivational-speaking.json"` to the profile.
