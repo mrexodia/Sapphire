@@ -11,10 +11,13 @@ import pytest
 
 from . import provision_development, run_development, serve_development
 from .inspect_development_host import main as inspect_host_main
+from .inspect_managed_development_run import main as inspect_managed_main
 from .support.development import (DevelopmentError, authenticate, check_managed_host,
                                   require_managed_host_binding, validate_profile)
 from .support.development_host_result import (SCOPE as HOST_RESULT_SCOPE,
                                               inspect_owned_development_host)
+from .support.managed_development_result import (SCOPE as MANAGED_RESULT_SCOPE,
+                                                 inspect_managed_development_run)
 from .support.development_party import BOUND_METHODS
 from .support.environment import redact_runtime_log
 
@@ -149,6 +152,32 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
     assert proof["process_teardown"]["process_count"] == 4
 
 
+def managed_summary(path, receipt, worker_sha256):
+    snapshot = {"version":1,
+        "scope":"exact-local-account-lease-snapshot-not-server-session-or-offline-proof",
+        "state":"clear","expected_lease_count":2,"present_lease_count":0,
+        "records":[{"lease_index":0,"state":"absent"},{"lease_index":1,"state":"absent"}],
+        "retained_run_id":None,"profile_or_account_values_disclosed":False,
+        "lease_paths_or_keys_disclosed":False,"unrelated_entries_inspected":False,
+        "filesystem_mutation_performed":False,"server_or_database_contacted":False,
+        "active_session_checked":False,"offline_verified":False,"release_authorized":False,
+        "cross_file_snapshot_atomic":False,"retained_receipts_match_run":False}
+    report = {"version":1,"run_id":"b" * 32,"status":"passed",
+        "scope":"shared-development-not-acceptance","server_identity_verified":False,
+        "server_processes_owned":False,"database_access":False,
+        "account_reset_performed_by_runner":False,"world_restart_performed":False,
+        "lease_retained":False,"lease_snapshot_matches_run_state":True,
+        "lease_snapshot":snapshot,"worker_sha256":worker_sha256,
+        "managed_host_binding":{"requested":True,"verified":True,
+            "start":receipt,"finish":copy.deepcopy(receipt),"same_binding_verified":True},
+        "worker_exit":{"scope":"owned-native-worker-exit-not-server-session-closure",
+            "context_entered":True,"context_exit_attempted":True,
+            "context_exit_completed":True,"process_exit_observed":True,
+            "process_id":999,"returncode":0}}
+    path.write_text(json.dumps(report, indent=2))
+    return report
+
+
 def test_terminal_host_inspector_is_read_only_and_cli_matches(assets, tmp_path, capsys):
     report, _, session = run_host(assets, tmp_path)
     before = {path.name:hashlib.sha256(path.read_bytes()).hexdigest()
@@ -159,6 +188,66 @@ def test_terminal_host_inspector_is_read_only_and_cli_matches(assets, tmp_path, 
     assert before == after and proof["session_id"] == report["session_id"]
     assert inspect_host_main(["--session-dir", str(session)]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+
+
+def test_composite_managed_run_inspector_correlates_terminal_host_read_only(
+        assets, tmp_path, capsys):
+    captured = {}
+    def ready(env, session, clock):
+        profile = json.loads((session / "bot-profile.json").read_text())
+        captured["receipt"] = check_managed_host(profile, clock=clock)
+        (session / "stop").touch()
+    host_report, _, session = run_host(assets, tmp_path, on_ready=ready)
+    summary = tmp_path / "development-summary.json"
+    managed_summary(summary, captured["receipt"], host_report["worker_sha256"])
+    before = {path:hashlib.sha256(path.read_bytes()).hexdigest()
+              for path in (summary, session / "status.json", session / "process-lifecycle.json")}
+    proof = inspect_managed_development_run(session, summary)
+    after = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
+    assert before == after and proof["scope"] == MANAGED_RESULT_SCOPE
+    assert proof["host_session_id"] == host_report["session_id"]
+    assert inspect_managed_main(["--session-dir",str(session),"--summary",str(summary)]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda report:report.update(status="failed"),
+    lambda report:report.update(server_processes_owned=True),
+    lambda report:report["managed_host_binding"]["finish"].update(owner_pid=True),
+    lambda report:report.update(worker_sha256="0" * 64),
+    lambda report:report["worker_exit"].update(returncode=1),
+    lambda report:report.update(lease_snapshot_matches_run_state=1),
+])
+def test_composite_managed_run_inspector_rejects_foreign_or_type_confused_run(
+        assets, tmp_path, mutate):
+    captured = {}
+    def ready(env, session, clock):
+        profile = json.loads((session / "bot-profile.json").read_text())
+        captured["receipt"] = check_managed_host(profile, clock=clock)
+        (session / "stop").touch()
+    host_report, _, session = run_host(assets, tmp_path, on_ready=ready)
+    summary = tmp_path / "development-summary.json"
+    report = managed_summary(summary, captured["receipt"], host_report["worker_sha256"])
+    mutate(report); summary.write_text(json.dumps(report))
+    with pytest.raises(DevelopmentError):
+        inspect_managed_development_run(session, summary)
+
+
+def test_composite_managed_run_inspector_rejects_terminal_identity_mismatch(
+        assets, tmp_path):
+    captured = {}
+    def ready(env, session, clock):
+        profile = json.loads((session / "bot-profile.json").read_text())
+        captured["receipt"] = check_managed_host(profile, clock=clock)
+        (session / "stop").touch()
+    host_report, _, session = run_host(assets, tmp_path, on_ready=ready)
+    summary = tmp_path / "development-summary.json"
+    managed_summary(summary, captured["receipt"], host_report["worker_sha256"])
+    status_path = session / "status.json"
+    status = json.loads(status_path.read_text()); status["owner_pid"] += 1
+    status_path.write_text(json.dumps(status))
+    with pytest.raises(DevelopmentError, match="identities differ"):
+        inspect_managed_development_run(session, summary)
 
 
 @pytest.mark.parametrize("mutate", [

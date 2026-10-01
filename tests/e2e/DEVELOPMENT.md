@@ -96,7 +96,18 @@ running-before-cleanup and terminate-request receipts, observed integer return
 codes, exact status/file digest equality, removed private profiles, and the seven
 ordered successful host phases. This proves exact owned-process teardown only,
 not graceful server shutdown, account offline exclusion, cache quiescence, reset
-authority or cleanup of an already-running external shared server.
+authority or cleanup of an already-running external shared server. To correlate one
+passing managed check with that exact terminal host, also run:
+
+```powershell
+python -m tests.e2e.inspect_managed_development_run `
+  --session-dir .e2e-dev-host/watch-001 `
+  --summary .e2e-artifacts/watch-check-001/development-summary.json
+```
+
+The composite inspector binds the run's exact start/end host identity, normal
+worker exit and clear leases to the same terminal session/service lifecycle. It is
+lifecycle correlation, not revalidation of gameplay details or offline/reset proof.
 
 The host also shuts down on process loss, interruption, or expiry (60–14400 seconds **after readiness**).
 Expiry is a hard lifetime bound and may interrupt connected clients; it is not
