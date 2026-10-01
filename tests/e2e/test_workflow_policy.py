@@ -78,3 +78,15 @@ def test_workflow_policy_rejects_mutable_unbounded_or_untrusted_controls(
     path.write_text(text.replace(old, new, 1), encoding="utf-8")
     with pytest.raises(DevelopmentError):
         inspect_workflow(path, private=source == PRIVATE)
+
+
+def test_private_workflow_requires_service_free_staging_before_gate(tmp_path):
+    text = PRIVATE.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    stage = next(line for line in lines if "python -m tests.e2e.stage_ci_profile" in line)
+    gate = next(line for line in lines if "python -m tests.e2e.run_ci" in line)
+    text = text.replace(stage, "__STAGE_COMMAND__", 1).replace(gate, stage, 1)
+    text = text.replace("__STAGE_COMMAND__", gate, 1)
+    path = tmp_path / PRIVATE.name; path.write_text(text, encoding="utf-8")
+    with pytest.raises(DevelopmentError):
+        inspect_workflow(path, private=True)
