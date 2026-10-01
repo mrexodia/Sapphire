@@ -31,9 +31,13 @@ python -m tests.e2e.serve_development --profile .e2e-local.json `
   --session-dir .e2e-dev-host/watch-001 --max-seconds 3600
 ```
 
-Use a rebuilt matching worker: bound-party capabilities are checked **before**
-starting servers or preparing fixtures. Keep this terminal running and wait for
-its `ready` message. In another terminal:
+Use a rebuilt matching worker: bound-party capabilities and a normal zero exit
+from that exact owned preflight process are required **before** starting servers
+or preparing fixtures. `status.json` keeps the sanitized
+`worker_preflight_exit` receipt; worker construction, unknown/unbound exit or a
+nonzero result fails the host and cleans its still-unstarted environment. This is
+not server-session evidence because the preflight never authenticates. Keep this
+terminal running and wait for its `ready` message. In another terminal:
 
 ```powershell
 python -m tests.e2e.run_development `

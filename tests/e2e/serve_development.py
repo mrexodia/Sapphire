@@ -20,6 +20,7 @@ from .support.development import DevelopmentError, Timings, validate_profile
 from .support.development_party import require_bound_party_worker
 from .support.environment import Environment
 from .support.worker import Worker
+from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 
 
 def publish_status(path, report):
@@ -53,7 +54,8 @@ def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Env
               "owner_pid": owner.pid, "owner_created": owner.create_time(),
               "existing_database_access": False, "graphical_client_started": False,
               "fixture_setup": "three new non-GM pre-connection fixtures, including one separate viewer",
-              "normal_lobby_creation_verified": False, "cleanup_verified": False}
+              "normal_lobby_creation_verified": False, "cleanup_verified": False,
+              "worker_preflight_exit": unobserved_worker_exit()}
     environment = None
     owned_profiles = {}
     started = clock()
@@ -62,7 +64,8 @@ def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Env
         with timings.phase("environment_construction"):
             environment = environment_factory(profile)
         with timings.phase("worker_preflight"):
-            with worker_factory(environment.worker, environment.artifacts / "host-worker-preflight") as worker:
+            with ObservedWorker(worker_factory(environment.worker, environment.artifacts / "host-worker-preflight"),
+                                report["worker_preflight_exit"]) as worker:
                 require_bound_party_worker(worker)
         with timings.phase("environment_start_once"):
             environment.start()

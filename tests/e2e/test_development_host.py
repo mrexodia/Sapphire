@@ -63,9 +63,13 @@ class FakeEnvironment:
 
 
 class Probe:
-    def __init__(self, *args): pass
+    returncode = 0
+    def __init__(self, *args):
+        self.closed = False
+        self.process = SimpleNamespace(pid=12345,
+            poll=lambda: self.returncode if self.closed else None)
     def __enter__(self): return self
-    def __exit__(self, *_): pass
+    def __exit__(self, *_): self.closed = True
     def request(self, method):
         assert method == "capabilities"
         return {"methods": sorted(BOUND_METHODS)}
@@ -113,6 +117,10 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
     assert not list(session.glob("*-profile.json"))
     assert "private-password" not in (session / "status.json").read_text()
     assert report["normal_lobby_creation_verified"] is False
+    assert report["worker_preflight_exit"] == {
+        "context_entered": True, "context_exit_attempted": True, "context_exit_completed": True,
+        "process_exit_observed": True, "scope": "owned-native-worker-exit-not-server-session-closure",
+        "process_id": 12345, "returncode": 0}
     assert not report["existing_database_access"] and not report["graphical_client_started"]
 
 
@@ -144,6 +152,31 @@ def test_old_worker_rejected_before_server_start_or_fixtures(assets, tmp_path):
     report, env, _ = run_host(assets, tmp_path, probe=Old)
     assert report["status"] == "failed" and report["failure_stage"] == "worker_preflight"
     assert env.starts == 0 and env.closes == 1 and not env.fixtures
+
+
+@pytest.mark.parametrize("returncode", [1, -9, None, True])
+def test_abnormal_or_unknown_preflight_worker_exit_prevents_server_start(assets, tmp_path, returncode):
+    class Abnormal(Probe):
+        pass
+    Abnormal.returncode = returncode
+    report, env, _ = run_host(assets, tmp_path, probe=Abnormal)
+    assert report["status"] == "failed" and report["failure_stage"] == "worker_preflight"
+    assert env.starts == 0 and env.closes == 1 and not env.fixtures
+    receipt = report["worker_preflight_exit"]
+    assert receipt["context_exit_completed"]
+    assert receipt["process_exit_observed"] is (type(returncode) is int)
+
+
+def test_preflight_worker_constructor_failure_stays_unobserved(assets, tmp_path):
+    def fail(*_):
+        raise RuntimeError("private constructor failure")
+    report, env, _ = run_host(assets, tmp_path, probe=fail)
+    assert report["status"] == "failed" and report["failure_stage"] == "worker_preflight"
+    assert report["worker_preflight_exit"] == {
+        "context_entered": False, "context_exit_attempted": False,
+        "context_exit_completed": False, "process_exit_observed": False}
+    assert env.starts == 0 and env.closes == 1 and not env.fixtures
+    assert "private constructor failure" not in json.dumps(report)
 
 
 def test_changed_private_file_is_not_deleted(assets, tmp_path):
