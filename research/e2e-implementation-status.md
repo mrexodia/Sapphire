@@ -4927,6 +4927,48 @@ No full acceptance gate was run, as requested. Earlier uncommitted Linux
 scheduler/navigation/client-event experiments remain separate and unvalidated;
 the existing Linux, hosted-CI and real-client blockers are unchanged.
 
+## Retained expanded-Linux control-plane diagnosis (`cf8af2948` checkpoint)
+
+A read-only comparison of the two retained expanded-Linux failures now provides a
+source-supported next hypothesis without rerunning services or gameplay. The
+`028d38eb5` final5 run and the `e34d695fd` native-current run each collected the
+same fifteen cases and produced the same **7 passed / 8 failed** split. Their
+failure summaries remain failure evidence; neither run is compatibility or
+acceptance evidence.
+
+At both frozen revisions, every worker event advanced the per-bot `wait_state`
+version, and every still-unsatisfied wake caused an immediate full `snapshot`
+request. `actions.jsonl` omitted only `snapshot` and the initial `capabilities`
+request. Because every retained action journal remained below its 2,048-row cap,
+`max(request id) - action rows - 1` gives the exact inferred snapshot count for
+that worker execution. The eight failed cases generated **10,780** such snapshots
+in final5 and **11,859** in native-current. Their bounded event journals retained
+**7,962 / 7,900** generic packet-or-heartbeat events and **6,935 / 6,252** movement
+events respectively. All eight failed final5 journals and seven of eight failed
+native-current journals reached the 2,048-event retention limit. The native client
+at those revisions also emitted one generic `packet` event before semantic packet
+handling, so a movement update commonly produced both generic and semantic
+control-pipe traffic.
+
+This repeated correlation narrows the next authorized experiment to control-plane
+amplification: generic traffic can repeatedly wake state predicates, trigger
+thousands of synchronous snapshots, and compete with ordinary commands on the
+single Asio worker. It does **not** prove Linux or server causation, scheduler
+fairness, a corrected outcome, or compatibility. The pre-existing dirty
+`src/test_client/Client.cpp` and `tests/e2e/support/worker.py` changes target these
+two mechanisms, but they remain preserved, unexpanded, unstaged, and unverified;
+they are not credited as a fix. Any live confirmation still requires renewed
+platform/gameplay authorization and one bounded clean-source experiment before an
+expanded gate is considered.
+
+The reproducible private analysis receipt is
+`.e2e-artifacts/linux-retained-control-amplification-analysis-v1.json` (SHA-256
+`8ffe3486779c9d00a4f100aaf557e335a8f3000b65e3d512ed4577a4d7583abc`). It binds
+both summaries, diagnostics, pytest logs, frozen worker/client sources, and every
+retained action/event journal. It explicitly reports
+`mutation_performed: false` and `rerun_performed: false`. Exact-hash correlation
+is not a signature, content attestation, or causation proof.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
