@@ -2079,6 +2079,29 @@ The exact frozen revision then passed service-free staging with receipt SHA-256
 No process/service/database/account/gameplay operation ran. Constructor rollback is
 bounded local cleanup evidence, not secure erasure or process-leak evidence.
 
+Fix **`b123799dc`** hardens the next cleanup boundary. `_stop()` no longer drops an
+owned handle/metadata before exact exit observation. `close()` attempts every owned
+service even when one teardown raises, writes the incomplete private lifecycle, and
+retains streams/runtime plus uncertain handles instead of publishing successful
+cleanup. A later call may only poll the same retained process: if its integer exit is
+now observable, it completes the original receipt without a second terminate/kill
+request; otherwise it remains failed and retained. The contract injects uncertain
+world termination while exact database/API/lobby cleanup proceeds, then proves
+poll-only recovery and a valid four-service lifecycle.
+
+The first synthetic test incorrectly modeled only two services before invoking the
+strict four-service validator; it remains a failed 190-pass/1-fail/14-skip contract
+attempt, not weakened validation. Sanitized correction receipt SHA-256:
+`9e10e92bd66dbaecc897295ba7d8cdbf697e3e3c5d52b841fb89b48d6969207e`.
+Frozen, remote-free source **`b123799dcdbb9222a0ae1d88786a6385b620d867`**
+then passed **205 focused contracts with no skips in 17.14s**; test-log SHA-256:
+`4d72b5663e4e6437e29e489d593c1510b4ceb43b1ce6a2710cff5a5d5ff043b0`.
+Normal service-free staging remained accepted with receipt SHA-256
+`03dd316aa8e3e4e2fc48c27aeed6aeefd9cea82bc54be78b1587176d5f60d301`.
+No real process failure, service, account or gameplay operation ran; this proves
+failure policy/ownership contracts, not OS-level termination reliability or
+leak-freedom.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
