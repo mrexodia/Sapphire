@@ -77,8 +77,9 @@ pip-selected ambient input. Both pytest-executing jobs set
 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`, including controller contracts outside the
 gate's own environment scrubbing. The private workflow's exact choice list is tied
 to the same sixteen node IDs as the gate plus one explicit `combined` sentinel.
-A standalone choice uses the strict one-case producer and independent private-root
-consumer; only that consumer's sanitized receipt is uploaded. The combined branch
+A standalone choice uses the strict one-case producer plus separate success and
+fail-only private-root consumers; only one consumer's sanitized receipt is uploaded.
+The fail-only receipt can never accept an inspection or success evidence. The combined branch
 retains its public/private/failure inspectors. Static policy rejects missing or
 foreign choices, authorization, producer/consumer calls, summary destinations or
 output-selected upload paths. The independent policy allowlist requires exact
@@ -112,7 +113,8 @@ cmake --build build-e2e-ci --target sapphire_gameplay_ci
 ctest --test-dir build-e2e-ci --output-on-failure --timeout 60 --no-tests=error -R '^sapphire_'
 python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
   tests/e2e/test_isolated_case_runner.py tests/e2e/test_isolated_case_run_result.py \
-  tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
+  tests/e2e/test_isolated_case_run_failure_result.py tests/e2e/test_soak.py \
+  tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
   tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py \
   tests/e2e/test_workflow_policy.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
 python -m tests.e2e.inspect_ci_profile --profile .e2e-local.json \
@@ -139,6 +141,17 @@ python -m tests.e2e.inspect_isolated_case_run \
   --expected-case tests/e2e/test_live.py::test_rejected_credentials \
   --expected-revision <exact-40-hex-checked-out-revision> \
   > <new-sanitized-standalone-summary.json>
+```
+
+If the standalone producer returns nonzero, do not run the success consumer; retain
+the private root and use the fail-only sanitizer:
+
+```sh
+python -m tests.e2e.inspect_isolated_case_run_failure \
+  --private-root <same-private-root> \
+  --expected-case <exact-selected-node-id> \
+  --expected-revision <exact-40-hex-checked-out-revision> \
+  > <new-sanitized-standalone-failure-summary.json>
 ```
 
 The profile inspector performs the same static availability/catalog/mesh/hash
@@ -217,12 +230,16 @@ separate evidence that its binaries came from the checkout.
 - The selected branch uploads exactly one output path. Combined execution uploads
   only `.e2e-ci-summary.json`: fixed schema, allowlisted case identities and
   booleans, checkout identity, component hashes and cleanup/collection results.
-  Standalone execution uploads only `.e2e-isolated-case-summary.json`, produced by
-  the independent private-root consumer after reproducing the retained inspection
-  and profile/manifest binding. Its fixed receipt states one exact case,
+  Standalone execution uploads only `.e2e-isolated-case-summary.json`. On success,
+  the independent private-root consumer reproduces the retained inspection and
+  profile/manifest binding; its fixed receipt states one exact case,
   `short_feedback_only: true`, generic semantic non-independence and
-  `combined_gate_verified: false`; it contains no private path, port, credential,
-  database or PID.
+  `combined_gate_verified: false`. On failure, a separate consumer requires a
+  failed runner result, safe retained entry diagnostic, no inspection, exact clean
+  source, and consistent optional cleanup diagnostic; it emits only case, stage,
+  nullable pytest exit, cleanup classifications, diagnostic-presence booleans and
+  the runner-result hash with `success_evidence_accepted: false`. Neither form
+  contains a private path, diagnostic content, port, credential, database or PID.
   The combined summary also carries exactly 16 ordered
   `{case, manifest_sha256, lifecycle_sha256, artifact_tree_sha256}` rows plus
   SHA-256 values for private `profile.json`, `gate-diagnostics.json`, `pytest.log`
@@ -236,8 +253,10 @@ separate evidence that its binaries came from the checkout.
   gate can publish only base/source/allowlisted gate diagnostic fields accepted by
   the fail-only inspector; unknown fields, private paths, partial field groups, a
   mismatched revision or a relabeled successful outcome are rejected. A failed
-  standalone execution sets no upload output and retains diagnostics only in its
-  private root for infrastructure-controlled handling.
+  standalone execution publishes only if its fail-only sanitizer accepts the fixed
+  private failure classification; absent, linked, malformed, success-bearing or
+  inconsistent failure evidence sets no upload output. Private diagnostics remain
+  under infrastructure-controlled handling.
 - Private run directories contain `profile.json`, `entry-error.log` on entry
   failure, `pytest.log`, `live.xml`, `gate-diagnostics.json`, and the normal
   per-case server/worker artifacts. Complete-tree hashing enumerates without
