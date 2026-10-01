@@ -1753,6 +1753,42 @@ afterward. This is one disposable owned-host development check, not evidence for
 an existing external server, graphical viewer, offline/reset authority or
 acceptance breadth. No full gate, soak or platform sweep ran.
 
+## Managed run and terminal host now have one composite inspector
+
+Feature **`53ca7fe01`** adds read-only command
+`python -m tests.e2e.inspect_managed_development_run --session-dir <session> --summary <development-summary.json>`.
+It reruns the strict terminal-host inspector, requires a passing shared-development
+boundary with all server-ownership/database/reset/restart claims false, validates
+exact typed start/end host binding, normal exact run-worker exit and clear terminal
+lease snapshot, and compares the run's session, owner PID/create-time, deadline,
+API/lobby endpoints, worker digest and preflight-worker PID with the terminal host
+status. The accepted receipt binds exact run-summary and host-lifecycle hashes.
+
+This is deliberately lifecycle/provenance correlation. It does not revalidate
+movement/social/inventory assertions, turn a local status file into server-side
+exclusion, prove graceful shutdown/cache quiescence, authorize reset/reprovisioning,
+or apply to an already-running external server.
+
+Frozen, remote-free source **`53ca7fe01cdea1d43dbbab77b887744b3071b550`**
+passed **366 tests in 4.70s**. Negatives cover failed/owned-server run boundaries,
+type-confused changed completion PID, foreign worker digest, nonzero worker exit,
+boolean lease-state proof and terminal identity mismatch; positive CLI inspection
+is read-only. Test-log SHA-256:
+`74ecb4778337f85498aa75e947754bdeecfe608571a884720d96f5e37a6cd7bf`.
+Artifacts: `development-managed-composite-clean-{source.json,python.log}`.
+
+The current inspector accepted the preceding live managed run and exact terminal
+host evidence without mutation. Composite evidence SHA-256:
+`8af245ecb64da5f35c6d4ce917fb6432bfe3325f33e32d08ca0d298b0a7d625e`.
+It binds run-summary SHA-256
+`8c3f9d4ed5b10725ff7498044646b1b23b288d103d4745aba3b4c924485f1abb`,
+ready-status SHA-256
+`17ac425d27ac99123a19e1304f814332e232517396c3eaf52232c114ba719059`
+and terminal lifecycle SHA-256
+`42f7312de00e5038cdcd31681b199831e8ce493c3f62fbc2b6ae940e72eee343`.
+No new service, account, gameplay or process operation ran for this read-only
+compatibility check. No full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
