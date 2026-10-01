@@ -252,6 +252,14 @@ directory and explicit `approved=True` while the normal bots are waiting in
 `--await-placement` mode. A graphical GM can still use the documented commands
 instead; this helper is optional.
 
+For scripted preparation, `DevelopmentOperator.login_for_preparation(auth, name,
+approved=True)` is the separate GM login API. Do **not** use ordinary
+`Bot.login_via_lobby` for an operator: it intentionally rejects GM characters.
+The preparation object exposes only that login, exact one-shot viewer-challenge
+replies, and logout/close—not movement, combat or inventory actions. It does not
+create/promote an account and does not retry an uncertain login. The caller must
+already own and authorize the distinct GM account/session.
+
 The distinct worker method `development_place_registered` verifies the exact
 received operator character/entity/name, ready stationary public-130 state,
 nonzero GM rank, and absence of scene/party/invitation state immediately before

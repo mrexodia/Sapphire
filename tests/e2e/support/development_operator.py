@@ -1,8 +1,9 @@
 """Narrow GM fixture setup request, NEVER normal gameplay or mutation evidence.
 
-The caller owns/authorizes the separate GM session. This helper does not log in,
-look up arbitrary players, reset actors, or retry. Actual placement must be
-observed independently by the normal non-GM runner.
+The caller owns/authorizes the separate GM session. DevelopmentOperator provides
+an explicit administrative login, not the ordinary non-GM Bot API. The placement
+helper never logs in, discovers arbitrary targets or retries. Actual placement
+must be observed independently by the normal non-GM runner.
 """
 import json
 import os
@@ -10,6 +11,70 @@ from pathlib import Path
 import re
 
 from .development import DevelopmentError, received_character_identity
+from .worker import Bot
+
+
+def operator_identity(state, name):
+    identity = received_character_identity(state, name)
+    if (state.get("phase") != "ready" or type(state.get("gm_rank")) is not int
+            or not 1 <= state["gm_rank"] <= 255 or state.get("territory") != 130
+            or state.get("moving") is not False or state.get("between_areas") is not False
+            or state.get("scene") is not None or state.get("event_id") is not None
+            or state.get("party", {}).get("id") != 0 or state.get("party", {}).get("count") != 0
+            or state.get("pending_party_invite") is not None):
+        raise DevelopmentError("a ready, stationary, nonparty GM preparation operator is required")
+    return identity
+
+
+class DevelopmentOperator:
+    """Separate administrative session API; does not expose gameplay actions.
+
+    Ordinary Bot.login_via_lobby/wait_world_ready still require non-GM. Nothing
+    here creates/promotes a character or changes server/DB configuration.
+    """
+    def __init__(self, worker, name):
+        self.worker, self.name = worker, name
+        self._identity = None
+        self._login_started = False
+        self._replies = set()
+
+    def login_for_preparation(self, auth, character, *, approved=False, timeout=30):
+        if approved is not True or self._login_started:
+            raise DevelopmentError("explicit fresh preparation-operator login required")
+        if "development_place_registered" not in self.worker.request("capabilities").get("methods", []):
+            raise DevelopmentError("worker lacks administrative placement capability")
+        self._login_started = True  # No second login after an uncertain first request.
+        self.worker.request("login", self.name, host=auth["lobbyHost"], port=auth["lobbyPort"],
+                            session=auth["sId"], character=character)
+        state = self.worker.wait_state(self.name, lambda s: s.get("phase") == "ready",
+                                       "separate GM preparation operator world ready", timeout)
+        self._identity = operator_identity(state, character)
+        return state
+
+    def reply_to_viewer_challenge(self, challenge):
+        if self._identity is None:
+            raise DevelopmentError("preparation operator is not authenticated")
+        state = self.worker.snapshot(self.name)
+        identity = operator_identity(state, self._identity["name"])
+        expected = {"entity_id": identity["entity_id"], "name": identity["name"], "gm_rank": state["gm_rank"]}
+        run_id, stage = challenge.get("run_id"), challenge.get("stage")
+        message = challenge.get("reply_in_say")
+        if (identity != self._identity or challenge.get("viewer") != expected
+                or challenge.get("scope") != "separate-player-presence-not-graphical-attestation"
+                or not isinstance(run_id, str) or not re.fullmatch("[0-9a-f]{32}", run_id)
+                or stage not in {"start", "finish"} or not isinstance(message, str)
+                or not re.fullmatch(f"Sapphire viewer {run_id[:8]} {stage} [0-9a-f]{{32}}", message)
+                or (run_id, stage) in self._replies or len(self._replies) >= 20):
+            raise DevelopmentError("invalid/changed/consumed operator viewer challenge")
+        self._replies.add((run_id, stage))  # Consume before publication; no retries.
+        return self.worker.request("say", self.name, message=message)
+
+    def logout(self):
+        # Reuse only the ordinary logout/close lifecycle, never gameplay login or actions.
+        Bot(self.worker, self.name).logout(wait_server_close=True)
+
+    def close(self):
+        Bot(self.worker, self.name).close()
 
 
 def request_registered_placement(worker, operator, operator_name, registry, slot, artifacts, *, approved=False):
@@ -36,16 +101,10 @@ def request_registered_placement(worker, operator, operator_name, registry, slot
     if "development_place_registered" not in worker.request("capabilities").get("methods", []):
         raise DevelopmentError("worker lacks the distinct administrative placement capability")
     state = worker.snapshot(operator.name)
-    identity = received_character_identity(state, operator_name)
-    if (state.get("phase") != "ready" or type(state.get("gm_rank")) is not int
-            or not 1 <= state["gm_rank"] <= 255 or state.get("territory") != 130
-            or state.get("moving") is not False or state.get("between_areas") is not False
-            or state.get("scene") is not None or state.get("event_id") is not None
-            or state.get("party", {}).get("id") != 0 or state.get("party", {}).get("count") != 0
-            or state.get("pending_party_invite") is not None
-            or any(identity["character_id"] == row["character_id"] or identity["entity_id"] == row["entity_id"]
-                   for row in bindings)):
-        raise DevelopmentError("a separate ready, stationary, nonparty GM operator is required")
+    identity = operator_identity(state, operator_name)
+    if any(identity["character_id"] == row["character_id"] or identity["entity_id"] == row["entity_id"]
+           for row in bindings):
+        raise DevelopmentError("operator must be separate from both registered targets")
     report = {"scope": "administrative-preparation-not-gameplay", "approval_id": registry["approval_id"],
               "slot": slot, "operator": identity, "expected_target": bindings[slot],
               "status": "publication_outcome_unknown", "placement_verified": False,

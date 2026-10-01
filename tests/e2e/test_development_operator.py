@@ -6,13 +6,17 @@ from types import SimpleNamespace
 import pytest
 
 from .support.development import DevelopmentError
-from .support.development_operator import request_registered_placement
+from .support.development_operator import DevelopmentOperator, request_registered_placement
+from .support.worker import Bot, WorkerError
 
 
 class OperatorWorker:
     def __init__(self, artifacts):
         self.artifacts = artifacts
         self.requests = []
+        self.logins = []
+        self.says = []
+        self.login_failure = False
         self.supported = True
         self.fail = False
         self.identity = {"name": "Tester Operator", "entity_id": 3, "character_id": 300}
@@ -23,7 +27,18 @@ class OperatorWorker:
 
     def snapshot(self, name): return copy.deepcopy(self.state)
 
+    def wait_state(self, name, predicate, description, timeout=30):
+        assert predicate(self.state)
+        return copy.deepcopy(self.state)
+
     def request(self, method, bot=None, **args):
+        if method == "login":
+            self.logins.append(args)
+            if self.login_failure: raise TimeoutError("uncertain login")
+            return {}
+        if method == "say":
+            self.says.append(args)
+            return {}
         if method == "capabilities":
             return {"methods": ["development_place_registered"] if self.supported else []}
         assert method == "development_place_registered"
@@ -91,3 +106,55 @@ def test_only_two_integer_slots(tmp_path, registry, slot):
     worker = OperatorWorker(tmp_path)
     with pytest.raises(DevelopmentError): invoke(worker, registry, tmp_path, approved=True, slot=slot)
     assert not worker.requests
+
+
+AUTH = {"lobbyHost": "127.0.0.1", "lobbyPort": 54994, "sId": "private-session"}
+
+
+def test_separate_operator_login_does_not_weaken_normal_non_gm_guard(tmp_path):
+    worker = OperatorWorker(tmp_path)
+    with pytest.raises(WorkerError, match="non-GM"):
+        Bot(worker, "ordinary").wait_world_ready()
+    operator = DevelopmentOperator(worker, "preparation")
+    with pytest.raises(DevelopmentError): operator.login_for_preparation(AUTH, "Tester Operator")
+    assert not worker.logins
+    state = operator.login_for_preparation(AUTH, "Tester Operator", approved=True)
+    assert state["gm_rank"] == 1 and len(worker.logins) == 1
+    assert not hasattr(operator, "walk_to") and not hasattr(operator, "say")
+    with pytest.raises(DevelopmentError): operator.login_for_preparation(AUTH, "Tester Operator", approved=True)
+    assert len(worker.logins) == 1
+
+
+def test_operator_does_not_promote_non_gm(tmp_path):
+    worker = OperatorWorker(tmp_path); worker.state["gm_rank"] = 0
+    operator = DevelopmentOperator(worker, "preparation")
+    with pytest.raises(DevelopmentError): operator.login_for_preparation(AUTH, "Tester Operator", approved=True)
+    assert not worker.requests and worker.state["gm_rank"] == 0
+
+
+def test_operator_old_capability_or_uncertain_login_is_not_retried(tmp_path):
+    worker = OperatorWorker(tmp_path); worker.supported = False
+    operator = DevelopmentOperator(worker, "preparation")
+    with pytest.raises(DevelopmentError): operator.login_for_preparation(AUTH, "Tester Operator", approved=True)
+    assert not worker.logins
+    worker.supported = True; worker.login_failure = True
+    with pytest.raises(TimeoutError): operator.login_for_preparation(AUTH, "Tester Operator", approved=True)
+    with pytest.raises(DevelopmentError): operator.login_for_preparation(AUTH, "Tester Operator", approved=True)
+    assert len(worker.logins) == 1
+
+
+def test_operator_viewer_reply_binds_exact_challenge_and_no_duplicate_send(tmp_path):
+    worker = OperatorWorker(tmp_path)
+    operator = DevelopmentOperator(worker, "preparation")
+    operator.login_for_preparation(AUTH, "Tester Operator", approved=True)
+    challenge = {"scope": "separate-player-presence-not-graphical-attestation", "run_id": "b" * 32,
+                 "stage": "start", "viewer": {"entity_id": 3, "name": "Tester Operator", "gm_rank": 1},
+                 "reply_in_say": "Sapphire viewer bbbbbbbb start " + "c" * 32}
+    bad = copy.deepcopy(challenge); bad["viewer"]["entity_id"] = 4
+    with pytest.raises(DevelopmentError): operator.reply_to_viewer_challenge(bad)
+    bad = copy.deepcopy(challenge); bad["reply_in_say"] = "!arbitrary"
+    with pytest.raises(DevelopmentError): operator.reply_to_viewer_challenge(bad)
+    assert not worker.says
+    operator.reply_to_viewer_challenge(challenge)
+    with pytest.raises(DevelopmentError): operator.reply_to_viewer_challenge(challenge)
+    assert len(worker.says) == 1
