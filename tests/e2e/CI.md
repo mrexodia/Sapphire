@@ -65,7 +65,13 @@ explicitly to checkout, verifies `HEAD` equals that exact SHA, requires an empty
 tracked/untracked worktree, and rejects missing, changed or conflicted recursive
 submodules. The policy inspector requires these checks in order before CMake. This
 reduces checkout/ref ambiguity; without execution it does not prove a hosted
-checkout or trustworthy dependencies. The private workflow rebuilds the checked-
+checkout or trustworthy dependencies. Both workflows install an exact seven-
+package Python 3.11 closure using `--require-hashes --only-binary=:all:`. The
+independent policy allowlist requires exact versions and reviewed wheel SHA-256
+values for x86-64 Windows/Linux; ranges, source distributions, index options,
+changed hashes and unreviewed packages fail closed. Successful local wheel download
+proves only availability and byte matching, not package behavior, index integrity,
+pip integrity or hosted installation. The private workflow rebuilds the checked-
 out server, all discovered
 native script modules, worker and all six framework native tests using the
 `sapphire_gameplay_ci` CMake target. GUI tools and Recast's separate test suite are

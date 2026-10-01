@@ -2555,6 +2555,26 @@ No hosted job, runner, remote setting, service, endpoint, account or gameplay
 operation ran. Static YAML/source inspection does not prove hosted checkout,
 dependency integrity, runner-group enforcement or ephemeral destruction.
 
+Workflow feature **`bffc71640`** replaces mutable Python ranges with an exact
+Python 3.11 seven-package wheel closure and reviewed SHA-256 values for the current
+x86-64 Windows/Linux platforms. Both workflows use `--require-hashes
+--only-binary=:all:`. The independent policy parser rejects ranges, source/index
+options, duplicate/unreviewed packages, changed versions or hashes and workflow
+commands that weaken either pip guard. Read-only pip downloads selected and
+hash-verified all seven Windows and Linux wheels; Windows log SHA-256 is
+`a0ee015b82e02a8ad6f949bb432ae97ebe1a2771ff470145bb7f79871573cd82`,
+and Linux-selection log SHA-256 is
+`3ab9c99a5536b7b359f7e94e4d920bd7fc890a851dd9ba7238260231b3430b30`.
+The lock SHA-256 is
+`a4eca043c9ce3404cb9f301f7bd9cc7254b5d5c247aaa657cec1bc0cda0f2b95`.
+
+Frozen, remote-free source **`bffc716409b8cb7aed6674e55192ae240832a4dd`**
+passed **1097 focused contracts with no skips in 39.76s**. Test-log SHA-256:
+`5afd8a8e17534b265824ff393fe7d1d44d593711d4a8550b7da988460b46f44d`.
+No package was installed and no hosted workflow, service, endpoint, account or
+gameplay operation ran. A matching hash proves selected distribution bytes only,
+not PyPI/pip integrity, package safety, execution, compatibility or hosted use.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
