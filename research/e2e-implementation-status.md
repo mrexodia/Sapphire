@@ -1873,6 +1873,27 @@ This is exact private input-file identity and schema correlation, not proof that
 path contents are authentic, unchanged after staging, compatible or externally
 provisioned. No fixture, service, gate or gameplay operation ran.
 
+Feature **`0f9351890`** adds a service-free readiness check:
+`python -m tests.e2e.inspect_ci_profile`. It accepts only the exact path/deadline
+schema, runs the same catalog/version/mesh/file/hash preflight with optional worker/
+binary overrides, and emits profile/component hashes and counts without paths. It
+explicitly reports that no service, account or gameplay operation started and does
+not claim build provenance or compatibility.
+
+Frozen, remote-free source **`0f93518902dc272d732b6a116a70082e18d23570`**
+passed **150 CI/workflow-policy/profile-inspector tests in 7.67s**. Negatives cover
+unknown credential-like keys, missing inputs, type-confused deadline and an absent
+private worker without rendering its path. Test-log SHA-256:
+`e4300d47f3e8438a6da9fe5e4b8a6d2a085249010c8fb4eba298aeacb8bdd57e`.
+
+Read-only inspection of the existing `.e2e-local.json` correctly failed before any
+service startup: it lacks `opening_quest_catalog`, `pursuit_catalog`,
+`respawn_catalog` and `shop_catalog`. Sanitized rejection-log SHA-256:
+`ed5ad522ef50a1b7f4ead9a4aae8c0dbafbed2dd071d973066f66086cc244444`.
+Therefore renewed gate authorization alone is insufficient for the current local
+profile: approved paths to those exact four source-generated catalogs (or a new
+complete private profile) are required. No path was guessed or disclosed.
+
 Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
 to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
 inspection derives and requires each expected `(classname, name)` pair, including
@@ -4169,7 +4190,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds ordered manifest/lifecycle/complete-bounded-artifact-tree hashes per exact case plus private profile/diagnostics/pytest/JUnit hashes while keeping names/contents/paths/PIDs private, with a read-only private-byte/process/input/phase/JUnit correlation inspector | Implemented at contract level; current public/private per-case correlation awaits a new gate, and hashes/reported outcomes do not independently prove gameplay, hosted execution or compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, passing public/private and fail-only result inspectors, and `CI.md`; strict workflow/process-policy and evidence receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy both exact current public result/revision and retained private-byte semantic contracts before upload, while failed summaries require a separate sanitized fail-only contract that never accepts success evidence; private dispatch remains protected/serialized in YAML; every historical summary predates current evidence fields and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, profile/public/private/fail-only inspectors and `CI.md`; strict workflow/process-policy and evidence receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy both exact current public result/revision and retained private-byte semantic contracts before upload, while failed summaries require a separate sanitized fail-only contract that never accepts success evidence; private dispatch remains protected/serialized in YAML; every historical summary predates current evidence fields and is rejected, so current gate execution is pending; the existing local profile also lacks four now-required catalogs; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
