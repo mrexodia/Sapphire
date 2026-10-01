@@ -2205,6 +2205,20 @@ owned-development-host, CI, worker and workflow-policy consumers. Test-log SHA-2
 The marker injections are synthetic. This does not refresh graphical, hosted,
 shared-development, staging, service, account or gameplay execution evidence.
 
+Fix **`d092a43e8`** closes an owned-host provenance distinction discovered by the
+cross-lane audit. The terminal host inspector now follows `status.json` to the
+original absolute, safe, non-overlapping `Environment` artifact directory, rejects
+terminal markers there, and requires its lifecycle object to equal the separately
+retained session copy before accepting either. Pointing `artifacts` back at the
+session, changing only one lifecycle, or recomputing both copies with a missing
+service all fail at their respective boundaries.
+
+Frozen, remote-free source **`d092a43e8a73dd45426ccf4b69b0d8fdcc93a684`**
+passed **390 focused contracts with no skips in 29.35s**. Test-log SHA-256:
+`5b517922272eaf2f96517c6acaf915c43b20e724822f8fdc9cdc32c26ebf1c1b`.
+These use fake owned services and synthetic bytes; they prove read-only correlation
+policy, not a refreshed warm-host teardown, offline exclusion or shared-world cleanup.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
