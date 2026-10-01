@@ -1746,6 +1746,24 @@ it did not use `run_ci`, produce the 16-case public/private result, compile the
 binaries, create gameplay sessions, simulate an organic crash or run any other
 gate case.
 
+Feature **`78bb2483e`** replaces the one-off inspection script with committed
+`python -m tests.e2e.inspect_isolated_fault`. The read-only inspector requires a
+clean exact revision, fixture-v2 manifest identities, one generation each of all
+four exact services, exact fault PID/generation/return-code correlation, retained
+manifest/lifecycle/world-log hashes, exact narrow scope and proof booleans, absent
+disposable runtime/root, bounded regular files and a complete artifact-tree digest.
+Its output omits paths, ports, database names and PIDs.
+
+Frozen, remote-free source **`78bb2483e4c3c6af73b1a05dfb131b441a8bf75b`**
+passed **134 CI/workflow-policy/inspector tests in 6.24s**. Negatives cover changed
+classification, world PID, retained runtime, proof hash, source revision and extra
+private field. The committed inspector accepted the retained live artifact with
+receipt SHA-256:
+`a83b1e1f95773b62700de005fd7cc3189e6d772fa6a06a12fed4cd93c3e864ea`;
+test-log SHA-256:
+`c1a9b40285d3f4ddc9359f528aeee19b9eeb10b4ae3bae63e823aa6951b552ff`.
+This revalidates retained bytes; it does not broaden the single-case live scope.
+
 Feature **`78b7cb4bb`** closes a separate private cleanup-inspection gap. For every
 case, the read-only inspector now requires an absolute `.../runtime` identity,
 rejects overlap with its retained artifact directory, and requires both that
