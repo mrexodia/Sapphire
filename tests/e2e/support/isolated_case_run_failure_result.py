@@ -13,6 +13,7 @@ from .isolated_case_runner import SCOPE as RUNNER_SCOPE
 SCOPE = "sanitized-failed-strict-standalone-case-publication-v1"
 _BASE_FIELDS = {
     "version", "status", "stage", "scope", "case", "source_revision", "source_dirty",
+    "execution_authorized",
 }
 _CLEANUP_FIELDS = {
     "captured_environment_cleanup_attempted", "captured_environment_cleanup_failed",
@@ -61,6 +62,7 @@ def inspect_failed_isolated_case_run(private_root, expected_case, expected_revis
             or result.get("scope") != RUNNER_SCOPE or result.get("case") != expected_case
             or result.get("source_revision") != expected_revision
             or result.get("source_dirty") is not False
+            or result.get("execution_authorized") is not True
             or ("pytest_exit_code" in result
                 and (type(result["pytest_exit_code"]) is not int or result["pytest_exit_code"] == 0))
             or ("pytest_exit_code" in result and result["stage"] == "preflight")):
@@ -89,7 +91,8 @@ def inspect_failed_isolated_case_run(private_root, expected_case, expected_revis
     return {
         "version": 1, "status": "failed", "scope": SCOPE,
         "source_revision": expected_revision, "source_dirty": False,
-        "case": expected_case, "failure_stage": result["stage"],
+        "case": expected_case, "execution_authorized": True,
+        "failure_stage": result["stage"],
         "pytest_exit_code": result.get("pytest_exit_code"),
         "captured_environment_cleanup_attempted": cleanup_attempted,
         "captured_environment_cleanup_failed": cleanup_failed,

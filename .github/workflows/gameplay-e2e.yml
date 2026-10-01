@@ -169,7 +169,7 @@ jobs:
           }
           } else {
           $summaryPath = '.e2e-isolated-case-summary.json'
-          python -m tests.e2e.run_isolated_case --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" --expected-revision "${{ github.sha }}"
+          python -m tests.e2e.run_isolated_case --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" --expected-revision "${{ github.sha }}" --authorize-disposable-fixture
           $standaloneExit = $LASTEXITCODE
           if ($standaloneExit -eq 0) {
           python -m tests.e2e.inspect_isolated_case_run --private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" --expected-revision "${{ github.sha }}" | Out-File -FilePath .e2e-isolated-case-summary.json -Encoding utf8

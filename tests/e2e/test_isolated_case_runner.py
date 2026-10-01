@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from . import run_isolated_case as cli
 from .run_ci import CASES
 from .support import isolated_case_runner as runner
 from .support.environment import SetupError
@@ -45,6 +46,26 @@ def test_standalone_gate_rejects_inexact_execution(mutation):
     assert not gate.exact_pass(1 if mutation == "exit" else 0)
 
 
+def test_cli_forwards_only_explicit_disposable_fixture_authorization(monkeypatch):
+    calls = []
+    def invoke(*args, **kwargs):
+        calls.append(kwargs["authorized"])
+        return 0 if kwargs["authorized"] else 1
+    monkeypatch.setattr(cli, "run_isolated_case", invoke)
+    base = ["--profile", "private.json", "--private-root", "C:/private/new",
+            "--expected-case", CASES[0], "--expected-revision", REVISION]
+    assert cli.main(base) == 1 and calls == [False]
+    assert cli.main(base + ["--authorize-disposable-fixture"]) == 0
+    assert calls == [False, True]
+
+
+def test_runner_requires_explicit_authorization_before_private_root(tmp_path):
+    private = tmp_path / "private"
+    with pytest.raises(SetupError, match="explicit disposable-fixture authorization"):
+        runner.run_isolated_case(tmp_path / "missing-profile", private, CASES[0], REVISION)
+    assert not private.exists()
+
+
 def test_runner_rejects_unallowlisted_or_unsafe_root_before_creation(tmp_path, monkeypatch):
     repository = tmp_path / "repo"
     repository.mkdir()
@@ -52,15 +73,18 @@ def test_runner_rejects_unallowlisted_or_unsafe_root_before_creation(tmp_path, m
     profile = tmp_path / "profile.json"
     profile.write_text("{}")
     with pytest.raises(SetupError, match="allowlisted"):
-        runner.run_isolated_case(profile, tmp_path / "private", "foreign::case", REVISION)
+        runner.run_isolated_case(profile, tmp_path / "private", "foreign::case", REVISION,
+                                 authorized=True)
     with pytest.raises(SetupError, match="new absolute"):
-        runner.run_isolated_case(profile, "relative-private", CASES[0], REVISION)
+        runner.run_isolated_case(profile, "relative-private", CASES[0], REVISION,
+                                 authorized=True)
     with pytest.raises(SetupError, match="outside"):
-        runner.run_isolated_case(profile, repository / "private", CASES[0], REVISION)
+        runner.run_isolated_case(profile, repository / "private", CASES[0], REVISION,
+                                 authorized=True)
     existing = tmp_path / "existing"
     existing.mkdir()
     with pytest.raises(SetupError, match="new absolute"):
-        runner.run_isolated_case(profile, existing, CASES[0], REVISION)
+        runner.run_isolated_case(profile, existing, CASES[0], REVISION, authorized=True)
 
 
 def configure_success(monkeypatch, tmp_path, case, *, fault=False):
@@ -125,7 +149,8 @@ def test_runner_executes_one_case_binds_inputs_and_uses_required_inspector(
     monkeypatch.setenv("PYTEST_PLUGINS", "PRIVATE_MARKER")
     private = tmp_path / "private"
     cwd = Path.cwd()
-    assert runner.run_isolated_case(profile, private, case, REVISION) == 0
+    assert runner.run_isolated_case(
+        profile, private, case, REVISION, authorized=True) == 0
     assert Path.cwd() == cwd
     assert runner.os.environ["PYTEST_ADDOPTS"] == "-k PRIVATE_MARKER"
     assert runner.os.environ["PYTEST_PLUGINS"] == "PRIVATE_MARKER"
@@ -133,7 +158,7 @@ def test_runner_executes_one_case_binds_inputs_and_uses_required_inspector(
     assert result == {
         "version": 1, "status": "accepted", "stage": "verified", "scope": runner.SCOPE,
         "case": case, "source_revision": REVISION, "source_dirty": False,
-        "pytest_exit_code": 0, "exact_single_case_verified": True,
+        "execution_authorized": True, "pytest_exit_code": 0, "exact_single_case_verified": True,
         "profile_inputs_verified": True,
         "inspection_sha256": runner._sha256(private / "inspection.json"),
         "inspection_scope": "fault-test-scope" if case == FAULT_CASE else "generic-test-scope",
@@ -155,7 +180,8 @@ def test_runner_preserves_private_failure_without_inspection(tmp_path, monkeypat
 
     monkeypatch.setattr(pytest, "main", fail)
     private = tmp_path / "private"
-    assert runner.run_isolated_case(profile, private, case, REVISION) == 1
+    assert runner.run_isolated_case(
+        profile, private, case, REVISION, authorized=True) == 1
     result = json.loads((private / "runner-result.json").read_text())
     assert result["status"] == "failed" and result["stage"] == "suite"
     assert "PRIVATE_FAILURE_MARKER" not in json.dumps(result)
@@ -185,7 +211,8 @@ def test_runner_attempts_captured_owned_cleanup_once_after_propagated_failure(
 
     monkeypatch.setattr(pytest, "main", interrupt)
     private = tmp_path / "private"
-    assert runner.run_isolated_case(profile, private, case, REVISION) == 1
+    assert runner.run_isolated_case(
+        profile, private, case, REVISION, authorized=True) == 1
     result = json.loads((private / "runner-result.json").read_text())
     assert environment.calls == 1
     assert result["captured_environment_cleanup_attempted"] is True
@@ -214,7 +241,8 @@ def test_runner_rejects_captured_cleanup_that_returns_without_closure(tmp_path, 
 
     monkeypatch.setattr(pytest, "main", interrupt)
     private = tmp_path / "private"
-    assert runner.run_isolated_case(profile, private, case, REVISION) == 1
+    assert runner.run_isolated_case(
+        profile, private, case, REVISION, authorized=True) == 1
     result = json.loads((private / "runner-result.json").read_text())
     assert environment.calls == 1 and result["captured_environment_cleanup_failed"] is True
     assert "cleanup remained incomplete" in (private / "cleanup-error.log").read_text()
@@ -226,7 +254,8 @@ def test_runner_rejects_source_change_after_private_inspection(tmp_path, monkeyp
     identities = iter(((REVISION, False), (REVISION, True)))
     monkeypatch.setattr(runner, "_repository_identity", lambda: next(identities))
     private = tmp_path / "private"
-    assert runner.run_isolated_case(profile, private, case, REVISION) == 1
+    assert runner.run_isolated_case(
+        profile, private, case, REVISION, authorized=True) == 1
     result = json.loads((private / "runner-result.json").read_text())
     assert result["status"] == "failed" and result["stage"] == "inspection"
     assert not (private / "inspection.json").exists()
@@ -244,9 +273,9 @@ def test_runner_requires_exact_clean_reviewed_revision_before_root(tmp_path, mon
     private = tmp_path / "private"
     monkeypatch.setattr(runner, "_repository_identity", lambda: ("b" * 40, False))
     with pytest.raises(SetupError, match="exact clean"):
-        runner.run_isolated_case(profile, private, CASES[0], REVISION)
+        runner.run_isolated_case(profile, private, CASES[0], REVISION, authorized=True)
     assert not private.exists()
     monkeypatch.setattr(runner, "_repository_identity", lambda: (REVISION, True))
     with pytest.raises(SetupError, match="exact clean"):
-        runner.run_isolated_case(profile, private, CASES[0], REVISION)
+        runner.run_isolated_case(profile, private, CASES[0], REVISION, authorized=True)
     assert not private.exists()

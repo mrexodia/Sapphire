@@ -93,7 +93,9 @@ class StandaloneCaseGate:
 
 
 def run_isolated_case(profile_path, private_root, expected_case, expected_revision,
-                      *, worker=None, binaries=None, suffix=None):
+                      *, authorized=False, worker=None, binaries=None, suffix=None):
+    if authorized is not True:
+        raise SetupError("standalone case requires explicit disposable-fixture authorization")
     if expected_case not in CASES:
         raise SetupError("standalone case is not allowlisted")
     if not _hex(expected_revision, 40):
@@ -115,6 +117,7 @@ def run_isolated_case(profile_path, private_root, expected_case, expected_revisi
     report = {
         "version": 1, "status": "failed", "stage": "preflight", "scope": SCOPE,
         "case": expected_case, "source_revision": revision, "source_dirty": False,
+        "execution_authorized": True,
     }
     gate = None
 

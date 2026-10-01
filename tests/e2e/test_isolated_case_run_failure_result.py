@@ -22,6 +22,7 @@ def make_failure(tmp_path, monkeypatch, *, stage="suite", exit_code=1,
         "version": 1, "status": "failed", "stage": stage,
         "scope": RUNNER_SCOPE, "case": CASE,
         "source_revision": REVISION, "source_dirty": False,
+        "execution_authorized": True,
     }
     if exit_code is not None:
         result["pytest_exit_code"] = exit_code
@@ -45,6 +46,7 @@ def test_failure_receipt_is_fixed_and_never_accepts_success(tmp_path, monkeypatc
     root, _ = make_failure(tmp_path, monkeypatch, cleanup=cleanup)
     receipt = inspect_failed_isolated_case_run(root, CASE, REVISION)
     assert receipt["scope"] == SCOPE and receipt["status"] == "failed"
+    assert receipt["execution_authorized"] is True
     assert receipt["success_evidence_accepted"] is False
     assert receipt["combined_gate_verified"] is False
     assert receipt["captured_environment_cleanup_attempted"] is (cleanup is not None)
@@ -56,7 +58,7 @@ def test_failure_receipt_is_fixed_and_never_accepts_success(tmp_path, monkeypatc
 
 @pytest.mark.parametrize("change", [
     "success", "extra", "zero-exit", "preflight-exit", "inspection", "missing-entry",
-    "unexpected-cleanup-log", "missing-cleanup-log", "one-cleanup-field",
+    "unexpected-cleanup-log", "missing-cleanup-log", "one-cleanup-field", "authorization",
 ])
 def test_failure_consumer_rejects_malformed_or_relabelled_runs(tmp_path, monkeypatch, change):
     cleanup = True if change == "missing-cleanup-log" else None
@@ -70,6 +72,7 @@ def test_failure_consumer_rejects_malformed_or_relabelled_runs(tmp_path, monkeyp
     elif change == "unexpected-cleanup-log": (root / "cleanup-error.log").write_text("x")
     elif change == "missing-cleanup-log": (root / "cleanup-error.log").unlink()
     elif change == "one-cleanup-field": result["captured_environment_cleanup_attempted"] = True
+    elif change == "authorization": result["execution_authorized"] = False
     (root / "runner-result.json").write_text(json.dumps(result))
     with pytest.raises(SetupError):
         inspect_failed_isolated_case_run(root, CASE, REVISION)

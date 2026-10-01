@@ -251,7 +251,7 @@ def inspect_workflow(path, *, private):
                           '"$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" '
                           '--worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" '
                           '--private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" '
-                          '--expected-revision "${{ github.sha }}"')
+                          '--expected-revision "${{ github.sha }}" --authorize-disposable-fixture')
         standalone_exit = "          $standaloneExit = $LASTEXITCODE"
         standalone_success_branch = "          if ($standaloneExit -eq 0) {"
         standalone_inspection = ('          python -m tests.e2e.inspect_isolated_case_run --private-root '

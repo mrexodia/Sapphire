@@ -17,7 +17,7 @@ from .isolated_case_runner import SCOPE as RUNNER_SCOPE
 SCOPE = "sanitized-strict-standalone-case-publication-v1"
 _RESULT_FIELDS = {
     "version", "status", "stage", "scope", "case", "source_revision", "source_dirty",
-    "pytest_exit_code", "exact_single_case_verified", "profile_inputs_verified",
+    "execution_authorized", "pytest_exit_code", "exact_single_case_verified", "profile_inputs_verified",
     "inspection_sha256", "inspection_scope", "short_feedback_only",
     "generic_scenario_semantics_independently_verified",
     "specialized_fault_inspection_applied", "combined_gate_verified",
@@ -121,6 +121,7 @@ def inspect_isolated_case_run(private_root, expected_case, expected_revision, *,
             or result.get("scope") != RUNNER_SCOPE or result.get("case") != expected_case
             or result.get("source_revision") != expected_revision
             or result.get("source_dirty") is not False
+            or result.get("execution_authorized") is not True
             or type(result.get("pytest_exit_code")) is not int or result["pytest_exit_code"] != 0
             or result.get("exact_single_case_verified") is not True
             or result.get("profile_inputs_verified") is not True
@@ -168,7 +169,8 @@ def inspect_isolated_case_run(private_root, expected_case, expected_revision, *,
     return {
         "version": 1, "status": "accepted", "scope": SCOPE,
         "source_revision": expected_revision, "source_dirty": False,
-        "case": expected_case, "runner_result_sha256": hashlib.sha256(result_raw).hexdigest(),
+        "case": expected_case, "execution_authorized": True,
+        "runner_result_sha256": hashlib.sha256(result_raw).hexdigest(),
         "inspection_sha256": hashlib.sha256(inspection_raw).hexdigest(),
         "inspection_scope": proof["scope"], "private_evidence_reinspected": True,
         "profile_inputs_verified": True, "short_feedback_only": True,

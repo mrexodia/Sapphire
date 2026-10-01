@@ -40,7 +40,7 @@ def make_run(tmp_path, monkeypatch, case=CASES[0]):
     runner_result = {
         "version": 1, "status": "accepted", "stage": "verified", "scope": RUNNER_SCOPE,
         "case": case, "source_revision": REVISION, "source_dirty": False,
-        "pytest_exit_code": 0, "exact_single_case_verified": True,
+        "execution_authorized": True, "pytest_exit_code": 0, "exact_single_case_verified": True,
         "profile_inputs_verified": True, "inspection_sha256": inspection_hash,
         "inspection_scope": proof["scope"], "short_feedback_only": True,
         "generic_scenario_semantics_independently_verified": False,
@@ -73,7 +73,7 @@ def test_private_run_reinspection_emits_only_sanitized_fixed_receipt(tmp_path, m
     assert proof == {
         "version": 1, "status": "accepted", "scope": result_support.SCOPE,
         "source_revision": REVISION, "source_dirty": False, "case": case,
-        "runner_result_sha256": hashlib.sha256((root / "runner-result.json").read_bytes()).hexdigest(),
+        "execution_authorized": True, "runner_result_sha256": hashlib.sha256((root / "runner-result.json").read_bytes()).hexdigest(),
         "inspection_sha256": hashlib.sha256((root / "inspection.json").read_bytes()).hexdigest(),
         "inspection_scope": retained["scope"], "private_evidence_reinspected": True,
         "profile_inputs_verified": True, "short_feedback_only": True,
@@ -89,7 +89,7 @@ def test_private_run_reinspection_emits_only_sanitized_fixed_receipt(tmp_path, m
 
 
 @pytest.mark.parametrize("mutation", [
-    "status", "stage", "dirty", "typed_exit", "inspection_hash", "short_feedback",
+    "status", "stage", "dirty", "authorization", "typed_exit", "inspection_hash", "short_feedback",
     "generic_semantics", "fault_flag", "combined", "unknown_field", "foreign_case",
 ])
 def test_private_run_reinspection_rejects_malformed_or_overclaimed_result(
@@ -98,6 +98,7 @@ def test_private_run_reinspection_rejects_malformed_or_overclaimed_result(
     if mutation == "status": value["status"] = "failed"
     elif mutation == "stage": value["stage"] = "inspection"
     elif mutation == "dirty": value["source_dirty"] = True
+    elif mutation == "authorization": value["execution_authorized"] = False
     elif mutation == "typed_exit": value["pytest_exit_code"] = False
     elif mutation == "inspection_hash": value["inspection_sha256"] = "0" * 64
     elif mutation == "short_feedback": value["short_feedback_only"] = False

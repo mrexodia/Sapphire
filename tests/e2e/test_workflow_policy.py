@@ -112,6 +112,7 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
               '          - "tests/e2e/foreign.py::test_foreign"'),
     (PRIVATE, "python -m tests.e2e.run_isolated_case --profile",
               "python -m tests.e2e.run_ci --profile"),
+    (PRIVATE, " --authorize-disposable-fixture", ""),
     (PRIVATE, "python -m tests.e2e.inspect_isolated_case_run --private-root",
               "python -m tests.e2e.inspect_isolated_case --private-root"),
     (PRIVATE, "python -m tests.e2e.inspect_isolated_case_run_failure --private-root",
