@@ -12,6 +12,58 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Opt-in graphical co-presence bridge: authored and prepared, not executed
+
+Feature `38242cd85` adds `prepare_client_smoke --development-check`. It preserves
+the default manual smoke procedure and the frozen-source/guest-only boundary.
+The optional mode stages the validated quest catalog and, after ordinary manual
+movement/Say/rendering review, runs the normal two-bot development scenario while
+the separate graphical fixture remains in-world. The operator must manually
+answer each newly written start/finish Say challenge; no automatic dialogue,
+viewer login/control or GM action is added.
+
+The original headless witness logs out through normal server closure before its
+account becomes one bot. A second owned non-GM fixture is prepared before its
+first connection at a point from the validated short corridor. The graphical
+account/name must be distinct from both bots and its credentials never enter the
+runner profile. The scenario requests movement, exact party/chat/disband, visible
+Tell, reconnect and both viewer checkpoints. Completion requires all subchecks,
+released leases, a closed worker and the same non-GM graphical fixture identity.
+An independent witness then authenticates afresh for the original graphical
+logout observation. These pre-connection fixtures are setup, not provisioning or
+natural progression evidence.
+
+`ActivityWorker` caps RPC/observation waits by the remaining original twenty-minute
+activity budget, refuses operations after expiry and rejects late successful
+responses. HTTP/fixture calls check the deadline between bounded operations;
+cleanup is not forcibly interrupted. The graphical process must remain the same
+live launched process before and after the bot scenario. The prior rendering
+review does **not** verify rendering of added bot actions, and the result says so.
+
+**Focused evidence only:** 42 bridge/manual-lane/guard contracts passed in
+**0.23s**; 17 bridge contracts passed in **0.11s** from the prepared clean snapshot
+without changing its tracked/ignored state. A **0.015s** native-control-only
+probe received worker capabilities, rejected an expired Tell before publication,
+and closed the worker. Its action journal is empty; no server/gameplay ran.
+Artifacts: `.e2e-artifacts/client-development-focused-timings-2.json`,
+`client-development-clean-timings.json` and
+`client-development-native-control/verification-summary.json`.
+
+Actual preparation at `.e2e-artifacts/client-development-preparation-001` verified
+source revision `38242cd85e707f38895cbfff0be208580c3d864b`, staged input hashes,
+explicit opt-in and exact copied catalog hash. Input manifest SHA-256:
+`4a1b509b7a04b7d3e44b3e57c2898dbbd3b09c94264bd1dfbb61570a7e900bba`.
+`preparation-verification.json` is explicitly `prepared_verified_not_executed`.
+No sandbox, graphical client or world was launched for this increment. Networking,
+installed client settings and the preserved experiments remain unchanged.
+
+**Still pending:** execution of this exact prepared bridge through the real first-
+run UI, manual rendering review, two fresh ordinary Say replies, normal logout,
+inspected lifecycle evidence and explicit Sandbox disposal. Preparation and mocks
+are not graphical co-presence proof. Even a future passing owned-guest bridge
+would not verify the user's existing shared database/deployment, continuous
+presence, rendered-action/quest agreement, general resets or full acceptance.
+
 ## Frozen coordinator source for the manual graphical lane
 
 Feature `2f480c49a` replaces the graphical preparer's mutable checkout mapping with
