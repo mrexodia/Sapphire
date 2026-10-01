@@ -7,6 +7,7 @@ from .development import DevelopmentError, received_character_identity, witnesse
 from .development_party import ungrouped
 
 HISTORIES = ("effects", "starts", "hud_params")
+SCOPE = "one-self-sprint-received-effect-and-zero-tp-not-speed-expiry-or-cooldown-readiness"
 
 
 def require_sprint_worker(worker):
@@ -129,7 +130,7 @@ def verify_sprint(profile, worker, mover, witness, initial_states, timings):
         if receipts[0]["effect"] != receipts[1]["effect"]:
             raise DevelopmentError("Sprint independently received effects disagree")
     return {"requested": True, "verified": True,
-            "scope": "one-self-sprint-received-effect-and-zero-tp-not-speed-expiry-or-cooldown-readiness",
+            "scope": SCOPE,
             "identities": identities, "request": request,
             "tp_before": states[0]["actors"][str(entity)]["tp"],
             "baselines": [{"seq": s["seq"], "histories": b} for s, b in zip(states, baselines)],

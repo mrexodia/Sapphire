@@ -8,6 +8,7 @@ from .worker import Worker, WorkerError
 from .development_lease import require_clear_terminal_account_leases
 from .development_inventory import CONTAINERS, SCOPE as INVENTORY_SCOPE
 from .development_viewer import CONTINUITY_SCOPE
+from .development_sprint import HISTORIES as SPRINT_HISTORIES, SCOPE as SPRINT_SCOPE
 
 
 def development_run_budget(activity_deadline):
@@ -49,7 +50,7 @@ def run_graphical_development(runner, profile, artifacts, *, viewer_name, activi
     """Invoke the exact normal-bot scenario with nested and outer deadline guards."""
     budget = development_run_budget(activity_deadline)
     return runner(profile, artifacts, confirmed=True, verify_party=True, verify_tell=True,
-                  verify_reconnect=True, verify_inventory=True, viewer_name=viewer_name,
+                  verify_sprint=True, verify_reconnect=True, verify_inventory=True, viewer_name=viewer_name,
                   worker_factory=lambda executable, output: ActivityWorker(
                       executable, output, deadline=activity_deadline),
                   login=login, max_seconds=budget)
@@ -93,6 +94,80 @@ def require_inventory_projection(value):
     return value
 
 
+def require_sprint_receipt(value, entities):
+    if (not isinstance(value, dict)
+            or set(value) != {'requested', 'verified', 'scope', 'identities', 'request',
+                              'tp_before', 'baselines', 'receipts'}
+            or value.get('requested') is not True or value.get('verified') is not True
+            or value.get('scope') != SPRINT_SCOPE):
+        raise DevelopmentError('invalid graphical Sprint receipt')
+    identities = value.get('identities')
+    if not isinstance(identities, list) or len(identities) != 2:
+        raise DevelopmentError('invalid graphical Sprint identities')
+    for index, row in enumerate(identities):
+        if (not isinstance(row, dict) or set(row) != {'name', 'entity_id', 'character_id'}
+                or not isinstance(row.get('name'), str) or not 1 <= len(row['name']) <= 31
+                or type(row.get('entity_id')) is not int or row['entity_id'] != entities[index]
+                or type(row.get('character_id')) is not int
+                or not 0 < row['character_id'] < 2**64):
+            raise DevelopmentError('invalid graphical Sprint identities')
+    if (identities[0]['name'] == identities[1]['name']
+            or identities[0]['character_id'] == identities[1]['character_id']):
+        raise DevelopmentError('graphical Sprint identities are not distinct')
+    request, tp_before = value.get('request'), value.get('tp_before')
+    if (type(request) is not int or not 1 <= request <= 65535
+            or type(tp_before) is not int or not 50 <= tp_before <= 1000):
+        raise DevelopmentError('invalid graphical Sprint request/readiness')
+    baselines, receipts = value.get('baselines'), value.get('receipts')
+    if (not isinstance(baselines, list) or len(baselines) != 2
+            or not isinstance(receipts, list) or len(receipts) != 2):
+        raise DevelopmentError('invalid graphical Sprint observations')
+    mover = entities[0]
+    expected_effect = {'source': mover, 'target': mover, 'action': 3, 'kind': 1,
+        'request': request, 'result': 0, 'source_effects': [],
+        'effects': [{'type': 18, 'value': 50, 'flag': 128, 'args': [0, 0, 30]}]}
+    for index, (baseline, receipt) in enumerate(zip(baselines, receipts)):
+        histories = baseline.get('histories') if isinstance(baseline, dict) else None
+        if (not isinstance(baseline, dict) or set(baseline) != {'seq', 'histories'}
+                or type(baseline.get('seq')) is not int or not 0 <= baseline['seq'] < 2**64
+                or not isinstance(histories, dict) or set(histories) != set(SPRINT_HISTORIES)
+                or any(not isinstance(rows, list) or len(rows) >= 128
+                       or any(not isinstance(row, dict) for row in rows)
+                       for rows in histories.values())
+                or any(row.get('source') == mover and row.get('action') == 3
+                       for key in ('effects', 'starts') for row in histories[key])):
+            raise DevelopmentError('invalid graphical Sprint baseline')
+        effect = receipt.get('effect') if isinstance(receipt, dict) else None
+        if (not isinstance(receipt, dict)
+                or set(receipt) != {'effect', 'zero_tp', 'start', 'received_seq'}
+                or effect != expected_effect
+                or any(type(effect.get(key)) is not int
+                       for key in ('source', 'target', 'action', 'kind', 'request', 'result'))
+                or any(type(item.get(key)) is not int for item in effect['effects']
+                       for key in ('type', 'value', 'flag'))
+                or any(type(arg) is not int for item in effect['effects'] for arg in item['args'])
+                or type(receipt.get('received_seq')) is not int
+                or not baseline['seq'] < receipt['received_seq'] < 2**64):
+            raise DevelopmentError('invalid graphical Sprint received effect')
+        hud = receipt.get('zero_tp')
+        if (not isinstance(hud, dict)
+                or set(hud) != {'target', 'hp', 'hp_max', 'mp', 'mp_max', 'tp'}
+                or hud.get('target') != mover or hud.get('tp') != 0
+                or any(type(hud.get(key)) is not int for key in ('target', 'hp', 'hp_max', 'mp', 'mp_max', 'tp'))
+                or not 0 < hud['hp'] <= hud['hp_max']
+                or not 0 <= hud['mp'] <= hud['mp_max']):
+            raise DevelopmentError('invalid graphical Sprint zero-TP receipt')
+        expected_start = ({'source': mover, 'action': 3, 'group': 56,
+                           'recast_centiseconds': 3000} if index == 0 else None)
+        if (receipt.get('start') != expected_start
+                or (expected_start is not None
+                    and any(type(value) is not int for value in receipt['start'].values()))):
+            raise DevelopmentError('invalid graphical Sprint start metadata')
+    if receipts[0]['effect'] != receipts[1]['effect']:
+        raise DevelopmentError('graphical Sprint observers disagree')
+    return value
+
+
 def require_graphical_check(result, viewer_name, entity):
     """No acknowledgement-only or foreign-viewer result can close this bridge."""
     if (result.get('status') != 'passed' or result.get('scope') != 'shared-development-not-acceptance'
@@ -116,8 +191,13 @@ def require_graphical_check(result, viewer_name, entity):
             or deadline.get('scope') != 'cooperative-success-deadline-not-hard-process-limit'
             or deadline.get('cleanup_may_exceed_deadline') is not True):
         raise DevelopmentError('bounded development run receipt missing or failed')
+    entities = result.get('entities')
+    if (not isinstance(entities, list) or len(entities) != 2
+            or any(type(value) is not int or value <= 0 for value in entities)
+            or len(set(entities)) != 2):
+        raise DevelopmentError('normal development entities missing or invalid')
     for key in ('party_verification', 'tell_verification', 'reconnect_verification',
-                'inventory_verification', 'viewer_verification'):
+                'inventory_verification', 'sprint_verification', 'viewer_verification'):
         value = result.get(key, {})
         if (not isinstance(value, dict) or value.get('requested') is not True
                 or value.get('verified') is not True):
@@ -130,17 +210,15 @@ def require_graphical_check(result, viewer_name, entity):
     after = require_inventory_projection(inventory.get('after'))
     if before['inventory'] != after['inventory']:
         raise DevelopmentError('graphical reconnect inventory projection changed')
+    sprint = require_sprint_receipt(result['sprint_verification'], entities)
     viewer = result['viewer_verification']
     if viewer.get('viewer_login_or_control_performed') is not False:
         raise DevelopmentError('runner must not control the graphical viewer')
     expected = {'entity_id':entity, 'name':viewer_name, 'gm_rank':0}
     if any(viewer.get(stage, {}).get('identity') != expected for stage in ('start','finish')):
         raise DevelopmentError('development checkpoints do not bind the same graphical fixture')
-    entities = result.get('entities')
     continuity = viewer.get('continuous_presence')
-    if (not isinstance(entities, list) or len(entities) != 2
-            or any(type(value) is not int or value <= 0 for value in entities)
-            or len(set(entities)) != 2 or not isinstance(continuity, dict)
+    if (not isinstance(continuity, dict)
             or set(continuity) != {'verified', 'scope', 'observer', 'observer_entity_id',
                                    'viewer_entity_id', 'presence_token'}
             or continuity.get('verified') is not True
@@ -154,6 +232,6 @@ def require_graphical_check(result, viewer_name, entity):
         raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
-            'inventory_scope':INVENTORY_SCOPE, 'continuous_presence':continuity,
-            'rendered_bot_actions_verified':False,
-            'note':'Endpoint replies are received-state evidence, not continuous presence or rendered-action agreement.'}
+            'inventory_scope':INVENTORY_SCOPE, 'sprint_scope':sprint['scope'],
+            'continuous_presence':continuity, 'rendered_bot_actions_verified':False,
+            'note':'Persistent-witness continuity and Sprint receipts are received-state evidence, not server-session or rendered-action agreement.'}

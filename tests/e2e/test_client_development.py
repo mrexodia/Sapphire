@@ -38,6 +38,21 @@ def completed():
     continuity={'verified':True,
         'scope':'unchanged-received-spawn-token-on-persistent-observer-not-server-session-proof',
         'observer':'witness','observer_entity_id':2,'viewer_entity_id':3,'presence_token':105}
+    effect={'source':1,'target':1,'action':3,'kind':1,'request':7,'result':0,
+        'source_effects':[],'effects':[{'type':18,'value':50,'flag':128,'args':[0,0,30]}]}
+    sprint={'requested':True,'verified':True,
+        'scope':'one-self-sprint-received-effect-and-zero-tp-not-speed-expiry-or-cooldown-readiness',
+        'identities':[{'name':'bot mover','entity_id':1,'character_id':11},
+                      {'name':'bot witness','entity_id':2,'character_id':12}],
+        'request':7,'tp_before':100,
+        'baselines':[{'seq':10,'histories':{'effects':[],'starts':[],'hud_params':[]}},
+                     {'seq':11,'histories':{'effects':[],'starts':[],'hud_params':[]}}],
+        'receipts':[{'effect':copy.deepcopy(effect),'zero_tp':{'target':1,'hp':94,'hp_max':94,
+                       'mp':52,'mp_max':52,'tp':0},
+                     'start':{'source':1,'action':3,'group':56,'recast_centiseconds':3000},
+                     'received_seq':20},
+                    {'effect':copy.deepcopy(effect),'zero_tp':{'target':1,'hp':94,'hp_max':94,
+                       'mp':52,'mp_max':52,'tp':0},'start':None,'received_seq':21}]}
     return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
             'entities':[1,2],
             'worker_closed':True,
@@ -62,6 +77,7 @@ def completed():
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
             **{key:{'requested':True,'verified':True} for key in ('party_verification','tell_verification','reconnect_verification')},
+            'sprint_verification':sprint,
             'inventory_verification':{'requested':True,'verified':True,
                 'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
                 'before':{'containers':[0,1,2,3,1000,2000],
@@ -82,7 +98,8 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     report=completed(); proof=bridge.require_graphical_check(report,'Tester Viewer',3)
     assert proof['status']=='passed' and proof['rendered_bot_actions_verified'] is False
     assert proof['continuous_presence']==report['viewer_verification']['continuous_presence']
-    for key in ('party_verification','tell_verification','reconnect_verification','inventory_verification','viewer_verification'):
+    assert proof['sprint_scope']==report['sprint_verification']['scope']
+    for key in ('party_verification','tell_verification','reconnect_verification','inventory_verification','sprint_verification','viewer_verification'):
         wrong=copy.deepcopy(report); wrong[key]['verified']=False
         with pytest.raises(DevelopmentError): bridge.require_graphical_check(wrong,'Tester Viewer',3)
     for stage in ('start','finish'):
@@ -92,7 +109,7 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
 
 @pytest.mark.parametrize('field,value',[('status','failed'),('lease_retained',True),('worker_closed',False),
     ('worker_exit',None),('lease_snapshot',None),('lease_snapshot_matches_run_state',False),
-    ('run_deadline',None),('inventory_verification',None),
+    ('run_deadline',None),('inventory_verification',None),('sprint_verification',None),
     ('administrative_preparation_wait_enabled',True),('database_access',True),
     ('world_restart_performed',True),('movement_waypoints_per_cycle',0)])
 def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
@@ -135,6 +152,28 @@ def test_graphical_bridge_rejects_malformed_inventory_receipt():
     )
     for mutate in mutations:
         report=completed();mutate(report['inventory_verification'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_malformed_sprint_receipt():
+    mutations=(
+        lambda report: report['sprint_verification'].update(scope='speed-proof'),
+        lambda report: report['sprint_verification'].update(request=True),
+        lambda report: report['sprint_verification'].update(tp_before=49),
+        lambda report: report['sprint_verification']['identities'][0].update(entity_id=2),
+        lambda report: report['sprint_verification']['identities'][1].update(character_id=11),
+        lambda report: report['sprint_verification']['baselines'][0].update(seq=True),
+        lambda report: report['sprint_verification']['baselines'][0]['histories'].update(extra=[]),
+        lambda report: report['sprint_verification']['receipts'][0]['effect'].update(target=2),
+        lambda report: report['sprint_verification']['receipts'][0]['effect'].update(kind=True),
+        lambda report: report['sprint_verification']['receipts'][1]['zero_tp'].update(tp=False),
+        lambda report: report['sprint_verification']['receipts'][0].update(start=None),
+        lambda report: report['sprint_verification']['receipts'][1].update(received_seq=11),
+        lambda report: report['sprint_verification'].update(extra=True),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report)
         with pytest.raises(DevelopmentError):
             bridge.require_graphical_check(report,'Tester Viewer',3)
 
@@ -190,7 +229,7 @@ def test_graphical_scenario_forwards_nested_deadline_and_exact_flags(monkeypatch
     assert args==({'profile':True},tmp_path/'output')
     assert kwargs['confirmed'] is True and kwargs['verify_party'] is True
     assert kwargs['verify_tell'] is True and kwargs['verify_reconnect'] is True
-    assert kwargs['verify_inventory'] is True
+    assert kwargs['verify_inventory'] is True and kwargs['verify_sprint'] is True
     assert kwargs['viewer_name']=='Tester Viewer' and kwargs['login'] is login
     assert kwargs['max_seconds']==399 and callable(kwargs['worker_factory'])
 
