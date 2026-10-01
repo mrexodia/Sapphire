@@ -557,6 +557,28 @@ def require_graphical_viewer_receipt(viewer, viewer_name, entity, entities, run_
     return expected, continuity
 
 
+def require_shared_runner_metadata(result, *, catalog_required):
+    worker_hash, catalog_hash = result.get('worker_sha256'), result.get('catalog_sha256')
+    if (type(result.get('version')) is not int or result['version'] != 1
+            or result.get('protocol') != 'sapphire-3.3'
+            or type(result.get('cycles')) is not int or result['cycles'] != 1
+            or result.get('server_identity_verified') is not False
+            or result.get('server_processes_owned') is not False
+            or result.get('database_access') is not False
+            or result.get('account_reset_performed_by_runner') is not False
+            or result.get('administrative_preparation_wait_enabled') is not False
+            or result.get('administrative_command_execution_attested') is not False
+            or result.get('world_restart_performed') is not False
+            or not isinstance(worker_hash, str) or len(worker_hash) != 64
+            or any(char not in '0123456789abcdef' for char in worker_hash)
+            or (catalog_required and (not isinstance(catalog_hash, str)
+                                      or len(catalog_hash) != 64
+                                      or any(char not in '0123456789abcdef' for char in catalog_hash)))
+            or (not catalog_required and catalog_hash is not None)):
+        raise DevelopmentError('graphical bot run metadata does not retain shared-runner boundaries')
+    return worker_hash
+
+
 def require_graphical_decline_check(result, viewer_name, entity):
     """Require a separate fresh-session decline; never conflate it with party creation."""
     if (result.get('status') != 'passed' or result.get('scope') != 'shared-development-not-acceptance'
@@ -566,6 +588,7 @@ def require_graphical_decline_check(result, viewer_name, entity):
             or result.get('movement_waypoints_per_cycle') != 0
             or result.get('movement_verification') != {'requested': False, 'verified': False}):
         raise DevelopmentError('graphical decline run did not complete cleanly')
+    require_shared_runner_metadata(result, catalog_required=False)
     require_clear_terminal_account_leases(result)
     require_normal_worker_exit(result)
     deadline = result.get('run_deadline')
@@ -609,6 +632,7 @@ def require_graphical_check(result, viewer_name, entity):
             or result.get('database_access') is not False or result.get('world_restart_performed') is not False
             or result.get('movement_waypoints_per_cycle', 0) < 2):
         raise DevelopmentError('normal development check did not complete cleanly')
+    require_shared_runner_metadata(result, catalog_required=True)
     require_clear_terminal_account_leases(result)
     require_normal_worker_exit(result)
     deadline = result.get('run_deadline')

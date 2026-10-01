@@ -132,7 +132,11 @@ def completed():
         return result
     viewer_start=viewer_checkpoint('start','mover',104,105)
     viewer_finish=viewer_checkpoint('finish','mover-equipment-reequipped',7,105,continuity)
-    return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
+    return {'version':1,'status':'passed','scope':'shared-development-not-acceptance',
+            'server_identity_verified':False,'server_processes_owned':False,
+            'database_access':False,'account_reset_performed_by_runner':False,
+            'administrative_command_execution_attested':False,'protocol':'sapphire-3.3',
+            'worker_sha256':'d'*64,'lease_retained':False,
             'entities':[1,2],'territory':130,'run_id':run_id,'cycles':1,
             'catalog_sha256':'c'*64,
             'worker_closed':True,
@@ -154,7 +158,7 @@ def completed():
                 'session_work_completed_within_budget':True,
                 'scope':'cooperative-success-deadline-not-hard-process-limit',
                 'cleanup_may_exceed_deadline':True},
-            'administrative_preparation_wait_enabled':False,'database_access':False,
+            'administrative_preparation_wait_enabled':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
             'movement_verification':movement,'party_verification':party,
             'decline_verification':{'requested':False,'verified':False},
@@ -223,6 +227,20 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
 def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
     report=completed(); report[field]=value
     with pytest.raises(DevelopmentError): bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+@pytest.mark.parametrize('field,value',[('version',True),('protocol','other'),('cycles',True),
+    ('server_identity_verified',True),('server_processes_owned',True),
+    ('account_reset_performed_by_runner',True),('administrative_command_execution_attested',True),
+    ('worker_sha256','bad'),('catalog_sha256','bad')])
+def test_graphical_checks_retain_exact_shared_runner_metadata(field,value):
+    report=completed();report[field]=value
+    with pytest.raises(DevelopmentError): bridge.require_graphical_check(report,'Tester Viewer',3)
+    decline=declined();decline[field]=(None if field=='catalog_sha256' else value)
+    if field=='catalog_sha256':
+        decline[field]='c'*64  # The route-free decline must retain an absent catalog.
+    with pytest.raises(DevelopmentError):
+        bridge.require_graphical_decline_check(decline,'Tester Viewer',3)
 
 
 @pytest.mark.parametrize('field,value',[

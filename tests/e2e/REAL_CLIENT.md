@@ -109,7 +109,11 @@ quality/durability, other containers or world-restart persistence. No GM action,
 reset, resource grant/restoration or viewer UI control is performed. Fixture
 placement is administrative setup only.
 
-`development_check` in the graphical result references the exact comprehensive
+Both bot summaries must retain version1/`sapphire-3.3`, one cycle, the exact worker
+hash, and explicit false server-identity/process ownership, database access,
+account reset, administrative-command attestation and world restart fields. The
+comprehensive run must retain the exact catalog hash; the route-free decline must
+retain `catalog_sha256:null`. `development_check` references the exact comprehensive
 normal-runner summary and requires every requested subcheck, including the exact bounded authored
 out-and-back route with an advancing independent-witness receipt at every waypoint,
 exact two-member party, bound channel/chat and empty-after-disband evidence, two exact reciprocal received
