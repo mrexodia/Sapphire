@@ -652,6 +652,57 @@ rendering or real-client movement-trace equivalence. A fresh manually attended
 current graphical run and explicit guest disposal remain pending; no full gate,
 soak or platform sweep ran.
 
+## Graphical bridge requires complete viewer checkpoint receipts
+
+Feature **`f1e45848e`** closes the last identity-only viewer-consumer gap. The
+runner now uses the explicit
+`two-endpoint-say-and-persistent-witness-presence-not-rendering` scope, and each
+observer must retain its baseline viewer spawn-generation token while waiting for
+that checkpoint's Say reply. A despawn/respawn received during either start or
+finish reply window therefore fails, not merely an interruption between the two
+endpoint baselines.
+
+The graphical bridge requires the exact seven-field top-level viewer result and
+no-control flag. Each checkpoint must have the exact current fields, stage and GM0
+identity; exactly two ordered observers; strict per-observer presence tokens; two
+complete finite received viewer observations; two exact reply rows with advancing
+baseline/received sequences; one identical fresh run-prefix/stage/32-hex ordinary
+Say challenge received by both; and matching stable viewer identity/token through
+the wait. Start must bind `mover,witness`; finish must bind the final
+`mover-equipment-reequipped,witness` sessions and the exact persistent-witness
+continuity receipt. Missing, malformed, type-confused, stale, one-sided, wrong-run/
+stage/observer/session, changed-token, extra or internally inconsistent evidence
+fails closed. Historical identity-only checkpoint summaries cannot pass current
+policy.
+
+Frozen, remote-free source **`f1e45848e528f89c09593f4becfb36c38c2e18b9`**
+passed **420 tests in 3.46s** across graphical policy, viewer, movement, placement,
+reconnect, party, Tell, equipment, Sprint, inventory, deadlines, worker exit,
+smoke and lifecycle. New negatives cover interruption during the start reply wait,
+wrong scope/stage/token/observation count, malformed baseline/received sequence,
+wrong observer/GM/message/final mover session and extra fields, while retaining all
+prior continuity and no-viewer-control contracts. Test-log SHA-256:
+`a998e7f7fdb0e6dd0a4eaf203ff92ab8ef26e5424e06a6067c67b304ec3d0f80`.
+Artifacts: `client-graphical-viewer-checkpoints-clean-{source.json,python.log}`.
+
+A read-only reconstruction from genuine `development-placement-v2-live-001`
+summary/events passed the generic current endpoint validator. Start tokens were
+mover199/witness201 with reply windows206→210 and208→210; finish tokens were
+reconnected-mover113/witness201 with windows118→120 and376→378. No viewer
+spawn/despawn occurred inside those windows, and witness token201 remained exact
+across the scenario. Artifact
+`client-graphical-viewer-checkpoints-live-artifact-check.json` has SHA-256
+`77c22bbe82b4da4a3c06409d18f9052db9cb668d897c1a82d3ac991539487711`.
+That older run used a GM headless operator and a pre-equipment mover name; it is
+consumer compatibility only, not a current GM0 graphical report.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. Exact received endpoint replies and persistent-
+witness spawn generation do not prove rendering, client provenance, server-side
+session continuity, packet-loss-free observation or all-state viewer invariance.
+A fresh manually attended current graphical run and explicit guest disposal remain
+pending; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1458,11 +1509,11 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/Tell/Sprint/equipment/reconnect/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict owned-party/chat/disband, reciprocal received Tell, independently received Sprint, fresh-login equipment round trip and exact main reconnect lifecycle evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict owned-party/chat/disband, reciprocal Tell, independently received Sprint, equipment round trip, main reconnect and both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens plus persistent-witness continuity, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage; current graphical policy requires exact movement, Sprint, starter-body round trip and read-only inventory but awaits current graphical execution |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
-| Preserve viewer, private inputs, historical failures and unrelated experiments | Separate viewer profiles; private artifact hashes; failed graphical 001–003 retained; seven experimental paths remain separate | No all-state viewer invariance, shared-world cleanliness or crash-consistency claim |
+| Preserve viewer, private inputs, historical failures and unrelated experiments | Separate viewer profiles; strict no-control endpoint Say/presence receipts; private artifact hashes; failed graphical 001–003 retained; seven experimental paths remain separate | No all-state viewer invariance, server-side session oracle, shared-world cleanliness or crash-consistency claim |
 | Separate shared development from isolated acceptance | `DEVELOPMENT.md`, `REAL_CLIENT.md`, summaries with explicit scope; original requirement checklist below | Full gate/soak/platform sweeps remain unauthorized for this iteration; Linux/hosted/broader gameplay gaps remain open |
 
 ## Read-only inventory projection across shared reconnect: implemented and live verified
