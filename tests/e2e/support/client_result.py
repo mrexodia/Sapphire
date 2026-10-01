@@ -13,8 +13,10 @@ from pathlib import Path
 
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
-from .client_smoke import CLIENT_SHA256, validate_review
-from .development import DevelopmentError, position, require_normal_worker_exit
+from .client_smoke import (CLIENT_SHA256, REAL_SAY, moved, other_player,
+                           real_say_baseline, received_real_say, validate_review)
+from .development import (DevelopmentError, position, received_character_identity,
+                          require_normal_worker_exit)
 
 
 RESULT_SCOPE = "current-graphical-development-result-before-separate-sandbox-disposal"
@@ -113,6 +115,54 @@ def _timing(value):
     return value
 
 
+def _outer_journey(report, pair, fixture):
+    states = {key: report.get(key) for key in
+              ("spawn", "movement", "say_baseline", "say", "review", "logout")}
+    if any(not isinstance(value, dict) for value in states.values()):
+        raise DevelopmentError("graphical outer received-state journey is incomplete")
+    expected_self = pair["identities"][0]
+    try:
+        initial_identity = received_character_identity(states["spawn"], report.get("witness_name"))
+        if not _typed_equal(initial_identity, expected_self):
+            raise DevelopmentError("graphical initial witness differs from paired mover")
+        observations = {}
+        for stage in ("spawn", "movement", "say_baseline", "say", "review"):
+            state = states[stage]
+            if (type(state.get("entity_id")) is not int
+                    or state["entity_id"] != expected_self["entity_id"]):
+                raise DevelopmentError("graphical outer witness identity changed")
+            entity, actor = other_player(state, report["real_entity"])
+            if actor.get("name") != report["real_name"]:
+                raise DevelopmentError("graphical outer viewer name changed")
+            observations[stage] = (entity, actor)
+        if math.dist(observations["spawn"][1]["position"], fixture["position"]) > 1:
+            raise DevelopmentError("graphical viewer did not spawn at the bounded fixture")
+        distance = math.dist(observations["spawn"][1]["position"],
+                             observations["movement"][1]["position"])
+        if not moved(observations["spawn"][1]["position"],
+                     observations["movement"][1]["position"]):
+            raise DevelopmentError("graphical viewer movement is below the required bound")
+        recorded_distance = report.get("observed_movement_metres")
+        if (type(recorded_distance) not in (int, float) or not math.isfinite(recorded_distance)
+                or not math.isclose(recorded_distance, distance, rel_tol=0, abs_tol=1e-9)):
+            raise DevelopmentError("graphical movement distance differs from received snapshots")
+        baseline = real_say_baseline(states["say_baseline"], report["real_entity"])
+        say_receipt = received_real_say(states["say"], report["real_entity"], baseline)
+        if say_receipt is None or not _typed_equal(report.get("real_say_receipt"), say_receipt):
+            raise DevelopmentError("graphical result lacks exact fresh real-client Say evidence")
+        if (type(states["logout"].get("entity_id")) is not int
+                or states["logout"]["entity_id"] != expected_self["entity_id"]):
+            raise DevelopmentError("graphical final logout witness differs from paired mover")
+        if other_player(states["logout"], report["real_entity"], allow_absent=True) is not None:
+            raise DevelopmentError("graphical viewer remained present after ordinary logout")
+    except (KeyError, TypeError, ValueError) as error:
+        raise DevelopmentError("invalid graphical outer received-state journey") from error
+    return {"verified": True,
+            "scope": "received-real-client-spawn-movement-say-review-logout-not-rendering",
+            "viewer_entity": report["real_entity"], "movement_metres": distance,
+            "say_scope": say_receipt["scope"]}
+
+
 def _pair_dependent_receipts(report, pair):
     identities = pair["identities"]
     handoff = report.get("development_witness_handoff")
@@ -204,6 +254,7 @@ def inspect_client_development_result(output, expected_source_revision):
     if (report.get("witness_name") != identities_name(pair, 0)
             or viewer_name.casefold() in {name.casefold() for name in names}):
         raise DevelopmentError("graphical viewer/witness identities are not separate and bound")
+    outer_journey = _outer_journey(report, pair, fixture)
     _pair_dependent_receipts(report, pair)
 
     retirements = report.get("witness_retirements")
@@ -242,6 +293,7 @@ def inspect_client_development_result(output, expected_source_revision):
             "development_summary_sha256": main_hash,
             "decline_summary_sha256": decline_hash,
             "worker_sha256": pair["worker_sha256"],
+            "outer_journey": outer_journey,
             "activity_deadline": deadline, "timing": timing,
             "runtime_removed": True, "sandbox_disposal_verified": False,
             "note": "Structured current guest evidence only; inspect rendering and dispose the owned Sandbox separately."}

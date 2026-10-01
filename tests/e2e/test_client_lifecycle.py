@@ -58,8 +58,9 @@ def test_retirement_failure_is_not_retried_or_converted_to_success(failure):
 
 
 @pytest.mark.parametrize("failure", [None, "server logout connection close", "remove",
-                                     "deadline_before_retirement", "deadline_during_retirement",
-                                     "deadline_during_worker_exit", "observer_worker_exit",
+                                     "stale_real_say", "deadline_before_retirement",
+                                     "deadline_during_retirement", "deadline_during_worker_exit",
+                                     "observer_worker_exit",
                                      "observer_worker_exit_unknown"])
 def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, monkeypatch, failure):
     # Exercise coordinator control flow with entirely synthetic setup/UI state.
@@ -109,10 +110,14 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
             self.process = types.SimpleNamespace(pid=12345, poll=lambda:
                 (None if failure == "observer_worker_exit_unknown"
                  else 1 if failure == "observer_worker_exit" else 0) if self.closed else None)
+            baseline_chat = ([{"actor":2,"kind":10,"message":guest.REAL_SAY,"token":10}]
+                             if failure == "stale_real_say" else [])
             self.snapshots = iter([
                 {"actors": {"2": {"position": [0, 0, 0]}}},
-                {"actors": {"2": {"position": [2, 0, 0]}}},
-                {"actors": {"2": {}}, "chat": [{"actor": 2, "message": guest.REAL_SAY}]},
+                {"actors": {"2": {"position": [2, 0, 0]}}, "seq": 9, "chat": []},
+                {"actors": {"2": {}}, "seq": 10, "chat": baseline_chat},
+                {"actors": {"2": {}}, "seq": 11,
+                 "chat": [{"actor": 2, "kind": 10, "message": guest.REAL_SAY, "token": 11}]},
                 {"actors": {"2": {}}}, {"actors": {}},
             ])
         def __enter__(self):
@@ -149,6 +154,17 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     monkeypatch.setattr(guest, "Environment", Environment)
     monkeypatch.setattr(guest, "Worker", Worker); monkeypatch.setattr(guest, "Bot", Witness)
     monkeypatch.setattr(guest, "other_player", lambda s, *a, **k: (2, s["actors"]["2"]) if "2" in s["actors"] else None)
+    def say_baseline(state, entity):
+        if state["chat"]:
+            raise ValueError("synthetic stale real Say")
+        return state["seq"]
+    monkeypatch.setattr(guest, "real_say_baseline", say_baseline)
+    monkeypatch.setattr(guest, "received_real_say", lambda state, entity, baseline:
+        ({"verified":True,
+          "scope":"fresh-ordinary-real-client-say-received-by-independent-witness",
+          "actor":entity,"message":guest.REAL_SAY,"kind":10,
+          "baseline_sequence":baseline,"message_token":state["chat"][0]["token"],
+          "received_sequence":state["seq"]} if state.get("chat") else None))
     monkeypatch.setattr(guest, "validate_review", lambda *args: {"synthetic_only": True})
     monkeypatch.setattr(guest.time, "sleep", lambda *args: None)
     monkeypatch.setattr(guest.shutil, "copytree", lambda *args: None)
@@ -171,19 +187,30 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     assert report["status"] == terminal["status"] == ("failed" if failure else "passed")
     assert cleanup == ["worker", "client", "environment"]
     assert report["runtime_removed"] is True
-    assert report["timing"]["phases"][-2]["phase"] == "witness_retirement"
+    assert report["timing"]["phases"][-2]["phase"] == (
+        "say" if failure == "stale_real_say" else "witness_retirement")
     if failure:
         assert report["failure_stage"] == ("observer_worker_exit"
             if failure in {"observer_worker_exit", "observer_worker_exit_unknown",
                            "deadline_during_worker_exit"}
-            else "witness_retirement")
+            else "say" if failure == "stale_real_say" else "witness_retirement")
     if failure == "deadline_before_retirement":
         assert retired.calls == []
-    if failure in {"server logout connection close", "remove", "deadline_before_retirement"}:
+    if failure in {"server logout connection close", "remove", "deadline_before_retirement",
+                   "stale_real_say"}:
         assert report["witness_retirements"] == []
     else:
         assert report["witness_retirements"] == [{"bot": "owned-witness", "server_close_observed": True,
             "native_bot_removed": True, "scope": "normal-witness-session-retirement-not-offline-exclusion"}]
+    assert report["say_baseline"]["seq"] == 10
+    if failure == "stale_real_say":
+        assert "real_say_receipt" not in report
+    else:
+        assert report["real_say_receipt"] == {
+            "verified":True,
+            "scope":"fresh-ordinary-real-client-say-received-by-independent-witness",
+            "actor":2,"message":guest.REAL_SAY,"kind":10,
+            "baseline_sequence":10,"message_token":11,"received_sequence":11}
     deadline_receipt = report["activity_deadline"]
     assert deadline_receipt["enabled"] is True and deadline_receipt["limit_seconds"] == 1200
     assert deadline_receipt["scope"] == "cooperative-manual-activity-success-deadline-not-hard-cleanup-limit"

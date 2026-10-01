@@ -201,9 +201,13 @@ are absent, not passing. On completion or failure, `status.json` changes to
 2. At `movement`, move that character **1–5 metres** using normal movement keys.
    The witness must receive displacement from the original spawn position.
    Catalog-derived starting placement is fixture setup, **not tested travel**.
-3. At `say`, send exactly `E2E real client verified` using ordinary Say. Only a
-   received message from the same observed entity satisfies this step. A typo
-   does not pass; inspect the input before sending another explicit attempt.
+3. At `say`, send exactly `E2E real client verified` using ordinary Say. The
+   coordinator first captures a received sequence baseline and rejects that exact
+   message if it was pre-sent. Success requires exactly one kind-10 Say row from
+   the same observed entity with a non-boolean token strictly after the baseline
+   and no newer than the received state. A typo, duplicate, stale cache or local
+   send acknowledgement does not pass; inspect the input before any other explicit
+   attempt. The coordinator never retries it.
 4. The witness sends `E2E independent witness`. At `review`, inspect the private
    `review.png`: the fixture character must be rendered in-world, and the exact
    witness message must be rendered in the game chat log. Compare the fixture
@@ -255,9 +259,11 @@ are absent, not passing. On completion or failure, `status.json` changes to
      --output .e2e-artifacts/<run>/output
    ```
 
-   It revalidates both nested summaries/hashes and strict consumers, pair/handoff/
-   restoration receipts, review-frame binding, retirements, outer deadline/worker
-   exit, terminal status and reported runtime removal. `accepted` explicitly leaves
+   It revalidates the outer received spawn, bounded displacement, fresh sequence-
+   bound Say, review presence and logout absence; both nested summaries/hashes and
+   strict consumers; pair/handoff/restoration receipts; review-frame binding,
+   retirements, outer deadline/worker exit, terminal status and reported runtime
+   removal. `accepted` explicitly leaves
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
    next manual step. Older/incomplete results fail closed.
 7. **Close the owned Sandbox window and confirm its discard dialog.** Guest

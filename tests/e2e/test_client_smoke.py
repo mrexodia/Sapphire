@@ -6,15 +6,16 @@ import xml.etree.ElementTree as ET
 import pytest
 
 from .prepare_client_smoke import approve, sandbox_xml
-from .support.client_smoke import REVIEW_CHECKS, moved, other_player, position, validate_review
+from .support.client_smoke import (REAL_SAY, REVIEW_CHECKS, moved, other_player, position,
+                                   real_say_baseline, received_real_say, validate_review)
 from .support.environment import sha256
 
 
 def state():
     return {"phase": "ready", "gm_rank": 0, "territory": 130, "between_areas": False,
-            "scene": None, "entity_id": 11,
-            "actors": {"12": {"kind": 1, "gm_rank": 0, "level": 1, "hp": 94,
-                              "position": [1, 2, 3]},
+            "scene": None, "entity_id": 11, "seq": 10, "chat": [],
+            "actors": {"12": {"kind": 1, "name": "Tester Viewer", "gm_rank": 0,
+                              "level": 1, "hp": 94, "position": [1, 2, 3]},
                        "19": {"kind": 2}}}
 
 
@@ -69,6 +70,39 @@ def test_fixture_placement_and_excess_movement_are_not_success():
     assert moved([0, 0, 0], [3, 4, 0])
     with pytest.raises(ValueError):
         moved([0, 0, 0], [5.01, 0, 0])
+
+
+def test_real_say_requires_one_fresh_sequence_bound_ordinary_message():
+    baseline_state = state()
+    baseline = real_say_baseline(baseline_state, 12)
+    assert baseline == 10 and received_real_say(baseline_state, 12, baseline) is None
+    received = state(); received.update(seq=12)
+    received["chat"] = [{"actor":12,"kind":10,"message":REAL_SAY,"token":11}]
+    assert received_real_say(received, 12, baseline) == {
+        "verified":True,
+        "scope":"fresh-ordinary-real-client-say-received-by-independent-witness",
+        "actor":12,"message":REAL_SAY,"kind":10,
+        "baseline_sequence":10,"message_token":11,"received_sequence":12}
+
+
+def test_real_say_rejects_stale_malformed_or_ambiguous_receipts():
+    stale = state(); stale["chat"] = [{"actor":12,"kind":10,"message":REAL_SAY,"token":10}]
+    with pytest.raises(ValueError, match="already present"):
+        real_say_baseline(stale, 12)
+    mutations = (
+        lambda row, received: row.update(token=10),
+        lambda row, received: row.update(token=True),
+        lambda row, received: row.update(kind=11),
+        lambda row, received: row.update(actor=12.0),
+        lambda row, received: row.update(extra=True),
+        lambda row, received: received["chat"].append(copy.deepcopy(row)),
+    )
+    for mutate in mutations:
+        received = state(); received.update(seq=12)
+        row = {"actor":12,"kind":10,"message":REAL_SAY,"token":11}
+        received["chat"] = [row]; mutate(row, received)
+        with pytest.raises(ValueError):
+            received_real_say(received, 12, 10)
 
 
 def review_files(tmp_path):

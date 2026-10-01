@@ -22,6 +22,15 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2), encoding="utf-8")
 
 
+def outer_state(position, sequence, chat=None, *, viewer=True):
+    actors = ({"3":{"kind":1,"name":"Tester Viewer","gm_rank":0,"level":1,
+                    "hp":94,"position":position}} if viewer else {})
+    return {"phase":"ready","gm_rank":0,"territory":130,"between_areas":False,
+            "scene":None,"entity_id":1,"seq":sequence,"chat":chat or [],
+            "characters":[{"name":"bot mover","entity_id":1,"character_id":11}],
+            "actors":actors}
+
+
 def build_output(root, source_revision="1" * 40):
     main, decline = completed(), declined()
     main["elapsed_seconds"], decline["elapsed_seconds"] = 12.5, 4.5
@@ -96,6 +105,19 @@ def build_output(root, source_revision="1" * 40):
             "elapsed_seconds": 9.0,
             "phases": [{"phase": phase, "seconds": 1.0} for phase in phases],
             "note": "Includes operator waits and worker unwinding; cleanup is client/environment teardown. Not gameplay CPU time."},
+        "spawn": outer_state([0,0,0], 8),
+        "movement": outer_state([1,0,0], 9),
+        "observed_movement_metres": 1.0,
+        "say_baseline": outer_state([1,0,0], 10),
+        "say": outer_state([1,0,0], 11,
+            [{"actor":3,"kind":10,"message":"E2E real client verified","token":11}]),
+        "real_say_receipt": {"verified":True,
+            "scope":"fresh-ordinary-real-client-say-received-by-independent-witness",
+            "actor":3,"message":"E2E real client verified","kind":10,
+            "baseline_sequence":10,"message_token":11,"received_sequence":11},
+        "review": outer_state([1,0,0], 12,
+            [{"actor":3,"kind":10,"message":"E2E real client verified","token":11}]),
+        "logout": outer_state([1,0,0], 13, viewer=False),
         "manual_review": review,
         "logout_request": "[3] Zone IPC : StartLogoutCountdown",
     }
@@ -144,6 +166,17 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
     lambda root, report: report["activity_deadline"].update(
         activity_and_worker_exit_completed_within_budget=False),
     lambda root, report: report["timing"]["phases"][0].update(seconds=float("nan")),
+    lambda root, report: report.update(observed_movement_metres=True),
+    lambda root, report: report["spawn"]["characters"][0].update(character_id=99),
+    lambda root, report: report["movement"].update(entity_id=True),
+    lambda root, report: report["say_baseline"]["chat"].append(
+        {"actor":3,"kind":10,"message":"E2E real client verified","token":10}),
+    lambda root, report: report["say"]["chat"][0].update(token=10),
+    lambda root, report: report["real_say_receipt"].update(actor=True),
+    lambda root, report: report["review"]["actors"]["3"].update(name="foreign"),
+    lambda root, report: report["logout"]["actors"].update(
+        {"3":{"kind":1,"name":"Tester Viewer","gm_rank":0,"level":1,
+              "hp":94,"position":[1,0,0]}}),
     lambda root, report: report["manual_review"].update(manual_review=False),
     lambda root, report: report.update(logout_request="foreign"),
     lambda root, report: write_json(root / "status.json",

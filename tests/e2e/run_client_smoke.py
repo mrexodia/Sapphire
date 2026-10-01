@@ -12,7 +12,8 @@ import time
 import uuid
 
 from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, WITNESS_SAY, other_player,
-                                   moved, validate_review)
+                                   moved, real_say_baseline, received_real_say,
+                                   validate_review)
 from .support.environment import Environment, sha256, REPO
 from .support.client_snapshot import verify_source
 from .support.client_timing import ClientPhaseTiming
@@ -161,12 +162,16 @@ def run():
             arrived = wait(lambda s: moved(origin, other_player(s, entity)[1]["position"]))
             report["observed_movement_metres"] = math.dist(origin, arrived["actors"][str(entity)]["position"])
             phase("say", f"Send this exact Say message in the real client: {REAL_SAY}")
+            say_baseline_state = worker.snapshot(bot.name)
+            report["say_baseline"] = say_baseline_state
+            say_baseline_sequence = real_say_baseline(say_baseline_state, entity)
 
             def said(state):
-                other_player(state, entity)
-                return any(row["actor"] == entity and row["message"] == REAL_SAY for row in state["chat"])
+                return received_real_say(state, entity, say_baseline_sequence) is not None
 
-            wait(said)
+            say_state = wait(said)
+            report["real_say_receipt"] = received_real_say(
+                say_state, entity, say_baseline_sequence)
             bot.say(WITNESS_SAY)
             time.sleep(2)  # Allow drawing; only the following MANUAL review certifies rendering.
             frame = OUTPUT / "review.png"

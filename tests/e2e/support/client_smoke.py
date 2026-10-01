@@ -48,6 +48,49 @@ def moved(origin, current):
     return distance >= 1
 
 
+def real_say_baseline(state, expected_entity):
+    """Reject a pre-sent fixed challenge before opening its received-state window."""
+    other_player(state, expected_entity)
+    sequence = state.get("seq")
+    if type(sequence) is not int or not 0 <= sequence < 2**64:
+        raise ValueError("real-client Say baseline lacks a received sequence")
+    chat = state.get("chat")
+    if not isinstance(chat, list):
+        raise ValueError("real-client Say baseline lacks received chat history")
+    if any(isinstance(row, dict) and row.get("actor") == expected_entity
+           and row.get("message") == REAL_SAY for row in chat):
+        raise ValueError("real-client Say challenge was already present at baseline")
+    return sequence
+
+
+def received_real_say(state, expected_entity, baseline):
+    """Return one fresh ordinary Say receipt, or None while it has not arrived."""
+    other_player(state, expected_entity)
+    sequence, chat = state.get("seq"), state.get("chat")
+    if (type(baseline) is not int or not 0 <= baseline < 2**64
+            or type(sequence) is not int or not baseline <= sequence < 2**64
+            or not isinstance(chat, list)):
+        raise ValueError("real-client Say observation lacks a valid sequence window")
+    matches = [row for row in chat if isinstance(row, dict)
+               and row.get("actor") == expected_entity and row.get("message") == REAL_SAY]
+    if not matches:
+        return None
+    if len(matches) != 1:
+        raise ValueError("real-client Say observation is ambiguous")
+    row = matches[0]
+    if (set(row) != {"actor", "kind", "message", "token"}
+            or type(row.get("actor")) is not int or row["actor"] != expected_entity
+            or type(row.get("kind")) is not int or row["kind"] != 10
+            or type(row.get("token")) is not int
+            or not baseline < row["token"] <= sequence):
+        raise ValueError("real-client Say is stale, malformed, or not ordinary Say")
+    return {"verified": True,
+            "scope": "fresh-ordinary-real-client-say-received-by-independent-witness",
+            "actor": expected_entity, "message": REAL_SAY, "kind": 10,
+            "baseline_sequence": baseline, "message_token": row["token"],
+            "received_sequence": sequence}
+
+
 def validate_review(review, ticket):
     expected = {"version": 1, "run": ticket["run"], "frame_sha256": ticket["frame_sha256"],
                 "checks": REVIEW_CHECKS, "manual_review": True}
