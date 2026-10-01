@@ -495,6 +495,38 @@ are covered by synthetic contracts, not that live run. A separate headless
 observer and normal cleanup were inspected; no graphical attestation or existing
 shared-database deployment is inferred. See the implementation audit for hashes.
 
+### Optional independently observed self-Sprint
+
+Add `--verify-sprint` to publish **one** ordinary Sprint (action3) on the mover,
+then require exact matching self-target effects on both bot sessions, a fresh
+zero-TP HUD update on each, and fresh action-start/recast metadata on the mover.
+It runs after movement/social checks and before an optional reconnect. The
+viewer is never targeted or controlled; no enemy/fixture reset is involved.
+
+Both bots must retain their exact received identities, idle non-GM nonparty
+state and unique mutual visibility. The mover waits up to ten seconds for
+naturally received TP>=50 and the native starting-action pacing guard. This is
+**not** proof that a cooldown from an earlier session has expired: use this
+option only when Sprint is available. Prior Sprint history in the current
+session is rejected. A server refusal, missing result or late result fails;
+there is no retry, recast bypass, resource grant or silent recovery.
+
+The combined post-publication success budget is ten seconds. Baseline combat
+histories are retained; only append-only suffixes count as fresh observations.
+Changed/saturated histories fail instead of clearing caches or accepting stale
+zero-TP rows from login. Effect source/target/action/request and full independent
+result equality are required. Publication acknowledgement alone cannot pass.
+`sprint_verification` and the `sprint_natural_readiness` /
+`sprint_independent_effect_and_tp` phases retain identity, baselines, receipts
+and wall time. Native RPCs remain bounded but are not hard-interrupted.
+
+This consumes the mover's TP and may leave Sprint/cooldown state until its normal
+expiry, including after logout. The runner does not restore it. The check proves
+received status-application effects and zero-TP updates, **not** rendered Sprint,
+speed changes, status expiry, exact net TP debit (regeneration can intervene),
+natural progression or persisted cooldown behavior. Failure retains the normal
+local account leases for explicit offline review. Default runs are unchanged.
+
 ### Leases and failed runs
 
 The runner uses exclusive local files in the system temporary directory under

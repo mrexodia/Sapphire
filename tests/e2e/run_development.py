@@ -19,11 +19,12 @@ from .support.development_party import require_bound_party_worker, verify_two_bo
 from .support.development_viewer import validate_viewer_name, viewer_checkpoint
 from .support.development_tell import require_visible_tell_worker, verify_visible_tells
 from .support.development_decline import require_decline_worker, verify_party_decline
+from .support.development_sprint import require_sprint_worker, verify_sprint as verify_self_sprint
 
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False,
-        verify_inventory=False, viewer_name=None,
+        verify_inventory=False, verify_sprint=False, viewer_name=None,
         worker_factory=Worker, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
@@ -33,7 +34,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
     if any(type(flag) is not bool for flag in
-           (verify_reconnect, verify_party, verify_tell, verify_decline, verify_inventory)):
+           (verify_reconnect, verify_party, verify_tell, verify_decline, verify_inventory, verify_sprint)):
         raise DevelopmentError("verification flags must be boolean")
     if verify_inventory and not verify_reconnect:
         raise DevelopmentError("inventory comparison requires explicit --verify-reconnect")
@@ -58,6 +59,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "party_verification": {"requested": verify_party, "verified": False},
               "tell_verification": {"requested": verify_tell, "verified": False},
               "decline_verification": {"requested": verify_decline, "verified": False},
+              "sprint_verification": {"requested": verify_sprint, "verified": False},
               "viewer_verification": {"requested": viewer_name is not None, "verified": False,
                                       "scope": "two-checkpoint-presence-not-graphical-attestation",
                                       "viewer_login_or_control_performed": False},
@@ -84,6 +86,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                 if verify_tell:
                     with timings.phase("tell_worker_capability"):
                         require_visible_tell_worker(worker)
+                if verify_sprint:
+                    with timings.phase("sprint_worker_capability"):
+                        require_sprint_worker(worker)
                 bots = [Bot(worker, "mover"), Bot(worker, "witness")]
                 states = []
                 for index, (bot, account) in enumerate(zip(bots, profile["accounts"])):
@@ -160,6 +165,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                 if verify_tell:
                     report["tell_verification"] = verify_visible_tells(
                         profile, worker, mover, witness, states, run_id, timings)
+                if verify_sprint:
+                    report["sprint_verification"] = verify_self_sprint(
+                        profile, worker, mover, witness, states, timings)
                 if verify_reconnect:
                     mover, report["reconnect_verification"] = verify_position_reconnect(
                         profile, worker, mover, witness, states[0],
@@ -217,6 +225,8 @@ def main(argv=None):
                         help="Decline only the exact other bot's invitation; separate from --verify-party")
     parser.add_argument("--verify-tell", action="store_true",
                         help="Two fresh received direct Tells between visible non-GM bots; no remote fallback")
+    parser.add_argument("--verify-sprint", action="store_true",
+                        help="One ordinary self-Sprint with fresh independent effect/zero-TP observations; no retry")
     parser.add_argument("--viewer-name", help="Exact separate visible player name; requires unique Say replies at start/finish")
     args = parser.parse_args(argv)
     try:
@@ -225,6 +235,7 @@ def main(argv=None):
                      await_placement=args.await_placement, verify_reconnect=args.verify_reconnect,
                      verify_party=args.verify_party, verify_tell=args.verify_tell,
                      verify_decline=args.verify_decline, verify_inventory=args.verify_inventory,
+                     verify_sprint=args.verify_sprint,
                      viewer_name=args.viewer_name)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.
