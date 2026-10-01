@@ -160,10 +160,21 @@ are absent, not passing. On completion or failure, `status.json` changes to
    must have logged that entity's ordinary StartLogoutCountdown request, and the
    graphical process must still be alive. Inspect `logout.png` for the title
    screen separately; the automated conditions do not recognize that image.
+   At `witness_retirement`, leave the title screen alone. The coordinator waits
+   for the headless witness's normal server connection closure, not only its
+   logout acknowledgement, before local close/removal. Failure is not retried;
+   late completion cannot pass the twenty-minute activity deadline. In-flight
+   bounded calls and final environment cleanup are not forcibly interrupted.
 6. Inspect `result.json`: require `status=passed`, all received snapshots,
-   manual-review receipt, logout marker, and `runtime_removed=true`. The runner
-   terminates the remaining title-screen process and closes the witness and
-   private services. Process-exit UI is not a tested journey. A cleanup error
+   manual-review receipt, logout marker, `witness_retirements` and
+   `runtime_removed=true`. There is one retirement receipt for the ordinary lane;
+   with `--development-check` there are two (original witness handoff and final
+   `witness-after-development`). Each requires `server_close_observed=true` and
+   `native_bot_removed=true`; corroborate with its native journal. These are normal
+   session-lifecycle observations, not offline/reset authority, fresh-login
+   persistence or crash-consistency proof. Older artifacts without these receipts
+   are not upgraded. The runner terminates the remaining title-screen process
+   and private services. Process-exit UI is not a tested journey. A cleanup error
    changes the result to failed, not a passing gameplay run with a warning.
 7. **Close the owned Sandbox window and confirm its discard dialog.** Guest
    runtime cleanup is not VM disposal. The result deliberately leaves

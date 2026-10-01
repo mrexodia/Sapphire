@@ -16,6 +16,7 @@ from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, WITNESS_SAY, other_p
 from .support.environment import Environment, sha256, REPO
 from .support.client_snapshot import verify_source
 from .support.client_timing import ClientPhaseTiming
+from .support.client_lifecycle import retire_witness
 from .support.worker import Worker, Bot
 from .support.client_development import ActivityWorker, development_profile, require_graphical_check
 from .support.development import authenticate, movement_route
@@ -50,7 +51,8 @@ def run():
 
     report = {"version": 1, "run": uuid.uuid4().hex, "status": "failed",
               "scope": "manual-real-client-login-movement-say-logout",
-              "documents": documents, "sandbox_disposal": "operator_required"}
+              "documents": documents, "sandbox_disposal": "operator_required",
+              "witness_retirements": []}
     env = client = None
     timing = ClientPhaseTiming()
     stage = "setup"
@@ -170,8 +172,7 @@ def run():
                     raise RuntimeError("graphical process/activity unavailable before bot scenario")
                 # Reuse only the owned headless witness account, after ordinary closure.
                 # The graphical viewer account is never passed to the normal runner.
-                bot.logout(wait_server_close=True)
-                bot.close()
+                report["witness_retirements"].append(retire_witness(bot))
                 # Read the validated prefix, never invent an offset for the second bot.
                 route, _ = movement_route({"territory": 130, "quest_catalog": profile["quest_catalog"]})
                 if time.monotonic() >= deadline:
@@ -211,8 +212,12 @@ def run():
             ImageGrab.grab(all_screens=True).save(OUTPUT / "logout.png")
             if client.poll() is not None:
                 raise RuntimeError("client exited during logout verification")
-            bot.logout()
-            bot.close()
+            phase("witness_retirement", "Leave the client at its title screen; waiting for normal headless witness closure.")
+            if time.monotonic() >= deadline:
+                raise TimeoutError("manual activity deadline exceeded before witness retirement")
+            report["witness_retirements"].append(retire_witness(bot))
+            if time.monotonic() >= deadline:
+                raise TimeoutError("manual activity deadline exceeded during witness retirement")
             report["status"] = "passed"
     except BaseException as error:
         message = str(error)
