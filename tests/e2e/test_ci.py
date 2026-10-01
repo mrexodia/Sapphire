@@ -471,6 +471,9 @@ def test_entry_point_isolates_pytest_options_and_output(profile, tmp_path, monke
             environment.artifacts = artifacts
             write_lifecycle(environment)
         plugins[0].__dict__.update(gate.__dict__)
+        junit_index = args.index("--junitxml")
+        Path(args[junit_index + 1]).write_text("<testsuites><testsuite>" + "".join(
+            f'<testcase name="{case}" />' for case in run_ci.CASES) + "</testsuite></testsuites>")
         print("PRIVATE_MARKER")
         return 0
     monkeypatch.setattr(pytest, "main", fake_pytest)
@@ -518,6 +521,7 @@ def current_public_summary(revision="a" * 40):
         "identities":identities,"deadline_scale":1,"collection_verified":True,
         "environment_isolation_verified":True,"environment_evidence":evidence,
         "gate_diagnostics_sha256":"e" * 64,
+        "private_test_artifacts":{"pytest_log_sha256":"c" * 64,"junit_sha256":"d" * 64},
         "cleanup_verified":True,"process_cleanup_verified":True,
         "cases":{case:True for case in run_ci.CASES},"pytest_exit_code":0,
         "inputs_verified":True}
@@ -559,6 +563,13 @@ def private_gate_evidence(tmp_path, report):
     diagnostics_path = root / "gate-diagnostics.json"
     diagnostics_path.write_text(json.dumps(diagnostics, indent=2))
     report["gate_diagnostics_sha256"] = hashlib.sha256(diagnostics_path.read_bytes()).hexdigest()
+    pytest_path = root / "pytest.log"; pytest_path.write_text("15 passed\n")
+    junit_path = root / "live.xml"
+    junit_path.write_text("<testsuites><testsuite>" + "".join(
+        f'<testcase name="{case}" />' for case in run_ci.CASES) + "</testsuite></testsuites>")
+    report["private_test_artifacts"] = {
+        "pytest_log_sha256":hashlib.sha256(pytest_path.read_bytes()).hexdigest(),
+        "junit_sha256":hashlib.sha256(junit_path.read_bytes()).hexdigest()}
     return root, directories
 
 
@@ -590,8 +601,8 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     report = current_public_summary(revision)
     private, directories = private_gate_evidence(tmp_path, report)
     summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report, indent=2))
-    files = [summary, private / "gate-diagnostics.json",
-             *[path / name for path in directories
+    files = [summary, private / "gate-diagnostics.json", private / "pytest.log",
+             private / "live.xml", *[path / name for path in directories
                for name in ("manifest.json","process-lifecycle.json")]]
     before = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     proof = inspect_ci_private_evidence(summary, private, revision)
@@ -604,7 +615,7 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     assert json.loads(capsys.readouterr().out) == proof
 
 
-@pytest.mark.parametrize("mutation", ["changed-bytes","missing","diagnostics","lifecycle","inputs","database"])
+@pytest.mark.parametrize("mutation", ["changed-bytes","missing","pytest-log","junit","diagnostics","lifecycle","inputs","database"])
 def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_private_bytes(
         tmp_path, mutation):
     report = current_public_summary(); private, directories = private_gate_evidence(tmp_path, report)
@@ -613,6 +624,15 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
         with (target / "manifest.json").open("a") as stream: stream.write(" ")
     elif mutation == "missing":
         import shutil; shutil.rmtree(target)
+    elif mutation == "pytest-log":
+        with (private / "pytest.log").open("a") as stream: stream.write("changed")
+    elif mutation == "junit":
+        path = private / "live.xml"
+        path.write_text("<testsuites><testsuite>" + "".join(
+            f'<testcase name="{case}"><failure /></testcase>' if index == 0
+            else f'<testcase name="{case}" />' for index,case in enumerate(run_ci.CASES))
+            + "</testsuite></testsuites>")
+        report["private_test_artifacts"]["junit_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     elif mutation == "diagnostics":
         path = private / "gate-diagnostics.json"
         value = json.loads(path.read_text()); value["reports"][run_ci.CASES[0]]["call"] = []
@@ -646,6 +666,8 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
     lambda report:report.update(process_cleanup_verified=1),
     lambda report:report.update(environment_isolation_verified=1),
     lambda report:report.update(gate_diagnostics_sha256="g" * 64),
+    lambda report:report.update(private_test_artifacts={"pytest_log_sha256":"a" * 64}),
+    lambda report:report["private_test_artifacts"].update(junit_sha256="g" * 64),
     lambda report:report["environment_evidence"].pop(),
     lambda report:report["environment_evidence"].reverse(),
     lambda report:report["environment_evidence"][0].update(manifest_sha256="g" * 64),

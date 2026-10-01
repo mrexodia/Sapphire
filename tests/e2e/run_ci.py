@@ -301,6 +301,9 @@ def run(profile_path, private_root, summary_path, *, worker=None, binaries=None,
                     "environment_evidence": report["environment_evidence"],
                 }, indent=2), encoding="utf-8")
                 report["gate_diagnostics_sha256"] = sha256(diagnostics_path)
+                report["private_test_artifacts"] = {
+                    "pytest_log_sha256":sha256(private / "pytest.log"),
+                    "junit_sha256":sha256(private / "live.xml")}
                 environments = gate.environments or ([gate.environment] if gate.environment is not None else [])
                 report["inputs_verified"] = bool(environments) and all(
                     inputs_match(identities, json.loads(

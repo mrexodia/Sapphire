@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 from ..run_ci import inputs_match
 from .ci_result import EXPECTED_CASES, inspect_ci_result
@@ -12,7 +13,7 @@ from .environment import SetupError, require_process_teardowns
 SCOPE = "current-isolated-public-summary-to-private-per-case-evidence-correlation"
 
 
-def _read(path, limit, label):
+def _raw(path, limit, label):
     try:
         path = Path(path)
         if path.is_symlink() or not path.is_file() or not 0 < path.stat().st_size <= limit:
@@ -20,8 +21,16 @@ def _read(path, limit, label):
         raw = path.read_bytes()
         if len(raw) > limit:
             raise OSError()
+        return raw
+    except OSError as error:
+        raise SetupError(f"cannot read private isolated {label}") from error
+
+
+def _read(path, limit, label):
+    try:
+        raw = _raw(path, limit, label)
         value = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+    except (UnicodeError, json.JSONDecodeError) as error:
         raise SetupError(f"cannot read private isolated {label}") from error
     if not isinstance(value, dict):
         raise SetupError(f"private isolated {label} is not an object")
@@ -35,6 +44,20 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
     if supplied_root.is_symlink() or not supplied_root.is_dir():
         raise SetupError("private isolated run root is missing or unsafe")
     root = supplied_root.resolve()
+    pytest_raw = _raw(root / "pytest.log", 16 * 1024 * 1024, "pytest log")
+    junit_raw = _raw(root / "live.xml", 16 * 1024 * 1024, "JUnit report")
+    private_artifacts = public["private_test_artifacts"]
+    if (hashlib.sha256(pytest_raw).hexdigest() != private_artifacts["pytest_log_sha256"]
+            or hashlib.sha256(junit_raw).hexdigest() != private_artifacts["junit_sha256"]):
+        raise SetupError("private isolated test artifact hash differs from public result")
+    try:
+        junit = ET.fromstring(junit_raw)
+    except ET.ParseError as error:
+        raise SetupError("private isolated JUnit report is malformed") from error
+    if (len(junit.findall(".//testcase")) != len(EXPECTED_CASES)
+            or junit.findall(".//failure") or junit.findall(".//error")
+            or junit.findall(".//skipped")):
+        raise SetupError("private isolated JUnit outcomes are incomplete or failed")
     diagnostics_raw, diagnostics = _read(root / "gate-diagnostics.json", 1024 * 1024,
                                          "gate diagnostics")
     expected_diagnostics = {"collected","reports","unexpected","environment_count",
@@ -110,6 +133,7 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
             "case_count":len(rows),"private_manifest_count":len(rows),
             "private_lifecycle_count":len(rows),
             "gate_diagnostics_sha256":public["gate_diagnostics_sha256"],
+            "private_test_artifacts":private_artifacts,
             "environment_evidence":rows,
             "process_generations_verified":True,"staged_inputs_verified":True,
             "private_paths_or_runtime_identities_disclosed":False,

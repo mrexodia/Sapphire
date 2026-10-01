@@ -56,8 +56,9 @@ def inspect_ci_result(summary_path, expected_revision):
         raise SetupError("cannot read isolated-gate public summary") from error
     fields = {"version","status","stage","scope","revision","source_dirty","identities",
               "deadline_scale","collection_verified","environment_isolation_verified",
-              "environment_evidence","gate_diagnostics_sha256","cleanup_verified",
-              "process_cleanup_verified","cases","pytest_exit_code","inputs_verified"}
+              "environment_evidence","gate_diagnostics_sha256","private_test_artifacts",
+              "cleanup_verified","process_cleanup_verified","cases","pytest_exit_code",
+              "inputs_verified"}
     if (not isinstance(report, dict) or set(report) != fields
             or type(report.get("version")) is not int or report["version"] != 1
             or report.get("status") != "passed" or report.get("stage") != "verified"
@@ -78,6 +79,11 @@ def inspect_ci_result(summary_path, expected_revision):
             or list(report["cases"]) != list(EXPECTED_CASES)
             or any(value is not True for value in report["cases"].values())):
         raise SetupError("isolated-gate public summary is incomplete, foreign or failed")
+    test_artifacts = report.get("private_test_artifacts")
+    if (not isinstance(test_artifacts, dict)
+            or set(test_artifacts) != {"pytest_log_sha256","junit_sha256"}
+            or any(not _hex(value) for value in test_artifacts.values())):
+        raise SetupError("isolated-gate private test artifact identities are malformed")
     evidence = report.get("environment_evidence")
     if (not isinstance(evidence, list) or len(evidence) != len(EXPECTED_CASES)
             or [row.get("case") if isinstance(row, dict) else None for row in evidence]
@@ -106,6 +112,7 @@ def inspect_ci_result(summary_path, expected_revision):
             "collection_verified":True,"environment_isolation_verified":True,
             "environment_evidence":evidence,
             "gate_diagnostics_sha256":report["gate_diagnostics_sha256"],
+            "private_test_artifacts":test_artifacts,
             "inputs_verified":True,"cleanup_verified":True,
             "process_cleanup_verified":True,
             "note":"Public gate claim only; private PID/generation records, hosted execution and real-client compatibility are out of scope."}
