@@ -6,6 +6,7 @@ helper never logs in, discovers arbitrary targets or retries. Actual placement
 must be observed independently by the normal non-GM runner.
 """
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -77,29 +78,53 @@ class DevelopmentOperator:
         Bot(self.worker, self.name).close()
 
 
-def request_registered_placement(worker, operator, operator_name, registry, slot, artifacts, *, approved=False):
-    if approved is not True:
-        raise DevelopmentError("explicit administrative placement approval is required")
-    if (type(slot) is not int or slot not in (0, 1) or not isinstance(registry, dict)
+def validate_placement_registry(registry):
+    """Mirror the server's exact v2 schema before irreversible intent publication."""
+    expected = {"version", "purpose", "approval_id", "provisioning_run_id", "territory",
+                "position", "catalog_sha256", "bots"}
+    if (not isinstance(registry, dict) or set(registry) != expected
             or type(registry.get("version")) is not int or registry["version"] != 2
             or registry.get("purpose") != "development-bot-placement"
             or type(registry.get("territory")) is not int or registry["territory"] != 130
             or not isinstance(registry.get("approval_id"), str)
             or not re.fullmatch("[0-9a-f]{32}", registry["approval_id"])
             or not isinstance(registry.get("provisioning_run_id"), str)
-            or not re.fullmatch("[0-9a-f]{32}", registry["provisioning_run_id"])):
-        raise DevelopmentError("invalid reviewed placement registry/slot")
+            or not re.fullmatch("[0-9a-f]{32}", registry["provisioning_run_id"])
+            or not isinstance(registry.get("catalog_sha256"), str)
+            or not re.fullmatch("[0-9a-f]{64}", registry["catalog_sha256"])):
+        raise DevelopmentError("invalid reviewed placement registry schema")
+    position = registry.get("position")
+
+    def valid_coordinate(value):
+        if type(value) is int:
+            return abs(value) < 1000
+        return type(value) is float and math.isfinite(value) and abs(value) < 1000
+
+    if (not isinstance(position, list) or len(position) != 3
+            or not all(valid_coordinate(value) for value in position)):
+        raise DevelopmentError("invalid reviewed placement destination")
     bindings = registry.get("bots")
     if not isinstance(bindings, list) or len(bindings) != 2:
         raise DevelopmentError("two registered bot identities required")
     for row in bindings:
-        if not isinstance(row, dict) or not isinstance(row.get("name"), str) or not re.fullmatch(r"Tester [A-Z]{12}", row["name"]):
-            raise DevelopmentError("registered generated bot names required")
+        if (not isinstance(row, dict) or set(row) != {"name", "entity_id", "character_id"}
+                or not isinstance(row.get("name"), str)
+                or not re.fullmatch(r"Tester [A-Z]{12}", row["name"])):
+            raise DevelopmentError("registered generated bot binding required")
         for key, maximum in (("entity_id", 2**32 - 1), ("character_id", 2**64 - 1)):
             if type(row.get(key)) is not int or not 0 < row[key] <= maximum:
                 raise DevelopmentError("registered received bot identities required")
     if any(len({row[key] for row in bindings}) != 2 for key in ("name", "entity_id", "character_id")):
         raise DevelopmentError("ambiguous registered bot identities")
+    return bindings
+
+
+def request_registered_placement(worker, operator, operator_name, registry, slot, artifacts, *, approved=False):
+    if approved is not True:
+        raise DevelopmentError("explicit administrative placement approval is required")
+    if type(slot) is not int or slot not in (0, 1):
+        raise DevelopmentError("invalid reviewed placement registry/slot")
+    bindings = validate_placement_registry(registry)
     if "development_place_registered" not in worker.request("capabilities").get("methods", []):
         raise DevelopmentError("worker lacks the distinct administrative placement capability")
     state = worker.snapshot(operator.name)

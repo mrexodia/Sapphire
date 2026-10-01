@@ -53,7 +53,9 @@ class OperatorWorker:
 @pytest.fixture
 def registry():
     return {"version": 2, "purpose": "development-bot-placement", "approval_id": "a" * 32,
-            "provisioning_run_id": "b" * 32, "territory": 130, "bots": [{"name": "Tester " + "A" * 12, "entity_id": 1, "character_id": 100},
+            "provisioning_run_id": "b" * 32, "territory": 130, "position": [1.0, 2, 3.0],
+            "catalog_sha256": "c" * 64,
+            "bots": [{"name": "Tester " + "A" * 12, "entity_id": 1, "character_id": 100},
                      {"name": "Tester " + "B" * 12, "entity_id": 2, "character_id": 200}]}
 
 
@@ -110,6 +112,49 @@ def test_old_worker_and_self_target_rejected(tmp_path, registry):
     ("provisioning_run_id", "b" * 31)])
 def test_legacy_or_malformed_provisioning_identity_never_dispatches(tmp_path, registry, field, value):
     registry[field] = value
+    worker = OperatorWorker(tmp_path)
+    with pytest.raises(DevelopmentError):
+        invoke(worker, registry, tmp_path, approved=True)
+    assert not worker.requests and not list(tmp_path.iterdir())
+
+
+def add_extra(registry):
+    registry["unexpected"] = True
+
+
+def remove_catalog(registry):
+    registry.pop("catalog_sha256")
+
+
+def add_bot_extra(registry):
+    registry["bots"][0]["unexpected"] = True
+
+
+def remove_bot_id(registry):
+    registry["bots"][0].pop("character_id")
+
+
+def duplicate_bot_name(registry):
+    registry["bots"][1]["name"] = registry["bots"][0]["name"]
+
+
+@pytest.mark.parametrize("mutation", [
+    add_extra, remove_catalog, add_bot_extra, remove_bot_id, duplicate_bot_name,
+    lambda row: row.update(catalog_sha256="C" * 64),
+    lambda row: row.update(catalog_sha256=True),
+    lambda row: row.update(position=None),
+    lambda row: row.update(position=[1, 2]),
+    lambda row: row.update(position=[True, 2, 3]),
+    lambda row: row.update(position=[float("nan"), 2, 3]),
+    lambda row: row.update(position=[float("inf"), 2, 3]),
+    lambda row: row.update(position=[1000, 2, 3]),
+    lambda row: row.update(position=[10**1000, 2, 3]),
+    lambda row: row["bots"][0].update(entity_id=True),
+    lambda row: row["bots"][0].update(entity_id=2**32),
+    lambda row: row["bots"][0].update(character_id=0),
+])
+def test_exact_registry_schema_rejected_before_intent_or_dispatch(tmp_path, registry, mutation):
+    mutation(registry)
     worker = OperatorWorker(tmp_path)
     with pytest.raises(DevelopmentError):
         invoke(worker, registry, tmp_path, approved=True)

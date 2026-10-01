@@ -272,8 +272,12 @@ It does not grant items/levels/quest completion or reset enemies/other players.
    Check the provisioning run ID, both names, entity IDs, character IDs, catalog
    hash and position. The
    registry is an operator-controlled allowlist, **not a cryptographic attestation**;
-   protect it against untrusted edits. The server checks its schema/bounds and
-   live identities, not navigation provenance. The planner binds the source route.
+   protect it against untrusted edits. Before writing an irreversible intent or
+   dispatching a command, the Python operator helper mirrors the server's exact v2
+   top-level fields, catalog/run/approval formats, finite bounded destination and
+   exact two bot bindings; malformed, missing or extra fields fail without
+   publication. The server independently checks the same schema/bounds and live
+   identities, not navigation provenance. The planner binds the source route.
 4. In a development server built with this feature, explicitly configure:
 
    ```ini
