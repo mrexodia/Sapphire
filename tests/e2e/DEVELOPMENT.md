@@ -1002,8 +1002,22 @@ directions. It also strictly validates every requested movement, party, Tell,
 reconnect/inventory/equipment, Sprint, or decline receipt. A base run is therefore
 only narrow login/bidirectional-Say/logout evidence; it is not a substitute for those
 optional scenarios. Its summary must be a bounded, duplicate-key-free, single-link
-regular file without a symlink/reparse alias. Managed-host runs use the separate
-composite inspector above.
+regular file without a symlink/reparse alias. Every current run also retains two
+ordered received character/entity IDs and a password-free digest over the exact
+private account profile. Recompute that association read-only with:
+
+```powershell
+python -m tests.e2e.inspect_development_profile `
+  --summary .e2e-artifacts/<run>/development-summary.json `
+  --profile .e2e-dev.json
+```
+
+The output includes the private-profile SHA-256 and received identities but never
+usernames/passwords. It proves retained byte association—not current credentials,
+exclusive use, server-side offline state or authentication freshness. Placement
+chain inspection now requires this exact profile association too. Managed-host
+runs use the separate composite inspector above; their deleted exported profile
+cannot be retroactively reconstructed from the summary digest.
 
 A configured protocol and successful session are not a server binary fingerprint.
 The report explicitly leaves `server_identity_verified` false. Passing proves

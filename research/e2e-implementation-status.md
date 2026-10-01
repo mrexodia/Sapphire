@@ -2464,6 +2464,26 @@ action ran. A matching before/after correlation does not establish transport
 receipt, server execution, causal attribution, exclusive sessions, natural
 progression, reset authority or permission to replay an uncertain request.
 
+Feature **`e86ec0940`** binds every successful shared run to its exact ordered
+private dedicated-account profile. Immediately after normal world login the
+runner records both received names/entity IDs/character IDs and a password-free
+`development-run-profile-association-v1` digest over endpoint, optional host
+session, case-folded usernames and those identities. All strict shared/managed/
+graphical consumers require the association's structure and identity consistency.
+The new external command `python -m tests.e2e.inspect_development_profile
+--summary <private-summary> --profile <private-profile>` independently recomputes
+it from a bounded alias-free private profile, emits no username/password, and is
+also required by external placement-chain correlation.
+
+Frozen, remote-free source **`e86ec0940702f2ec9d034b0fe6df2d98ffbb004d`**
+passed **1040 focused contracts with no skips in 38.84s**. Test-log SHA-256:
+`0e2ceaf046457d474fa095b6b8a43b2bdd1b19382939b7436d75014ea1d10add`.
+No account, endpoint, session, service, gameplay or graphical operation ran.
+Historical summaries lack this mandatory association and remain historical. A
+matching digest is editable correlation, not a signature, current authentication,
+credential validity, account exclusivity, server identity, offline exclusion,
+reset authority or acceptance evidence.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
