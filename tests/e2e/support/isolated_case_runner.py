@@ -174,6 +174,9 @@ def run_isolated_case(profile_path, private_root, expected_case, expected_revisi
         else:
             proof = inspect_isolated_case(
                 artifact, junit, pytest_log, expected_case, revision)
+        final_revision, final_dirty = _repository_identity()
+        if final_revision != revision or final_dirty:
+            raise SetupError("standalone case source changed during execution or inspection")
         with inspection_path.open("x", encoding="utf-8") as stream:
             json.dump(proof, stream, indent=2)
             stream.write("\n")

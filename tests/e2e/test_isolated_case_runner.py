@@ -220,6 +220,19 @@ def test_runner_rejects_captured_cleanup_that_returns_without_closure(tmp_path, 
     assert "cleanup remained incomplete" in (private / "cleanup-error.log").read_text()
 
 
+def test_runner_rejects_source_change_after_private_inspection(tmp_path, monkeypatch):
+    case = CASES[0]
+    profile, _ = configure_success(monkeypatch, tmp_path, case)
+    identities = iter(((REVISION, False), (REVISION, True)))
+    monkeypatch.setattr(runner, "_repository_identity", lambda: next(identities))
+    private = tmp_path / "private"
+    assert runner.run_isolated_case(profile, private, case, REVISION) == 1
+    result = json.loads((private / "runner-result.json").read_text())
+    assert result["status"] == "failed" and result["stage"] == "inspection"
+    assert not (private / "inspection.json").exists()
+    assert "source changed" in (private / "entry-error.log").read_text()
+
+
 def test_runner_requires_exact_clean_reviewed_revision_before_root(tmp_path, monkeypatch):
     repository = tmp_path / "repo"
     repository.mkdir()
