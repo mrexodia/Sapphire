@@ -351,6 +351,23 @@ def test_service_free_profile_staging_rejects_dirty_source_and_still_removes_run
     assert not runtime.exists() and not runtime.parent.exists()
 
 
+def test_service_free_profile_staging_rejects_foreign_sibling_after_cleanup(
+        profile, tmp_path, monkeypatch):
+    _clean_staging_git(monkeypatch)
+    original = environment_support.Environment.stage
+    def stage_with_foreign_sibling(environment):
+        original(environment)
+        (environment.artifacts.parent / "foreign").write_text("not owned")
+    monkeypatch.setattr(environment_support.Environment, "stage", stage_with_foreign_sibling)
+    path = tmp_path / "profile.json"; path.write_text(json.dumps(profile))
+    private = (tmp_path / "private-stage").resolve()
+    with pytest.raises(SetupError, match="ambiguous or foreign"):
+        stage_ci_profile(path, private, "a" * 40, suffix=".exe")
+    artifact = next(entry for entry in private.iterdir() if entry.is_dir())
+    runtime = Path(json.loads((artifact / "manifest.json").read_text())["runtime"])
+    assert not runtime.exists() and not runtime.parent.exists()
+
+
 @pytest.mark.parametrize("scale", [True, 0, 4, 1.5])
 def test_preflight_rejects_unbounded_deadline_scale(profile, scale):
     profile["deadline_scale"] = scale

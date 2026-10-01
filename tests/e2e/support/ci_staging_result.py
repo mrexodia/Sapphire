@@ -44,6 +44,13 @@ def stage_ci_profile(profile_path, private_artifacts, expected_revision, *,
         environment.close()
     if runtime.exists() or disposable_root.exists():
         raise SetupError("service-free staging retained disposable runtime")
+    try:
+        entries = list(requested.iterdir())
+    except OSError as error:
+        raise SetupError("private staging artifact root became unavailable") from error
+    if (requested.is_symlink() or len(entries) != 1 or entries[0].is_symlink()
+            or not entries[0].is_dir() or entries[0].resolve() != artifact.resolve()):
+        raise SetupError("private staging artifact root is ambiguous or foreign")
     lifecycle_path = artifact / "process-lifecycle.json"
     try:
         lifecycle = json.loads(lifecycle_path.read_text(encoding="utf-8"))
