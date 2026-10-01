@@ -2219,6 +2219,21 @@ passed **390 focused contracts with no skips in 29.35s**. Test-log SHA-256:
 These use fake owned services and synthetic bytes; they prove read-only correlation
 policy, not a refreshed warm-host teardown, offline exclusion or shared-world cleanup.
 
+Feature **`fd2ceeb27`** makes the owned host produce a bounded complete private
+artifact-tree SHA-256 after cleanup. Terminal host, composite managed-run and
+composite managed-provisioning consumers now require and return exact recomputation;
+changed/foreign logs, files, symlinks, lifecycle bytes or a swapped tree cannot pass
+on lifecycle equality alone. Recomputing the tree after synchronizing an invalid
+three-service lifecycle still reaches and fails the independent exact-four-service
+semantic check.
+
+Frozen, remote-free source **`fd2ceeb2763eef464e500e600da76ac30fb50b5e`**
+passed **392 focused contracts with no skips in 29.62s**. Test-log SHA-256:
+`682a9eea6ac1e1bc54f830c3219a24d5eac7b57672e3bbd4e5ca17a1cd46f37b`.
+The prior retained live owned-host/composite receipt predates this new terminal field
+and is historical under current policy; no fresh host was started. A tree hash is byte
+correlation, not a signature, content truth, offline proof or external-root identity.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

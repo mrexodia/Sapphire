@@ -98,7 +98,9 @@ ordered successful host phases. Any recursively discovered, case-variant termina
 `cleanup-failure.json` marker rejects host and composite managed-run success even
 when the lifecycle itself is complete. The inspector follows the terminal status's
 absolute, separate original `Environment` artifact directory, rejects aliases to the
-session tree, and requires its lifecycle object to equal the retained session copy;
+session tree, requires its lifecycle object to equal the retained session copy, and
+recomputes the producer-recorded bounded complete artifact-tree SHA-256. That tree
+identity is also returned by the composite managed-run/provisioning inspectors;
 checking only the copied lifecycle is insufficient. This proves exact owned-process teardown only,
 not graceful server shutdown, account offline exclusion, cache quiescence, reset
 authority or cleanup of an already-running external shared server. To correlate one
