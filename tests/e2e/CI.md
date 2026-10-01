@@ -20,7 +20,7 @@ self-hosted runners (checked through the read-only Actions runners API).
    unrestricted asset-bearing runner to a public repository accepting PR code.
 2. Provision legally available matching game data, including its adjacent
    `ffxivgame.ver` (`2016.07.05.0000.0001`). Keep it outside the checkout. Provision
-   private compatible w1t1/w1f2 meshes and all seven catalogs described in
+   private compatible w1t1/w1f2 meshes and all eight catalogs described in
    [README.md](README.md). The route and server w1t1 meshes must hash identically.
    Legacy MSET files are rejected. Do not modify installed game assets to pass.
 3. Put a local JSON profile outside the checkout with `game_data`, `mariadb_bin`,
