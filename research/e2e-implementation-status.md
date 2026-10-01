@@ -1676,9 +1676,26 @@ an exact process-lifecycle file and is not upgraded. Read-only rejection artifac
 SHA-256:
 `f1fc2b4f1f838d2742b0fa29199eacc00a8e9c0458f504849d29bff14a80a472`.
 
-No service, database, account, worker, viewer or gameplay operation ran. A current
-bounded owned-host execution is still needed for positive native service-generation
-evidence; no full gate, soak or platform sweep ran.
+A bounded stop-on-ready execution from frozen source
+**`6e28b65b0d655ee06721f72dda6f7257bc538183`** then produced positive native
+evidence at `development-host-teardown-live-001`. It used the previously retained
+clean worker SHA-256
+`b0400f61813c3ee9c7ae1f1b8bdd945b296d1410628e0bf301d937cc11cd0099`,
+created one disposable private database/runtime and three pre-connection fixture
+accounts, observed readiness, immediately published the owned stop marker, and
+returned zero in **24.594s**. No bot authenticated or performed gameplay; no viewer
+or graphical client ran, and no retry occurred.
+
+The terminal inspector accepted exact one-generation database/API/lobby/world
+teardown, all seven ordered phases, removed private profiles and status/file hash
+equality. Inspected evidence SHA-256:
+`77da7addbce22966aa4990d683333d99b50d96b146ae649b97ce2758f94aaaba`;
+private lifecycle SHA-256:
+`3208e7abbd16a9b475a2205845a6b45e3a7a96219917479b22e78d899629c3c5`.
+Read-only host process inspection found no MariaDB, Sapphire service or worker
+process afterward. This is positive owned warm-host cleanup only, not a shared
+external-server, graceful shutdown, offline/reset or gameplay result. No full
+gate, soak or platform sweep ran.
 
 ## Retained bot leases have a read-only fail-closed inspector
 
