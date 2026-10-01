@@ -9,6 +9,8 @@ import pytest
 
 from . import run_ci
 from .inspect_ci_result import main as inspect_ci_main
+from .support.ci_profile_result import (SCOPE as CI_PROFILE_SCOPE,
+                                        inspect_ci_profile)
 from .inspect_ci_private_evidence import main as inspect_ci_private_main
 from .inspect_ci_failure_result import main as inspect_ci_failure_main
 from .inspect_isolated_fault import main as inspect_isolated_fault_main
@@ -261,6 +263,31 @@ def test_preflight_checks_all_inputs_without_gameplay(profile):
     assert result == profile
     assert set(identities["binaries"]) == {"api", "lobby", "server", "dbm"}
     assert set(identities["meshes"]) == {"w1t1", "w1f2"}
+
+
+def test_private_profile_inspector_is_read_only_and_discloses_no_paths(profile, tmp_path):
+    path = tmp_path / "profile.json"; path.write_text(json.dumps(profile))
+    before = path.read_bytes()
+    proof = inspect_ci_profile(path, suffix=".exe")
+    assert path.read_bytes() == before and proof["scope"] == CI_PROFILE_SCOPE
+    assert proof["required_path_key_count"] == len(run_ci.PATH_KEYS)
+    assert proof["catalog_count"] == len(run_ci.CATALOGS)
+    assert proof["services_accounts_or_gameplay_started"] is False
+    text = json.dumps(proof)
+    assert str(tmp_path) not in text and proof["private_paths_disclosed"] is False
+
+
+@pytest.mark.parametrize("mutation", ["unknown","missing","deadline","unavailable"])
+def test_private_profile_inspector_rejects_unsafe_or_incomplete_input(profile, tmp_path, mutation):
+    if mutation == "unknown": profile["database_password"] = "PRIVATE_MARKER"
+    elif mutation == "missing": profile.pop("opening_quest_catalog")
+    elif mutation == "deadline": profile["deadline_scale"] = True
+    else: profile["worker"] = str(tmp_path / "PRIVATE_MARKER-missing-worker")
+    path = tmp_path / "profile.json"; path.write_text(json.dumps(profile))
+    with pytest.raises(SetupError) as raised:
+        inspect_ci_profile(path, suffix=".exe")
+    if mutation in {"unknown","unavailable"}:
+        assert "PRIVATE_MARKER" not in str(raised.value)
 
 
 @pytest.mark.parametrize("scale", [True, 0, 4, 1.5])
