@@ -1,10 +1,21 @@
 """Bridge the owned manual graphical fixture to the separate normal-bot lane."""
+import math
 import time
 
 from .development import (DevelopmentError, validate_profile, movement_route,
                           require_normal_worker_exit)
 from .worker import Worker, WorkerError
 from .development_lease import require_clear_terminal_account_leases
+
+
+def development_run_budget(activity_deadline):
+    """Nest an integer runner deadline strictly inside the graphical activity budget."""
+    remaining = activity_deadline - time.monotonic()
+    if not math.isfinite(remaining) or remaining < 2:
+        raise WorkerError('graphical activity deadline cannot admit a development run')
+    # The one-second margin keeps RunDeadline's later start from extending beyond
+    # the already-running graphical deadline. ActivityWorker remains the outer cap.
+    return min(900, math.floor(remaining) - 1)
 
 
 class ActivityWorker(Worker):
@@ -31,6 +42,15 @@ class ActivityWorker(Worker):
         self.budget(1)
         return result
 
+
+def run_graphical_development(runner, profile, artifacts, *, viewer_name, activity_deadline, login):
+    """Invoke the exact normal-bot scenario with nested and outer deadline guards."""
+    budget = development_run_budget(activity_deadline)
+    return runner(profile, artifacts, confirmed=True, verify_party=True, verify_tell=True,
+                  verify_reconnect=True, viewer_name=viewer_name,
+                  worker_factory=lambda executable, output: ActivityWorker(
+                      executable, output, deadline=activity_deadline),
+                  login=login, max_seconds=budget)
 
 
 def development_profile(env, witness, peer, viewer, catalog):
@@ -59,6 +79,19 @@ def require_graphical_check(result, viewer_name, entity):
         raise DevelopmentError('normal development check did not complete cleanly')
     require_clear_terminal_account_leases(result)
     require_normal_worker_exit(result)
+    deadline = result.get('run_deadline')
+    if (not isinstance(deadline, dict)
+            or set(deadline) != {'enabled', 'limit_seconds', 'expired',
+                                 'session_work_completed_within_budget', 'scope',
+                                 'cleanup_may_exceed_deadline'}
+            or deadline.get('enabled') is not True
+            or type(deadline.get('limit_seconds')) is not int
+            or not 1 <= deadline['limit_seconds'] <= 900
+            or deadline.get('expired') is not False
+            or deadline.get('session_work_completed_within_budget') is not True
+            or deadline.get('scope') != 'cooperative-success-deadline-not-hard-process-limit'
+            or deadline.get('cleanup_may_exceed_deadline') is not True):
+        raise DevelopmentError('bounded development run receipt missing or failed')
     for key in ('party_verification', 'tell_verification', 'reconnect_verification', 'viewer_verification'):
         value = result.get(key, {})
         if value.get('requested') is not True or value.get('verified') is not True:
@@ -70,5 +103,5 @@ def require_graphical_check(result, viewer_name, entity):
     if any(viewer.get(stage, {}).get('identity') != expected for stage in ('start','finish')):
         raise DevelopmentError('development checkpoints do not bind the same graphical fixture')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
-            'viewer':expected, 'rendered_bot_actions_verified':False,
+            'viewer':expected, 'run_deadline':deadline, 'rendered_bot_actions_verified':False,
             'note':'Endpoint replies are received-state evidence, not continuous presence or rendered-action agreement.'}

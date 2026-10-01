@@ -97,12 +97,17 @@ summary and requires every requested subcheck, released leases, the exact versio
 native worker, and the same non-GM graphical fixture identity at both checkpoints.
 Legacy summaries without the terminal snapshot or with only `worker_closed:true`,
 malformed/nonzero receipts and local process exit without the separate server-
-lifecycle observations fail closed; older graphical evidence is not retroactively
-upgraded. The original
-witness then authenticates afresh to verify the graphical client's ordinary
+lifecycle observations fail closed. The nested normal-bot scenario also receives
+an integer cooperative deadline strictly inside the remaining graphical activity
+budget (maximum 900 seconds); bridge success requires its exact enabled,
+unexpired, completed deadline receipt. Older graphical evidence without these
+receipts is not retroactively upgraded. The original witness then authenticates afresh to verify the graphical client's ordinary
 logout. The existing twenty-minute activity budget remains in use: native RPC
-and observation waits are capped by its remainder; late successes fail. Bounded
-HTTP/fixture calls and cleanup are not forcibly interrupted mid-call.
+and observation waits are capped by its remainder; late successes fail. The nested
+runner budget is cooperative rather than hard preemption, and its final cleanup
+may exceed that nested success budget while still remaining subject to the outer
+activity/lifecycle checks. Bounded HTTP/fixture calls and cleanup are not forcibly
+interrupted mid-call.
 
 The development catalog is copied with only `navigation.mesh` localized to an
 exact byte-for-byte mesh copy inside the guest input mapping. The untouched

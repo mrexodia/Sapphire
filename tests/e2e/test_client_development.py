@@ -51,6 +51,10 @@ def completed():
                 'active_session_checked':False,'offline_verified':False,'release_authorized':False,
                 'cross_file_snapshot_atomic':False,'retained_receipts_match_run':False},
             'lease_snapshot_matches_run_state':True,
+            'run_deadline':{'enabled':True,'limit_seconds':300,'expired':False,
+                'session_work_completed_within_budget':True,
+                'scope':'cooperative-success-deadline-not-hard-process-limit',
+                'cleanup_may_exceed_deadline':True},
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
             **{key:{'requested':True,'verified':True} for key in ('party_verification','tell_verification','reconnect_verification')},
@@ -71,7 +75,7 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
 
 @pytest.mark.parametrize('field,value',[('status','failed'),('lease_retained',True),('worker_closed',False),
     ('worker_exit',None),('lease_snapshot',None),('lease_snapshot_matches_run_state',False),
-    ('administrative_preparation_wait_enabled',True),('database_access',True),
+    ('run_deadline',None),('administrative_preparation_wait_enabled',True),('database_access',True),
     ('world_restart_performed',True),('movement_waypoints_per_cycle',0)])
 def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
     report=completed(); report[field]=value
@@ -87,6 +91,52 @@ def test_graphical_bridge_rejects_malformed_or_failed_worker_exit(field,value):
     report=completed();report['worker_exit'][field]=value
     with pytest.raises(DevelopmentError):
         bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+@pytest.mark.parametrize('field,value',[
+    ('enabled',False),('enabled',1),('limit_seconds',True),('limit_seconds',0),
+    ('limit_seconds',901),('expired',True),('session_work_completed_within_budget',False),
+    ('scope','hard-timeout'),('cleanup_may_exceed_deadline',False)])
+def test_graphical_bridge_requires_exact_successful_run_deadline(field,value):
+    report=completed();report['run_deadline'][field]=value
+    with pytest.raises(DevelopmentError):
+        bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_changed_deadline_shape():
+    for mutate in (lambda row: row.pop('expired'), lambda row: row.update(extra=True)):
+        report=completed();mutate(report['run_deadline'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_nested_development_budget_stays_inside_activity_deadline(monkeypatch):
+    monkeypatch.setattr(bridge.time,'monotonic',lambda:100.0)
+    assert bridge.development_run_budget(1002.0)==900
+    assert bridge.development_run_budget(1000.2)==899
+    assert bridge.development_run_budget(102.0)==1
+    for deadline in (101.999, float('inf'), float('nan')):
+        with pytest.raises(WorkerError):
+            bridge.development_run_budget(deadline)
+
+
+def test_graphical_scenario_forwards_nested_deadline_and_exact_flags(monkeypatch,tmp_path):
+    monkeypatch.setattr(bridge.time,'monotonic',lambda:100.0)
+    calls=[]
+    login=object()
+    def runner(*args,**kwargs):
+        calls.append((args,kwargs))
+        return {'status':'synthetic'}
+    result=bridge.run_graphical_development(
+        runner,{'profile':True},tmp_path/'output',viewer_name='Tester Viewer',
+        activity_deadline=500.8,login=login)
+    assert result=={'status':'synthetic'} and len(calls)==1
+    args,kwargs=calls[0]
+    assert args==({'profile':True},tmp_path/'output')
+    assert kwargs['confirmed'] is True and kwargs['verify_party'] is True
+    assert kwargs['verify_tell'] is True and kwargs['verify_reconnect'] is True
+    assert kwargs['viewer_name']=='Tester Viewer' and kwargs['login'] is login
+    assert kwargs['max_seconds']==399 and callable(kwargs['worker_factory'])
 
 
 def test_activity_budget_caps_calls_and_rejects_late_success(monkeypatch):

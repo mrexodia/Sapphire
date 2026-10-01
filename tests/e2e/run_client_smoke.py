@@ -19,7 +19,8 @@ from .support.client_timing import ClientPhaseTiming
 from .support.client_lifecycle import retire_witness
 from .support.worker import Worker, Bot
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
-from .support.client_development import ActivityWorker, development_profile, require_graphical_check
+from .support.client_development import (development_profile, require_graphical_check,
+                                         run_graphical_development)
 from .support.development import authenticate, movement_route
 from .run_development import run as run_development
 
@@ -188,10 +189,9 @@ def run():
                     if time.monotonic() >= deadline:
                         raise TimeoutError("graphical activity expired during authentication")
                     return auth
-                result = run_development(shared, OUTPUT / "development", confirmed=True,
-                    verify_party=True, verify_tell=True, verify_reconnect=True, viewer_name=real["name"],
-                    worker_factory=lambda executable, artifacts: ActivityWorker(executable, artifacts, deadline=deadline),
-                    login=bounded_login)
+                result = run_graphical_development(
+                    run_development, shared, OUTPUT / "development", viewer_name=real["name"],
+                    activity_deadline=deadline, login=bounded_login)
                 report["development_check"] = {"requested": True, "status": result["status"],
                     "summary_sha256": sha256(OUTPUT / "development/development-summary.json"),
                     "elapsed_seconds": result["elapsed_seconds"]}
