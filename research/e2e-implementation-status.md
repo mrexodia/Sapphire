@@ -1550,6 +1550,34 @@ retained for authorized comparison; they do not reveal or independently prove th
 contents. Historical summaries have no rows and remain rejected. No gate, build,
 service or gameplay operation ran; current positive evidence remains pending.
 
+Feature **`c0c0ab472`** adds the matching read-only private consumer:
+`python -m tests.e2e.inspect_ci_private_evidence --summary <public> --private-run-dir <private-run> --expected-revision <40-hex>`.
+After strict public-result validation, it requires exactly 15 non-symlink private
+`sapphire-e2e-*` evidence directories, matches each manifest/lifecycle byte hash
+one-to-one to its public case row, reruns exact service-generation teardown
+validation, reruns all staged source/input identity comparisons, and requires
+distinct valid private database/runtime identities with four typed local ports.
+It emits only the already-public case/hash rows and aggregate counts/booleans—not
+private paths, databases, runtimes, ports, PIDs or credentials. Missing/changed
+bytes, malformed lifecycle rows, foreign staged inputs and duplicate fixture
+identities fail closed.
+
+Frozen, remote-free source **`c0c0ab47212563b15baf17c692a5e1886a7c0109`**
+passed **98 CI/workflow-policy tests in 3.02s**. The positive is read-only across
+all 30 files; negatives cover changed bytes, missing environment evidence, typed
+lifecycle corruption, input mismatch and duplicate database identity. Test-log
+SHA-256:
+`67653be96970544697fb051b40ff298765f023a25f65b955e441366e60aed8eb`.
+
+The historical Windows public summary and retained private run were not upgraded:
+the summary predates `environment_evidence` and the current cleanup fields, so the
+inspector rejected it before correlation. Rejection evidence SHA-256:
+`ad37177a59c011227e8e9fb49655dfd073a1f092adb7201fec4c6d6750ed4f67`.
+A hash match would establish exact byte correlation and validator acceptance—not
+hosted execution, gameplay truth, graceful shutdown or VM disposal. No gate,
+service or gameplay operation ran; current positive public/private evidence awaits
+a new authorized gate.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
@@ -3828,7 +3856,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
-| Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds one ordered manifest/lifecycle hash pair per exact case while keeping paths/PIDs private | Implemented at contract level; current per-case hash publication awaits a new gate, and hashes do not prove contents or independent compatibility |
+| Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds one ordered manifest/lifecycle hash pair per exact case while keeping paths/PIDs private, with a read-only private-byte/process/input correlation inspector | Implemented at contract level; current public/private per-case correlation awaits a new gate, and hashes do not prove gameplay, hosted execution or independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `inspect_ci_result.py`, `CI.md`; strict workflow/process-policy and public-summary receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy the exact current sanitized result/revision contract before upload, and private dispatch remains protected/serialized in YAML; every historical summary predates public exact process-generation cleanup and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
