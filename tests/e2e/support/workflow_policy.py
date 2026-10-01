@@ -144,6 +144,11 @@ def inspect_workflow(path, *, private):
                     if retention > 30 or not any(line.strip() in {
                             "if-no-files-found: warn", "if-no-files-found: error"} for line in step):
                         raise DevelopmentError("artifact upload lacks bounded fail-closed retention policy")
+        executes_pytest = any("python -m pytest " in line
+                              or "python -m tests.e2e.run_ci " in line for line in block)
+        if executes_pytest and (block.count("    env:") != 1
+                or block.count("      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'") != 1):
+            raise DevelopmentError("pytest workflow job must disable ambient plugin autoload")
         jobs.append({"name": name, "timeout_minutes": job_timeout,
                      "step_count": len(starts)})
 
@@ -235,7 +240,7 @@ def inspect_workflow(path, *, private):
                 or lines.index(upload_guard) < lines.index(private_failure)):
             raise DevelopmentError("private workflow does not inspect passing/private or failed evidence before publication")
     locked_install = ("          python -m pip install --require-hashes "
-                      "--only-binary=:all: -r tests/e2e/requirements.txt")
+                      "--only-binary=:all: --no-deps -r tests/e2e/requirements.txt")
     if lines.count(locked_install) != 1:
         raise DevelopmentError("workflow must install the exact hash-locked wheel closure")
     normalized = path.as_posix()
@@ -248,6 +253,7 @@ def inspect_workflow(path, *, private):
             "private_asset_workflow": private,
             "private_evidence_inspection_required":private,
             "hash_locked_dependencies_required":True,
+            "ambient_pytest_plugins_disabled":True,
             "service_free_staging_required":private,
             "exact_clean_checkout_required":private,
             "failed_summary_inspection_required":private,

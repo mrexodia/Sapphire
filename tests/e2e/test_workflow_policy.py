@@ -40,6 +40,8 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     assert private["failed_summary_inspection_required"] is True
     assert public["hash_locked_dependencies_required"] is True
     assert private["hash_locked_dependencies_required"] is True
+    assert public["ambient_pytest_plugins_disabled"] is True
+    assert private["ambient_pytest_plugins_disabled"] is True
     assert inspect_dependency_lock(DEPENDENCIES)["package_count"] == 7
     assert [len(public["pinned_actions"]), len(private["pinned_actions"])] == [3, 3]
     assert all("@" in action and len(action.rsplit("@", 1)[1]) == 40
@@ -58,10 +60,15 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     (PUBLIC, "          retention-days: 7", "          retention-days: 31"),
     (PUBLIC, "pip install --require-hashes --only-binary=:all:",
              "pip install --only-binary=:all:"),
+    (PUBLIC, "      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'",
+             "      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '0'"),
     (PUBLIC, "          if-no-files-found: warn", "          if-no-files-found: ignore"),
     (PRIVATE, "  cancel-in-progress: false", "  cancel-in-progress: true"),
     (PRIVATE, "pip install --require-hashes --only-binary=:all:",
               "pip install --require-hashes"),
+    (PRIVATE, "      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'",
+              "      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '0'"),
+    (PRIVATE, "--only-binary=:all: --no-deps", "--only-binary=:all:"),
     (PRIVATE, "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
               "    runs-on: ubuntu-latest"),
     (PRIVATE, "  workflow_dispatch:", "  pull_request:\n  workflow_dispatch:"),

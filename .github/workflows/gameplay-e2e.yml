@@ -41,6 +41,8 @@ jobs:
     environment: sapphire-private-e2e
     runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]
     timeout-minutes: 120
+    env:
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
     defaults:
       run:
         shell: pwsh
@@ -93,7 +95,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
           ctest --test-dir build-e2e-ci --output-on-failure --timeout 60 --no-tests=error -R '^sapphire_'
           if ($LASTEXITCODE -ne 0) { throw 'Native contracts failed' }
-          python -m pip install --require-hashes --only-binary=:all: -r tests/e2e/requirements.txt
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r tests/e2e/requirements.txt
           if ($LASTEXITCODE -ne 0) { throw 'Python dependencies failed' }
       - name: Controller and CI gate contracts
         timeout-minutes: 10
