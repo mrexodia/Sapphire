@@ -149,4 +149,5 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
             "run_worker_exit":report["worker_exit"],"lease_snapshot":lease,
             "host_process_teardown":host["process_teardown"],
             "host_lifecycle_sha256":host["lifecycle_sha256"],
+            "host_environment_artifact_tree_sha256":host["environment_artifact_tree_sha256"],
             "note":"Retained provisioning/lifecycle correlation only; no offline, reset, retry or gameplay authority."}

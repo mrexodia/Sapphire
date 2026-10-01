@@ -183,4 +183,5 @@ def inspect_managed_development_run(session_dir, summary_path):
             "run_worker_exit":report["worker_exit"],"verified_checks":checks,
             "lease_snapshot":lease,"host_process_teardown":host["process_teardown"],
             "host_lifecycle_sha256":host["lifecycle_sha256"],
+            "host_environment_artifact_tree_sha256":host["environment_artifact_tree_sha256"],
             "note":"Strict retained received-state evidence plus lifecycle correlation; rendering, offline/reset authority and acceptance are out of scope."}

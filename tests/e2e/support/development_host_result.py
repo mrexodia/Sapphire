@@ -12,8 +12,8 @@ import math
 from pathlib import Path
 
 from .development import DevelopmentError, require_normal_worker_exit
-from .environment import (SetupError, has_cleanup_failure_marker,
-                          require_process_teardowns)
+from .environment import (SetupError, artifact_tree_sha256,
+                          has_cleanup_failure_marker, require_process_teardowns)
 
 SCOPE = "terminal-owned-warm-host-cleanup-not-external-server-or-offline-proof"
 TEARDOWN_SCOPE = "exact-owned-warm-host-service-teardown-not-server-offline-proof"
@@ -66,8 +66,8 @@ def inspect_owned_development_host(session_dir):
               "cleanup_verified", "process_cleanup_verified", "worker_preflight_exit",
               "api_port", "lobby_port", "world_port", "artifacts", "owned_pids",
               "worker_sha256", "deadline_monotonic", "profiles", "stop_reason",
-              "environment_process_teardown", "private_profiles_removed",
-              "elapsed_seconds", "timings"}
+              "environment_process_teardown", "environment_artifact_tree_sha256",
+              "private_profiles_removed", "elapsed_seconds", "timings"}
     if (set(status) != fields or type(status.get("version")) is not int or status["version"] != 1
             or status.get("kind") != "owned-development-host"
             or not _hex(status.get("session_id"), 32)
@@ -91,7 +91,8 @@ def inspect_owned_development_host(session_dir):
                                            "viewer-profile.json"]
             or status.get("stop_reason") not in {"operator_stop_file", "bounded_lifetime_expired"}
             or not isinstance(status.get("artifacts"), str) or not status["artifacts"]
-            or not _hex(status.get("worker_sha256"), 64)):
+            or not _hex(status.get("worker_sha256"), 64)
+            or not _hex(status.get("environment_artifact_tree_sha256"), 64)):
         raise DevelopmentError("owned-host terminal boundary is malformed or incomplete")
     ports = [status.get(key) for key in ("api_port", "lobby_port", "world_port")]
     if any(type(value) is not int or not 0 < value <= 65535 for value in ports) or len(set(ports)) != 3:
@@ -127,6 +128,11 @@ def inspect_owned_development_host(session_dir):
             raise DevelopmentError("owned host environment records terminal cleanup failure")
     except SetupError as error:
         raise DevelopmentError("cannot inspect owned-host environment cleanup markers") from error
+    try:
+        if artifact_tree_sha256(artifact_dir) != status["environment_artifact_tree_sha256"]:
+            raise DevelopmentError("owned-host environment artifact tree differs")
+    except SetupError as error:
+        raise DevelopmentError("cannot verify owned-host environment artifact tree") from error
     artifact_lifecycle = artifact_dir / "process-lifecycle.json"
     if artifact_lifecycle.is_symlink() or not artifact_lifecycle.is_file():
         raise DevelopmentError("owned-host environment lifecycle is missing or unsafe")
@@ -169,6 +175,8 @@ def inspect_owned_development_host(session_dir):
     return {"version":1,"status":"accepted","scope":SCOPE,
             "session_id":status["session_id"],"stop_reason":status["stop_reason"],
             "worker_sha256":status["worker_sha256"],
-            "lifecycle_sha256":receipt["sha256"],"process_teardown":proof,
+            "lifecycle_sha256":receipt["sha256"],
+            "environment_artifact_tree_sha256":status["environment_artifact_tree_sha256"],
+            "process_teardown":proof,
             "private_profiles_removed":True,
             "note":"Owned warm-host teardown only; not external-server or offline/reset proof."}

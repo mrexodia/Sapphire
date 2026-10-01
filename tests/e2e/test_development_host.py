@@ -23,7 +23,7 @@ from .support.managed_provisioning_result import (SCOPE as MANAGED_PROVISIONING_
                                                   inspect_managed_provisioning)
 from .support.development_binding import provisioning_binding
 from .support.development_party import BOUND_METHODS
-from .support.environment import redact_runtime_log
+from .support.environment import artifact_tree_sha256, redact_runtime_log
 
 
 @pytest.fixture
@@ -154,6 +154,7 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
     proof = inspect_owned_development_host(session)
     assert proof["status"] == "accepted" and proof["scope"] == HOST_RESULT_SCOPE
     assert proof["process_teardown"]["process_count"] == 4
+    assert proof["environment_artifact_tree_sha256"] == report["environment_artifact_tree_sha256"]
 
 
 def managed_summary(path, receipt, worker_sha256):
@@ -379,6 +380,7 @@ def test_composite_managed_run_inspector_rejects_terminal_identity_mismatch(
     lambda status:status["owned_pids"].update(world=True),
     lambda status:status["owned_pids"].update(world=status["owned_pids"]["api"]),
     lambda status:status["environment_process_teardown"].update(sha256="0" * 64),
+    lambda status:status.update(environment_artifact_tree_sha256="0" * 64),
     lambda status:status["environment_process_teardown"]["evidence"].update(process_count=True),
     lambda status:status["timings"][0].update(seconds=float("nan")),
     lambda status:status.update(extra=True),
@@ -419,13 +421,25 @@ def test_terminal_host_inspector_rejects_environment_cleanup_marker(assets, tmp_
         inspect_owned_development_host(session)
 
 
-def test_terminal_host_inspector_rejects_environment_lifecycle_divergence(assets, tmp_path):
+def test_terminal_host_inspector_rejects_changed_environment_artifact_tree(assets, tmp_path):
     _, _, session = run_host(assets, tmp_path)
     status = json.loads((session / "status.json").read_text())
-    path = Path(status["artifacts"]) / "process-lifecycle.json"
+    (Path(status["artifacts"]) / "foreign.log").write_text("changed")
+    with pytest.raises(DevelopmentError, match="artifact tree differs"):
+        inspect_owned_development_host(session)
+
+
+def test_terminal_host_inspector_rejects_environment_lifecycle_divergence(assets, tmp_path):
+    _, _, session = run_host(assets, tmp_path)
+    status_path = session / "status.json"
+    status = json.loads(status_path.read_text())
+    artifact_dir = Path(status["artifacts"])
+    path = artifact_dir / "process-lifecycle.json"
     lifecycle = json.loads(path.read_text())
     lifecycle["teardowns"][0]["returncode"] = -9
     path.write_text(json.dumps(lifecycle))
+    status["environment_artifact_tree_sha256"] = artifact_tree_sha256(artifact_dir)
+    status_path.write_text(json.dumps(status))
     with pytest.raises(DevelopmentError, match="differs from environment artifact"):
         inspect_owned_development_host(session)
 
@@ -457,7 +471,9 @@ def test_terminal_host_inspector_requires_all_four_exact_services(assets, tmp_pa
     status["environment_process_teardown"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     status["environment_process_teardown"]["evidence"].update(
         process_count=3, generations={"api":1,"lobby":1,"world":1})
-    (Path(status["artifacts"]) / "process-lifecycle.json").write_text(json.dumps(lifecycle))
+    artifact_dir = Path(status["artifacts"])
+    (artifact_dir / "process-lifecycle.json").write_text(json.dumps(lifecycle))
+    status["environment_artifact_tree_sha256"] = artifact_tree_sha256(artifact_dir)
     status_path.write_text(json.dumps(status))
     with pytest.raises(DevelopmentError, match="process teardown is incomplete"):
         inspect_owned_development_host(session)

@@ -18,7 +18,8 @@ from .provision_development import require_private_output, reserve_private_profi
 from .support.catalog import load_quest_catalog
 from .support.development import DevelopmentError, Timings, validate_profile
 from .support.development_party import require_bound_party_worker
-from .support.environment import Environment, require_process_teardowns
+from .support.environment import (Environment, artifact_tree_sha256,
+                                  require_process_teardowns)
 from .support.worker import Worker
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 
@@ -152,6 +153,8 @@ def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Env
                         "relative_path":"process-lifecycle.json",
                         "sha256":hashlib.sha256(retained.read_bytes()).hexdigest(),
                         "evidence":proof}
+                    report["environment_artifact_tree_sha256"] = artifact_tree_sha256(
+                        environment.artifacts)
                     report["process_cleanup_verified"] = True
                 if (not report["cleanup_verified"]
                         or (report["status"] == "stopping"
