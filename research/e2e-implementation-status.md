@@ -1714,6 +1714,24 @@ Path absence is exact inspection-time evidence only—not secure erasure, VM dis
 leak-freedom or proof that a server excludes old sessions. No fixture, service,
 gate or gameplay operation ran; current positive evidence remains pending.
 
+Feature **`b676c4cb5`** binds the exact normalized private `profile.json` used by the
+gate. The producer publishes only its SHA-256 alongside private pytest/JUnit
+identities. Public inspection requires the exact three-hash private-artifact schema;
+private inspection rehashes the bounded regular file, rejects extra/missing profile
+keys, requires only the eight catalog paths plus binaries/worker/game-data/
+MariaDB/navigation/artifact paths and an optional typed deadline, checks all source
+paths are canonical absolute values, and binds the artifact root and deadline to
+the inspected run/public receipt. Profile contents and paths are never emitted.
+
+Frozen, remote-free source **`b676c4cb57dc1452cc218ee8b6e7ffaadea2f803`**
+passed **113 CI/workflow-policy tests in 5.52s**. A semantic negative rewrites the
+profile artifact root and recomputes its public hash; private inspection still
+rejects it. Test-log SHA-256:
+`16db2a93d5326e539cfda8102c3b4fd982633bd8e8a0bc7f19660f3c5fed169d`.
+This is exact private input-file identity and schema correlation, not proof that
+path contents are authentic, unchanged after staging, compatible or externally
+provisioned. No fixture, service, gate or gameplay operation ran.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
@@ -3992,7 +4010,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
-| Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds ordered manifest/lifecycle/complete-bounded-artifact-tree hashes per exact case plus private diagnostics/pytest/JUnit hashes while keeping names/contents/paths/PIDs private, with a read-only private-byte/process/input/phase/JUnit correlation inspector | Implemented at contract level; current public/private per-case correlation awaits a new gate, and hashes/reported outcomes do not independently prove gameplay, hosted execution or compatibility |
+| Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds ordered manifest/lifecycle/complete-bounded-artifact-tree hashes per exact case plus private profile/diagnostics/pytest/JUnit hashes while keeping names/contents/paths/PIDs private, with a read-only private-byte/process/input/phase/JUnit correlation inspector | Implemented at contract level; current public/private per-case correlation awaits a new gate, and hashes/reported outcomes do not independently prove gameplay, hosted execution or compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, public/private result inspectors and `CI.md`; strict workflow/process-policy and evidence receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy both exact current public result/revision and retained private-byte semantic contracts before upload, and private dispatch remains protected/serialized in YAML; every historical summary predates current evidence fields and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
