@@ -2126,6 +2126,24 @@ passed **209 focused contracts with no skips in 22.98s**. Test-log SHA-256:
 No real failure/service/account/gameplay operation ran. The terminal marker proves
 fail-closed evidence policy, not process exit, hard-cancellation cleanup or VM disposal.
 
+Fix **`a600b84e9`** closes the marker-publication failure path itself. `Environment`
+now latches any owned-process or lifecycle-publication uncertainty in memory before
+attempting evidence writes, independently attempts lifecycle and terminal-marker
+publication, retains streams/runtime on either write failure, and on a later cleanup
+retries only evidence publication plus the already-permitted exact-process poll. Once
+publication succeeds, resources may be removed but the terminal marker remains and
+success consumers still reject the artifact. A lifecycle write failure after all exits
+uses the distinct `owned_process_cleanup_evidence_incomplete` classification with no
+invented process name.
+
+Frozen, remote-free source **`a600b84e97de2879958714303ccb13045d902e3c`**
+passed **211 focused contracts with no skips in 18.02s**. Test-log SHA-256:
+`b06261bee4af5ba2e0ac3d6d8693c733df7995290f2e8fdfe13804b179228de6`.
+The negative contracts inject ordinary termination failure, cooperative interruption,
+first marker-write failure and lifecycle-write failure. No service/account/gameplay
+operation ran; this is fail-closed in-process evidence policy, not durable storage,
+hard-preemption, crash consistency or proof of process exit.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
