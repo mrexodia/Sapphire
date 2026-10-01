@@ -482,11 +482,55 @@ native-test SHA-256
 The first detached CMake configure attempt is retained as a setup failure: it
 stopped because that worktree's submodules were intentionally uninitialized and
 executed no build/test. The isolated exact-target compiles followed instead; it is
-not relabelled as a successful configure. No live version2 placement ran. The
-preceding version1 live artifact remains valid only for controller `c198af1c3` and
-is not upgraded to current-registry evidence. Version2 positive live execution,
-current graphical execution, reset and broad gates remain pending. No full gate,
-soak or platform sweep ran; overall goal remains incomplete.
+not relabelled as a successful configure. The preceding version1 live artifact
+remains valid only for controller `c198af1c3` and is not upgraded.
+
+Bounded **`development-placement-v2-live-001` passed** with a fresh owned runtime
+and private database. Its remote-free controller snapshot is
+`41ee7baf9f900cee88f53d7092e9b9b1183d9d1c` (manifest SHA-256
+`2338e2d4d2a5013dbd36e4a5e6ae29e0cb9c39c832bf1bf416dac2c24a7e95d3`). The
+server was built from detached clean feature revision
+`00e01b840271f4d6de0775480f39e6df425f935e` with SHA-256
+`41462a4d637eda67e4363f9ebd432182dd30bfee36e62f5d861a9a51f3c01699`; unchanged
+API/lobby/DBM and worker hashes match the earlier placement inputs. Local build
+preparation materialized the exact recorded submodules and did not include the
+preserved working-tree experiments.
+
+Provisioning completed in **11.875s** and bound exact run
+`509aeaf290674ae6be2952873d0c1191` into registry v2 (SHA-256
+`2a38ea68e15f3fe13af48baa515730ffbbedeeffbb57d98b2af7f5bd3c82ac27`). The
+same run identity appears in both immutable pre-dispatch intents and exactly two
+server diagnostics, alongside the matching approval, slots0/1, target character/
+entity IDs, source182, destination130 and catalog hash. The server logs therefore
+independently confirm that the loaded v2 provenance field survived planner→server;
+local publication receipts still are not treated as mutation proof.
+
+Normal GM0 **Tester MVIBEYHDOACI / 2097154 / 18014398526259202** and **Tester
+HQKFNABPOSUI / 2097155 / 18014398526259203** each independently received
+`init_zone` 182→130 at the reviewed position. The **25.703s** ordinary follow-up
+again passed received party/chat/disband, independent logout/despawn, exact fresh-
+login identity/position and separate-player Say checkpoints. No request was
+retried. Provisioning PID26316, normal-runner PID77252 and operator PID451312 each
+exited0; all six server closures were observed; both terminal lease snapshots were
+strict `clear`; all worker stderr was empty.
+
+Startup took **18.234s** and the complete driver **64.046s**. Private password
+scan, exact lease absence, controller re-verification, runtime cleanup and process
+inspection passed, with no owned process remaining. Independent inspection bound
+all native journals, v2 intents, server records, binaries and cleanup:
+
+- `inspected-evidence.json` SHA-256:
+  `6dcf39a0da9ddb50e9859650416e3984bd68b9e687a69cc5abba3ca702286d1d`
+- `verification-summary.json` SHA-256:
+  `1ec435c9d9fb0a3321e734f11d76722f742d2ec8f5b269cef77bbecb40a269d4`
+- `check/development-summary.json` SHA-256:
+  `bb2718a2cefa90e105b821ca9c8e855849741e2a38012221f44e15a20e72919e`
+
+This is current version2 provenance/placement evidence on a disposable owned
+runtime, not server-side offline exclusion, natural progression, reset authority,
+existing shared-deployment safety or graphical attestation. Current graphical
+execution, reset and broad gates remain pending. No full gate, soak or platform
+sweep ran; overall goal remains incomplete.
 
 ## Dedicated provisioning has one cooperative success deadline
 
@@ -962,8 +1006,8 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; bounded planner-only and placement-chain live audits | Provisioning and the v1 producer→planner→registered-placement path are live-verified on fresh owned runtimes; current v2 run provenance has focused/native contracts but no new live placement; expiry/no-retry paths remain synthetic; worker exit, server closure and local lease state grant no adoption/reset authority |
-| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-strict-placement-live-001`; v2 provenance contracts | Registered v1 placement verified with ordinary non-GM received arrival at its exact version; current v2 binds the provisioning run ID and fails closed but awaits positive live execution; setup is not progression or general reset |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; bounded planner-only and placement-chain live audits | Current v2 producer→planner→registered-placement path is live-verified on a fresh owned runtime; expiry/no-retry paths remain synthetic; worker exit, server closure and local lease state grant no adoption/reset authority |
+| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
 | Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit and terminal-lease receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
