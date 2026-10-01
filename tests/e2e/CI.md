@@ -114,8 +114,10 @@ PID/generation records deleted with disposable fixtures,
 prove hosted execution, or replace an actual current gate run. When the authorized
 private run directory is retained, the second inspector matches every public hash
 pair one-to-one to exactly 16 safe private environment directories, revalidates all
-service generations and staged source/input identities, requires exact private
-collection plus one passed setup/call/teardown per case, requires exactly 16 JUnit
+service generations and staged source/input identities, requires every manifest-
+declared disposable root/runtime to be absent and non-overlapping with retained
+artifacts, requires exact private collection plus one passed setup/call/teardown per
+case, and requires exactly 16 JUnit
 testcases with no failure/error/skip element, and correlates the fault case's private
 classification/verification hashes to its exact world generation teardown. It emits
 no private path, database, runtime, port, PID or captured log content. It never makes absent private bytes
@@ -147,7 +149,9 @@ separate evidence that its binaries came from the checkout.
   exposes only `environment_isolation_verified`; private identities remain private. No tests, skipped cases, missing/duplicate phase reports, unexpected tests, failing
   setup/call/teardown, nonzero pytest exit, live child processes, missing/foreign/
   type-confused process generations or teardown receipts, or a retained private
-  runtime prevent a passing summary. `process_cleanup_verified` requires every
+  runtime prevent a passing summary. Private reinspection independently requires
+  all 16 declared disposable roots and runtime directories to remain absent; an
+  observed exit receipt plus a retained runtime is rejected. `process_cleanup_verified` requires every
   exact database/API/lobby/world PID generation—including restarted worlds—to
   have been running before one terminate request and to yield an observed integer
   return code; a bounded kill fallback is retained explicitly. Public source revision,

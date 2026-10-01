@@ -537,7 +537,7 @@ def private_gate_evidence(tmp_path, report):
         manifest = {"revision":report["revision"],"dirty":False,"profile":"sapphire-3.3",
             "fixture_version":2,"deadline_scale":report["deadline_scale"],
             "database":"sapphire_e2e_" + format(index,"032x"),
-            "runtime":str((tmp_path / f"runtime-{index}").resolve()),
+            "runtime":str((tmp_path / f"owned-{index}" / "runtime").resolve()),
             "ports":{"database":10000 + index*4,"api":10001 + index*4,
                      "lobby":10002 + index*4,"world":10003 + index*4},
             "worker_sha256":report["identities"]["worker"],
@@ -638,6 +638,7 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     assert proof["scope"] == CI_PRIVATE_SCOPE and proof["case_count"] == len(run_ci.CASES)
     assert proof["fault_evidence_verified"] is True
+    assert proof["runtime_absence_verified"] is True
     text = json.dumps(proof)
     assert str(private) not in text and "sapphire_e2e_" not in text
     assert inspect_ci_private_main(["--summary",str(summary),"--private-run-dir",str(private),
@@ -645,7 +646,7 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     assert json.loads(capsys.readouterr().out) == proof
 
 
-@pytest.mark.parametrize("mutation", ["changed-bytes","missing","pytest-log","junit","diagnostics","lifecycle","inputs","database","fault-evidence"])
+@pytest.mark.parametrize("mutation", ["changed-bytes","missing","pytest-log","junit","diagnostics","lifecycle","inputs","database","fault-evidence","runtime-retained"])
 def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_private_bytes(
         tmp_path, mutation):
     report = current_public_summary(); private, directories = private_gate_evidence(tmp_path, report)
@@ -684,12 +685,15 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
         second["database"] = first["database"]
         (directories[1] / "manifest.json").write_text(json.dumps(second))
         rehash_private_row(report, directories[1], 1)
-    else:
+    elif mutation == "fault-evidence":
         index = run_ci.CASES.index(FAULT_CASE); target = directories[index]
         path = target / "fault-diagnostics-verification.json"
         value = json.loads(path.read_text()); value["scope"] = "forged scope"
         path.write_text(json.dumps(value))
         rehash_private_row(report, target, index)
+    else:
+        runtime = Path(json.loads((target / "manifest.json").read_text())["runtime"])
+        runtime.mkdir(parents=True)
     if mutation in {"lifecycle","inputs","database","fault-evidence"}:
         sync_private_diagnostics(report, private)
     summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report))

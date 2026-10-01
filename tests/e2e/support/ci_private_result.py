@@ -168,10 +168,15 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
             raise SetupError("private isolated staged source/input identity differs from public summary")
         database, runtime, ports = manifest.get("database"), manifest.get("runtime"), manifest.get("ports")
         runtime_path = Path(runtime).resolve() if isinstance(runtime, str) else None
+        artifact_path = child.resolve()
         if (not isinstance(database, str) or not database.startswith("sapphire_e2e_")
                 or len(database) != len("sapphire_e2e_") + 32
                 or any(char not in "0123456789abcdef" for char in database[len("sapphire_e2e_"):])
                 or not isinstance(runtime, str) or not Path(runtime).is_absolute()
+                or runtime_path.name != "runtime"
+                or runtime_path == artifact_path or runtime_path in artifact_path.parents
+                or artifact_path in runtime_path.parents
+                or runtime_path.exists() or runtime_path.parent.exists()
                 or not isinstance(ports, dict) or set(ports) != {"database","api","lobby","world"}
                 or any(type(port) is not int or not 1 <= port <= 65535 for port in ports.values())
                 or len(set(ports.values())) != 4):
@@ -198,6 +203,6 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
             "private_test_artifacts":private_artifacts,
             "environment_evidence":rows,
             "process_generations_verified":True,"fault_evidence_verified":True,
-            "staged_inputs_verified":True,
+            "runtime_absence_verified":True,"staged_inputs_verified":True,
             "private_paths_or_runtime_identities_disclosed":False,
             "note":"Exact private-byte correlation only; hashes do not prove hosted execution, VM disposal or gameplay beyond the gate."}
