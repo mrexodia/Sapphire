@@ -329,6 +329,19 @@ int main()
                                         {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}});
     const Bytes expectedDecline{8,7,6,5,4,3,2,1, 1,0,0,0,0,0,0,0};
     require(decline == expectedDecline, "party decline exact byte fixture");
+    const nlohmann::json emptyDeclineParty{{"id", 0}, {"chat_channel", 0}, {"count", 0},
+                                          {"leader_index", 0}, {"members", nlohmann::json::array()}};
+    const nlohmann::json declineInvite{{"character_id", uint64_t{0x0102030405060708}},
+                                      {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}};
+    const nlohmann::json declineContext{{"expected_party", emptyDeclineParty}, {"expected_invite", declineInvite}};
+    requirePartyContext(emptyDeclineParty, declineInvite, declineContext);
+    require(partyDeclineRequest(declineInvite) == expectedDecline, "bound decline retains ordinary wire bytes");
+    for(const auto key : {"character_id", "auth_type", "result", "name"})
+    {
+      auto changed = declineInvite; changed[key] = nullptr;
+      rejects([&] { requirePartyContext(emptyDeclineParty, changed, declineContext); });
+    }
+    rejects([&] { requirePartyContext(emptyDeclineParty, nullptr, declineContext); });
     rejects([&] { partyAcceptRequest({{"character_id", 1}, {"auth_type", 2}, {"result", 1},
                                       {"name", "E2E Leader"}}); });
     rejects([&] { partyDeclineRequest({{"character_id", 1}, {"auth_type", 1}, {"result", 5},

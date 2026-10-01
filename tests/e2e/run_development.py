@@ -18,10 +18,11 @@ from .support.development_reconnect import verify_position_reconnect
 from .support.development_party import require_bound_party_worker, verify_two_bot_party
 from .support.development_viewer import validate_viewer_name, viewer_checkpoint
 from .support.development_tell import require_visible_tell_worker, verify_visible_tells
+from .support.development_decline import require_decline_worker, verify_party_decline
 
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
-        verify_reconnect=False, verify_party=False, verify_tell=False, viewer_name=None,
+        verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False, viewer_name=None,
         worker_factory=Worker, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
@@ -30,8 +31,10 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     validate_viewer_name(viewer_name, profile["accounts"])
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
-    if any(type(flag) is not bool for flag in (verify_reconnect, verify_party, verify_tell)):
+    if any(type(flag) is not bool for flag in (verify_reconnect, verify_party, verify_tell, verify_decline)):
         raise DevelopmentError("verification flags must be boolean")
+    if verify_decline and verify_party:
+        raise DevelopmentError("decline and party-creation checks require separate fresh runs")
     route, catalog_hash = movement_route(profile)
     if type(await_placement) is not bool or (await_placement and not route):
         raise DevelopmentError("administrative placement wait requires a source-bound quest route")
@@ -49,6 +52,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "reconnect_verification": {"requested": verify_reconnect, "verified": False},
               "party_verification": {"requested": verify_party, "verified": False},
               "tell_verification": {"requested": verify_tell, "verified": False},
+              "decline_verification": {"requested": verify_decline, "verified": False},
               "viewer_verification": {"requested": viewer_name is not None, "verified": False,
                                       "scope": "two-checkpoint-presence-not-graphical-attestation",
                                       "viewer_login_or_control_performed": False},
@@ -69,6 +73,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                 if verify_party:
                     with timings.phase("party_worker_capability"):
                         require_bound_party_worker(worker)
+                if verify_decline:
+                    with timings.phase("decline_worker_capability"):
+                        require_decline_worker(worker)
                 if verify_tell:
                     with timings.phase("tell_worker_capability"):
                         require_visible_tell_worker(worker)
@@ -139,6 +146,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                                     lambda s: idle_state(s, profile["territory"])
                                     and witnessed(s, actor, names[0], point),
                                     "independently received waypoint", timeout=10)
+                if verify_decline:
+                    report["decline_verification"] = verify_party_decline(
+                        profile, worker, mover, witness, states, timings)
                 if verify_party:
                     report["party_verification"] = verify_two_bot_party(
                         profile, worker, mover, witness, states, run_id, timings)
@@ -195,6 +205,8 @@ def main(argv=None):
                         help="One explicit fresh-login identity/position check with the witness kept online; no restart")
     parser.add_argument("--verify-party", action="store_true",
                         help="One owned two-bot invite/chat/disband check; refuses existing social state")
+    parser.add_argument("--verify-party-decline", dest="verify_decline", action="store_true",
+                        help="Decline only the exact other bot's invitation; separate from --verify-party")
     parser.add_argument("--verify-tell", action="store_true",
                         help="Two fresh received direct Tells between visible non-GM bots; no remote fallback")
     parser.add_argument("--viewer-name", help="Exact separate visible player name; requires unique Say replies at start/finish")
@@ -203,7 +215,8 @@ def main(argv=None):
         profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
         result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles,
                      await_placement=args.await_placement, verify_reconnect=args.verify_reconnect,
-                     verify_party=args.verify_party, verify_tell=args.verify_tell, viewer_name=args.viewer_name)
+                     verify_party=args.verify_party, verify_tell=args.verify_tell,
+                     verify_decline=args.verify_decline, viewer_name=args.viewer_name)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.
         print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))

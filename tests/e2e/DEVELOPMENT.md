@@ -351,6 +351,30 @@ mid-route, inspect/reposition the offline bot through your development tools
 before the next run. There is no implicit recovery or successful-state fabrication.
 You can remain logged in nearby on your own character to watch.
 
+### Optional exact-peer invitation decline
+
+Add `--verify-party-decline` for one normal invitation from the first dedicated
+bot and one explicit rejection by the second. It requires a rebuilt worker with
+`invite_party_bound` and `decline_party_bound`; there is no unbound fallback and
+capability failure precedes authentication. Both bots must have fresh empty
+invitation history, exact lobby/world identities, empty party state and unique
+visible non-GM peers. The native decline guard compares the exact pending invite
+and party context on the publication thread, not merely at the earlier snapshot.
+
+The ten-second combined publication/observation budget requires both the
+recipient's exact received deny reply and the inviter's independent exact reject
+update, plus empty membership on both. Local clearing of a pending invitation or
+a publication receipt alone is not success. The summary records
+`decline_verification` and `party_decline_exact_peer_round_trip` timing. On any
+uncertainty the normal failure/retained-lease policy applies; no foreign invite
+cleanup, fallback, retry, DB access or reset is performed.
+
+This flag is mutually exclusive with `--verify-party`: that check intentionally
+refuses prior invitation history. Use separate fresh runs, not cache clearing to
+combine them. Movement, Tell, reconnect and viewer checkpoints remain optional;
+the viewer is never invited. This is a narrow rejection check, not general social
+or reset coverage.
+
 ### Optional owned two-bot party check
 
 Add `--verify-party` to exercise normal invitation, membership, party chat and

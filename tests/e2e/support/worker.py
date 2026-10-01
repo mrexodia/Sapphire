@@ -120,7 +120,7 @@ class Worker:
                         elif method == "request_item_merge":
                             keys += ("expected_count", "expected_destination_count")
                         safe_args = {key: args[key] for key in keys}
-                    if method in {"invite_party_bound", "accept_party_bound", "party_chat_bound", "disband_party_bound"}:
+                    if method in {"invite_party_bound", "accept_party_bound", "decline_party_bound", "party_chat_bound", "disband_party_bound"}:
                         safe_args = {key: args[key] for key in
                                      ("expected_party", "expected_invite", "target", "name", "message") if key in args}
                     if method == "tell_visible":

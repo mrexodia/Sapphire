@@ -861,7 +861,7 @@ namespace Sapphire::Testing
     }
     if(method == "close") { close(); phase("closed"); return Json::object(); }
     if(m_state["phase"] != "ready") throw ProtocolError("action requires a world-ready bot");
-    if(method == "invite_party_bound" || method == "accept_party_bound" ||
+    if(method == "invite_party_bound" || method == "accept_party_bound" || method == "decline_party_bound" ||
        method == "party_chat_bound" || method == "disband_party_bound")
     {
       // Validate and publish on this same Asio thread. Distinct method names
