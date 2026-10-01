@@ -131,7 +131,7 @@ def completed():
                 'cleanup_may_exceed_deadline':True},
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
-            'party_verification':party,'reconnect_verification':{'requested':True,'verified':True},
+            'party_verification':party,'reconnect_verification':copy.deepcopy(reconnect),
             'tell_verification':tell,'sprint_verification':sprint,'equipment_verification':equipment,
             'inventory_verification':{'requested':True,'verified':True,
                 'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
@@ -148,6 +148,7 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     report=completed(); proof=bridge.require_graphical_check(report,'Tester Viewer',3)
     assert proof['status']=='passed' and proof['rendered_bot_actions_verified'] is False
     assert proof['continuous_presence']==report['viewer_verification']['continuous_presence']
+    assert proof['reconnect_scope']==report['reconnect_verification']['scope']
     assert proof['party_scope']==report['party_verification']['scope']
     assert proof['tell_scope']==report['tell_verification']['scope']
     assert proof['sprint_scope']==report['sprint_verification']['scope']
@@ -208,6 +209,26 @@ def test_graphical_bridge_rejects_malformed_inventory_receipt():
     )
     for mutate in mutations:
         report=completed();mutate(report['inventory_verification'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_malformed_main_reconnect_receipt():
+    mutations=(
+        lambda report: report['reconnect_verification'].update(scope='world-restart-proof'),
+        lambda report: report['reconnect_verification']['identity_before'].update(entity_id=True),
+        lambda report: report['reconnect_verification'].update(identity_after={}),
+        lambda report: report['reconnect_verification'].update(territory=True),
+        lambda report: report['reconnect_verification'].update(expected_position=[float('nan'),0,0]),
+        lambda report: report['reconnect_verification'].update(witness_before=[1,0,0]),
+        lambda report: report['reconnect_verification'].update(old_server_close_observed=False),
+        lambda report: report['reconnect_verification'].update(independent_despawn_observed=False),
+        lambda report: report['reconnect_verification'].update(post_login_say_observed=False),
+        lambda report: report['reconnect_verification'].update(world_restart_performed=True),
+        lambda report: report['reconnect_verification'].update(extra=True),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report)
         with pytest.raises(DevelopmentError):
             bridge.require_graphical_check(report,'Tester Viewer',3)
 

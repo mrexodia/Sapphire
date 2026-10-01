@@ -110,7 +110,8 @@ bound channel/chat and empty-after-disband evidence, two exact reciprocal receiv
 Tell rows bound to the run/peer identities, and strict internally
 consistent Sprint identities/baselines/request/effect/zero-TP/start observations,
 exact starter-body before/unequipped/re-equipped projections and all three
-fresh-login lifecycle receipts, an exact unchanged read-only reconnect-inventory
+fresh-login lifecycle receipts (identity/position, normal server closure,
+independent despawn/respawn and fresh Say), an exact unchanged read-only reconnect-inventory
 receipt, released leases, the exact versioned
 `clear` terminal lease snapshot, a strict normal exit receipt for the exact owned
 native worker, and the same non-GM graphical fixture identity at both checkpoints.

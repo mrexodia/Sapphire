@@ -293,6 +293,11 @@ def require_reconnect_receipt(value, identity, territory):
             or value.get('requested') is not True or value.get('verified') is not True
             or value.get('scope') != 'fresh-login-position-not-world-restart'
             or value.get('identity_before') != identity or value.get('identity_after') != identity
+            or any(not isinstance(value.get(side), dict)
+                   or not isinstance(value[side].get('name'), str)
+                   or type(value[side].get('entity_id')) is not int
+                   or type(value[side].get('character_id')) is not int
+                   for side in ('identity_before', 'identity_after'))
             or type(value.get('territory')) is not int or value['territory'] != territory
             or any(not position(value.get(key)) for key in
                    ('expected_position', 'witness_before', 'received_after', 'witness_after'))
@@ -406,6 +411,8 @@ def require_graphical_check(result, viewer_name, entity):
     sprint = require_sprint_receipt(result['sprint_verification'], entities)
     equipment = require_equipment_receipt(
         result['equipment_verification'], entities, territory, before)
+    reconnect = require_reconnect_receipt(
+        result['reconnect_verification'], equipment['identity'], territory)
     viewer = result['viewer_verification']
     if viewer.get('viewer_login_or_control_performed') is not False:
         raise DevelopmentError('runner must not control the graphical viewer')
@@ -427,8 +434,8 @@ def require_graphical_check(result, viewer_name, entity):
         raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
-            'inventory_scope':INVENTORY_SCOPE, 'party_scope':party['scope'],
-            'tell_scope':tell['scope'],
+            'inventory_scope':INVENTORY_SCOPE, 'reconnect_scope':reconnect['scope'],
+            'party_scope':party['scope'], 'tell_scope':tell['scope'],
             'sprint_scope':sprint['scope'],
             'equipment_scope':equipment['scope'], 'continuous_presence':continuity,
             'rendered_bot_actions_verified':False,
