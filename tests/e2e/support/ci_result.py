@@ -56,7 +56,7 @@ def inspect_ci_result(summary_path, expected_revision):
         raise SetupError("cannot read isolated-gate public summary") from error
     fields = {"version","status","stage","scope","revision","source_dirty","identities",
               "deadline_scale","collection_verified","environment_isolation_verified",
-              "cleanup_verified","process_cleanup_verified","cases","pytest_exit_code",
+              "environment_evidence","cleanup_verified","process_cleanup_verified","cases","pytest_exit_code",
               "inputs_verified"}
     if (not isinstance(report, dict) or set(report) != fields
             or type(report.get("version")) is not int or report["version"] != 1
@@ -77,6 +77,15 @@ def inspect_ci_result(summary_path, expected_revision):
             or list(report["cases"]) != list(EXPECTED_CASES)
             or any(value is not True for value in report["cases"].values())):
         raise SetupError("isolated-gate public summary is incomplete, foreign or failed")
+    evidence = report.get("environment_evidence")
+    if (not isinstance(evidence, list) or len(evidence) != len(EXPECTED_CASES)
+            or [row.get("case") if isinstance(row, dict) else None for row in evidence]
+               != list(EXPECTED_CASES)
+            or any(set(row) != {"case","manifest_sha256","lifecycle_sha256"}
+                   or not _hex(row.get("manifest_sha256"))
+                   or not _hex(row.get("lifecycle_sha256")) for row in evidence)
+            or len({row["manifest_sha256"] for row in evidence}) != len(EXPECTED_CASES)):
+        raise SetupError("isolated-gate per-case evidence identities are malformed")
     identities = report.get("identities")
     if (not isinstance(identities, dict)
             or set(identities) != {"worker","binaries","catalogs","meshes","script_modules"}
@@ -94,6 +103,7 @@ def inspect_ci_result(summary_path, expected_revision):
             "revision":expected_revision,"summary_sha256":hashlib.sha256(raw).hexdigest(),
             "case_count":len(EXPECTED_CASES),"deadline_scale":report["deadline_scale"],
             "collection_verified":True,"environment_isolation_verified":True,
+            "environment_evidence":evidence,
             "inputs_verified":True,"cleanup_verified":True,
             "process_cleanup_verified":True,
             "note":"Public gate claim only; private PID/generation records, hosted execution and real-client compatibility are out of scope."}

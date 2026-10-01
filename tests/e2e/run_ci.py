@@ -203,6 +203,18 @@ class EvidenceGate:
         environments = self.environments or ([self.environment] if self.environment is not None else [])
         environment_isolation_ok = isolated_environment_identities(
             environments, self.case_environments)
+        environment_evidence = []
+        if environment_isolation_ok:
+            try:
+                for case in CASES:
+                    environment = self.case_environments[case]
+                    environment_evidence.append({
+                        "case":case,
+                        "manifest_sha256":sha256(environment.artifacts / "manifest.json"),
+                        "lifecycle_sha256":sha256(environment.artifacts / "process-lifecycle.json")})
+            except (AttributeError, OSError):
+                environment_evidence = []
+        environment_evidence_ok = len(environment_evidence) == len(CASES)
         process_cleanup_ok = bool(environments)
         for environment in environments:
             try:
@@ -222,9 +234,11 @@ class EvidenceGate:
             and all(p.poll() is not None for p in env.processes.values())
             for env in environments))
         passed = (exit_code == 0 and collection_ok and environment_isolation_ok
-                  and not self.unexpected and all(cases.values()) and cleanup_ok)
+                  and environment_evidence_ok and not self.unexpected
+                  and all(cases.values()) and cleanup_ok)
         return {"status": "passed" if passed else "failed", "collection_verified": collection_ok,
                 "environment_isolation_verified": environment_isolation_ok,
+                "environment_evidence": environment_evidence,
                 "cleanup_verified": cleanup_ok,
                 "process_cleanup_verified": process_cleanup_ok,
                 "cases": cases, "pytest_exit_code": int(exit_code)}

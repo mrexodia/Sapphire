@@ -361,6 +361,8 @@ def test_report_is_allowlisted_and_requires_actual_reports(tmp_path):
     report = gate.summary(0)
     assert report["status"] == "passed" and all(report["cases"].values())
     assert report["environment_isolation_verified"]
+    assert [row["case"] for row in report["environment_evidence"]] == list(run_ci.CASES)
+    assert len({row["manifest_sha256"] for row in report["environment_evidence"]}) == len(run_ci.CASES)
     assert report["cleanup_verified"] and report["process_cleanup_verified"]
     assert "PRIVATE_MARKER" not in json.dumps(report)
     assert run_ci.EvidenceGate().summary(0)["status"] == "failed"
@@ -504,10 +506,13 @@ def current_public_summary(revision="a" * 40):
         "catalogs":{key:format(index + 6,"x") * 64 for index,key in enumerate(run_ci.CATALOGS)},
         "meshes":{"w1t1":"e" * 64,"w1f2":"f" * 64},
         "script_modules":["0" * 64,"a" * 64]}
+    evidence = [{"case":case,"manifest_sha256":format(index + 1,"064x"),
+                 "lifecycle_sha256":"f" * 64}
+                for index,case in enumerate(run_ci.CASES)]
     return {"version":1,"status":"passed","stage":"verified",
         "scope":"headless-live-not-real-client","revision":revision,"source_dirty":False,
         "identities":identities,"deadline_scale":1,"collection_verified":True,
-        "environment_isolation_verified":True,
+        "environment_isolation_verified":True,"environment_evidence":evidence,
         "cleanup_verified":True,"process_cleanup_verified":True,
         "cases":{case:True for case in run_ci.CASES},"pytest_exit_code":0,
         "inputs_verified":True}
@@ -536,6 +541,11 @@ def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp
     lambda report:report.update(source_dirty=0),
     lambda report:report.update(process_cleanup_verified=1),
     lambda report:report.update(environment_isolation_verified=1),
+    lambda report:report["environment_evidence"].pop(),
+    lambda report:report["environment_evidence"].reverse(),
+    lambda report:report["environment_evidence"][0].update(manifest_sha256="g" * 64),
+    lambda report:report["environment_evidence"][1].update(
+        manifest_sha256=report["environment_evidence"][0]["manifest_sha256"]),
     lambda report:report.update(cleanup_verified=False),
     lambda report:report.update(deadline_scale=True),
     lambda report:report["cases"].pop(run_ci.CASES[0]),
