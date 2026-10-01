@@ -703,6 +703,62 @@ session continuity, packet-loss-free observation or all-state viewer invariance.
 A fresh manually attended current graphical run and explicit guest disposal remain
 pending; no full gate, soak or platform sweep ran.
 
+## Graphical coordinator adds a separate fresh party-decline run
+
+Feature **`5dd20330e`** preserves the producer's party/decline mutual exclusion
+instead of weakening fresh-history checks. After the comprehensive graphical bot
+run completes normal session/worker/lease cleanup, the coordinator starts a second
+fresh `run_development` invocation against the same owned fixtures. A copied
+profile omits only `quest_catalog`, so movement is not repeated; the original
+profile/catalog remains unchanged. This second run requests only exact-peer decline
+and the two viewer checkpoints. It computes a new cooperative budget inside the
+same outer graphical deadline and uses a new worker/artifact directory. Any expiry
+before admission fails without starting it.
+
+`require_graphical_decline_check()` requires pass/shared-development scope, no
+administrative wait/database/restart/movement, exact clear terminal leases and
+normal exact-owned worker exit, an enabled completed unexpired deadline, two
+strict entities in public130, and every unrelated optional subscenario exactly
+disabled. Its exact ten-field decline receipt binds ordered distinct identities,
+successful invitation target, recipient answer0 reply, inviter result5 rejection,
+strictly advancing baseline/received sequences and empty parties afterward. It
+then requires complete current no-control viewer checkpoints on the fresh
+`mover,witness` sessions with persistent-witness continuity. Boolean/type/schema,
+foreign peer, stale sequence, mixed party+decline, route activity, one-sided
+outcome or wrong final mover session fails closed. `result.json` records separate
+`development_check` and `decline_check` hashes/evidence; neither can substitute for
+the other.
+
+Frozen, remote-free source **`5dd20330e5099ccac94ab3a96efa6299e95eb4fd`**
+passed **447 tests in 3.81s** across graphical/decline policy, viewer, movement,
+placement, reconnect, party, Tell, equipment, Sprint, inventory, deadlines,
+worker exit, smoke and lifecycle. Negatives cover malformed/mixed decline results,
+foreign identities/targets, boolean answers/sequences, missing empty-state proof,
+wrong viewer session and outer-budget forwarding. An older synthetic decline
+expectation was corrected from sequences10→12 to11→13 because the now-realistic
+normal reciprocal Say advances both sessions before the authored decline baseline;
+no production guard was weakened. Test-log SHA-256:
+`f7a6e1e09e9bea3b4aa6b07d1344cc06c38de71b0ce6f188cc7776780e52fde4`.
+Artifacts: `client-graphical-decline-clean-{source.json,python.log}`.
+
+The strict decline subreceipt validator accepted genuine retained
+`development-decline-live-001` data read-only: entities2097153/2097154, exact
+invitation, recipient answer0, independent inviter result5, baselines122/120,
+received sequences130/124 and both-empty result. Artifact
+`client-graphical-decline-live-artifact-check.json` has SHA-256
+`1839137291423b061a831f934355142959d398f972a9dc0e58e57608910617a0`.
+That run used a separate headless observer and predates current viewer/deadline/
+lease/exit composite policy; it is subreceipt compatibility only, not a current
+graphical pass.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. The check covers one visible dedicated-peer
+decline, not arbitrary invitations, offline messaging, larger-party policy,
+rendering or general social behavior. Normal closure between the two authored
+owned-fixture runs is not a server-side offline/reset/adoption fence. A fresh
+manually attended current graphical run and explicit guest disposal remain pending;
+no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1509,8 +1565,8 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict owned-party/chat/disband, reciprocal Tell, independently received Sprint, equipment round trip, main reconnect and both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens plus persistent-witness continuity, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
-| Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage; current graphical policy requires exact movement, Sprint, starter-body round trip and read-only inventory but awaits current graphical execution |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines, clear leases and exact worker exits pending current graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; separate exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage but is now required as a separate fresh current graphical-policy run; all current graphical execution awaits manual approval/assets |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
 | Preserve viewer, private inputs, historical failures and unrelated experiments | Separate viewer profiles; strict no-control endpoint Say/presence receipts; private artifact hashes; failed graphical 001–003 retained; seven experimental paths remain separate | No all-state viewer invariance, server-side session oracle, shared-world cleanliness or crash-consistency claim |
