@@ -5193,6 +5193,27 @@ snapshot. One rejected-credentials run through the strict producer is now
 technically staged but still requires explicit authorization to start its disposable
 MariaDB/API/lobby/world fixture.
 
+### Invocation-bound standalone authorization (`436b679bb` checkpoint)
+
+Commit `436b679bb` makes that authorization an explicit producer input rather than
+only an operator convention. Direct `run_isolated_case` use now requires
+`--authorize-disposable-fixture` and fails before profile access or private-root
+creation when it is absent. The private runner result records
+`execution_authorized: true`; both the success and fail-only publication consumers
+require and retain that fixed field. The protected workflow supplies the flag only
+after its separate false-by-default selected-scope dispatch gate accepts. This does
+not authenticate an operator or prove hosted policy; it binds only the reviewed
+invocation path and prevents accidental unacknowledged fixture startup.
+
+A detached clean worktree at
+`436b679bb9d81e4e281500afc392f4977a96cd2d` reported zero status entries and
+**110 passed in 1.23s** across the producer, both consumers and workflow policy.
+The static policy inspector, PyYAML parse and token-expanded PowerShell AST parse
+also accepted. Receipt:
+`.e2e-artifacts/standalone-authorization-clean-source/receipt.json` (SHA-256
+`85caf2802d1b490ecdd7e6183ce188b1906d4e6ef1b554f911359864d269b79b`).
+No service, account, gameplay or hosted workflow ran.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
@@ -5218,7 +5239,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | --- | --- | --- |
 | External C++ worker, Python coordinator and normal public behavior | `src/test_client`, `tests/e2e/support/{worker,environment}.py`, native/protocol and Python contracts; detailed plan rows below | **Implemented for the supported subset.** The seven dirty experiments were not staged or treated as evidence. |
 | Genuine HTTP, encrypted lobby, world-ready/keepalive/logout sessions | Historical clean full-session gates plus current retained rejected-login receipt | **Partial/currently stale as a combined run.** Current read-only `inspect_isolated_case` accepted the exact `6dbd1380e` rejected-login fixture; receipt SHA-256 `f83c2a8919ec1dcee149889281f217ea23a6da5b151a22ee68e8f97c86258681`. It is one no-account case, not current full-session acceptance. |
-| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, strict `run_isolated_case.py` short-feedback producer, independent success/fail-only publication consumers, protected exact-choice dispatch, combined public/private inspectors and exact 16-case contracts | **Pending live gate.** The strict one-case producer/consumers and dispatch policy are clean-source contract-verified and a complete current clean Windows build/profile passes service-free staging at `67c6e5b41`, but no current live or hosted result exists. Failure publication is diagnosis only. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
+| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, strict explicitly authorized `run_isolated_case.py` short-feedback producer, independent success/fail-only publication consumers, protected exact-choice dispatch, combined public/private inspectors and exact 16-case contracts | **Pending live gate.** The strict one-case producer/consumers and dispatch policy are clean-source contract-verified and a complete current clean Windows build/profile passes service-free staging at `67c6e5b41`, but no current live or hosted result exists. The invocation flag is not operator authentication; failure publication is diagnosis only. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
 | Intentional owned-process fault and cleanup diagnostics | Retained exact world-fault fixture, JUnit, pytest log, lifecycle and artifact tree | **Verified standalone only.** Current `inspect_isolated_fault` reinspection accepted it with SHA-256 `8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`; it is not gameplay, organic crash, dump, hosted cancellation or the combined sixteenth-case gate. |
 | Shared dedicated account/character provisioning and ordinary non-GM checks | `provision_development.py`, `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
 | Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |
@@ -7422,7 +7443,9 @@ compatibility.
    mutations. The retained `67c6e5b41` clean Windows build and complete private
    profile now pass source-native catalog/binary correlation, static inspection and
    service-free fixture staging; those do not substitute for even one live case or
-   the combined gate. Separately provision and validate
+   the combined gate. The strict one-case CLI now additionally requires its explicit
+   disposable-fixture authorization flag, which must not be supplied without that
+   approval. Separately provision and validate
    gameplay CI on a workflow-restricted disposable runner (none is currently
    registered), including approval/cancellation/disposal. The separate 30-minute
    paced workload is not part of the sixteen-case CI gate.

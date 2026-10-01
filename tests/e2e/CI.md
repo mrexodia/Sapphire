@@ -79,6 +79,8 @@ gate's own environment scrubbing. The private workflow's exact choice list is ti
 to the same sixteen node IDs as the gate plus one explicit `combined` sentinel.
 A standalone choice uses the strict one-case producer plus separate success and
 fail-only private-root consumers; only one consumer's sanitized receipt is uploaded.
+The producer receives its mandatory invocation flag only after the separate
+false-by-default dispatch authorization gate accepts the selected scope.
 The fail-only receipt can never accept an inspection or success evidence. The combined branch
 retains its public/private/failure inspectors. Static policy rejects missing or
 foreign choices, authorization, producer/consumer calls, summary destinations or
@@ -135,7 +137,8 @@ python -m tests.e2e.run_isolated_case --profile .e2e-local.json \
   --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe \
   --private-root <new-absolute-private-root-outside-checkout> \
   --expected-case tests/e2e/test_live.py::test_rejected_credentials \
-  --expected-revision <exact-40-hex-checked-out-revision>
+  --expected-revision <exact-40-hex-checked-out-revision> \
+  --authorize-disposable-fixture
 python -m tests.e2e.inspect_isolated_case_run \
   --private-root <same-private-root> \
   --expected-case tests/e2e/test_live.py::test_rejected_credentials \
@@ -295,8 +298,11 @@ separate evidence that its binaries came from the checkout.
 - Produce one bounded strict short-feedback execution with `python -m
   tests.e2e.run_isolated_case --profile <private-profile> --private-root
   <new-absolute-private-root-outside-the-checkout> --expected-case
-  <exact-allowlisted-node-id> --expected-revision <40-hex> [--binaries
-  <clean-build>] [--worker <clean-worker>]`. The producer requires the exact clean
+  <exact-allowlisted-node-id> --expected-revision <40-hex>
+  --authorize-disposable-fixture [--binaries <clean-build>] [--worker
+  <clean-worker>]`. The producer fails before private-root creation unless the exact
+  boolean authorization flag is present. The flag records approved invocation but
+  does not authenticate an operator. The producer requires the exact clean
   reviewed revision and full private profile, accepts only the combined gate's
   sixteen exact node IDs, strips inherited pytest options/plugins, executes once
   without retry, requires exactly one owned fixture artifact directory, correlates

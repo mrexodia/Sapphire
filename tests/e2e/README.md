@@ -268,12 +268,17 @@ python -m tests.e2e.run_isolated_case \
   --private-root <new-absolute-private-root-outside-the-checkout> \
   --expected-case tests/e2e/test_live.py::test_rejected_credentials \
   --expected-revision <exact-40-hex-reviewed-HEAD> \
+  --authorize-disposable-fixture \
   --binaries <clean-built-binary-directory> \
   --worker <clean-built-headless-worker>
 ```
 
-The private root and its parent must satisfy the command's ownership checks and
-must not already exist. The producer accepts only the combined gate's exact case
+Use `--authorize-disposable-fixture` only after explicitly approving the selected
+case's disposable MariaDB/API/lobby/world execution and any account/gameplay
+mutations it performs. Absence of the flag fails before private-root creation. The
+boolean records invocation intent; it does not authenticate the operator or prove
+hosted policy. The private root and its parent must satisfy the command's ownership
+checks and must not already exist. The producer accepts only the combined gate's exact case
 allowlist, removes inherited pytest selection/plugins, performs one execution with
 no retry, requires one fixture artifact directory, binds its manifest to the
 reviewed profile inputs, runs the existing generic inspector (or the stronger
