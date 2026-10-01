@@ -530,8 +530,10 @@ final outer logout observer must then freshly authenticate as the paired mover a
 receive the exact non-GM viewer in idle nonparty state;
 its new spawn token is not asserted continuous with either nested runner. This is
 provenance, not server-offline or reset authority. That policy has focused
-contracts but still has no current graphical live
-attestation. Exact artifacts and limitations are in the implementation audit.
+contracts but still has no current graphical live attestation. After a current
+run, `python -m tests.e2e.inspect_client_development_result --output <output>`
+revalidates the host-visible result read-only before the separately evidenced
+Sandbox disposal. Exact artifacts and limitations are in the implementation audit.
 
 ### Optional owned two-bot party check
 

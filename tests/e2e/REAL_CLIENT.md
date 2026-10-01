@@ -246,7 +246,20 @@ are absent, not passing. On completion or failure, `status.json` changes to
    persistence or crash-consistency proof. Older artifacts without these receipts
    are not upgraded. The runner terminates the remaining title-screen process
    and private services. Process-exit UI is not a tested journey. A cleanup error
-   changes the result to failed, not a passing gameplay run with a warning.
+   changes the result to failed, not a passing gameplay run with a warning. For a
+   current development-enabled run, execute this read-only host-side verifier from
+   the same clean source revision before disposal:
+
+   ```powershell
+   python -m tests.e2e.inspect_client_development_result `
+     --output .e2e-artifacts/<run>/output
+   ```
+
+   It revalidates both nested summaries/hashes and strict consumers, pair/handoff/
+   restoration receipts, review-frame binding, retirements, outer deadline/worker
+   exit, terminal status and reported runtime removal. `accepted` explicitly leaves
+   `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
+   next manual step. Older/incomplete results fail closed.
 7. **Close the owned Sandbox window and confirm its discard dialog.** Guest
    runtime cleanup is not VM disposal. The result deliberately leaves
    `sandbox_disposal=operator_required`; record that separate check. On a crash,
