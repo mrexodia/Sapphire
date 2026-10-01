@@ -350,7 +350,8 @@ are absent, not passing. On completion or failure, `status.json` changes to
    interaction frame/manual receipt and the separately approved exact title-screen frame,
    retirements, outer deadline/worker exit, exact graphical-client teardown, all
    exact isolated database/API/lobby/world process generations and their private
-   lifecycle-file hash; the environment manifest's exact staged server/worker/
+   lifecycle-file hash and producer-recorded bounded complete environment artifact-
+   tree SHA-256; the environment manifest's exact staged server/worker/
    script/catalog/combat-data identities against preparation/source plus the
    recorded external navigation digest set; terminal status and reported runtime
    removal. A terminal cleanup marker anywhere under that exact environment artifact

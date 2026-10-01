@@ -2234,6 +2234,21 @@ The prior retained live owned-host/composite receipt predates this new terminal 
 and is historical under current policy; no fresh host was started. A tree hash is byte
 correlation, not a signature, content truth, offline proof or external-root identity.
 
+Feature **`d5d266cf8`** applies the same complete-tree boundary to the graphical
+producer and current-result/disposal consumer chain. After exact isolated-service
+cleanup the guest records its bounded complete environment artifact-tree SHA-256;
+the read-only current-result inspector recursively rejects terminal markers and then
+requires exact tree recomputation in addition to manifest/lifecycle semantics. A
+foreign file fails even when those two existing hashes remain unchanged, and the
+accepted sanitized result returns the tree identity for composite disposal binding.
+
+Frozen, remote-free source **`d5d266cf8aa62129c6706b86bcb761fe9179be29`**
+passed **426 focused contracts with no skips in 33.56s**. Test-log SHA-256:
+`a6a4c8ccc40af3aba924102d7bb901409f90ca5d41e9c068467d97bf7552b60c`.
+Historical graphical artifacts lack this field and remain incompatible with current
+policy. No client/Sandbox/service/account/gameplay operation ran; complete-tree byte
+identity does not prove rendering, gameplay, compatibility, disposal or secure erasure.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
