@@ -12,6 +12,55 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Frozen coordinator source for the manual graphical lane
+
+Feature `2f480c49a` replaces the graphical preparer's mutable checkout mapping with
+an independent shallow checkout of the exact committed HEAD. Dirty/staged/
+untracked host files are excluded, including the preserved performance experiments.
+The local clone has no hardlink/alternate dependency, configured remote or
+submodule fetch. Gitlink revisions are recorded but not materialized; this is a
+coordinator/runtime-source snapshot, **not** native-build source attestation.
+Line-ending configuration is pinned for guest Git inspection.
+
+`input/source.json` records materialized-file hashes and revision; `inputs.json`
+binds that manifest. The guest checks revision, clean status, file hashes,
+remotes/alternates and absence of unexpected materialized submodules before
+registry/client/environment setup. Extra ignored files also fail. This is
+accidental-change/reproducibility checking, not a signature or security boundary.
+The operator must not edit the prepared bundle during use; readonly guest
+mapping does not prevent host-side edits. Native binaries and external assets
+retain separate identities.
+
+**Focused verification:** 36 source-snapshot and existing real-client policy
+contracts passed in **17.08s**; a further guest-before-setup rejection contract
+passed in **0.10s**. Tests cover committed-vs-dirty/staged/untracked inputs,
+independence after removing access to the original repo, file/hash/revision
+changes, ignored/untracked additions, remote/alternate rejection, destination
+reuse and unmaterialized gitlinks. These are local filesystem/Git policy checks,
+not VM/client execution. Timing artifacts:
+`.e2e-artifacts/client-snapshot-focused-timings-1.json` and
+`client-snapshot-guest-guard-timings.json`.
+
+**Actual preparation only** succeeded at
+`.e2e-artifacts/client-frozen-preparation-001`. Inspected evidence confirms:
+
+- Snapshot revision `2f480c49afece47aa4c9165e05dc1bed95826f73`, **2,414** source
+  file hashes and ten unmaterialized gitlink records; changed worker/client/
+  territory files match committed bytes rather than host experiment bytes.
+- All staged input hashes match, including the previously supported exact
+  unmodified DX11 client; `inputs.json` remains `prepared_not_executed`.
+- WSB maps the private snapshot, not the original repository, readonly. Networking,
+  clipboard, audio/video input and printer redirection remain disabled; only the
+  run's output mapping is writable. Installed client/settings/networking untouched.
+- `preparation-verification.json` records these checks. Input manifest SHA-256:
+  `551510402e68eba052a72e54b84404f93c39f86b2b6fa4a0bbc9b8df56a1453d`.
+
+No sandbox, graphical executable or server was launched for this increment.
+New guest execution/disposal and graphical co-presence with the shared-development
+runner are **still unverified**. Earlier manual pilot/coordinator evidence below
+is historical, not proof of this new snapshot path. All original reset,
+platform/CI and acceptance gaps remain open; no full gate or soak was run.
+
 ## Provisioning receipt association and reset-source boundary
 
 Feature `ece249544` adds `support/development_binding.py`: successful provisioning
