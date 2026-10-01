@@ -25,10 +25,20 @@ retries/resets are absent. Server binary identity is explicitly unverified.
 
 `tests/e2e/DEVELOPMENT.md` and `development.profile.example.json` describe setup,
 limitations, manual failed-lease recovery and the separation from isolated gates.
-Existing dedicated characters must already be offline and positioned appropriately;
-account provisioning and targeted development-world reset commands are **not yet
-implemented**. No live shared-server run has been attempted: actual approved
-endpoints/bot credentials and prepared characters are still needed.
+Existing dedicated characters must already be offline and positioned appropriately.
+At `8e80536e6`, `tests/e2e/provision_development.py` adds opt-in **new-account**
+provisioning: two generated dedicated accounts via normal HTTP createAccount,
+separate successful HTTP login, encrypted-lobby Gladiator creation with refreshed
+list/world confirmation, non-GM checks and normal logout. A new private credential
+profile is exclusively written and flushed before requests; uncertain failures
+preserve credentials and account leases without retries, adoption or deletion.
+It uses no DB access or server secret. `provisioning-summary.json` distinguishes
+request/receipt, fresh login and received character/world evidence and explicitly
+sets `ready_for_shared_checks: false`: opening/public-world preparation is still
+required. Targeted placement, reprovisioning and development-world reset commands
+are **not yet implemented**. No live shared-server/provisioning run has been
+attempted: approved endpoint configuration and public-world fixture preparation
+are still needed. New contracts are synthetic, not account-creation live evidence.
 
 Focused verification: **127 passed in 5.59s**, running `test_development.py`,
 `test_policy.py`, `test_ci.py`, and `test_worker.py` with the existing MSVC worker.
@@ -37,6 +47,11 @@ synthetic policy/control-flow plus worker-contract evidence, not shared-world or
 new server-build evidence. The new `--e2e-timings` option reports pytest setup,
 call and teardown times; call still includes any in-scenario restarts. Development
 summaries additionally separate login, witness, Say/movement and logout phases.
+Provisioning-focused verification: **138 passed in 5.77s**, adding
+`test_development_provisioning.py` to the same focused selection, with timing
+artifact `.e2e-artifacts/development-provisioning-focused-timings-1.json`.
+The active goal now prioritizes fast shared-world feature development and explicit
+scoped administrative preparation while retaining all original acceptance gaps.
 No full acceptance gate was run, as requested. Earlier uncommitted Linux
 scheduler/navigation/client-event experiments remain separate and unvalidated;
 the existing Linux, hosted-CI and real-client blockers are unchanged.
