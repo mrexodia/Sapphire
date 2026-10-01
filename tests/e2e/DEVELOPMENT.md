@@ -276,7 +276,9 @@ This sanitized, read-only consumer requires the explicitly unmanaged boundary,
 private-profile association, bounded deadline, two distinct GM0 received identities
 in supported opening/public territory 182 or 130, fresh HTTP/lobby/world outcomes,
 both server-close receipts, normal exact worker exit, complete run-owned worker tree
-and clear local leases. It does not prove server identity, offline exclusion,
+and clear local leases. The summary and private profile must be bounded,
+duplicate-key-free, single-link regular files without symlink/reparse aliases. It
+does not prove server identity, offline exclusion,
 placement/readiness, gameplay, reset safety or permission to retry creation.
 
 For provisioning performed against an owned managed host, stop that host normally
@@ -951,7 +953,9 @@ worker journal tree, and a sequence-advancing received Say observation in both
 directions. It also strictly validates every requested movement, party, Tell,
 reconnect/inventory/equipment, Sprint, or decline receipt. A base run is therefore
 only narrow login/bidirectional-Say/logout evidence; it is not a substitute for those
-optional scenarios. Managed-host runs use the separate composite inspector above.
+optional scenarios. Its summary must be a bounded, duplicate-key-free, single-link
+regular file without a symlink/reparse alias. Managed-host runs use the separate
+composite inspector above.
 
 A configured protocol and successful session are not a server binary fingerprint.
 The report explicitly leaves `server_identity_verified` false. Passing proves

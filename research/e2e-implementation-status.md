@@ -2393,6 +2393,21 @@ Regular-file checks reduce alias ambiguity but do not create a race-free filesys
 snapshot, signature, server identity, graceful shutdown, offline exclusion or
 cleanup authority over an external shared server.
 
+Fix **`41dc34841`** applies the same file-safety boundary to external shared-run and
+shared/managed provisioning inputs. The original path is inspected before
+canonicalization, closing the prior summary-symlink bypass; summaries and private
+profiles now reject symlink/reparse aliases, non-regular entries, hard links,
+empty/oversized bytes, invalid UTF-8 and duplicate keys. Limits remain 1 MiB for
+summaries and 64 KiB for the credential profile. Exact worker trees and semantic
+receipts are still validated separately.
+
+Frozen, remote-free source **`41dc34841228872f641192067aae3fb065618336`**
+passed **1024 focused contracts with no skips in 38.80s**. Test-log SHA-256:
+`d6cd38e2679dd47cb900a22be26a9260e9727b1ee456cef3ebeb15bbb1b455de`.
+No server/account/provisioning/gameplay/client operation ran. Hard-link and
+oversize negatives are contract evidence only; these checks do not prove secrecy,
+atomic/race-free snapshots, signatures, external-server identity or offline state.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
