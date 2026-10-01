@@ -123,10 +123,13 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
         junit = ET.fromstring(junit_raw)
     except ET.ParseError as error:
         raise SetupError("private isolated JUnit report is malformed") from error
-    if (len(junit.findall(".//testcase")) != len(EXPECTED_CASES)
-            or junit.findall(".//failure") or junit.findall(".//error")
-            or junit.findall(".//skipped")):
-        raise SetupError("private isolated JUnit outcomes are incomplete or failed")
+    junit_cases = junit.findall(".//testcase")
+    expected_junit = [(case.split("::", 1)[0][:-3].replace("/", "."),
+                       case.split("::", 1)[1]) for case in EXPECTED_CASES]
+    actual_junit = [(case.get("classname"),case.get("name")) for case in junit_cases]
+    if (actual_junit != expected_junit or junit.findall(".//failure")
+            or junit.findall(".//error") or junit.findall(".//skipped")):
+        raise SetupError("private isolated JUnit identities or outcomes are incomplete or failed")
     diagnostics_raw, diagnostics = _read(root / "gate-diagnostics.json", 1024 * 1024,
                                          "gate diagnostics")
     expected_diagnostics = {"collected","reports","unexpected","environment_count",

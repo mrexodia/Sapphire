@@ -118,8 +118,8 @@ service generations and staged source/input identities, requires the exact priva
 profile hash, allowlisted path-only schema, deadline and artifact-root binding,
 requires every manifest-declared disposable root/runtime to be absent and non-overlapping with retained
 artifacts, requires exact private collection plus one passed setup/call/teardown per
-case, and requires exactly 16 JUnit
-testcases with no failure/error/skip element, and correlates the fault case's private
+case, and requires the exact ordered 16 JUnit classname/name identities with no
+failure/error/skip element, and correlates the fault case's private
 classification/verification hashes to its exact world generation teardown. It emits
 no private path, database, runtime, port, PID or captured log content. It never makes absent private bytes
 recoverable. `run_ci` does not itself compile
