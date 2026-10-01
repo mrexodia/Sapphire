@@ -489,13 +489,30 @@ Ordinary Say still rejects debug commands and non-GM bots cannot use this method
 
 A native Bot accepts at most two slots from one approval, consuming each before
 transport publication. The Python helper flushes an exclusive intent file before
-dispatch; reusing that journal slot fails even after a timeout. These are local
-per-Bot/per-journal guards, not durable or cross-host exclusion. The server still
-independently validates its disabled-by-default configuration, registry, exact
-registered target, live state, and process-local one-shot ledger.
+dispatch; reusing that journal slot fails even after a timeout. After the exact
+local worker receipt it separately writes an exclusive terminal publication file
+bound to the immutable intent hash, operator identity/rank/received sequence and
+exact target. Failure to publish that terminal file is uncertain and still cannot
+cause a second dispatch. These are local per-Bot/per-journal guards, not
+crash-consistent or cross-host exclusion. The server still independently validates
+its disabled-by-default configuration, registry, exact registered target, live
+state, and process-local one-shot ledger.
 
-The result is explicitly **local publication only**, with `placement_verified:
-false`. Keep intent files and do not retry uncertain requests. Only the normal
+After both scripted slots have local terminal files, inspect them read-only:
+
+```powershell
+python -m tests.e2e.inspect_development_operator `
+  --registry .e2e-bot-placement.json `
+  --artifact-dir .e2e-artifacts/private-operator-publications
+```
+
+The sanitized inspector requires exactly two duplicate-free, single-link intent/
+publication pairs, one unchanged authorized GM identity distinct from both targets,
+nondecreasing received sequences, exact intent hashes and only the fixed local-only
+receipt. It never exposes the operator identity. The result is explicitly **local
+publication only**, with `server_acknowledgement_verified:false`,
+`placement_verified:false`, and `retry_authorized:false`. Keep all files and do not
+retry uncertain requests. Only the normal
 runner's independently received positions, identities, gameplay and optional
 fresh-login checks can verify the corresponding outcomes. Administrative setup
 is never natural progression or normal movement evidence.

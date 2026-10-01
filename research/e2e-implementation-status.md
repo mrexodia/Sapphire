@@ -2426,6 +2426,27 @@ ran. The end-to-end synthetic chain exercises producers and consumers only. It
 does not establish command publication/causation, unchanged server-read bytes,
 offline exclusion, server identity, natural progression or reset authority.
 
+Feature **`984fb30b8`** makes optional scripted-GM local publication auditable
+without upgrading it to mutation proof. Each request still flushes an immutable
+pre-dispatch intent first; after the exact fixed worker receipt it now writes a
+separate exclusive terminal file bound to the intent hash, operator identity/rank/
+received sequence and exact reviewed target. A terminal-write failure remains
+uncertain and a second call fails at the existing intent before dispatch. The new
+sanitized command `python -m tests.e2e.inspect_development_operator --registry
+<private-registry> --artifact-dir <private-operator-artifacts>` requires exactly
+two strict intent/publication pairs, stable distinct GM identity, nondecreasing
+sequences, exact hashes/targets and the local-only receipt while disclosing only an
+operator-identity digest.
+
+Frozen, remote-free source **`984fb30b849c85fc46c7218ad2a35caec53bce64`**
+passed **1036 focused contracts with no skips in 38.51s**. Test-log SHA-256:
+`d3c0c45a9477fc3642e382c9c729ffc1b35ffa15c46df61b0ec2a974b2e52aa8`.
+No account, endpoint, GM command, placement, service, gameplay or graphical action
+ran. The accepted scope explicitly reports no server acknowledgement, no placement
+verification and no retry authority. File flushing/local worker publication is
+not crash consistency, transport delivery, server execution, received mutation,
+offline exclusion, natural progression or reset evidence.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
