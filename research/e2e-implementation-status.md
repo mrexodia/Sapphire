@@ -242,6 +242,47 @@ only at its original coordinator version; current-code graphical execution and
 operator disposal evidence are pending. No full gate, soak or platform sweep ran;
 overall goal remains incomplete.
 
+## Dedicated provisioning has one cooperative success deadline
+
+Feature **`86caebe3a`** applies the existing `RunDeadline`/`DeadlineWorker`
+contract to `provision_development.py`. The product CLI now uses one integer
+`--max-seconds` in 1..900 (default 300); direct Python callers retain an explicit
+unbounded compatibility default. The budget begins before profile/managed-host
+validation and is checked around exclusive credential reservation and lease
+acquisition, after worker construction, around each HTTP registration/login,
+through every scaled lobby/world/logout RPC and wait, and after exact-owned worker
+teardown. It does not restart for the second account.
+
+A call may already be in a file/HTTP/constructor/cleanup operation when
+the cooperative budget expires; this is not process preemption or rollback. A
+late registration response stays `requested_outcome_unknown` and is never retried.
+No subsequent login or character creation can begin. The private generated
+credential file remains available; once acquired, both exact account leases remain
+held on any expiry. Expiry before lease acquisition correctly has no lease to
+retain. A late worker factory is entered and closed by its original context owner.
+Only in-budget exact worker teardown permits `deadline.complete()`, lease release,
+association generation and `provisioned`. Final lease release/report publication
+remain cleanup outside the session-success budget. `run_deadline` records this
+boundary separately from overall status.
+
+The new focused file passed **19 tests, 0.30s**. Combined shared-runner deadline,
+provisioning, host, binding, placement, worker-exit and baseline contracts passed
+**215 tests, 2.10s** in the feature worktree. The same selection from a detached,
+clean exact commit `86caebe3a0474d06d32c4743f34f94d904e490ce` passed **215 tests,
+2.45s**; clean before/after checks passed, and the harness wall time was **5.890s**.
+Artifacts: `.e2e-artifacts/development-provisioning-deadline-clean-001.{json,log}`;
+log SHA-256 `ee70e183c94a3b9992ab5aa6dfbdec7ae67a817e6423c1efe10083107945f716`.
+Synthetic faults cover late credential write, lease acquisition, worker factory,
+registration, authentication, lobby request, world-state wait, logout wait and
+worker cleanup, plus invalid limits, CLI defaults and normal/disabled success.
+
+No worker binary/native source, server, endpoint, account or gameplay operation
+was used. The prior live provisioning audit predates this aggregate budget and is
+not current-code live evidence. This adds bounded orchestration, not character
+rollback, offline exclusion, shared-world cleanliness, reset/reprovision authority,
+hard-kill recovery or crash consistency. No full gate, soak or platform sweep ran;
+overall goal remains incomplete.
+
 ## Shared CLI cooperative deadline: session success budget
 
 Feature **`5ffe7ad43`** adds `support/development_deadline.py`, focused contracts
@@ -636,7 +677,7 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit receipt; provisioning/binding live audits | Implemented and live-verified on owned runtimes; normal worker exit and per-character server closure are distinct, neither grants adoption/reset authority |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit receipt, current aggregate-deadline contracts; provisioning/binding live audits | Implemented and live-verified on owned runtimes; current cooperative whole-session bound is synthetically verified and postdates the live audit; normal worker exit and per-character server closure are distinct, neither grants adoption/reset authority |
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
@@ -1656,7 +1697,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
-| Deadlines / cancellation / cleanup | Timers, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; worker exit is not server-offline proof and broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; provisioner aggregate deadline postdates its live audit; worker exit is not server-offline proof and broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored; current isolated fifteen-case Windows gate passes, older nine-case Linux gate passes, but the current expanded Linux gate remains red under observed delayed scene/action/logout/zoning delivery; hosted execution/runner controls unverified, no registered runners |
@@ -1680,7 +1721,7 @@ a nearby passing test does not close them.
 | HTTP, encrypted lobby selection and normal handoff | `Client.cpp`, rejected-login/live-login tests and creation journey | Verified |
 | Zone/chat startup, both keepalives, logout and reconnect | live smoke, zoning, workload reconnect and fresh-login scenarios | Verified |
 | Explicit disconnected/loading/ready/zoning/closing lifecycle | worker state snapshots and phase guards; live zoning/logout assertions | Verified for represented phases |
-| Bounded queues, deadlines and cancellation | 64 KiB control limit, two-frame send-queue cap, bounded journals, monotonic Python/native timers, recorded deadline scale 1..3, asynchronous final-movement write completion, and explicit `close`/`remove` cancellation of timers/sockets | Verified; timed-out operations are never retried and owned teardown cancels the worker |
+| Bounded queues, deadlines and cancellation | 64 KiB control limit, two-frame send-queue cap, bounded journals, monotonic Python/native timers, shared runner/provisioner whole-session budgets, recorded deadline scale 1..3, asynchronous final-movement write completion, and explicit `close`/`remove` cancellation of timers/sockets | Verified for implemented paths; timed-out operations are never retried and owned teardown cancels the worker; cooperative budgets are not hard preemption |
 | Useful error classes | protocol/invalid-request worker errors; setup, assertion, worker-death and owned-process exit distinctions | Verified at harness boundary and for one live owned-world termination; not a universal server error taxonomy |
 | Do not copy authoritative server gameplay | Worker uses shared low-level definitions/crypto only and has no world-service linkage or handler calls | Verified |
 | Identity, territory/loading, conditions and channel health | snapshots plus liveness/checkpoint policy | Verified for modeled fields |
