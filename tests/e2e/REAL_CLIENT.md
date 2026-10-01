@@ -170,8 +170,11 @@ are absent, not passing. On completion or failure, `status.json` changes to
    late completion cannot pass the twenty-minute activity deadline. In-flight
    bounded calls and final environment cleanup are not forcibly interrupted.
 6. Inspect `result.json`: require `status=passed`, all received snapshots,
-   manual-review receipt, logout marker, `witness_retirements` and
-   `runtime_removed=true`. There is one retirement receipt for the ordinary lane;
+   manual-review receipt, logout marker, `witness_retirements`, a normal
+   `observer_worker_exit` receipt for the exact outer native witness process, and
+   `runtime_removed=true`. A nonzero, unknown or unbound outer-worker exit changes
+   the terminal result to failed even after successful witness retirement. There
+   is one retirement receipt for the ordinary lane;
    with `--development-check` there are two (original witness handoff and final
    `witness-after-development`). Each requires `server_close_observed=true` and
    `native_bot_removed=true`; corroborate with its native journal. These are normal

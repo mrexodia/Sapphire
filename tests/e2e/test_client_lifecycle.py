@@ -58,7 +58,8 @@ def test_retirement_failure_is_not_retried_or_converted_to_success(failure):
 
 
 @pytest.mark.parametrize("failure", [None, "server logout connection close", "remove",
-                                     "deadline_before_retirement", "deadline_during_retirement"])
+                                     "deadline_before_retirement", "deadline_during_retirement",
+                                     "observer_worker_exit", "observer_worker_exit_unknown"])
 def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, monkeypatch, failure):
     # Exercise coordinator control flow with entirely synthetic setup/UI state.
     # No guest is launched, no host registry/files are changed, no review attested.
@@ -103,6 +104,10 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
 
     class Worker:
         def __init__(self, *args):
+            self.closed = False
+            self.process = types.SimpleNamespace(pid=12345, poll=lambda:
+                (None if failure == "observer_worker_exit_unknown"
+                 else 1 if failure == "observer_worker_exit" else 0) if self.closed else None)
             self.snapshots = iter([
                 {"actors": {"2": {"position": [0, 0, 0]}}},
                 {"actors": {"2": {"position": [2, 0, 0]}}},
@@ -112,6 +117,7 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
         def __enter__(self):
             return self
         def __exit__(self, *args):
+            self.closed = True
             cleanup.append("worker")
         def snapshot(self, bot):
             return next(self.snapshots)
@@ -164,7 +170,9 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     assert report["runtime_removed"] is True
     assert report["timing"]["phases"][-2]["phase"] == "witness_retirement"
     if failure:
-        assert report["failure_stage"] == "witness_retirement"
+        assert report["failure_stage"] == ("observer_worker_exit"
+            if failure in {"observer_worker_exit", "observer_worker_exit_unknown"}
+            else "witness_retirement")
     if failure == "deadline_before_retirement":
         assert retired.calls == []
     if failure in {"server logout connection close", "remove", "deadline_before_retirement"}:
@@ -172,3 +180,11 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     else:
         assert report["witness_retirements"] == [{"bot": "owned-witness", "server_close_observed": True,
             "native_bot_removed": True, "scope": "normal-witness-session-retirement-not-offline-exclusion"}]
+    receipt = report["observer_worker_exit"]
+    assert receipt["context_exit_attempted"] and receipt["context_exit_completed"]
+    assert receipt["process_id"] == 12345
+    if failure == "observer_worker_exit_unknown":
+        assert not receipt["process_exit_observed"] and "returncode" not in receipt
+    else:
+        assert receipt["process_exit_observed"]
+        assert receipt["returncode"] == (1 if failure == "observer_worker_exit" else 0)

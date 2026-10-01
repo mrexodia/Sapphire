@@ -18,6 +18,7 @@ from .support.client_snapshot import verify_source
 from .support.client_timing import ClientPhaseTiming
 from .support.client_lifecycle import retire_witness
 from .support.worker import Worker, Bot
+from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 from .support.client_development import ActivityWorker, development_profile, require_graphical_check
 from .support.development import authenticate, movement_route
 from .run_development import run as run_development
@@ -52,7 +53,7 @@ def run():
     report = {"version": 1, "run": uuid.uuid4().hex, "status": "failed",
               "scope": "manual-real-client-login-movement-say-logout",
               "documents": documents, "sandbox_disposal": "operator_required",
-              "witness_retirements": []}
+              "witness_retirements": [], "observer_worker_exit": unobserved_worker_exit()}
     env = client = None
     timing = ClientPhaseTiming()
     stage = "setup"
@@ -92,7 +93,8 @@ def run():
         report["artifacts"] = str(env.artifacts)
         report["fixture"] = fixture
         report["development_check"] = {"requested": development_enabled, "status": "not_run"}
-        with Worker(env.worker, env.artifacts / "observer", env.deadline_scale) as worker:
+        with ObservedWorker(Worker(env.worker, env.artifacts / "observer", env.deadline_scale),
+                            report["observer_worker_exit"]) as worker:
             witness = env.fresh_character(fixture["position"])
             real = env.fresh_character(fixture["position"])
             bot = Bot(worker, "witness")
@@ -219,6 +221,9 @@ def run():
             if time.monotonic() >= deadline:
                 raise TimeoutError("manual activity deadline exceeded during witness retirement")
             report["status"] = "passed"
+            # The context exit after this line must also observe a normal exact-
+            # owned native process exit or the terminal result is changed to failed.
+            stage = "observer_worker_exit"
     except BaseException as error:
         message = str(error)
         for secret in env.redactions if env else ():
