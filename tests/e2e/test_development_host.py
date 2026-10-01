@@ -10,7 +10,10 @@ import psutil
 import pytest
 
 from . import provision_development, run_development, serve_development
+from .inspect_development_host import main as inspect_host_main
 from .support.development import DevelopmentError, authenticate, check_managed_host, validate_profile
+from .support.development_host_result import (SCOPE as HOST_RESULT_SCOPE,
+                                              inspect_owned_development_host)
 from .support.development_party import BOUND_METHODS
 from .support.environment import redact_runtime_log
 
@@ -35,6 +38,8 @@ class FakeEnvironment:
         self.artifacts.mkdir()
         self.api_port, self.lobby_port, self.zone_port = 5000, 54994, 54992
         self.processes = {}
+        self.process_starts = []
+        self.process_teardowns = []
         self.starts = self.closes = 0
         self.fixtures = []
         self.failed = False
@@ -43,6 +48,8 @@ class FakeEnvironment:
         self.starts += 1
         self.processes = {name: SimpleNamespace(pid=index + 100) for index, name in
                           enumerate(("database", "api", "lobby", "world"))}
+        self.process_starts = [{"process":name,"generation":1,"pid":process.pid}
+                               for name,process in self.processes.items()]
 
     def fresh_character(self, position):
         assert self.starts == 1 and position == [1, 2, 3]
@@ -58,8 +65,17 @@ class FakeEnvironment:
 
     def close(self):
         self.closes += 1
+        self.process_teardowns = [{**row,"was_running_before_cleanup":True,
+            "terminate_requested":True,"kill_requested":False,"exit_observed":True,
+            "returncode":-15,
+            "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}
+            for row in reversed(self.process_starts)]
         self.processes.clear()
         self.root.rmdir()
+        (self.artifacts / "process-lifecycle.json").write_text(json.dumps({
+            "version":1,
+            "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
+            "starts":self.process_starts,"teardowns":self.process_teardowns}))
 
 
 class Probe:
@@ -112,7 +128,12 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
         (session / "stop").touch()
     report, env, session = run_host(assets, tmp_path, on_ready=ready)
     assert report["status"] == "stopped" and report["stop_reason"] == "operator_stop_file"
-    assert report["cleanup_verified"] and report["private_profiles_removed"]
+    assert report["cleanup_verified"] and report["process_cleanup_verified"]
+    assert report["private_profiles_removed"]
+    assert report["environment_process_teardown"]["evidence"] == {
+        "verified":True,
+        "scope":"all-exact-owned-isolated-process-generations-observed-terminated",
+        "process_count":4,"generations":{"api":1,"database":1,"lobby":1,"world":1}}
     assert env.starts == env.closes == 1 and not env.root.exists()
     assert not list(session.glob("*-profile.json"))
     assert "private-password" not in (session / "status.json").read_text()
@@ -122,6 +143,74 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
         "process_exit_observed": True, "scope": "owned-native-worker-exit-not-server-session-closure",
         "process_id": 12345, "returncode": 0}
     assert not report["existing_database_access"] and not report["graphical_client_started"]
+    proof = inspect_owned_development_host(session)
+    assert proof["status"] == "accepted" and proof["scope"] == HOST_RESULT_SCOPE
+    assert proof["process_teardown"]["process_count"] == 4
+
+
+def test_terminal_host_inspector_is_read_only_and_cli_matches(assets, tmp_path, capsys):
+    report, _, session = run_host(assets, tmp_path)
+    before = {path.name:hashlib.sha256(path.read_bytes()).hexdigest()
+              for path in session.iterdir() if path.is_file()}
+    proof = inspect_owned_development_host(session)
+    after = {path.name:hashlib.sha256(path.read_bytes()).hexdigest()
+             for path in session.iterdir() if path.is_file()}
+    assert before == after and proof["session_id"] == report["session_id"]
+    assert inspect_host_main(["--session-dir", str(session)]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda status:status.update(status="failed"),
+    lambda status:status.update(process_cleanup_verified=1),
+    lambda status:status.update(private_profiles_removed=False),
+    lambda status:status["owned_pids"].update(world=True),
+    lambda status:status["owned_pids"].update(world=status["owned_pids"]["api"]),
+    lambda status:status["environment_process_teardown"].update(sha256="0" * 64),
+    lambda status:status["environment_process_teardown"]["evidence"].update(process_count=True),
+    lambda status:status["timings"][0].update(seconds=float("nan")),
+    lambda status:status.update(extra=True),
+])
+def test_terminal_host_inspector_rejects_partial_or_type_confused_status(
+        assets, tmp_path, mutate):
+    _, _, session = run_host(assets, tmp_path)
+    path = session / "status.json"
+    status = json.loads(path.read_text()); mutate(status)
+    path.write_text(json.dumps(status))
+    with pytest.raises(DevelopmentError):
+        inspect_owned_development_host(session)
+
+
+def test_terminal_host_inspector_rejects_changed_lifecycle_record(assets, tmp_path):
+    _, _, session = run_host(assets, tmp_path)
+    path = session / "process-lifecycle.json"
+    lifecycle = json.loads(path.read_text())
+    lifecycle["teardowns"][0]["returncode"] = True
+    path.write_text(json.dumps(lifecycle))
+    status_path = session / "status.json"
+    status = json.loads(status_path.read_text())
+    status["environment_process_teardown"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    status_path.write_text(json.dumps(status))
+    with pytest.raises(DevelopmentError):
+        inspect_owned_development_host(session)
+
+
+def test_terminal_host_inspector_requires_all_four_exact_services(assets, tmp_path):
+    _, _, session = run_host(assets, tmp_path)
+    path = session / "process-lifecycle.json"
+    lifecycle = json.loads(path.read_text())
+    lifecycle["starts"] = [row for row in lifecycle["starts"] if row["process"] != "database"]
+    lifecycle["teardowns"] = [row for row in lifecycle["teardowns"] if row["process"] != "database"]
+    path.write_text(json.dumps(lifecycle))
+    status_path = session / "status.json"
+    status = json.loads(status_path.read_text())
+    status["owned_pids"].pop("database")
+    status["environment_process_teardown"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+    status["environment_process_teardown"]["evidence"].update(
+        process_count=3, generations={"api":1,"lobby":1,"world":1})
+    status_path.write_text(json.dumps(status))
+    with pytest.raises(DevelopmentError, match="process teardown is incomplete"):
+        inspect_owned_development_host(session)
 
 
 def test_existing_session_directory_is_never_reused(assets, tmp_path):

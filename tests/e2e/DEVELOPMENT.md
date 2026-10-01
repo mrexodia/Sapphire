@@ -61,6 +61,8 @@ checkout). It contains:
   provisioning. This does not attest that GM placement is deployed.
 - `status.json`: identity, expiry, process IDs, lifecycle/timing and cleanup
   diagnostics, without account credentials.
+- `process-lifecycle.json`: terminal private exact database/API/lobby/world
+  generation/teardown rows, created only after owned cleanup.
 
 Live narrow evidence: one managed-host development check passed in **25.4s**,
 and separate normal provisioning completed in **12.0s**, with a third headless
@@ -81,12 +83,28 @@ Stop only after clients/checks are finished:
 New-Item .e2e-dev-host/watch-001/stop -ItemType File
 ```
 
-POSIX equivalent: `touch .e2e-dev-host/watch-001/stop`. The host also shuts down
-on process loss, interruption, or expiry (60–14400 seconds **after readiness**).
+POSIX equivalent: `touch .e2e-dev-host/watch-001/stop`. After a normal terminal
+`stopped` status, inspect the immutable private cleanup evidence read-only:
+
+```powershell
+python -m tests.e2e.inspect_development_host `
+  --session-dir .e2e-dev-host/watch-001
+```
+
+Acceptance requires the exact four database/API/lobby/world generation/PID starts,
+running-before-cleanup and terminate-request receipts, observed integer return
+codes, exact status/file digest equality, removed private profiles, and the seven
+ordered successful host phases. This proves exact owned-process teardown only,
+not graceful server shutdown, account offline exclusion, cache quiescence, reset
+authority or cleanup of an already-running external shared server.
+
+The host also shuts down on process loss, interruption, or expiry (60–14400 seconds **after readiness**).
 Expiry is a hard lifetime bound and may interrupt connected clients; it is not
 an automatic drain or retry. Do not start a long check near expiry.
 
-Only its own private database/processes/runtime are removed. Unmodified exported
+Only its own private database/processes/runtime are removed. A stopped success
+requires `cleanup_verified=true` and `process_cleanup_verified=true`; a lifecycle
+mismatch or missing exact generation changes terminal status to failed. Unmodified exported
 profiles are deleted on shutdown; user-modified or incomplete exports are retained
 and explicitly reported. No existing database is accessed. Preparation uses
 three **administrative pre-connection fixtures** at the source-supported public

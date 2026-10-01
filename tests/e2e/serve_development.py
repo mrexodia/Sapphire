@@ -18,7 +18,7 @@ from .provision_development import require_private_output, reserve_private_profi
 from .support.catalog import load_quest_catalog
 from .support.development import DevelopmentError, Timings, validate_profile
 from .support.development_party import require_bound_party_worker
-from .support.environment import Environment
+from .support.environment import Environment, require_process_teardowns
 from .support.worker import Worker
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 
@@ -55,6 +55,7 @@ def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Env
               "existing_database_access": False, "graphical_client_started": False,
               "fixture_setup": "three new non-GM pre-connection fixtures, including one separate viewer",
               "normal_lobby_creation_verified": False, "cleanup_verified": False,
+              "process_cleanup_verified": False,
               "worker_preflight_exit": unobserved_worker_exit()}
     environment = None
     owned_profiles = {}
@@ -135,7 +136,26 @@ def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Env
                 with timings.phase("owned_environment_cleanup"):
                     environment.close()
                 report["cleanup_verified"] = not environment.root.exists() and not environment.processes
-                if not report["cleanup_verified"]:
+                lifecycle_path = environment.artifacts / "process-lifecycle.json"
+                lifecycle = json.loads(lifecycle_path.read_text(encoding="utf-8"))
+                expected = {"version":1,
+                    "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
+                    "starts":environment.process_starts,"teardowns":environment.process_teardowns}
+                if lifecycle != expected:
+                    raise DevelopmentError("owned host process lifecycle artifact differs from cleanup")
+                if lifecycle["starts"]:
+                    proof = require_process_teardowns(lifecycle["starts"], lifecycle["teardowns"])
+                    retained = session_dir / "process-lifecycle.json"
+                    publish_status(retained, lifecycle)
+                    report["environment_process_teardown"] = {"verified":True,
+                        "scope":"exact-owned-warm-host-service-teardown-not-server-offline-proof",
+                        "relative_path":"process-lifecycle.json",
+                        "sha256":hashlib.sha256(retained.read_bytes()).hexdigest(),
+                        "evidence":proof}
+                    report["process_cleanup_verified"] = True
+                if (not report["cleanup_verified"]
+                        or (report["status"] == "stopping"
+                            and not report["process_cleanup_verified"])):
                     report["status"] = "failed"
             except Exception as error:
                 report.update(status="failed", cleanup_error_type=type(error).__name__)
