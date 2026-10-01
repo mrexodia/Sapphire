@@ -1732,6 +1732,22 @@ This is exact private input-file identity and schema correlation, not proof that
 path contents are authentic, unchanged after staging, compatible or externally
 provisioned. No fixture, service, gate or gameplay operation ran.
 
+Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
+to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
+inspection derives and requires each expected `(classname, name)` pair, including
+parameter suffixes, then separately rejects every failure/error/skip element. Gate
+diagnostics still independently require exactly one passed setup/call/teardown for
+the same ordered IDs.
+
+Frozen, remote-free source **`1506d5b854eb97664ffa6b88c1b870e38544c306`**
+passed **114 CI/workflow-policy tests in 5.34s**. A format check confirmed real
+pytest JUnit emits the required `tests.e2e.<module>` classname projection. A
+negative replaces one testcase name and recomputes the public JUnit hash; private
+inspection rejects the foreign passing set. Test-log SHA-256:
+`536617cc9e2e3264301241843a3e65f3f255b4c0df49cdeb85c4a46d70757d7c`.
+This proves retained report identity/shape only, not gameplay truth or independent
+execution. No fixture, service, gate or gameplay operation ran.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
