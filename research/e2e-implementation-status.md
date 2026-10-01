@@ -528,9 +528,41 @@ all native journals, v2 intents, server records, binaries and cleanup:
 
 This is current version2 provenance/placement evidence on a disposable owned
 runtime, not server-side offline exclusion, natural progression, reset authority,
-existing shared-deployment safety or graphical attestation. Current graphical
-execution, reset and broad gates remain pending. No full gate, soak or platform
-sweep ran; overall goal remains incomplete.
+existing shared-deployment safety or graphical attestation.
+
+### Exact registry validation precedes irreversible operator intent
+
+Feature **`ad28c284f`** closes a fail-closed ordering gap in the local operator
+helper. Previously it checked approval/run IDs and bot identities but could write
+an exclusive intent and dispatch a command before discovering that the reviewed
+registry had a server-invalid catalog, destination, missing/extra field or bot-row
+shape. `validate_placement_registry()` now mirrors the native v2 parser's exact
+eight top-level fields, lowercase approval/provisioning/catalog identities, integer
+version/territory, three finite coordinates with absolute value below1000, exact
+two three-field generated bot bindings, ID bounds and uniqueness. Slot validation
+and the complete registry check happen before capability lookup, operator-state
+inspection, file creation or command publication.
+
+From a new remote-free frozen exact commit
+`ad28c284fd61c4d97e71cd2e4d022108538fbb60`, provisioning, lease, planner and
+operator contracts passed **148 tests in 1.49s**. New negatives cover missing and
+extra top-level/bot fields, uppercase/type-confused catalog/run values, absent,
+short, boolean, NaN, infinite, out-of-bounds and extremely large coordinates,
+invalid ID types/bounds and duplicate names; each proves no request and no intent.
+Test-log SHA-256:
+`f9ebab7450a42a68284436737e52e8f6475ccbacbfc79385b53fc105c664d85b`.
+The source was clean and remote-free after removing pytest's ignored cache.
+
+A read-only invocation of that exact current validator accepted the retained
+`development-placement-v2-live-001` registry with the same v2, provisioning run
+and SHA-256; artifact-check SHA-256 is
+`3a1d89c9fd98011127405ceb213ee48c3361c9dfc66ad91c8836e02ebb123cdf`.
+It created no intent, contacted no worker/server and does not upgrade or replay the
+prior live run. Native parser contracts remain the independent server boundary;
+matching Python logic is not a signature or proof against concurrent registry
+replacement after validation. Current graphical execution, reset and broad gates
+remain pending. No full gate, soak or platform sweep ran; overall goal remains
+incomplete.
 
 ## Dedicated provisioning has one cooperative success deadline
 
@@ -1007,7 +1039,7 @@ or completion audit. The original plan checklist below still applies.
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
 | Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; bounded planner-only and placement-chain live audits | Current v2 producer→planner→registered-placement path is live-verified on a fresh owned runtime; expiry/no-retry paths remain synthetic; worker exit, server closure and local lease state grant no adoption/reset authority |
-| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; setup is not progression or general reset |
+| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
 | Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit and terminal-lease receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
