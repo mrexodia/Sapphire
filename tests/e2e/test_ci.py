@@ -565,7 +565,7 @@ def private_gate_evidence(tmp_path, report):
     diagnostics_path = root / "gate-diagnostics.json"
     diagnostics_path.write_text(json.dumps(diagnostics, indent=2))
     report["gate_diagnostics_sha256"] = hashlib.sha256(diagnostics_path.read_bytes()).hexdigest()
-    pytest_path = root / "pytest.log"; pytest_path.write_text("15 passed\n")
+    pytest_path = root / "pytest.log"; pytest_path.write_text(f"{len(run_ci.CASES)} passed\n")
     junit_path = root / "live.xml"
     junit_path.write_text("<testsuites><testsuite>" + "".join(
         f'<testcase name="{case}" />' for case in run_ci.CASES) + "</testsuite></testsuites>")

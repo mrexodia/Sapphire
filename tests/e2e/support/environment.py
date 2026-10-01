@@ -431,6 +431,35 @@ class Environment:
         self._start("world", [self.runtime / ("server" + self.suffix)])
         self._wait_port(self.zone_port)
 
+    def terminate_world_for_fault_test(self):
+        """Intentionally stop this fixture's exact world and retain classification."""
+        process = self.processes.get("world")
+        metadata = self._process_metadata.get("world")
+        if (process is None or not isinstance(metadata, dict)
+                or metadata.get("process") != "world" or process.poll() is not None):
+            raise SetupError("refuse ambiguous or inactive owned world fault target")
+        self._stop("world")
+        receipt = self.process_teardowns[-1]
+        if (receipt.get("pid") != metadata.get("pid")
+                or receipt.get("generation") != metadata.get("generation")
+                or type(receipt.get("returncode")) is not int):
+            raise SetupError("owned world fault exit receipt is incomplete")
+        diagnostic = {
+            "version": 1,
+            "classification": "intentional_owned_process_exit",
+            "process": "world",
+            "generation": metadata["generation"],
+            "pid": metadata["pid"],
+            "returncode": receipt["returncode"],
+            "log": "world.log",
+            "cleanup_required": True,
+        }
+        (self.artifacts / "process-failure.json").write_text(
+            json.dumps(diagnostic, indent=2), encoding="utf-8")
+        raise SetupError(
+            f"world generation {metadata['generation']} exited intentionally for fault test "
+            f"({receipt['returncode']}); see {self.artifacts}")
+
     def _stop(self, name):
         process = self.processes.pop(name, None)
         metadata = self._process_metadata.pop(name, None)

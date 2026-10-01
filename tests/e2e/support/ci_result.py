@@ -20,8 +20,8 @@ EXPECTED_CASES = (
     "tests/e2e/test_live.py::test_observed_movement_and_position_persistence",
     "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[single]",
     "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[chain]",
-    "tests/e2e/test_live_zoning.py::test_observed_exit_crossing_and_territory_persistence",
     "tests/e2e/test_live_zoning.py::test_observed_living_return_action",
+    "tests/e2e/test_live_zoning.py::test_observed_exit_crossing_and_territory_persistence",
     "tests/e2e/test_live_combat.py::test_observed_sprint_status_and_tp_debit",
     "tests/e2e/test_live_combat.py::test_observed_fast_blade_damage",
     "tests/e2e/test_live_progression.py::test_natural_pugilist_level_two_true_strike",
@@ -29,6 +29,7 @@ EXPECTED_CASES = (
     "tests/e2e/test_live_aggro.py::test_natural_vision_aggro_without_player_action",
     "tests/e2e/test_live_player_defeat.py::test_natural_enemy_defeats_level_one_player",
     "tests/e2e/test_live_creation.py::test_lobby_character_creation_and_opening_persistence",
+    "tests/e2e/test_live_fault_diagnostics.py::test_owned_world_exit_preserves_classification_logs_and_cleanup",
 )
 EXPECTED_CATALOGS = ("quest_catalog","follow_up_catalog","transition_catalog",
                      "combat_catalog","shop_catalog","respawn_catalog",

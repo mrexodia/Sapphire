@@ -308,6 +308,37 @@ def test_exact_owned_process_stop_records_terminate_and_kill_fallback():
         "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}]
 
 
+def test_owned_world_fault_is_exact_bounded_and_not_repeatable(tmp_path):
+    class Process:
+        pid = 45
+        returncode = None
+        def poll(self): return self.returncode
+        def terminate(self): self.terminated = True
+        def wait(self, timeout):
+            assert timeout == 10 and self.terminated
+            self.returncode = -15
+            return self.returncode
+    process = Process()
+    env = object.__new__(Environment)
+    env.processes = {"world":process}
+    env._process_metadata = {"world":{"process":"world","generation":3,"pid":45}}
+    env.process_teardowns = []
+    env.artifacts = tmp_path
+    with pytest.raises(SetupError, match=r"generation 3 exited intentionally"):
+        env.terminate_world_for_fault_test()
+    assert env.processes == {} and env._process_metadata == {}
+    assert len(env.process_teardowns) == 1
+    receipt = env.process_teardowns[0]
+    assert (receipt["process"],receipt["generation"],receipt["pid"],receipt["returncode"]) == (
+        "world",3,45,-15)
+    assert json.loads((tmp_path / "process-failure.json").read_text()) == {
+        "version":1,"classification":"intentional_owned_process_exit","process":"world",
+        "generation":3,"pid":45,"returncode":-15,"log":"world.log","cleanup_required":True}
+    with pytest.raises(SetupError, match="ambiguous or inactive"):
+        env.terminate_world_for_fault_test()
+    assert len(env.process_teardowns) == 1
+
+
 def test_process_start_generations_bind_restarted_world(tmp_path, monkeypatch):
     from .support import environment
     pids = iter(range(100, 105))

@@ -96,7 +96,7 @@ python -m tests.e2e.inspect_ci_private_evidence --summary build-e2e/ci-summary.j
 The summary destination must not already exist. Without `--require-clean`, local
 rehearsals may use a dirty checkout; the summary explicitly records that fact.
 The workflow always requires a clean checkout. The read-only inspector owns an
-independent exact ordered copy of the current 15-case and eight-catalog allowlists;
+independent exact ordered copy of the current 16-case and eight-catalog allowlists;
 a contract requires explicit producer/consumer synchronization when either changes.
 It also requires successful collection/inputs/cleanup, the new
 `process_cleanup_verified` claim, typed component identities, and the operator-
@@ -108,9 +108,9 @@ the sanitized public result's current contract. It cannot reconstruct the privat
 PID/generation records deleted with disposable fixtures,
 prove hosted execution, or replace an actual current gate run. When the authorized
 private run directory is retained, the second inspector matches every public hash
-pair one-to-one to exactly 15 safe private environment directories, revalidates all
+pair one-to-one to exactly 16 safe private environment directories, revalidates all
 service generations and staged source/input identities, requires exact private
-collection plus one passed setup/call/teardown per case, requires exactly 15 JUnit
+collection plus one passed setup/call/teardown per case, requires exactly 16 JUnit
 testcases with no failure/error/skip element, and emits no private path, database,
 runtime, port, PID or captured log content. It never makes absent private bytes
 recoverable. `run_ci` does not itself compile
@@ -125,13 +125,13 @@ separate evidence that its binaries came from the checkout.
   mesh identity. This checks availability and consistency, **not** game correctness or
   independent real-client compatibility. Static prerequisite validation never
   modifies quest progress; the live chain must complete its first quest normally.
-- The entry point collects the nine whole live modules and requires exactly the
-  fifteen expected cases. Added/removed cases require explicit review of `CASES`.
+- The entry point collects the ten whole live modules and requires exactly the
+  sixteen expected cases. Added/removed cases require explicit review of `CASES`.
   Inherited pytest selection options and automatic third-party plugins are
   disabled. The gate records the exact fixture object used by each node ID and
-  requires exactly fifteen pairwise-distinct environments mapped one-to-one to the
-  exact fifteen cases. Private validation additionally requires 15 distinct,
-  non-nested runtime roots and artifact roots, 15 valid randomized database names,
+  requires exactly sixteen pairwise-distinct environments mapped one-to-one to the
+  exact sixteen cases. Private validation additionally requires 16 distinct,
+  non-nested runtime roots and artifact roots, 16 valid randomized database names,
   four distinct typed ports per fixture, and exact agreement of database/runtime/
   ports with each retained staged manifest. Every allowlisted case therefore
   provisions and removes its own disposable database/API/lobby/world environment,
@@ -152,7 +152,7 @@ separate evidence that its binaries came from the checkout.
   provenance or signatures.
 - Only `.e2e-ci-summary.json` is uploaded: fixed schema, allowlisted case identities
   and booleans, checkout identity, component hashes and cleanup/collection results.
-  It also carries exactly 15 ordered
+  It also carries exactly 16 ordered
   `{case, manifest_sha256, lifecycle_sha256, artifact_tree_sha256}` rows plus
   SHA-256 values for private `gate-diagnostics.json`, `pytest.log` and
   `live.xml`. These bind each public case to exact private staged-manifest/process-
@@ -173,11 +173,12 @@ separate evidence that its binaries came from the checkout.
   details are never uploaded. This is forced owned-process cleanup, not graceful
   server shutdown or server-session exclusion. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. A passed summary covers this fifteen-scenario headless suite only.
-  `test_live_fault_diagnostics.py` is a separate opt-in lane that intentionally
-  terminates its own freshly provisioned world process; it verifies process-exit
-  classification, redacted log publication and runtime removal, not gameplay or
-  hosted cancellation cleanup.
+  local run. A passed summary covers this sixteen-scenario headless suite only.
+  The sixteenth case, `test_live_fault_diagnostics.py`, intentionally terminates
+  the exact owned world generation in its own fixture, requires one matching
+  lifecycle receipt, then verifies private exit classification, redacted log
+  publication and runtime removal. It is fault-evidence coverage, not gameplay,
+  spontaneous server-crash, crash-dump or hosted cancellation-cleanup proof.
 
 Latest local evidence: clean revision `39198db88` passed the fifteen-case strict
 gate in 2991.257 seconds with zero skips/errors/failures, exact collection and
