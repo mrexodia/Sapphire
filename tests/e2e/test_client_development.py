@@ -288,6 +288,42 @@ def test_separate_graphical_decline_receipt_passes_without_foreign_scenarios():
     assert proof['rendered_bot_actions_verified'] is False
 
 
+def test_graphical_run_pair_binds_same_dedicated_characters_and_distinct_runs():
+    comprehensive, decline = completed(), declined()
+    decline['run_id'] = 'b'*32
+    proof = bridge.require_graphical_run_pair(
+        comprehensive, decline, ['bot mover', 'bot witness'], 'd'*64)
+    assert proof == {'verified':True,
+        'scope':'same-dedicated-bot-identities-across-distinct-runs-not-offline-or-reset-proof',
+        'comprehensive_run_id':'a'*32, 'decline_run_id':'b'*32,
+        'worker_sha256':'d'*64,
+        'identities':comprehensive['sprint_verification']['identities']}
+
+
+def test_graphical_run_pair_rejects_reused_or_foreign_provenance():
+    mutations = (
+        lambda comprehensive, decline: decline.update(run_id='a'*32),
+        lambda comprehensive, decline: decline.update(worker_sha256='e'*64),
+        lambda comprehensive, decline: decline.update(entities=[2,1]),
+        lambda comprehensive, decline: decline['decline_verification']['identities'][0].update(
+            character_id=99),
+        lambda comprehensive, decline: comprehensive['sprint_verification']['identities'][1].update(
+            name='foreign'),
+        lambda comprehensive, decline: comprehensive.update(entities=[1,1]),
+    )
+    for mutate in mutations:
+        comprehensive, decline = completed(), declined()
+        decline['run_id'] = 'b'*32
+        mutate(comprehensive, decline)
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_run_pair(
+                comprehensive, decline, ['bot mover', 'bot witness'], 'd'*64)
+    with pytest.raises(DevelopmentError):
+        bridge.require_graphical_run_pair(
+            completed(), {**declined(), 'run_id':'b'*32},
+            ['bot mover', 'foreign'], 'd'*64)
+
+
 def test_graphical_decline_rejects_malformed_or_mixed_receipts():
     mutations=(
         lambda report: report.update(status='failed'),

@@ -519,7 +519,10 @@ endpoints in 0.046s within an 11.828s normal login/Say/logout check. Its separat
 headless observer received no invitation. Current graphical-coordinator policy now
 requires this option in a second route-free fresh bot run after the comprehensive
 party run, with separate viewer checkpoints, deadline, worker-exit and lease
-evidence. That policy has focused contracts but still has no current graphical live
+evidence. The outer coordinator also requires distinct run IDs and exact equality
+of both ordered name/entity/character identities plus the staged-worker digest
+across the two runs; that is provenance, not server-offline or reset authority.
+That policy has focused contracts but still has no current graphical live
 attestation. Exact artifacts and limitations are in the implementation audit.
 
 ### Optional owned two-bot party check

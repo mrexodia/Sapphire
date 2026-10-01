@@ -134,10 +134,13 @@ respawn observed by that witness fails before the finish challenge. Legacy
 summaries without this continuity evidence, without the terminal snapshot, or with
 only `worker_closed:true`,
 malformed/nonzero receipts and local process exit without the separate server-
-lifecycle observations fail closed. `decline_check` separately binds exact peer
-identities, invitation result, recipient reply, inviter rejection, advancing
-sequences, empty final parties, its own viewer receipts, exact worker exit and
-clear leases; all unrelated subscenarios must remain disabled. Each nested runner
+lifecycle observations fail closed. `decline_check` separately binds exact peer identities, invitation result,
+recipient reply, inviter rejection, advancing sequences, empty final parties, its
+own viewer receipts, exact worker exit and clear leases; all unrelated subscenarios
+must remain disabled. `development_run_pair` additionally requires distinct runner
+IDs while binding both summaries to the same ordered names, entity IDs, character
+IDs and exact staged-worker digest. This is dedicated-character provenance, not a
+server-offline, reset, cache-quiescence or exclusive-session claim. Each nested runner
 receives an integer cooperative deadline strictly inside the remaining graphical
 activity budget (maximum 900 seconds); bridge success requires both exact enabled,
 unexpired, completed deadline receipts. Older graphical evidence without these

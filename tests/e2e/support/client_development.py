@@ -579,6 +579,49 @@ def require_shared_runner_metadata(result, *, catalog_required):
     return worker_hash
 
 
+def require_graphical_run_pair(comprehensive, decline, expected_names, expected_worker_sha256):
+    """Bind two strict results to the same dedicated characters, not session exclusion."""
+    if (not isinstance(expected_names, list) or len(expected_names) != 2
+            or any(not isinstance(name, str) or not 1 <= len(name) <= 31
+                   for name in expected_names)
+            or len(set(expected_names)) != 2
+            or not isinstance(expected_worker_sha256, str)
+            or len(expected_worker_sha256) != 64
+            or any(char not in '0123456789abcdef' for char in expected_worker_sha256)):
+        raise DevelopmentError('invalid expected graphical bot-run provenance')
+    main_run, decline_run = comprehensive.get('run_id'), decline.get('run_id')
+    main_entities, decline_entities = comprehensive.get('entities'), decline.get('entities')
+    main_identities = comprehensive.get('sprint_verification', {}).get('identities')
+    decline_identities = decline.get('decline_verification', {}).get('identities')
+    if (not isinstance(main_run, str) or len(main_run) != 32
+            or not isinstance(decline_run, str) or len(decline_run) != 32
+            or main_run == decline_run
+            or any(char not in '0123456789abcdef' for char in main_run + decline_run)
+            or comprehensive.get('worker_sha256') != expected_worker_sha256
+            or decline.get('worker_sha256') != expected_worker_sha256
+            or not isinstance(main_entities, list) or len(main_entities) != 2
+            or main_entities != decline_entities or len(set(main_entities)) != 2
+            or any(type(value) is not int or value <= 0 for value in main_entities)
+            or not isinstance(main_identities, list) or main_identities != decline_identities
+            or len(main_identities) != 2
+            or any(not isinstance(identity, dict)
+                   or set(identity) != {'name', 'entity_id', 'character_id'}
+                   or type(identity.get('entity_id')) is not int
+                   or type(identity.get('character_id')) is not int
+                   or not 0 < identity['character_id'] < 2**64
+                   for identity in main_identities)
+            or len({identity['character_id'] for identity in main_identities}) != 2
+            or [identity['name'] for identity in main_identities] != expected_names
+            or [identity['entity_id'] for identity in main_identities] != main_entities):
+        raise DevelopmentError('graphical bot runs do not share exact dedicated-character provenance')
+    # The individual strict consumers additionally validate each lifecycle receipt.
+    return {'verified': True,
+            'scope': 'same-dedicated-bot-identities-across-distinct-runs-not-offline-or-reset-proof',
+            'comprehensive_run_id': main_run, 'decline_run_id': decline_run,
+            'worker_sha256': expected_worker_sha256,
+            'identities': main_identities}
+
+
 def require_graphical_decline_check(result, viewer_name, entity):
     """Require a separate fresh-session decline; never conflate it with party creation."""
     if (result.get('status') != 'passed' or result.get('scope') != 'shared-development-not-acceptance'
