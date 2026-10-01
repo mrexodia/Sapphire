@@ -318,12 +318,53 @@ test-log SHA-256
 
 No server, account, endpoint or real lease-release fault was exercised for this
 producer integration. The current bounded live provisioning evidence predates the
-embedded snapshot and is not upgraded. Historical consumers are likewise not yet
-required to accept/reject this new field; their existing strict status, binding and
-worker-exit checks remain unchanged. This is stronger terminal evidence, not
-server-offline proof, release authority, crash consistency or reset/reprovisioning
-coordination. No full gate, soak or platform sweep ran; overall goal remains
-incomplete.
+embedded snapshot and is not upgraded. At this feature revision historical
+consumers still used their existing strict status, binding and worker-exit checks;
+the subsequent consumer increment below closes that policy edge. This is stronger
+terminal evidence, not server-offline proof, release authority, crash consistency
+or reset/reprovisioning coordination. No full gate, soak or platform sweep ran;
+overall goal remains incomplete.
+
+### Placement and graphical consumers require exact clear evidence
+
+Feature **`cfb2bd636`** adds
+`development_lease.require_clear_terminal_account_leases`. The validator requires
+the exact version-1 `clear` snapshot: both ordered absent records, strict integer
+version/count/index fields, every non-authority/contact/mutation flag exactly false,
+no retained run, no extra fields and top-level producer-state agreement. Boolean-
+as-integer substitutions, reordered records, false claims changed to integers,
+legacy absence, retained/ambiguous state and malformed/extra data fail closed.
+
+`prepare_development.placement_registry` now requires this evidence before accepting
+a provisioning binding or producing an operator registry. The optional graphical
+bridge likewise requires it before accepting the normal runner's nested result.
+Thus a current planner cannot turn an old clean-looking provisioning report into a
+placement approval, and a current graphical result cannot rely on the old
+`lease_retained:false` boolean alone. Neither consumer treats the snapshot as
+server-offline proof or reset authority.
+
+Detached clean exact `cfb2bd636422d0fa00951619230925f6c37e9a02` passed **349 tests,
+3.72s** with clean before/after state; harness wall time was **7.250s**. Contracts
+cover exact-schema acceptance plus absent, malformed, extra, reordered,
+boolean/integer-confused, retained and authority/contact-claim negatives in both
+consumer paths. Artifact: `.e2e-artifacts/development-lease-consumers-clean-001.json`;
+test-log SHA-256
+`5777fc77a59507f97d345aa144cfe5e8d37294b229cfef6a63052c0ccfa875cb`.
+
+A frozen-source offline artifact check loaded bounded live-002's original
+`provisioned` report, SHA-256
+`bbb0885709cf49b9a8f8cc93e084f8bc0991829e5d79a9330da891e3945b1c3a`.
+That report predates `lease_snapshot`; the current planner rejected it with
+`DevelopmentError`, wrote no registry and contacted no server/database. The
+historical product result remains unchanged at its original version. Artifact-check
+SHA-256: `bfe9dd2ac6a098931a5e706da52a2d3cd816f06eca317b3a3f63aad33396972f`.
+
+No current producer→consumer live placement or graphical run was performed, so
+current end-to-end placement and graphical evidence remain pending. This policy
+increment proves strict local receipt consumption only—not account offline state,
+lease atomicity, reset/reprovisioning authority, graphical compatibility or
+shared-world cleanliness. No full gate, soak or platform sweep ran; overall goal
+remains incomplete.
 
 ## Dedicated provisioning has one cooperative success deadline
 
@@ -799,11 +840,11 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and terminal exact-lease snapshots; current bounded provisioning and earlier binding live audits | Implemented and positive-path live-verified on owned runtimes; embedded terminal lease snapshot postdates live evidence and expiry/no-retry paths are synthetic; worker exit, server closure and local lease state remain distinct and grant no adoption/reset authority |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; current bounded provisioning and earlier binding live audits | Implemented and positive-path live-verified on owned runtimes; strict terminal lease producer/consumer chain postdates live evidence and expiry/no-retry paths are synthetic; worker exit, server closure and local lease state remain distinct and grant no adoption/reset authority |
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit-receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh nested and outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit and terminal-lease receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; new decline/inventory flags have headless, not graphical, live coverage |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
