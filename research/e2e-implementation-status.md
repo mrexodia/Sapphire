@@ -167,6 +167,47 @@ lifecycle enforcement rather than gameplay, server cleanup, fixture correctness,
 hosted execution or hard-kill proof. No full gate, soak or platform sweep ran;
 overall goal remains incomplete.
 
+## Managed-host and graphical consumers reject legacy exit-only booleans
+
+Feature **`c15f1af94`** moves strict normal-worker receipt validation into
+`support/development.py`, leaving `ObservedWorker` as the producer and making the
+same contract available without an import cycle. Managed-host checks now require
+the bound ready `status.json` to contain a valid `worker_preflight_exit` in
+addition to owner PID/creation time, deadline, endpoint, protocol and worker hash.
+Missing, malformed, boolean-valued or nonzero receipts fail before runner or
+provisioner authentication. This remains a cooperating local artifact check, not
+a signature, server lock or atomic process-loss fence.
+
+`support/client_development.py::require_graphical_check` now also requires the
+normal runner's exact `worker_exit`, in addition to released leases,
+`worker_closed`, every requested movement/social/reconnect/viewer result and the
+same GM0 viewer identity at both checkpoints. A legacy summary containing only
+`worker_closed:true` cannot close the current graphical bridge. Native process
+exit still does not replace each normal logout/despawn/server-closure observation.
+`DEVELOPMENT.md` and `REAL_CLIENT.md` document both distinctions.
+
+Combined host/graphical-policy/client-smoke/worker/provisioning/deadline contracts
+passed **283 tests, 2.82s** in the feature worktree and **283 tests, 2.53s** from
+frozen clean `c15f1af94`. Negatives cover every receipt lifecycle boolean,
+zero/boolean PID, nonzero/boolean return code, wrong scope and absent receipt, plus
+unchanged owner/binding/subcheck/viewer policies. Artifacts:
+`development-exit-consumers-{contracts-001,clean-timings,source}.json` and its
+frozen source.
+
+A post-commit artifact check loaded graphical bridge004's original passed normal-
+runner summary (SHA-256
+`c6d65ae5084e4cf5d38562a3df1eb2011a986ac7f7ab2c14479c33c9b453aa4f`).
+That historical report has `worker_closed:true` but predates `worker_exit`; the
+current validator rejected it with `DevelopmentError`. This does not erase or
+upgrade the original version's inspected graphical observations. It proves only
+that the stricter current coordinator requires fresh evidence. Artifact:
+`development-exit-consumers-artifact-check-001.json`.
+
+No graphical client, server, endpoint, account or gameplay operation was run for
+this policy increment. Current-code graphical execution, user's existing shared
+deployment, server-side exclusion and hard-kill behavior remain pending. No full
+gate, soak or platform sweep ran; overall goal remains incomplete.
+
 ## Shared CLI cooperative deadline: session success budget
 
 Feature **`5ffe7ad43`** adds `support/development_deadline.py`, focused contracts
@@ -565,7 +606,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `support/client_development.py`; client-development-live-004 | Verified narrow owned-guest bridge, not user's existing shared deployment or continuous/rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `support/client_development.py`; client-development-live-004 plus current strict exit-receipt policy | Historical narrow owned-guest bridge verified at its version; current validator rejects that legacy summary pending fresh graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; new decline/inventory flags have headless, not graphical, live coverage |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results | Verified for implemented operations; not a substitute for the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
