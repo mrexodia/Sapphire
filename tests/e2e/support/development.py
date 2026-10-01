@@ -50,7 +50,7 @@ class Timings:
                               "outcome": outcome})
 
 
-def validate_profile(profile):
+def validate_profile(profile, *, require_worker=True):
     # No arbitrary URLs, redirects, DB credentials, server secrets or lifecycle options.
     required = {"version", "mode", "protocol", "worker", "api_port", "lobby_port",
                 "territory", "accounts"}
@@ -65,7 +65,8 @@ def validate_profile(profile):
             raise DevelopmentError("ports must be integers in 1..65535")
     if type(profile["territory"]) is not int or profile["territory"] not in {130, 131, 140, 141}:
         raise DevelopmentError("a supported public territory is required")
-    if not isinstance(profile["worker"], str) or not Path(profile["worker"]).is_file():
+    if (not isinstance(profile["worker"], str) or not profile["worker"]
+            or (require_worker and not Path(profile["worker"]).is_file())):
         raise DevelopmentError("worker executable is missing")
     if "host_session" in profile:
         session = profile["host_session"]
