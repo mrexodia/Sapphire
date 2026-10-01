@@ -11,7 +11,8 @@ import pytest
 
 from . import provision_development, run_development, serve_development
 from .inspect_development_host import main as inspect_host_main
-from .support.development import DevelopmentError, authenticate, check_managed_host, validate_profile
+from .support.development import (DevelopmentError, authenticate, check_managed_host,
+                                  require_managed_host_binding, validate_profile)
 from .support.development_host_result import (SCOPE as HOST_RESULT_SCOPE,
                                               inspect_owned_development_host)
 from .support.development_party import BOUND_METHODS
@@ -339,9 +340,36 @@ def managed_profile(tmp_path):
 
 
 def test_managed_profile_requires_live_owner_and_exact_binding(managed_profile):
-    profile, _, _ = managed_profile
+    profile, status, path = managed_profile
     validate_profile(profile)
-    check_managed_host(profile)
+    receipt = check_managed_host(profile)
+    assert receipt == {"managed":True,"verified":True,
+        "scope":"cooperating-owned-host-ready-binding-not-server-session-lock",
+        "session_id":"a" * 32,
+        "status_sha256":hashlib.sha256(path.read_bytes()).hexdigest(),
+        "owner_pid":status["owner_pid"],"owner_created":status["owner_created"],
+        "deadline_monotonic":status["deadline_monotonic"],
+        "api_port":5000,"lobby_port":54994,
+        "worker_sha256":status["worker_sha256"],"preflight_worker_pid":12345}
+
+
+def test_retained_managed_host_pair_rejects_type_confusion_or_changed_finish(managed_profile):
+    profile, _, _ = managed_profile
+    receipt = check_managed_host(profile)
+    value = {"requested":True,"verified":True,"start":receipt,
+             "finish":copy.deepcopy(receipt),"same_binding_verified":True}
+    assert require_managed_host_binding(value, True) == value
+    mutations = [
+        lambda row:row.update(verified=1),
+        lambda row:row["finish"].update(owner_pid=True),
+        lambda row:row["finish"].update(status_sha256="0" * 64),
+        lambda row:row["start"].update(preflight_worker_pid=0),
+        lambda row:row.update(extra=True),
+    ]
+    for mutate in mutations:
+        invalid = copy.deepcopy(value); mutate(invalid)
+        with pytest.raises(DevelopmentError):
+            require_managed_host_binding(invalid, True)
 
 
 @pytest.mark.parametrize("patch", [{"status": "stopped"}, {"status": "failed"}, {"session_id": "b" * 32},

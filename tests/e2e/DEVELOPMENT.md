@@ -115,7 +115,13 @@ Exported profiles bind the exact host session, owner PID **and creation time**,
 expiry, endpoints, worker hash and successful exact-owned preflight-worker exit.
 Runners/provisioners reject stopped, expired, orphaned, legacy-without-exit-proof
 or mismatched bindings **before authentication**, and HTTP operations recheck
-them. These are cooperating local-process checks, not server-side locks,
+them. Managed runs now retain sanitized start and completion receipts containing
+the exact session/status hash, owner identity, deadline, endpoints, worker hash and
+preflight-worker PID. Success requires typed equality at completion before lease
+release; a stopped/replaced/changed host fails and retains recovery leases (and
+provisioned credentials) rather than claiming a completed run. External profiles
+retain an explicit `external-shared-server-without-owned-host-binding` boundary and
+make no equivalent ownership claim. These are cooperating local-process checks, not server-side locks,
 authentication, cross-host exclusion, or atomic protection against process loss
 mid-operation. Coordinator hard-kill cleanup remains unverified; retained
 private runtimes/leases need manual ownership verification, never lease stealing.

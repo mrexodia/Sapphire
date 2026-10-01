@@ -13,7 +13,7 @@ import uuid
 
 from .support.development import (AccountLease, DevelopmentError, MOVEMENT_SCOPE, Timings,
                                   authenticate, check_managed_host, idle_state, movement_route,
-                                  validate_profile, witnessed)
+                                  require_managed_host_binding, validate_profile, witnessed)
 from .support.worker import Bot, Worker
 from .support.development_deadline import RunDeadline, DeadlineWorker
 from .support.development_worker_exit import ObservedWorker
@@ -36,7 +36,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
     validate_profile(profile)
-    check_managed_host(profile)
+    host_start = check_managed_host(profile)
     validate_viewer_name(viewer_name, profile["accounts"])
     if max_seconds is not None and (type(max_seconds) is not int or not 1 <= max_seconds <= 900):
         raise DevelopmentError("max_seconds must be an integer in 1..900")
@@ -84,6 +84,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                                       "scope": VIEWER_SCOPE,
                                       "viewer_login_or_control_performed": False},
               "world_restart_performed": False,
+              "managed_host_binding": {"requested":host_start["managed"],
+                  "verified":False,"start":host_start,"finish":None,
+                  "same_binding_verified":False},
               "protocol": profile["protocol"], "territory": profile["territory"],
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
               "catalog_sha256": catalog_hash, "movement_waypoints_per_cycle": len(route),
@@ -278,6 +281,15 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                     for bot in bots:
                         bot.close()
             report["worker_closed"] = True
+        if host_start["managed"]:
+            with timings.phase("managed_host_completion_binding"):
+                host_finish = check_managed_host(profile)
+                report["managed_host_binding"]["finish"] = host_finish
+                if host_finish != host_start:
+                    raise DevelopmentError("managed development host binding changed during run")
+                report["managed_host_binding"].update(
+                    verified=True, same_binding_verified=True)
+        require_managed_host_binding(report["managed_host_binding"], host_start["managed"])
         if deadline is not None:
             with timings.phase("run_deadline_completion"):
                 deadline.complete()

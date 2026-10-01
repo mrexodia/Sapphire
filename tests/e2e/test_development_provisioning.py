@@ -1,4 +1,5 @@
 """Provisioning control-flow/ownership contracts; never connects to a server."""
+import copy
 import json
 import os
 from pathlib import Path
@@ -55,6 +56,15 @@ class ProvisionWorker:
         self.closed = True
 
 
+def managed_receipt(session="a"):
+    return {"managed":True,"verified":True,
+            "scope":"cooperating-owned-host-ready-binding-not-server-session-lock",
+            "session_id":session * 32,"status_sha256":"b" * 64,
+            "owner_pid":123,"owner_created":1000.0,"deadline_monotonic":2000.0,
+            "api_port":5000,"lobby_port":54994,"worker_sha256":"c" * 64,
+            "preflight_worker_pid":456}
+
+
 def execute(server, tmp_path, *, fake=None, register=None, login=None):
     fake = fake or ProvisionWorker()
     output, artifacts = tmp_path / "private.json", tmp_path / "artifacts"
@@ -99,6 +109,10 @@ def test_success_is_provisioning_not_public_world_ready(server, tmp_path):
     assert not result["ready_for_shared_checks"] and not result["administrative_placement_performed"]
     assert not result["database_access"] and not result["server_processes_owned"]
     assert result["credential_profile_saved"] and result["worker_closed"] and fake.closed
+    assert result["managed_host_binding"] == {"requested":False,"verified":False,
+        "start":{"managed":False,"verified":False,
+                 "scope":"external-shared-server-without-owned-host-binding"},
+        "finish":None,"same_binding_verified":False}
     assert result["worker_exit"] == {
         "context_entered": True, "context_exit_attempted": True, "context_exit_completed": True,
         "process_exit_observed": True, "scope": "owned-native-worker-exit-not-server-session-closure",
@@ -119,6 +133,29 @@ def test_success_is_provisioning_not_public_world_ready(server, tmp_path):
     assert all(account["password"] not in encoded for account in saved["accounts"])
     if os.name != "nt":
         assert stat.S_IMODE((tmp_path / "private.json").stat().st_mode) == 0o600
+
+
+def test_provisioning_binds_same_managed_host_at_completion(server, tmp_path, monkeypatch):
+    receipt = managed_receipt()
+    monkeypatch.setattr(provision_development, "check_managed_host",
+                        lambda _:copy.deepcopy(receipt))
+    result, _, _ = execute(server, tmp_path)
+    assert result["status"] == "provisioned"
+    assert result["managed_host_binding"] == {"requested":True,"verified":True,
+        "start":receipt,"finish":receipt,"same_binding_verified":True}
+
+
+def test_changed_managed_host_during_provisioning_retains_recovery_state(
+        server, tmp_path, monkeypatch):
+    calls = []
+    def binding(_):
+        calls.append(None)
+        return managed_receipt("a" if len(calls) == 1 else "b")
+    monkeypatch.setattr(provision_development, "check_managed_host", binding)
+    result, fake, _ = execute(server, tmp_path)
+    assert result["status"] == "failed" and result["lease_retained"] and fake.closed
+    assert result["failure_stage"] == "managed_host_completion_binding"
+    assert result["credential_profile_saved"]
 
 
 def test_uncertain_creation_never_retries_adopts_or_deletes(server, tmp_path):

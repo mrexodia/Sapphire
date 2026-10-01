@@ -116,6 +116,15 @@ class FakeWorker:
         self.closed = True
 
 
+def managed_receipt(session="a"):
+    return {"managed":True,"verified":True,
+            "scope":"cooperating-owned-host-ready-binding-not-server-session-lock",
+            "session_id":session * 32,"status_sha256":"b" * 64,
+            "owner_pid":123,"owner_created":1000.0,"deadline_monotonic":2000.0,
+            "api_port":5000,"lobby_port":54994,"worker_sha256":"c" * 64,
+            "preflight_worker_pid":456}
+
+
 def execute(profile, tmp_path, fake=None, **kwargs):
     fake = fake or FakeWorker()
     report = run_development.run(profile, tmp_path / "run", confirmed=True,
@@ -128,6 +137,10 @@ def test_shared_smoke_lifecycle_and_timings(profile, tmp_path):
     report, fake = execute(profile, tmp_path, cycles=2)
     assert report["status"] == "passed"
     assert report["scope"] == "shared-development-not-acceptance"
+    assert report["managed_host_binding"] == {"requested":False,"verified":False,
+        "start":{"managed":False,"verified":False,
+                 "scope":"external-shared-server-without-owned-host-binding"},
+        "finish":None,"same_binding_verified":False}
     assert report["worker_closed"] and fake.closed
     assert not report["lease_retained"] and not list((tmp_path / "leases").iterdir())
     assert report["lease_snapshot"]["state"] == "clear"
@@ -171,6 +184,28 @@ def test_viewer_finish_callback_runs_once_while_bots_are_active(profile, tmp_pat
     assert failed_worker.closed
     assert any(row["phase"] == "viewer_finish_callback" and row["outcome"] == "failed"
                for row in failed["timings"])
+
+
+def test_managed_host_binding_is_same_at_runner_completion(profile, tmp_path, monkeypatch):
+    receipt = managed_receipt()
+    monkeypatch.setattr(run_development, "check_managed_host", lambda _:copy.deepcopy(receipt))
+    report, _ = execute(profile, tmp_path)
+    assert report["status"] == "passed"
+    assert report["managed_host_binding"] == {"requested":True,"verified":True,
+        "start":receipt,"finish":receipt,"same_binding_verified":True}
+    assert any(row["phase"] == "managed_host_completion_binding" for row in report["timings"])
+
+
+def test_changed_managed_host_binding_fails_and_retains_leases(profile, tmp_path, monkeypatch):
+    calls = []
+    def binding(_):
+        calls.append(None)
+        return managed_receipt("a" if len(calls) == 1 else "b")
+    monkeypatch.setattr(run_development, "check_managed_host", binding)
+    report, fake = execute(profile, tmp_path)
+    assert report["status"] == "failed" and report["lease_retained"] and fake.closed
+    assert report["failure_stage"] == "managed_host_completion_binding"
+    assert report["managed_host_binding"]["same_binding_verified"] is False
 
 
 def test_failed_precondition_retains_leases_and_closes_worker(profile, tmp_path):

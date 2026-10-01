@@ -2,7 +2,8 @@
 import hashlib
 import json
 
-from .development import DevelopmentError, validate_profile
+from .development import (DevelopmentError, require_managed_host_binding,
+                          validate_profile)
 
 
 def provisioning_binding(profile, accounts):
@@ -35,6 +36,8 @@ def provisioning_binding(profile, accounts):
 
 
 def require_provisioning_binding(profile, report):
+    if profile.get("host_session") is not None:
+        require_managed_host_binding(report.get("managed_host_binding"), True)
     expected = provisioning_binding(profile, report.get("accounts"))
     if report.get("provisioning_binding") != expected:
         raise DevelopmentError("provisioning association missing or mismatched; do not synthesize legacy approval")

@@ -15,7 +15,9 @@ import time
 import uuid
 
 from .support.development import (AccountLease, DevelopmentError, Timings, authenticate,
-                                  create_account, received_character_identity, validate_profile, check_managed_host)
+                                  check_managed_host, create_account,
+                                  received_character_identity, require_managed_host_binding,
+                                  validate_profile)
 from .support.worker import Bot, Worker
 from .support.development_binding import provisioning_binding
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
@@ -66,7 +68,7 @@ def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
         raise DevelopmentError("explicit --create-new-bot-accounts opt-in is required")
     deadline = RunDeadline(max_seconds) if max_seconds is not None else None
     profile = new_profile(server)
-    check_managed_host(profile)
+    host_start = check_managed_host(profile)
     artifacts = Path(artifacts)
     if Path(output_profile).resolve().is_relative_to(artifacts.resolve()):
         raise DevelopmentError("credential profile must be outside the diagnostic artifact directory")
@@ -81,6 +83,9 @@ def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
               "administrative_placement_performed": False, "lease_retained": False,
               "credential_profile_saved": False, "worker_closed": False,
               "worker_exit": unobserved_worker_exit(),
+              "managed_host_binding": {"requested":host_start["managed"],
+                  "verified":False,"start":host_start,"finish":None,
+                  "same_binding_verified":False},
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
               "accounts": []}
     acquired = False
@@ -138,6 +143,15 @@ def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
                         bot.close()
                         row["logout_server_close_verified"] = True
             report["worker_closed"] = True
+        if host_start["managed"]:
+            with timings.phase("managed_host_completion_binding"):
+                host_finish = check_managed_host(profile)
+                report["managed_host_binding"]["finish"] = host_finish
+                if host_finish != host_start:
+                    raise DevelopmentError("managed development host binding changed during provisioning")
+                report["managed_host_binding"].update(
+                    verified=True, same_binding_verified=True)
+        require_managed_host_binding(report["managed_host_binding"], host_start["managed"])
         if deadline is not None:
             with timings.phase("provisioning_deadline_completion"):
                 deadline.complete()

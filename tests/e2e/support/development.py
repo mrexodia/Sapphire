@@ -94,11 +94,15 @@ def validate_profile(profile, *, require_worker=True):
     return profile
 
 
+MANAGED_HOST_SCOPE = "cooperating-owned-host-ready-binding-not-server-session-lock"
+EXTERNAL_HOST_SCOPE = "external-shared-server-without-owned-host-binding"
+
+
 def check_managed_host(profile, *, clock=time.monotonic, process=psutil.Process):
-    """Reject expired/stopped/orphaned managed profiles without contacting a server."""
+    """Reject expired/stopped/orphaned managed profiles and return narrow provenance."""
     binding = profile.get("host_session")
     if binding is None:
-        return
+        return {"managed":False,"verified":False,"scope":EXTERNAL_HOST_SCOPE}
     try:
         status_path = Path(binding["path"])
         if status_path.with_name("stop").exists():
@@ -125,8 +129,59 @@ def check_managed_host(profile, *, clock=time.monotonic, process=psutil.Process)
         if hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest() != status.get("worker_sha256"):
             raise ValueError()
         require_normal_worker_exit(status, "worker_preflight_exit")
+        return {"managed":True,"verified":True,"scope":MANAGED_HOST_SCOPE,
+                "session_id":status["session_id"],"status_sha256":hashlib.sha256(raw).hexdigest(),
+                "owner_pid":pid,"owner_created":created,"deadline_monotonic":deadline,
+                "api_port":status["api_port"],"lobby_port":status["lobby_port"],
+                "worker_sha256":status["worker_sha256"],
+                "preflight_worker_pid":status["worker_preflight_exit"]["process_id"]}
     except Exception:
         raise DevelopmentError("managed development host is unavailable, expired or does not match this profile") from None
+
+
+def require_managed_host_binding(value, required):
+    """Validate one runner/provisioner start/end host receipt without claiming exclusion."""
+    if type(required) is not bool or not isinstance(value, dict):
+        raise DevelopmentError("managed host run binding is malformed")
+    fields = {"requested", "verified", "start", "finish", "same_binding_verified"}
+    if set(value) != fields or value.get("requested") is not required:
+        raise DevelopmentError("managed host run binding is malformed")
+    if not required:
+        expected = {"requested":False,"verified":False,
+            "start":{"managed":False,"verified":False,"scope":EXTERNAL_HOST_SCOPE},
+            "finish":None,"same_binding_verified":False}
+        if value != expected:
+            raise DevelopmentError("external shared-server boundary is malformed")
+        return value
+    start, finish = value.get("start"), value.get("finish")
+    receipt_fields = {"managed", "verified", "scope", "session_id", "status_sha256",
+                      "owner_pid", "owner_created", "deadline_monotonic", "api_port",
+                      "lobby_port", "worker_sha256", "preflight_worker_pid"}
+    if (value.get("verified") is not True or value.get("same_binding_verified") is not True
+            or not isinstance(start, dict) or set(start) != receipt_fields
+            or type(finish) is not dict or set(finish) != receipt_fields
+            or any(type(finish.get(key)) is not type(start.get(key)) for key in receipt_fields)
+            or finish != start
+            or start.get("managed") is not True or start.get("verified") is not True
+            or start.get("scope") != MANAGED_HOST_SCOPE
+            or not isinstance(start.get("session_id"), str) or len(start["session_id"]) != 32
+            or any(char not in "0123456789abcdef" for char in start["session_id"])
+            or not isinstance(start.get("status_sha256"), str) or len(start["status_sha256"]) != 64
+            or any(char not in "0123456789abcdef" for char in start["status_sha256"])
+            or type(start.get("owner_pid")) is not int or start["owner_pid"] <= 0
+            or type(start.get("owner_created")) not in (int, float)
+            or not math.isfinite(start["owner_created"]) or start["owner_created"] <= 0
+            or type(start.get("deadline_monotonic")) not in (int, float)
+            or not math.isfinite(start["deadline_monotonic"])
+            or any(type(start.get(key)) is not int or not 0 < start[key] <= 65535
+                   for key in ("api_port", "lobby_port"))
+            or start["api_port"] == start["lobby_port"]
+            or not isinstance(start.get("worker_sha256"), str) or len(start["worker_sha256"]) != 64
+            or any(char not in "0123456789abcdef" for char in start["worker_sha256"])
+            or type(start.get("preflight_worker_pid")) is not int
+            or start["preflight_worker_pid"] <= 0):
+        raise DevelopmentError("managed host start/end binding is incomplete or changed")
+    return value
 
 
 class AccountLease:
