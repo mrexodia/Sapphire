@@ -15,8 +15,8 @@ run is required to use this lane.
 1. Use matching Sapphire 3.3 server/client data and a built headless worker.
 2. Prepare **two dedicated bot accounts**, with usernames beginning `e2e_`, and
    one existing non-GM character per account. Do not use your own player account.
-   Account/character provisioning and server-side online-state exclusion are not
-   implemented by this first runner; use your existing development setup tools.
+   Use the new-account provisioning command below, or existing development setup
+   tools. Server-side online-state exclusion is not implemented by this runner.
 3. Put both characters in the same supported public territory (130, 131, 140 or
    141), near enough to receive each other's spawn and Say. Complete/exit opening
    scenes first. Leave them offline before starting the runner. Do not log these
@@ -28,6 +28,47 @@ run is required to use this lane.
 5. Keep the credential profile and artifacts private and untracked. The runner
    never copies the profile or HTTP responses into its summary. Worker journals
    contain received actors/chat, so do not publish them indiscriminately.
+
+## Provision new dedicated accounts and characters
+
+Create a private `.e2e-dev-server.json` containing the example profile's server
+fields (`version`, `mode`, `protocol`, `worker`, `api_port`, `lobby_port`,
+`territory`, optionally `quest_catalog`), **without `accounts`**. Then run:
+
+```powershell
+python -m tests.e2e.provision_development --server-profile .e2e-dev-server.json `
+  --create-new-bot-accounts --output-profile .e2e-dev.json `
+  --artifacts .e2e-artifacts/dev-provision-001
+```
+
+This explicitly creates **two NEW accounts and Gladiator characters** through
+normal HTTP `createAccount`, separate HTTP login, and encrypted lobby creation.
+It never adopts an existing username or uses the server secret/DB/API fixture
+`createCharacter`. Each character must appear in the refreshed lobby list and
+enter the world as non-GM; normal logout/server connection closure follows.
+No normal gameplay/progression coverage is claimed for this setup command.
+
+The output credential file is created exclusively and flushed **before any
+network mutations**. It must not exist, its parent directory must exist, and it
+must be outside the diagnostic artifact directory. Inside the checkout it must
+be git-ignored. On POSIX it is created with mode 0600; on Windows use a private
+directory with appropriate inherited ACLs. It contains generated passwords: do
+not commit, paste or publish it. The artifact directory must also be new.
+
+`provisioning-summary.json` records creation request/receipt, separate successful
+login, refreshed-lobby/world confirmation and logout stages. Errors preserve the
+credential file and local leases; inspect partial results instead of retrying
+creation or deleting characters automatically. No old character/account is
+modified, reset or removed. Account creation is sequential, not a claim of
+multi-process allocation safety. Interrupted/hard-killed runs may lack a complete
+summary; retained credentials/leases do not prove crash consistency.
+
+**Provisioned is not public-world ready.** Fresh characters normally enter the
+opening territory. This command does not skip openings, teleport, grant levels,
+reset quests, or assert that the shared smoke preconditions hold. Its summary
+always says `ready_for_shared_checks: false`. Complete the opening or explicitly
+prepare public-world fixtures with your development tools before running the
+shared checks. Targeted administrative placement/reprovisioning is still pending.
 
 ## Run a short check
 
@@ -88,8 +129,9 @@ only the checks actually executed against that shared world. It does not prove
 isolation, fixture reset, persistence across restart, combat/progression, capacity,
 graphical-client compatibility, or acceptance coverage.
 
-World reset commands and account/character provisioning are separate follow-up
-work. A future reset must be development-only, explicitly targeted, require
+World reset commands and reprovisioning of existing characters remain separate
+follow-up work. New-account provisioning is described above. A future reset must
+be development-only, explicitly targeted, require
 exclusive ownership/offline actors as appropriate, and record administrative
 preparation separately from normal gameplay evidence. Broad world resets must not
 interrupt a human viewer or be silently run between tests.
@@ -112,5 +154,5 @@ coverage or acceptance verifier.
 Synthetic checks (no server, no credential profile):
 
 ```powershell
-python -m pytest tests/e2e/test_development.py -q
+python -m pytest tests/e2e/test_development.py tests/e2e/test_development_provisioning.py -q
 ```

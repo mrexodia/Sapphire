@@ -103,9 +103,11 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def authenticate(profile, account):
+def _account_session(profile, account, method):
+    if method not in {"login", "createAccount"}:
+        raise DevelopmentError("unsupported development account operation")
     request = urllib.request.Request(
-        f"http://127.0.0.1:{profile['api_port']}/sapphire-api/lobby/login",
+        f"http://127.0.0.1:{profile['api_port']}/sapphire-api/lobby/{method}",
         data=json.dumps({"username": account["username"], "pass": account["password"]}).encode(),
         headers={"Content-Type": "application/json"})
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
@@ -122,7 +124,17 @@ def authenticate(profile, account):
         return auth
     except Exception:
         # Never publish response bodies, request data, passwords or session tokens.
-        raise DevelopmentError("HTTP login failed or lobby endpoint differs from configured loopback endpoint") from None
+        raise DevelopmentError("HTTP account operation failed or lobby endpoint differs from configured loopback endpoint") from None
+
+
+def authenticate(profile, account):
+    return _account_session(profile, account, "login")
+
+
+def create_account(profile, account):
+    # Fresh login is still required separately; a creation response is not proof
+    # of a usable persisted account or of any character/world state.
+    return _account_session(profile, account, "createAccount")
 
 
 def position(value):

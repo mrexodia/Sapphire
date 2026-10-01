@@ -1,0 +1,147 @@
+"""Create NEW dedicated dev bot accounts/characters; never adopt/reset existing ones.
+
+Credentials are reserved in a new private profile before any network mutation.
+This command does not skip openings, grant progress or prepare public-world state.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import secrets
+import string
+import subprocess
+import time
+import uuid
+
+from .support.development import (AccountLease, DevelopmentError, Timings, authenticate,
+                                  create_account, validate_profile)
+from .support.worker import Bot, Worker
+
+REPO = Path(__file__).resolve().parents[2]
+
+
+def new_profile(server):
+    required = {"version", "mode", "protocol", "worker", "api_port", "lobby_port", "territory"}
+    if not isinstance(server, dict) or not required <= server.keys() or server.keys() - (required | {"quest_catalog"}):
+        raise DevelopmentError("provisioning requires a server-only profile, without existing accounts")
+    profile = dict(server)
+    profile["accounts"] = [{"username": "e2e_dev_" + uuid.uuid4().hex,
+                            "password": secrets.token_hex(24),
+                            "character": "Tester " + "".join(secrets.choice(string.ascii_uppercase) for _ in range(12))}
+                           for _ in range(2)]
+    return validate_profile(profile)
+
+
+def reserve_private_profile(path, profile):
+    path = Path(path).resolve()
+    if path.is_relative_to(REPO):
+        # Refuse accidental credential publication inside the checkout, including
+        # a tracked file that happens to match an ignore rule.
+        ignored = subprocess.run(["git", "check-ignore", "--quiet", "--", str(path)], cwd=REPO,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
+        if not ignored:
+            raise DevelopmentError("credential output inside the checkout must be git-ignored")
+    # No overwrite, no symlink following; POSIX 0600, inherited directory ACLs on Windows.
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        json.dump(profile, stream, indent=2)
+        stream.write("\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Worker,
+        register=create_account, login=authenticate, lease_root=None):
+    if not confirmed:
+        raise DevelopmentError("explicit --create-new-bot-accounts opt-in is required")
+    profile = new_profile(server)
+    artifacts = Path(artifacts)
+    if Path(output_profile).resolve().is_relative_to(artifacts.resolve()):
+        raise DevelopmentError("credential profile must be outside the diagnostic artifact directory")
+    artifacts.mkdir(parents=True, exist_ok=False)
+    run_id, start = uuid.uuid4().hex, time.monotonic()
+    timings = Timings()
+    lease = AccountLease(profile, run_id, lease_root)
+    report = {"version": 1, "run_id": run_id, "status": "failed",
+              "scope": "shared-development-provisioning-not-gameplay",
+              "ready_for_shared_checks": False, "server_identity_verified": False,
+              "server_processes_owned": False, "database_access": False,
+              "administrative_placement_performed": False, "lease_retained": False,
+              "credential_profile_saved": False, "worker_closed": False,
+              "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
+              "accounts": []}
+    acquired = False
+    try:
+        with timings.phase("reserve_private_credential_profile"):
+            # Save generated credentials before making any requests. On uncertain
+            # network results the operator can still identify/recover the accounts.
+            reserve_private_profile(output_profile, profile)
+            report["credential_profile_saved"] = True
+        with timings.phase("account_lease"):
+            lease.acquire()
+            acquired = True
+            report["lease_retained"] = True
+        with timings.phase("worker_session_including_close"):
+            with worker_factory(Path(profile["worker"]), artifacts / "worker") as worker:
+                for index, account in enumerate(profile["accounts"]):
+                    row = {"slot": index, "character": account["character"],
+                           "account_creation": "not_started", "character_creation": "not_started"}
+                    report["accounts"].append(row)
+                    with timings.phase(f"create_account_{index}"):
+                        row["account_creation"] = "requested_outcome_unknown"
+                        register(profile, account)
+                        row["account_creation"] = "acknowledged"
+                    with timings.phase(f"fresh_http_login_{index}"):
+                        auth = login(profile, account)
+                        row["account_creation"] = "fresh_login_verified"
+                    bot = Bot(worker, f"provision-{index}")
+                    with timings.phase(f"lobby_create_and_world_{index}"):
+                        row["character_creation"] = "requested_outcome_unknown"
+                        state = bot.create_character_via_lobby(auth, account["character"], creation_class=1)
+                        row.update(character_creation="refreshed_lobby_and_world_verified",
+                                   entity_id=state["entity_id"], territory=state["territory"],
+                                   gm_rank=state["gm_rank"])
+                    with timings.phase(f"logout_{index}"):
+                        bot.logout(wait_server_close=True)
+                        bot.close()
+                        row["logout_server_close_verified"] = True
+            report["worker_closed"] = True
+        with timings.phase("release_accounts"):
+            lease.release()
+            report["lease_retained"] = False
+        report["status"] = "provisioned"
+        report["next_step"] = "Opening/public-world preparation is still required before run_development. No placement or reset command was run."
+    except (Exception, KeyboardInterrupt) as error:
+        report["error_type"] = type(error).__name__
+        report["failure_stage"] = next((row["phase"] for row in timings.rows
+                                         if row["outcome"] == "failed"), "unknown")
+        if acquired:
+            report["recovery"] = "Keep the private credential profile; inspect partial account/character state and verify bots offline before releasing this run's leases. Do not retry creation automatically."
+    finally:
+        report["elapsed_seconds"] = time.monotonic() - start
+        report["timings"] = timings.rows
+        (artifacts / "provisioning-summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    return report
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--server-profile", required=True, help="Private server-only JSON; no existing accounts")
+    parser.add_argument("--output-profile", required=True, help="NEW private credential file; parent must exist")
+    parser.add_argument("--artifacts", required=True, help="NEW private artifact directory")
+    parser.add_argument("--create-new-bot-accounts", action="store_true")
+    args = parser.parse_args(argv)
+    try:
+        server = json.loads(Path(args.server_profile).read_text(encoding="utf-8"))
+        report = run(server, args.output_profile, args.artifacts, confirmed=args.create_new_bot_accounts)
+    except (Exception, KeyboardInterrupt) as error:
+        print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))
+        return 1
+    print(json.dumps({"status": report["status"], "scope": report["scope"],
+                      "ready_for_shared_checks": False, "artifacts": args.artifacts}))
+    return 0 if report["status"] == "provisioned" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
