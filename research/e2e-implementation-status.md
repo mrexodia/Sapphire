@@ -1360,6 +1360,54 @@ environment reviewers, runner-group exclusivity, cancellation destruction and th
 current Linux gate remain pending. No gameplay, full gate, soak or platform sweep
 ran.
 
+## Isolated cleanup binds every owned service process generation
+
+Feature **`c0640c42b`** extends disposable `Environment` lifecycle evidence beyond
+an empty Python process map and removed runtime. Every database, API, lobby and
+world launch now records exact process name, contiguous per-name generation and
+positive PID. Normal `_stop` retains whether that exact process was still running,
+one terminate request, explicit bounded kill fallback if needed, observed integer
+return code and narrow scope
+`exact-owned-isolated-process-teardown-not-graceful-server-exit`. World restarts
+create another generation rather than overwriting identity. Duplicate active-name
+start is rejected.
+
+On close, private `process-lifecycle.json` binds all starts and teardowns before
+runtime removal. The strict CI gate revalidates exact typed in-memory rows against
+that file and requires every generation exactly once, all four service names,
+contiguous generations, running-before-cleanup, terminate request and observed
+integer exit. Its allowlisted public summary adds only
+`process_cleanup_verified`; PIDs and return codes remain private. Missing, stale,
+foreign, duplicate, boolean-confused or spontaneously exited rows prevent a green
+gate. Forced process cleanup remains distinct from graceful server shutdown,
+server-session exclusion, cache quiescence and crash/cancellation cleanup.
+
+Frozen, remote-free source **`c0640c42bfae3f20232e8410e3aed935b3ae5d28`**
+passed **60 focused tests in 1.26s**. Tests cover terminate→kill fallback, exact
+world generation2 after restart, all four required names, missing/mismatched rows,
+boolean PID/request/return-code confusion, artifact mismatch, retained runtime and
+live process. Test-log SHA-256:
+`694f5c6b3eb50d421a0dc76ae8ae4f051779006aacd9f01d7da0c2aec2cb088c`.
+Artifacts: `isolated-process-teardown-clean-{source.json,python.log}`.
+
+The first local aggregate supplied a nonexistent extensionless Windows worker path
+and produced 14 setup errors rather than native evidence; it remains failed in
+`isolated-process-teardown-verifier-input-failure.json`, SHA-256
+`b09f97512417db2dc350d285abc1951977728acbad8ce4d7cf78ae8c941e912f`.
+The corrected focused command required no worker fixture and did not relabel that
+failure.
+
+Read-only current policy rejects historical clean gate summary
+`ci-summary-proximity-aggro.json`: its earlier `cleanup_verified:true` predates the
+new private generation receipts and public `process_cleanup_verified` field.
+Rejection artifact SHA-256:
+`0b73eeb6645170c345482813b89f6fc03af247dcc4c174b68434949aadba4efb`.
+That historical gate remains valid only at its original cleanup scope.
+
+No service, database, account, worker, client, gameplay or gate operation ran.
+A new isolated gate is required for positive process-generation evidence; full
+gate, Linux/platform and hosted execution remain pending.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -3184,10 +3232,10 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
-| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; worker exit is not server-offline proof and broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md`; strict workflow-policy receipt | Authored repository controls are pinned/read-only/bounded and private dispatch remains protected/serialized in YAML; current isolated fifteen-case Windows gate passes and older nine-case Linux gate passes, but the expanded Linux gate remains red under observed delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md`; strict workflow/process-policy receipts | Authored repository controls are pinned/read-only/bounded and private dispatch remains protected/serialized in YAML; the last fifteen-case Windows gate passed before exact process-generation receipts were required and the older nine-case Linux gate passed, but current gate execution is pending and the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent lane live-verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
