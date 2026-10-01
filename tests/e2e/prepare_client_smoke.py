@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 from .support.catalog import load_quest_catalog
 from .support.client_smoke import CLIENT_SHA256, CLIENT_VERSION, REVIEW_CHECKS, validate_review
 from .support.environment import REPO, sha256
+from .support.client_snapshot import freeze_source
 
 LEGACY_DLLS = ("d3dx9_43.dll", "d3dx11_43.dll", "D3DCompiler_43.dll", "XINPUT1_3.dll",
                "XAPOFX1_5.dll", "XactEngine3_7.dll", "XAudio2_7.dll", "X3DAudio1_7.dll")
@@ -117,6 +118,9 @@ def prepare(profile_path, client_path, destination, crt_dirs=()):
     inputs, output = destination / "input", destination / "output"
     inputs.mkdir(parents=True)
     output.mkdir()
+    source_root = destination / "source"
+    source_manifest = freeze_source(REPO, source_root)
+    (inputs / "source.json").write_text(json.dumps(source_manifest, indent=2), encoding="utf-8")
     for source, relative in copies:
         target = inputs / relative
         target.parent.mkdir(exist_ok=True)
@@ -138,7 +142,7 @@ def prepare(profile_path, client_path, destination, crt_dirs=()):
         '$env:GIT_CONFIG_VALUE_0="C:/sapphire-repo"\nSet-Location C:/sapphire-repo\n'
         '& C:/e2e-python/python.exe -m tests.e2e.run_client_smoke *> C:/e2e-output/bootstrap.log\n',
         encoding="utf-8")
-    mappings = [(REPO, "C:/sapphire-repo", True), (inputs, "C:/e2e-input", True),
+    mappings = [(source_root, "C:/sapphire-repo", True), (inputs, "C:/e2e-input", True),
                 (output, "C:/e2e-output", False), (Path(sys.executable).parent, "C:/e2e-python", True),
                 (git_root, "C:/e2e-git", True), (data, "C:/e2e-sqpack", True),
                 (game / "movie", "C:/e2e-movie", True), (maria, "C:/e2e-mariadb", True),
@@ -146,6 +150,9 @@ def prepare(profile_path, client_path, destination, crt_dirs=()):
     (destination / "run.wsb").write_text(sandbox_xml(mappings), encoding="utf-8")
     manifest = {"version": 1, "status": "prepared_not_executed", "client_sha256": CLIENT_SHA256,
                 "config_sha256": sha256(destination / "run.wsb"),
+                "source_revision": source_manifest["revision"],
+                "source_manifest_sha256": sha256(inputs / "source.json"),
+                "working_tree_changes_included": False,
                 "inputs": {p.relative_to(inputs).as_posix(): sha256(p) for p in inputs.rglob("*") if p.is_file()}}
     (destination / "inputs.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return destination / "run.wsb"

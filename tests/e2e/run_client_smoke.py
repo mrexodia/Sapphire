@@ -13,7 +13,8 @@ import uuid
 
 from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, WITNESS_SAY, other_player,
                                    moved, validate_review)
-from .support.environment import Environment, sha256
+from .support.environment import Environment, sha256, REPO
+from .support.client_snapshot import verify_source
 from .support.worker import Worker, Bot
 
 INPUT = Path("C:/e2e-input")
@@ -50,6 +51,9 @@ def run():
     stage = "setup"
     root = Path("C:/e2e-client")
     try:
+        source_manifest = json.loads((INPUT / "source.json").read_text(encoding="utf-8"))
+        report["source_revision"] = verify_source(REPO, source_manifest)
+        report["source_manifest_sha256"] = sha256(INPUT / "source.json")
         if sha256(INPUT / "client" / "ffxiv_dx11.exe") != CLIENT_SHA256:
             raise ValueError("unsupported or modified client executable")
         report["client_sha256"] = CLIENT_SHA256

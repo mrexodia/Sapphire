@@ -41,11 +41,22 @@ For Debug builds, also supply the matching compiler's **x64** DebugCRT and CRT
 folders using repeated `--crt-dir`. This additionally stages `ucrtbased.dll` from
 System32. Conflicting DLL bytes and reused output directories fail. Nothing is
 launched by preparation; `inputs.json` says `prepared_not_executed` and hashes the
-staged inputs. Keep the source checkout unchanged while the guest runs: the
-repository is mapped read-only, not snapshotted.
+staged inputs. Preparation also makes an independent shallow checkout of the
+current **committed HEAD**, without host working-tree/staged/untracked changes,
+submodule fetches, hardlink/alternate dependencies or a configured remote.
+`input/source.json` records the revision and materialized source-file hashes;
+`inputs.json` binds that manifest. The guest maps this private snapshot read-only
+and checks its revision, cleanliness and hashes before fixture/process setup.
+Ignored extra files and unexpected materialized submodules are also rejected.
+
+Commit coordinator changes before preparing; uncommitted experiments are
+intentionally excluded. The original checkout may change afterward, but **do not
+edit the prepared bundle while it is in use**. This is reproducibility checking,
+not a signature/security boundary or native-binary source attestation. Native
+binaries and external read-only assets retain their separately recorded identities.
 
 Inspect `run.wsb`, then open it yourself. Networking, clipboard, audio/video input
-and printer redirection are disabled. Repository, Python, Git, MariaDB, game data,
+and printer redirection are disabled. Frozen coordinator repository, Python, Git, MariaDB, game data,
 navigation and prepared inputs are mapped read-only. Only this run's `output/`
 is writable. Both client and services use **guest loopback**, not host services.
 The guest creates its own Documents/game settings, client copy, database and
@@ -120,6 +131,8 @@ the owned Sandbox was discarded and its launcher/client checked exited. These
 were operator-driven UI checks, not an image-recognition or autonomous UI test.
 The status document records staged identities, review hash and disposal evidence.
 
+`test_client_snapshot.py` exercises local-only committed-source isolation and
+mismatch rejection; it does not launch a client or attest graphical behavior.
 `test_client_smoke.py` is asset-independent policy coverage only. It tests
 identity/ambiguity, fixture-state guards, movement bounds, finite positions,
 review binding and WSB isolation settings. Neither those contracts nor preparing
