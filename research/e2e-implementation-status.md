@@ -1284,6 +1284,43 @@ or disposal operation ran. Real Windows process-name/launcher behavior, current
 manual execution, both rendering reviews and composite disposal remain pending;
 no full gate, soak or platform sweep ran.
 
+## Exact graphical-client teardown is retained as cleanup evidence
+
+Fix **`d68ea780b`** binds the final intentional guest cleanup of the unmodified
+client process. A successful run now requires the exact positive `client_pid` to
+remain alive after ordinary graphical logout, title-screen capture, final witness
+retirement and outer worker exit. During `finally`, the coordinator issues exactly
+one forced termination to that owned process, waits up to ten seconds, and retains
+version/PID, running-before-cleanup, request, observed-exit and integer-return-code
+fields under scope
+`exact-owned-title-screen-client-forced-cleanup-not-ui-exit-proof`. Natural exit
+before owned teardown, unknown/noninteger exit or failed termination changes a
+would-be pass to failed. No retry is added.
+
+The current-result inspector requires exact receipt shape, strict booleans, PID
+equality and observed integer return code. This proves bounded cleanup of the
+exact launched native process only. Forced termination is not normal client UI
+exit, server logout/offline exclusion, cache quiescence, Sandbox disposal or
+rendering evidence; those remain separate receipts.
+
+Frozen, remote-free source **`d68ea780b7775628b5ca09ecb98bbc26e80c3a8a`**
+passed **534 tests in 7.14s**. Negatives cover boolean PID/return code, mismatched
+PID, false running/request/exit fields, spontaneous post-verification exit and
+unknown return code after a forced request. Test-log SHA-256:
+`84730e9ac068d98a077b8e3227e910cc988dd4b3813ca7b39af4756da0119f20`.
+Artifacts: `client-process-teardown-clean-{source.json,python.log}`.
+
+Current policy correctly rejects `client-development-live-004`: it retained client
+PID5796 but no exact teardown receipt. Read-only rejection artifact
+`client-process-teardown-historical-rejection.json` has SHA-256
+`ebdcdea4c97aaa5bc635ea57fa5fce7f74a05f5512ad4094138601be714e0c1e`.
+This does not revoke the historical cleanup/disposal evidence at its original
+scope.
+
+No client, Sandbox, server, account, worker, endpoint, gameplay or disposal
+operation ran. A current manually attended execution and composite disposal remain
+pending; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -2090,7 +2127,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, an empty pre-launch baseline plus fresh exact-name graphical spawn, sequence-bound ordinary movement and Say receipts, a run-bound rendered-witness Say challenge, strict outer review plus fresh post-phase logout consumers, and a separate exact-frame manual title-screen review receipt, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, clear leases and exact worker exits, followed by a committed read-only current-result inspector and an exact no-preexisting-Sandbox launch/process-absence/manual-confirmation composite disposal verifier; current graphical execution and disposal remain pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, an empty pre-launch baseline plus fresh exact-name graphical spawn, sequence-bound ordinary movement and Say receipts, a run-bound rendered-witness Say challenge, strict outer review plus fresh post-phase logout consumers, and a separate exact-frame manual title-screen review receipt, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, a PID-bound observed forced teardown of the still-running title-screen client, clear leases and exact worker exits, followed by a committed read-only current-result inspector and an exact no-preexisting-Sandbox launch/process-absence/manual-confirmation composite disposal verifier; current graphical execution and disposal remain pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; separate exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage but is now required as a separate fresh current graphical-policy run; all current graphical execution awaits manual approval/assets |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
