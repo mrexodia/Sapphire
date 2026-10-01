@@ -759,6 +759,43 @@ owned-fixture runs is not a server-side offline/reset/adoption fence. A fresh
 manually attended current graphical run and explicit guest disposal remain pending;
 no full gate, soak or platform sweep ran.
 
+## Graphical bot reports retain exact shared-runner boundaries
+
+Fix **`7300ff317`** adds one common fail-closed metadata consumer before either
+current graphical bot result is accepted. Both reports must be version1,
+`sapphire-3.3`, exactly one cycle, and carry a lower-case 64-hex worker digest;
+server identity verification, server-process ownership, database access, account
+reset, administrative preparation wait/command attestation and world restart must
+all be explicitly false. The comprehensive run additionally requires a lower-case
+64-hex catalog digest, while the deliberately route-free decline run requires
+`catalog_sha256:null`. Missing values, booleans substituted for integers, malformed
+hashes, or administrative/owned-server results can no longer satisfy the graphical
+shared-development consumer.
+
+Frozen, remote-free source **`7300ff3172458967101855b9f0b0de1d37124249`**
+passed **456 tests in 3.71s**. Dedicated negatives apply each malformed boundary to
+both consumers. Test-log SHA-256:
+`da798a6ae83ecf135de28e3da47c6a95622a887cbd5602be9d2fd44d7cee642b`.
+Artifacts: `client-graphical-runner-scope-clean-{source.json,python.log}`.
+
+The same consumer accepted shared-runner metadata read-only from historical
+`client-development-live-004` and genuine `development-decline-live-001`, recorded
+in `client-graphical-runner-scope-live-artifact-check.json` (SHA-256
+`15bd21056da0f39fa66f5fbd57a4dc4a67961521ee9f6a3d35e074ac647235fc`).
+This is metadata compatibility only and does not upgrade either artifact to the
+current composite policy. The first attempted compatibility source,
+`development-placement-v2-live-001`, was correctly rejected because that placement
+run explicitly enabled administrative-preparation waiting; the retained failed
+probe has SHA-256
+`d032293ff2e995c67b9150dcc8d7cde5c6e443f2d6675018b068d119251a09a1`.
+No data was mutated and no fallback weakened the validator.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. These producer assertions and hashes do not prove
+server ownership, database isolation, absence of hidden external mutation, worker
+correctness or current graphical compatibility. A fresh attended graphical run
+remains pending; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1565,7 +1602,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines, clear leases and exact worker exits pending current graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines, clear leases and exact worker exits pending current graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; separate exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage but is now required as a separate fresh current graphical-policy run; all current graphical execution awaits manual approval/assets |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
