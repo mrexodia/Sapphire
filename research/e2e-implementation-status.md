@@ -2178,6 +2178,19 @@ passed **226 focused contracts with no skips in 17.96s**. Test-log SHA-256:
 These are synthetic consumer contracts; they do not establish that any real process
 exited, that runtime bytes were retained, or that failure evidence is authentic.
 
+Fix **`a77444333`** makes terminal-marker rejection recursive and filename-case
+independent in both standalone and combined private success consumers. This prevents
+a marker renamed or moved within its exact hashed artifact tree from being treated
+differently on Linux and Windows. Negative combined-gate evidence recomputes the
+public artifact-tree identity and synchronized private diagnostics after adding
+nested `Cleanup-Failure.JSON`; it is still rejected.
+
+Frozen, remote-free source **`a774443337f5e8c4ec6435acd10dc803b8ade2e3`**
+passed **228 focused contracts with no skips in 21.13s**. Test-log SHA-256:
+`d88dcda8cd7c0aeedb76e7f819553381dd6bcec2a0814b65d76db903d1e27ac8`.
+This proves consumer naming policy only, not marker authenticity, cleanup success or
+cross-platform execution.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
