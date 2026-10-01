@@ -134,9 +134,12 @@ separate evidence that its binaries came from the checkout.
   runtime prevent a passing summary. `process_cleanup_verified` requires every
   exact database/API/lobby/world PID generation—including restarted worlds—to
   have been running before one terminate request and to yield an observed integer
-  return code; a bounded kill fallback is retained explicitly. Preflight identities must match every
-  staged environment manifest, including script modules; changing a binary,
-  catalog or mesh between those checks fails verification.
+  return code; a bounded kill fallback is retained explicitly. Public source revision,
+  dirty state, fixture schema/profile and deadline scale plus all preflight input
+  identities must match every staged environment manifest, including script
+  modules; changing source metadata, a binary, catalog or mesh between those checks
+  fails verification. Exact hashes and metadata correlation are not native-build
+  provenance or signatures.
 - Only `.e2e-ci-summary.json` is uploaded: fixed schema, allowlisted case identities
   and booleans, checkout identity, component hashes and cleanup/collection results.
   The upload step requires the current gameplay step to create the report. It

@@ -108,10 +108,21 @@ def preflight(profile, *, suffix=None):
     return result, identities
 
 
-def inputs_match(identities, manifest):
-    """Bind public input hashes to the hashes of the environment actually staged."""
+def inputs_match(identities, manifest, revision, source_dirty, deadline_scale):
+    """Bind public source/input metadata to each environment actually staged."""
+    if (not isinstance(revision, str) or len(revision) != 40
+            or any(char not in "0123456789abcdef" for char in revision)
+            or type(source_dirty) is not bool or type(deadline_scale) is not int
+            or not 1 <= deadline_scale <= 3):
+        return False
     try:
-        return (identities["worker"] == manifest["worker_sha256"]
+        return (type(manifest["fixture_version"]) is int and manifest["fixture_version"] == 2
+                and manifest["profile"] == "sapphire-3.3"
+                and manifest["revision"] == revision
+                and manifest["dirty"] is source_dirty
+                and type(manifest["deadline_scale"]) is int
+                and manifest["deadline_scale"] == deadline_scale
+                and identities["worker"] == manifest["worker_sha256"]
                 and identities["binaries"] == manifest["binaries"]
                 and identities["script_modules"] == sorted(manifest["scripts"].values())
                 and all(identities["catalogs"][key] == manifest[key]["sha256"] for key in CATALOGS)
@@ -276,7 +287,8 @@ def run(profile_path, private_root, summary_path, *, worker=None, binaries=None,
                 environments = gate.environments or ([gate.environment] if gate.environment is not None else [])
                 report["inputs_verified"] = bool(environments) and all(
                     inputs_match(identities, json.loads(
-                        (environment.artifacts / "manifest.json").read_text(encoding="utf-8")))
+                        (environment.artifacts / "manifest.json").read_text(encoding="utf-8")),
+                        report["revision"], report["source_dirty"], report["deadline_scale"])
                     for environment in environments)
                 if not report["inputs_verified"]:
                     report["status"] = "failed"

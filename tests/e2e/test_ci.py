@@ -277,14 +277,22 @@ def test_preflight_rejects_mismatches(profile, mutation):
         run_ci.preflight(profile, suffix=".exe")
 
 
-@pytest.mark.parametrize("field", [None, "worker", "binaries", "scripts", "catalog", "mesh", "missing"])
+@pytest.mark.parametrize("field", [None, "revision", "dirty", "fixture", "profile", "deadline",
+    "worker", "binaries", "scripts", "catalog", "mesh", "missing"])
 def test_public_identities_must_match_staged_inputs(profile, field):
     _, expected = run_ci.preflight(profile, suffix=".exe")
-    manifest = {"worker_sha256": expected["worker"], "binaries": dict(expected["binaries"]),
+    manifest = {"revision":"a" * 40,"dirty":False,"profile":"sapphire-3.3",
+                "fixture_version":2,"deadline_scale":1,
+                "worker_sha256": expected["worker"], "binaries": dict(expected["binaries"]),
                 "scripts": {"fixture.dll": expected["script_modules"][0]},
                 "server_navigation": {f"{name}/{name}.nav": digest for name, digest in expected["meshes"].items()},
                 **{key: {"sha256": digest} for key, digest in expected["catalogs"].items()}}
-    if field == "worker":
+    if field == "revision": manifest["revision"] = "b" * 40
+    elif field == "dirty": manifest["dirty"] = 0
+    elif field == "fixture": manifest["fixture_version"] = True
+    elif field == "profile": manifest["profile"] = "foreign"
+    elif field == "deadline": manifest["deadline_scale"] = True
+    elif field == "worker":
         manifest["worker_sha256"] = "changed"
     elif field == "binaries":
         manifest["binaries"]["server"] = "changed"
@@ -296,7 +304,7 @@ def test_public_identities_must_match_staged_inputs(profile, field):
         manifest["server_navigation"]["w1t1/w1t1.nav"] = "changed"
     elif field == "missing":
         manifest = {}
-    assert run_ci.inputs_match(expected, manifest) is (field is None)
+    assert run_ci.inputs_match(expected, manifest, "a" * 40, False, 1) is (field is None)
 
 
 def lifecycle_rows():
@@ -441,7 +449,9 @@ def test_entry_point_isolates_pytest_options_and_output(profile, tmp_path, monke
         assert all(suite in args for suite in run_ci.SUITES)
         assert not any("::" in arg for arg in args)
         gate = complete_gate(tmp_path)
-        manifest = {"worker_sha256": identities["worker"], "binaries": identities["binaries"],
+        manifest = {"revision":"a" * 40,"dirty":False,"profile":"sapphire-3.3",
+                    "fixture_version":2,"deadline_scale":1,
+                    "worker_sha256": identities["worker"], "binaries": identities["binaries"],
                     "scripts": {"fixture.dll": identities["script_modules"][0]},
                     "server_navigation": {f"{key}/{key}.nav": value for key, value in identities["meshes"].items()},
                     **{key: {"sha256": value} for key, value in identities["catalogs"].items()}}
