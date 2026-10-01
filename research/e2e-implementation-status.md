@@ -1443,6 +1443,27 @@ and which has no `process_cleanup_verified` field. Rejection evidence SHA-256:
 No service, database, account, worker, client, gameplay or gate operation ran. A
 new authorized isolated gate remains required for positive current evidence.
 
+Workflow feature **`498dc4598`** makes the private gameplay job consume that
+strict result contract rather than relying only on `run_ci`'s exit code. After a
+passing gate, it invokes `inspect_ci_result` with exact `${{ github.sha }}` and
+marks the summary publishable only after inspection succeeds. Failed gates retain
+their separate fixed-schema summary-upload path; a nominally passing but malformed,
+foreign-revision or obsolete result is not marked for upload. The static workflow
+inspector requires the exact command, revision binding, failure check, successful
+publication ordering, failed-summary path and guarded upload. Negatives alter the
+revision expression and bypass the inspection exit check.
+
+Frozen, remote-free source **`498dc4598a231fb9467d477b7d700d31e4c7fc53`**
+passed **71 CI/workflow-policy tests in 1.21s**. Test-log SHA-256:
+`a40b78244296a24ec4be701bc4fdb4fdad2d9af77079efa9b98871b577a36f34`.
+Both workflows also parsed with PyYAML. Static policy receipt SHA-256:
+`7d1758a821de392b715ccf7ac3c1cc8b292b57e0f5691a566a51ece0c7966af0`;
+YAML receipt SHA-256:
+`72772b73ebf1406c9ed334fb99ab5b0cd18ad8ac6dd458252c6b99c7c52fa9f4`.
+This proves authored repository ordering only—not GitHub expression evaluation,
+hosted execution, runner/environment policy, artifact availability or VM disposal.
+No workflow was dispatched and no gate/service/gameplay operation ran.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
@@ -3684,7 +3705,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `inspect_ci_result.py`, `CI.md`; strict workflow/process-policy and public-summary receipts | Authored repository controls and the exact current sanitized result contract are pinned/read-only/bounded and private dispatch remains protected/serialized in YAML; every historical summary predates public exact process-generation cleanup and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `inspect_ci_result.py`, `CI.md`; strict workflow/process-policy and public-summary receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy the exact current sanitized result/revision contract before upload, and private dispatch remains protected/serialized in YAML; every historical summary predates public exact process-generation cleanup and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
