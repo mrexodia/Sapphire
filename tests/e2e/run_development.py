@@ -129,7 +129,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                             raise DevelopmentError("bot is not idle in the expected territory")
                 if await_placement:
                     with timings.phase("administrative_placement_wait_not_gameplay"):
-                        deadline = time.monotonic() + 120
+                        placement_deadline = time.monotonic() + 120
                         (artifacts / "placement-ready.json").write_text(json.dumps({
                             "scope": "administrative-preparation-not-gameplay", "run_id": run_id,
                             "wait_seconds": 120, "territory": profile["territory"], "position": route[0],
@@ -138,7 +138,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                             "note": "Readiness only; a separate GM-approved registry command is required."
                         }, indent=2), encoding="utf-8")
                         for index, bot in enumerate(bots):
-                            remaining = deadline - time.monotonic()
+                            remaining = placement_deadline - time.monotonic()
                             if remaining <= 0:
                                 raise DevelopmentError("administrative placement observation deadline exceeded")
                             expected_entity = states[index]["entity_id"]
