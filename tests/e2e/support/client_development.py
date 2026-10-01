@@ -15,6 +15,7 @@ from .development_equipment import BODY, BAG, SCOPE as EQUIPMENT_SCOPE
 from .development_tell import SCOPE as TELL_SCOPE
 from .development_party import EMPTY_PARTY, SCOPE as PARTY_SCOPE
 from .development_decline import SCOPE as DECLINE_SCOPE
+from .development_placement import require_placement_receipt
 
 
 def development_run_budget(activity_deadline):
@@ -606,7 +607,8 @@ def require_graphical_viewer_receipt(viewer, viewer_name, entity, entities, run_
     return expected, continuity
 
 
-def require_shared_runner_metadata(result, *, catalog_required):
+def require_shared_runner_metadata(result, *, catalog_required,
+                                   administrative_preparation_allowed=False):
     worker_hash, catalog_hash = result.get('worker_sha256'), result.get('catalog_sha256')
     if (type(result.get('version')) is not int or result['version'] != 1
             or result.get('protocol') != 'sapphire-3.3'
@@ -615,7 +617,9 @@ def require_shared_runner_metadata(result, *, catalog_required):
             or result.get('server_processes_owned') is not False
             or result.get('database_access') is not False
             or result.get('account_reset_performed_by_runner') is not False
-            or result.get('administrative_preparation_wait_enabled') is not False
+            or type(result.get('administrative_preparation_wait_enabled')) is not bool
+            or (result['administrative_preparation_wait_enabled']
+                and administrative_preparation_allowed is not True)
             or result.get('administrative_command_execution_attested') is not False
             or result.get('world_restart_performed') is not False
             or not isinstance(worker_hash, str) or len(worker_hash) != 64
@@ -625,6 +629,9 @@ def require_shared_runner_metadata(result, *, catalog_required):
                                       or any(char not in '0123456789abcdef' for char in catalog_hash)))
             or (not catalog_required and catalog_hash is not None)):
         raise DevelopmentError('graphical bot run metadata does not retain shared-runner boundaries')
+    if (result['administrative_preparation_wait_enabled'] is False
+            and result.get('placement_verification') != {'requested':False,'verified':False}):
+        raise DevelopmentError('unrequested administrative placement evidence is retained')
     return worker_hash
 
 

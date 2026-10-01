@@ -7,6 +7,7 @@ import pytest
 from . import run_development
 from .support.development import DevelopmentError
 from .test_development import FakeWorker, profile
+from .test_development_placement import runner_registry
 
 
 class ReconnectWorker(FakeWorker):
@@ -60,7 +61,8 @@ class ReconnectWorker(FakeWorker):
         return super().wait_state(bot, predicate, description, timeout)
 
 
-def execute(profile, tmp_path, *, failure=None, verify=True, fake=None, await_placement=False):
+def execute(profile, tmp_path, *, failure=None, verify=True, fake=None,
+            await_placement=False, placement_registry=None):
     fake = fake or ReconnectWorker(failure)
     logins = []
     def login(config, account):
@@ -70,6 +72,7 @@ def execute(profile, tmp_path, *, failure=None, verify=True, fake=None, await_pl
         return {"lobbyHost": "127.0.0.1", "lobbyPort": 54994, "sId": f"private-session-{len(logins)}"}
     result = run_development.run(profile, tmp_path / "run", confirmed=True,
         verify_reconnect=verify, await_placement=await_placement,
+        placement_registry=placement_registry,
         worker_factory=lambda *_: fake, login=login, lease_root=tmp_path / "leases")
     return result, fake, logins
 
@@ -139,8 +142,12 @@ def test_placement_preparation_and_reconnect_have_separate_evidence(profile, tmp
         def wait_state(self, bot, predicate, description, timeout=30):
             if description.startswith("operator-prepared"):
                 self.states[bot]["territory"] = 130
+                self.states[bot]["seq"] += 1
             return super().wait_state(bot, predicate, description, timeout)
-    result, _, _ = execute(profile, tmp_path, fake=Prepared(), await_placement=True)
+    fake = Prepared()
+    registry = runner_registry(profile, tmp_path, fake)
+    result, _, _ = execute(profile, tmp_path, fake=fake, await_placement=True,
+                           placement_registry=registry)
     assert result["status"] == "passed" and result["reconnect_verification"]["verified"]
     assert result["administrative_preparation_wait_enabled"]
     assert not result["administrative_command_execution_attested"]

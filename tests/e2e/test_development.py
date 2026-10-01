@@ -84,7 +84,9 @@ class FakeWorker:
         for index, name in enumerate(("mover", "witness")):
             self.states[name] = {"phase": "ready", "entity_id": index + 1, "gm_rank": 0,
                 "territory": 130, "moving": False, "scene": None, "event_id": None,
-                "observed_position": [0, 0, 0], "actors": {}, "chat": [], "seq": 0}
+                "observed_position": [0, 0, 0], "actors": {}, "chat": [], "seq": 0,
+                "characters": [{"name":("Bot Mover" if index == 0 else "Bot Witness"),
+                                "entity_id":index + 1,"character_id":index + 11}]}
         self.states["mover"]["actors"]["2"] = {"name": "Bot Witness", "gm_rank": 0, "position": [0, 0, 0]}
         self.states["witness"]["actors"]["1"] = {"name": "Bot Mover", "gm_rank": 0, "position": [0, 0, 0]}
 

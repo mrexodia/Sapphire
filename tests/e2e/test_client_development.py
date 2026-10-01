@@ -169,6 +169,7 @@ def completed():
                 'scope':'cooperative-success-deadline-not-hard-process-limit',
                 'cleanup_may_exceed_deadline':True},
             'administrative_preparation_wait_enabled':False,
+            'placement_verification':{'requested':False,'verified':False},
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
             'say_verification':say,
             'movement_verification':movement,'party_verification':party,

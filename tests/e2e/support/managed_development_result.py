@@ -22,6 +22,7 @@ from .client_development import (INVENTORY_SCOPE, require_decline_receipt,
 from .development_host_result import inspect_owned_development_host
 from .development_artifact import RUN_SCOPE, require_worker_artifacts
 from .development_lease import require_clear_terminal_account_leases
+from .development_placement import require_placement_receipt
 
 SCOPE = "managed-development-received-evidence-and-terminal-owned-host-correlation"
 
@@ -52,7 +53,10 @@ def validate_requested_checks(report):
     movement_value = report.get("movement_verification")
     movement_requested = (isinstance(movement_value, dict)
                           and movement_value.get("requested") is True)
-    require_shared_runner_metadata(report, catalog_required=movement_requested)
+    placement_requested = report.get("administrative_preparation_wait_enabled") is True
+    require_shared_runner_metadata(
+        report, catalog_required=movement_requested or placement_requested,
+        administrative_preparation_allowed=True)
     deadline = report.get("run_deadline")
     if (not isinstance(deadline, dict)
             or set(deadline) != {"enabled","limit_seconds","expired",
@@ -90,6 +94,11 @@ def validate_requested_checks(report):
                                             report.get("movement_waypoints_per_cycle"),
                                             report.get("catalog_sha256"))
         checks["movement"] = movement["scope"]
+    placement = require_placement_receipt(
+        report.get("placement_verification"), entities, report.get("catalog_sha256"),
+        movement["authored_route"] if movement is not None else None, placement_requested)
+    if placement is not None:
+        checks["placement"] = placement["scope"]
     party = None
     if values["party"]["requested"]:
         party = require_party_receipt(values["party"], entities, run_id, territory)

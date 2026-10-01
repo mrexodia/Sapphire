@@ -8,7 +8,31 @@ from . import prepare_development, run_development
 from .provision_development import new_profile
 from .support.development import DevelopmentError, received_character_identity
 from .support.development_binding import provisioning_binding
+from .support.development_result import inspect_development_result
 from .test_development import FakeWorker, profile, execute
+
+
+def runner_registry(profile, tmp_path, fake):
+    names = ["Tester AAAAAAAAAAAA", "Tester BBBBBBBBBBBB"]
+    for index, name in enumerate(names):
+        profile["accounts"][index]["character"] = name
+        state = fake.states[("mover", "witness")[index]]
+        state["characters"][0]["name"] = name
+    fake.states["witness"]["actors"]["1"]["name"] = names[0]
+    fake.states["mover"]["actors"]["2"]["name"] = names[1]
+    if hasattr(fake, "original"):
+        fake.original["characters"][0]["name"] = names[0]
+    if hasattr(fake, "actor_row"):
+        fake.actor_row["name"] = names[0]
+    registry = {"version":2,"purpose":"development-bot-placement",
+        "approval_id":"d" * 32,"provisioning_run_id":"c" * 32,
+        "territory":130,"position":[0,0,0],"catalog_sha256":"a" * 64,
+        "bots":[{"name":names[index],"entity_id":index + 1,
+                 "character_id":fake.states[("mover", "witness")[index]]["characters"][0]["character_id"]}
+                for index in range(2)]}
+    path = tmp_path / "placement-registry.json"
+    path.write_text(json.dumps(registry))
+    return path
 
 
 @pytest.fixture
@@ -132,6 +156,41 @@ def test_placement_wait_is_explicit_and_requires_route(profile, tmp_path):
     assert not (tmp_path / "run").exists()
 
 
+@pytest.mark.parametrize("mutation", ["catalog","name","duplicate"])
+def test_placement_registry_is_exact_and_validated_before_login(
+        profile, tmp_path, monkeypatch, mutation):
+    monkeypatch.setattr(run_development, "movement_route",
+                        lambda _: ([[0, 0, 0], [1, 0, 0]], "a" * 64))
+    fake = FakeWorker()
+    registry = runner_registry(profile, tmp_path, fake)
+    value = json.loads(registry.read_text())
+    if mutation == "catalog": value["catalog_sha256"] = "b" * 64
+    elif mutation == "name": value["bots"][0]["name"] = "Tester CCCCCCCCCCCC"
+    else:
+        registry.write_text(registry.read_text().replace(
+            '{"version": 2,', '{"version": 2, "version": 2,', 1))
+    if mutation != "duplicate": registry.write_text(json.dumps(value))
+    with pytest.raises(DevelopmentError):
+        run_development.run(profile, tmp_path / "run", confirmed=True,
+            await_placement=True, placement_registry=registry,
+            worker_factory=lambda *_: fake, lease_root=tmp_path / "leases")
+    assert not (tmp_path / "run").exists() and fake.commands == []
+
+
+def test_placement_registry_and_wait_must_be_selected_together(
+        profile, tmp_path, monkeypatch):
+    monkeypatch.setattr(run_development, "movement_route",
+                        lambda _: ([[0, 0, 0], [1, 0, 0]], "a" * 64))
+    fake = FakeWorker(); registry = runner_registry(profile, tmp_path, fake)
+    with pytest.raises(DevelopmentError):
+        run_development.run(profile, tmp_path / "missing", confirmed=True,
+                            await_placement=True)
+    with pytest.raises(DevelopmentError):
+        run_development.run(profile, tmp_path / "foreign", confirmed=True,
+                            placement_registry=registry)
+    assert not (tmp_path / "missing").exists() and not (tmp_path / "foreign").exists()
+
+
 def test_placement_wait_is_separate_from_normal_actions(profile, tmp_path, monkeypatch):
     monkeypatch.setattr(run_development, "movement_route", lambda _: ([[0, 0, 0], [1, 0, 0]], "a" * 64))
     class PlacedByOperator(FakeWorker):
@@ -143,15 +202,53 @@ def test_placement_wait_is_separate_from_normal_actions(profile, tmp_path, monke
             if description.startswith("operator-prepared"):
                 assert 0 < timeout <= 120
                 self.states[bot]["territory"] = 130
+                self.states[bot]["seq"] += 1
             return super().wait_state(bot, predicate, description, timeout)
-    result, fake = execute(profile, tmp_path, PlacedByOperator(), await_placement=True)
+    fake = PlacedByOperator()
+    registry = runner_registry(profile, tmp_path, fake)
+    result, fake = execute(profile, tmp_path, fake, await_placement=True,
+                           placement_registry=registry, max_seconds=60)
     assert result["status"] == "passed" and result["administrative_preparation_wait_enabled"]
     assert not result["administrative_command_execution_attested"]
     assert "administrative_placement_wait_not_gameplay" in {row["phase"] for row in result["timings"]}
     ready = json.loads((tmp_path / "run" / "placement-ready.json").read_text())
     assert ready["scope"] == "administrative-preparation-not-gameplay" and ready["wait_seconds"] == 120
     assert [row["entity_id"] for row in ready["bots"]] == [1, 2]
+    assert ready["registry_sha256"] == result["placement_verification"]["registry_sha256"]
+    assert result["placement_verification"]["verified"] is True
+    assert result["placement_verification"]["state_transition_observed"] is True
+    proof = inspect_development_result(tmp_path / "run/development-summary.json")
+    assert set(proof["verified_checks"]) == {"say","movement","placement"}
     assert set(fake.commands) == {"login", "say", "walk_to", "logout", "close", "remove"}
+
+
+@pytest.mark.parametrize("mutation", ["target","stale","transition","catalog"])
+def test_placement_result_inspector_rejects_foreign_or_stale_registry_receipt(
+        profile, tmp_path, monkeypatch, mutation):
+    monkeypatch.setattr(run_development, "movement_route",
+                        lambda _: ([[0, 0, 0], [1, 0, 0]], "a" * 64))
+    class Placed(FakeWorker):
+        def __init__(self):
+            super().__init__()
+            for state in self.states.values(): state["territory"] = 182
+        def wait_state(self, bot, predicate, description, timeout=30):
+            if description.startswith("operator-prepared"):
+                self.states[bot]["territory"] = 130
+                self.states[bot]["seq"] += 1
+            return super().wait_state(bot, predicate, description, timeout)
+    fake = Placed(); registry = runner_registry(profile, tmp_path, fake)
+    execute(profile, tmp_path, fake, await_placement=True,
+            placement_registry=registry, max_seconds=60)
+    summary = tmp_path / "run/development-summary.json"
+    report = json.loads(summary.read_text())
+    placement = report["placement_verification"]
+    if mutation == "target": placement["targets"][0]["name"] = "Tester CCCCCCCCCCCC"
+    elif mutation == "stale":
+        placement["received"][0]["received_sequence"] = placement["initial"][0]["baseline_sequence"]
+    elif mutation == "transition": placement["state_transition_observed"] = False
+    else: placement["catalog_sha256"] = "b" * 64
+    summary.write_text(json.dumps(report))
+    with pytest.raises(DevelopmentError): inspect_development_result(summary)
 
 
 def test_placement_timeout_preserves_lease_without_mutations(profile, tmp_path, monkeypatch):
@@ -159,6 +256,8 @@ def test_placement_timeout_preserves_lease_without_mutations(profile, tmp_path, 
     fake = FakeWorker()
     for state in fake.states.values():
         state["territory"] = 182
-    result, fake = execute(profile, tmp_path, fake, await_placement=True)
+    registry = runner_registry(profile, tmp_path, fake)
+    result, fake = execute(profile, tmp_path, fake, await_placement=True,
+                           placement_registry=registry)
     assert result["status"] == "failed" and result["lease_retained"] and fake.closed
     assert set(fake.commands) == {"login"}

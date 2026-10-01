@@ -13,7 +13,8 @@ import uuid
 
 from .support.development import (AccountLease, DevelopmentError, MOVEMENT_SCOPE, SAY_SCOPE, Timings,
                                   authenticate, check_managed_host, idle_state, movement_route,
-                                  require_managed_host_binding, validate_profile, witnessed)
+                                  received_character_identity, require_managed_host_binding,
+                                  validate_profile, witnessed)
 from .support.worker import Bot, Worker
 from .support.development_deadline import RunDeadline, DeadlineWorker
 from .support.development_worker_exit import ObservedWorker
@@ -28,10 +29,11 @@ from .support.development_decline import require_decline_worker, verify_party_de
 from .support.development_sprint import require_sprint_worker, verify_sprint as verify_self_sprint
 from .support.development_equipment import (require_equipment_worker, begin_roundtrip,
                                             finish_roundtrip, observe_after_reconnect)
+from .support.development_placement import load_placement_registry
 
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
-        verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False,
+        placement_registry=None, verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False,
         verify_inventory=False, verify_sprint=False, verify_equipment=False, viewer_name=None, max_seconds=None,
         worker_factory=Worker, login=authenticate, lease_root=None,
         viewer_finish_callback=None):
@@ -58,6 +60,10 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     route, catalog_hash = movement_route(profile)
     if type(await_placement) is not bool or (await_placement and not route):
         raise DevelopmentError("administrative placement wait requires a source-bound quest route")
+    if await_placement != (placement_registry is not None):
+        raise DevelopmentError("administrative placement wait requires one exact private registry")
+    placement = (load_placement_registry(placement_registry, profile, catalog_hash, route)
+                 if await_placement else {"requested":False,"verified":False})
     artifacts = Path(artifacts)
     artifacts.mkdir(parents=True, exist_ok=False)
     run_id = uuid.uuid4().hex
@@ -75,6 +81,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "account_reset_performed_by_runner": False, "cycles": cycles,
               "administrative_preparation_wait_enabled": await_placement,
               "administrative_command_execution_attested": False,
+              "placement_verification": placement,
               "say_verification": {"requested": True, "verified": False,
                                    "scope": SAY_SCOPE, "observations": []},
               "movement_verification": {"requested": bool(route), "verified": False},
@@ -142,25 +149,49 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                         if (await_placement and initial_territory not in {130, 182}) or not idle_state(state, initial_territory):
                             raise DevelopmentError("bot is not idle in the expected territory")
                 if await_placement:
+                    for index, (state, account, target) in enumerate(zip(
+                            states, profile["accounts"], placement["targets"])):
+                        identity = received_character_identity(state, account["character"])
+                        if identity != target or type(state.get("seq")) is not int or state["seq"] < 0:
+                            raise DevelopmentError("logged-in bot differs from reviewed placement target")
+                        placement["initial"].append({"slot":index,"identity":identity,
+                            "territory":state["territory"],"baseline_sequence":state["seq"]})
                     with timings.phase("administrative_placement_wait_not_gameplay"):
                         placement_deadline = time.monotonic() + 120
                         (artifacts / "placement-ready.json").write_text(json.dumps({
                             "scope": "administrative-preparation-not-gameplay", "run_id": run_id,
+                            "approval_id":placement["approval_id"],
+                            "provisioning_run_id":placement["provisioning_run_id"],
+                            "registry_sha256":placement["registry_sha256"],
                             "wait_seconds": 120, "territory": profile["territory"], "position": route[0],
-                            "bots": [{"entity_id": state["entity_id"], "name": account["character"]}
-                                     for state, account in zip(states, profile["accounts"])],
+                            "bots": placement["targets"],
                             "note": "Readiness only; a separate GM-approved registry command is required."
                         }, indent=2), encoding="utf-8")
                         for index, bot in enumerate(bots):
                             remaining = placement_deadline - time.monotonic()
                             if remaining <= 0:
                                 raise DevelopmentError("administrative placement observation deadline exceeded")
-                            expected_entity = states[index]["entity_id"]
+                            target = placement["targets"][index]
                             states[index] = worker.wait_state(bot.name,
                                 lambda s: idle_state(s, profile["territory"])
-                                and s["entity_id"] == expected_entity
+                                and s["entity_id"] == target["entity_id"]
                                 and math.dist(s["observed_position"], route[0]) <= 0.15,
                                 "operator-prepared public-world state (not gameplay)", timeout=remaining)
+                            identity = received_character_identity(
+                                states[index], profile["accounts"][index]["character"])
+                            baseline = placement["initial"][index]["baseline_sequence"]
+                            if (identity != target or type(states[index].get("seq")) is not int
+                                    or states[index]["seq"] < baseline
+                                    or (placement["initial"][index]["territory"] != profile["territory"]
+                                        and states[index]["seq"] <= baseline)):
+                                raise DevelopmentError("registered placement observation is stale or foreign")
+                            placement["received"].append({"slot":index,"identity":identity,
+                                "territory":states[index]["territory"],
+                                "position":list(states[index]["observed_position"]),
+                                "received_sequence":states[index]["seq"]})
+                        placement["state_transition_observed"] = all(
+                            row["territory"] != profile["territory"] for row in placement["initial"])
+                        placement["verified"] = True
                 mover, witness = bots
                 actor, observer = [state["entity_id"] for state in states]
                 if not actor or not observer or actor == observer:
@@ -377,6 +408,8 @@ def main(argv=None):
                         help="Cooperative session budget 1..900 seconds (default 300); final lease/report cleanup excluded")
     parser.add_argument("--await-placement", action="store_true",
                         help="Allow up to 120s for separate GM-approved placement; requires quest_catalog")
+    parser.add_argument("--placement-registry",
+                        help="Exact reviewed private registry; required only with --await-placement")
     parser.add_argument("--verify-reconnect", action="store_true",
                         help="One explicit fresh-login identity/position check with the witness kept online; no restart")
     parser.add_argument("--verify-reconnect-inventory", dest="verify_inventory", action="store_true",
@@ -396,7 +429,8 @@ def main(argv=None):
     try:
         profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
         result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles,
-                     await_placement=args.await_placement, verify_reconnect=args.verify_reconnect,
+                     await_placement=args.await_placement, placement_registry=args.placement_registry,
+                     verify_reconnect=args.verify_reconnect,
                      verify_party=args.verify_party, verify_tell=args.verify_tell,
                      verify_decline=args.verify_decline, verify_inventory=args.verify_inventory,
                      verify_sprint=args.verify_sprint, verify_equipment=args.verify_equipment,
