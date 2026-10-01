@@ -59,8 +59,14 @@ cover the previously observed roughly 56-minute 15-case gate plus build/contract
 they remain bounds, not capacity or hosted-execution evidence. Repository controls can
 be checked read-only with
 `python -m tests.e2e.inspect_workflow_policy`; its receipt explicitly leaves hosted
-execution, runner-group restrictions and ephemeral VM destruction unverified. The
-private workflow rebuilds the checked-out server, all discovered
+execution, runner-group restrictions and ephemeral VM destruction unverified.
+Before any repository build command, the private workflow passes `${{ github.sha }}`
+explicitly to checkout, verifies `HEAD` equals that exact SHA, requires an empty
+tracked/untracked worktree, and rejects missing, changed or conflicted recursive
+submodules. The policy inspector requires these checks in order before CMake. This
+reduces checkout/ref ambiguity; without execution it does not prove a hosted
+checkout or trustworthy dependencies. The private workflow rebuilds the checked-
+out server, all discovered
 native script modules, worker and all six framework native tests using the
 `sapphire_gameplay_ci` CMake target. GUI tools and Recast's separate test suite are
 not part of that target. Framework CTest execution has a 60-second per-test timeout.

@@ -2539,6 +2539,22 @@ operation ran. This proves retained fixture-identity separation only—not that 
 viewer authenticated, remained present, rendered pixels, stayed uninterrupted,
 was offline later, or used a compatible matching client.
 
+Workflow feature **`da962989a`** removes a private-runner checkout ambiguity before
+repository code builds. The gameplay job now passes the immutable dispatch SHA to
+checkout, verifies exact `HEAD`, requires an empty tracked/untracked worktree and
+rejects missing/changed/conflicted recursive submodules before CMake. The static
+policy consumer requires all guards in that order and rejects changed SHA,
+self-comparison, weakened cleanliness or weakened submodule predicates.
+
+Frozen, remote-free source **`da962989a72138c3c21e9bd176569ffb901f7bf5`**
+passed **1090 focused contracts with no skips in 39.87s**. Test-log SHA-256:
+`816ae125a9725a006b7b86db037673bc5b9ed0e3209dc54b1ca5ce10d5bef2da`.
+The local workflow-policy receipt SHA-256 is
+`0eaf9558f21c6229c2e6b0945acc3272058ed59a3a01e6e1b6bafa6e836874f8`.
+No hosted job, runner, remote setting, service, endpoint, account or gameplay
+operation ran. Static YAML/source inspection does not prove hosted checkout,
+dependency integrity, runner-group enforcement or ephemeral destruction.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
