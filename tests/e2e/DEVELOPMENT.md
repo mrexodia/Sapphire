@@ -135,7 +135,7 @@ fields (`version`, `mode`, `protocol`, `worker`, `api_port`, `lobby_port`,
 ```powershell
 python -m tests.e2e.provision_development --server-profile .e2e-dev-server.json `
   --create-new-bot-accounts --output-profile .e2e-dev.json `
-  --artifacts .e2e-artifacts/dev-provision-001
+  --artifacts .e2e-artifacts/dev-provision-001 --max-seconds 300
 ```
 
 This explicitly creates **two NEW accounts and Gladiator characters** through
@@ -161,13 +161,27 @@ runner. Nonzero, unknown, unbound or constructor-failed exits retain leases and
 cannot produce a provisioning association. The placement planner rejects legacy
 or malformed provisioning reports without that receipt.
 
-Errors preserve the credential file and local leases; inspect partial results
-instead of retrying creation or deleting characters automatically. Native worker
-exit remains distinct from each recorded normal server logout and is not proof of
-offline exclusion or permission to reuse/reset characters. No old character/account
-is modified, reset or removed. Account creation is sequential, not a claim of
-multi-process allocation safety. Interrupted/hard-killed runs may lack a complete
-summary; retained credentials/leases do not prove crash consistency.
+The CLI's single cooperative provisioning budget is `--max-seconds 1..900`
+(default 300). It starts before local profile/managed-host validation and spans
+exclusive credential reservation, lease acquisition, worker startup, both
+sequential HTTP/lobby/world/logout flows and exact worker teardown. Native RPC and
+wait limits are capped to the remaining scaled budget. This is not hard preemption:
+an already-started bounded file, HTTP, worker-construction or cleanup operation may
+finish after expiry, but its late result cannot produce `provisioned`. Final lease
+release and summary publication are cleanup outside the success budget. The summary's
+`run_deadline` distinguishes expiration and in-budget session completion from the
+overall status.
+
+Errors and deadline expiry preserve the credential file and, once acquired, local
+leases; inspect partial results instead of retrying creation or deleting characters
+automatically. Expiry before lease acquisition leaves no lease to retain. A late
+account-creation response remains `requested_outcome_unknown`, is never retried, and
+cannot advance to login/character creation. Native worker exit remains distinct
+from each recorded normal server logout and is not proof of offline exclusion or
+permission to reuse/reset characters. No old character/account is modified, reset
+or removed. Account creation is sequential, not a claim of multi-process allocation
+safety. Interrupted/hard-killed runs may lack a complete summary; retained
+credentials/leases do not prove crash consistency.
 
 **Provisioned is not public-world ready.** Fresh characters normally enter the
 opening territory. This command does not skip openings, teleport, grant levels,

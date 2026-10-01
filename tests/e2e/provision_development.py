@@ -19,6 +19,7 @@ from .support.development import (AccountLease, DevelopmentError, Timings, authe
 from .support.worker import Bot, Worker
 from .support.development_binding import provisioning_binding
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
+from .support.development_deadline import RunDeadline, DeadlineWorker
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -58,10 +59,11 @@ def reserve_private_profile(path, profile):
         os.fsync(stream.fileno())
 
 
-def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Worker,
-        register=create_account, login=authenticate, lease_root=None):
+def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
+        worker_factory=Worker, register=create_account, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --create-new-bot-accounts opt-in is required")
+    deadline = RunDeadline(max_seconds) if max_seconds is not None else None
     profile = new_profile(server)
     check_managed_host(profile)
     artifacts = Path(artifacts)
@@ -85,25 +87,42 @@ def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Wo
         with timings.phase("reserve_private_credential_profile"):
             # Save generated credentials before making any requests. On uncertain
             # network results the operator can still identify/recover the accounts.
+            if deadline is not None:
+                deadline.check()
             reserve_private_profile(output_profile, profile)
             report["credential_profile_saved"] = True
+            if deadline is not None:
+                deadline.check()
         with timings.phase("account_lease"):
+            if deadline is not None:
+                deadline.check()
             lease.acquire()
             acquired = True
             report["lease_retained"] = True
+            if deadline is not None:
+                deadline.check()
         with timings.phase("worker_session_including_close"):
             with ObservedWorker(worker_factory(Path(profile["worker"]), artifacts / "worker"),
-                                report["worker_exit"]) as worker:
+                                report["worker_exit"]) as raw_worker:
+                if deadline is not None:
+                    deadline.check()
+                    worker = DeadlineWorker(raw_worker, deadline)
+                else:
+                    worker = raw_worker
                 for index, account in enumerate(profile["accounts"]):
                     row = {"slot": index, "character": account["character"],
                            "account_creation": "not_started", "character_creation": "not_started"}
                     report["accounts"].append(row)
                     with timings.phase(f"create_account_{index}"):
                         row["account_creation"] = "requested_outcome_unknown"
-                        register(profile, account)
+                        if deadline is None:
+                            register(profile, account)
+                        else:
+                            deadline.call(register, profile, account)
                         row["account_creation"] = "acknowledged"
                     with timings.phase(f"fresh_http_login_{index}"):
-                        auth = login(profile, account)
+                        auth = (login(profile, account) if deadline is None
+                                else deadline.call(login, profile, account))
                         row["account_creation"] = "fresh_login_verified"
                     bot = Bot(worker, f"provision-{index}")
                     with timings.phase(f"lobby_create_and_world_{index}"):
@@ -118,6 +137,9 @@ def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Wo
                         bot.close()
                         row["logout_server_close_verified"] = True
             report["worker_closed"] = True
+        if deadline is not None:
+            with timings.phase("provisioning_deadline_completion"):
+                deadline.complete()
         with timings.phase("release_accounts"):
             lease.release()
             report["lease_retained"] = False
@@ -131,6 +153,7 @@ def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Wo
         if acquired:
             report["recovery"] = "Keep the private credential profile; inspect partial account/character state and verify bots offline before releasing this run's leases. Do not retry creation automatically."
     finally:
+        report["run_deadline"] = deadline.report() if deadline is not None else {"enabled": False}
         report["elapsed_seconds"] = time.monotonic() - start
         report["timings"] = timings.rows
         (artifacts / "provisioning-summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -143,10 +166,13 @@ def main(argv=None):
     parser.add_argument("--output-profile", required=True, help="NEW private credential file; parent must exist")
     parser.add_argument("--artifacts", required=True, help="NEW private artifact directory")
     parser.add_argument("--create-new-bot-accounts", action="store_true")
+    parser.add_argument("--max-seconds", type=int, default=300,
+                        help="Cooperative provisioning budget 1..900 seconds (default 300); final lease/report cleanup excluded")
     args = parser.parse_args(argv)
     try:
         server = json.loads(Path(args.server_profile).read_text(encoding="utf-8"))
-        report = run(server, args.output_profile, args.artifacts, confirmed=args.create_new_bot_accounts)
+        report = run(server, args.output_profile, args.artifacts,
+                     confirmed=args.create_new_bot_accounts, max_seconds=args.max_seconds)
     except (Exception, KeyboardInterrupt) as error:
         print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))
         return 1
