@@ -123,6 +123,18 @@ def inspect_workflow(path, *, private):
                     "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\" || { echo 'Only the trusted default branch is allowed'; exit 1; }")
         if any(value not in lines for value in required):
             raise DevelopmentError("private workflow lacks protected serialized runner controls")
+        inspection = ('          python -m tests.e2e.inspect_ci_result --summary '
+                      '.e2e-ci-summary.json --expected-revision "${{ github.sha }}"')
+        inspection_failure = "          if ($LASTEXITCODE -ne 0) { throw 'Published gameplay summary inspection failed' }"
+        publication = "          'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
+        failed_publication = "              'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
+        upload_guard = "        if: always() && steps.gameplay.outputs.summary_created == 'true'"
+        if (lines.count(inspection) != 1 or lines.count(inspection_failure) != 1
+                or lines.count(publication) != 1 or lines.count(failed_publication) != 1
+                or lines.count(upload_guard) != 1
+                or not lines.index(inspection) < lines.index(inspection_failure) < lines.index(publication)
+                or lines.index(upload_guard) < lines.index(inspection_failure)):
+            raise DevelopmentError("private workflow does not inspect a passing summary before publication")
     normalized = path.as_posix()
     marker = ".github/workflows/"
     display = normalized[normalized.index(marker):] if marker in normalized else path.name

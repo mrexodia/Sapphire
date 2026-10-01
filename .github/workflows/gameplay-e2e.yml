@@ -98,10 +98,15 @@ jobs:
           if (Test-Path .e2e-ci-summary.json) { throw 'Summary destination must start absent' }
           python -m tests.e2e.run_ci --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$env:RUNNER_TEMP/sapphire-private-e2e" --summary .e2e-ci-summary.json --require-clean
           $gateExit = $LASTEXITCODE
-          if (Test-Path .e2e-ci-summary.json) {
-            'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          if ($gateExit -ne 0) {
+            if (Test-Path .e2e-ci-summary.json) {
+              'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            }
+            throw 'Gameplay evidence gate failed; inspect private runner diagnostics'
           }
-          if ($gateExit -ne 0) { throw 'Gameplay evidence gate failed; inspect private runner diagnostics' }
+          python -m tests.e2e.inspect_ci_result --summary .e2e-ci-summary.json --expected-revision "${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { throw 'Published gameplay summary inspection failed' }
+          'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
       - name: Publish allowlisted evidence only
         if: always() && steps.gameplay.outputs.summary_created == 'true'
         timeout-minutes: 5

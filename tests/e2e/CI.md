@@ -96,8 +96,11 @@ The workflow always requires a clean checkout. The read-only inspector requires
 the exact current 15-case schema, successful collection/inputs/cleanup, the new
 `process_cleanup_verified` claim, typed component identities, and the operator-
 supplied clean source revision; historical summaries without that field are not
-upgraded. This verifies the sanitized public result's current contract. It cannot
-reconstruct the private PID/generation records deleted with disposable fixtures,
+upgraded. The private workflow invokes this inspector against `${{ github.sha }}`
+after a passing gate and before marking that summary publishable; failed gate
+summaries retain their separate fixed-schema diagnostic upload path. This verifies
+the sanitized public result's current contract. It cannot reconstruct the private
+PID/generation records deleted with disposable fixtures,
 prove hosted execution, or replace an actual current gate run. `run_ci` does not itself compile
 binaries, so running it against an external profile does not prove build provenance.
 Component hashes identify the actual tested inputs; the workflow's build step is

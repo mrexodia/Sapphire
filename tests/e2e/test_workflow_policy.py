@@ -49,6 +49,10 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     (PRIVATE, "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
               "    runs-on: ubuntu-latest"),
     (PRIVATE, "  workflow_dispatch:", "  pull_request:\n  workflow_dispatch:"),
+    (PRIVATE, "--expected-revision \"${{ github.sha }}\"",
+              "--expected-revision \"${{ github.ref }}\""),
+    (PRIVATE, "if ($LASTEXITCODE -ne 0) { throw 'Published gameplay summary inspection failed' }",
+              "if ($false) { throw 'Published gameplay summary inspection failed' }"),
     (PRIVATE, "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\"",
               "          test \"$SELECTED_REF\" = \"$SELECTED_REF\""),
 ])
