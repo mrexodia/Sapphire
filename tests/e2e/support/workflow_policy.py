@@ -243,8 +243,12 @@ def inspect_workflow(path, *, private):
                       "--only-binary=:all: --no-deps -r tests/e2e/requirements.txt")
     if lines.count(locked_install) != 1:
         raise DevelopmentError("workflow must install the exact hash-locked wheel closure")
-    if sum("tests/e2e/test_isolated_case_runner.py" in line for line in lines) != 1:
-        raise DevelopmentError("workflow must run standalone isolated-case runner contracts")
+    standalone_contracts = (
+        "tests/e2e/test_isolated_case_runner.py",
+        "tests/e2e/test_isolated_case_run_result.py",
+    )
+    if any(sum(contract in line for line in lines) != 1 for contract in standalone_contracts):
+        raise DevelopmentError("workflow must run standalone isolated-case runner/consumer contracts")
     normalized = path.as_posix()
     marker = ".github/workflows/"
     display = normalized[normalized.index(marker):] if marker in normalized else path.name
