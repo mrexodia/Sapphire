@@ -50,6 +50,33 @@ namespace Sapphire::Testing
     return objectBytes(packet);
   }
 
+  Bytes visibleTellRequest(const nlohmann::json& state, bool moving,
+                           const nlohmann::json& args)
+  {
+    if(!args.is_object() || args.size() != 3 || !args.contains("target") ||
+       !args.at("target").is_number_integer() || args.at("target") <= 0 ||
+       args.at("target") > uint64_t{0xffffffff} || !args.contains("name") ||
+       !args.at("name").is_string() || !args.contains("message") || !args.at("message").is_string())
+      throw ProtocolError("visible Tell requires exactly target uint32, name and message");
+    if(state.at("phase") != "ready" || state.at("gm_rank") != 0 || moving ||
+       state.at("between_areas") != false || !state.at("event_id").is_null() ||
+       !state.at("scene").is_null() || !state.at("pending_party_invite").is_null() ||
+       state.at("party").at("id") != 0 || state.at("party").at("count") != 0 ||
+       !state.at("party").at("members").empty())
+      throw ProtocolError("visible Tell requires an idle non-GM nonparty sender");
+    const auto target = args.at("target").get<uint32_t>();
+    const auto name = args.at("name").get<std::string>();
+    const auto& actors = state.at("actors");
+    size_t matches = 0;
+    for(auto it = actors.begin(); it != actors.end(); ++it)
+      if(it.value().value("kind", 0) == 1 && it.value().value("name", "") == name) ++matches;
+    const auto key = std::to_string(target);
+    if(target == state.at("entity_id") || matches != 1 || !actors.contains(key) ||
+       actors.at(key).at("gm_rank") != 0)
+      throw ProtocolError("visible Tell requires one separate non-GM player identity");
+    return tellRequest(actors, state.at("party"), target, name, args.at("message"), false, false);
+  }
+
   Bytes remoteTellRequest(const nlohmann::json& actors, const nlohmann::json& knownPlayers,
                           const nlohmann::json& party, const nlohmann::json& partyChat,
                           const nlohmann::json& tells, uint64_t currentToken,

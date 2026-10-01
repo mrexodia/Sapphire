@@ -285,6 +285,25 @@ runner's independently received positions, identities, gameplay and optional
 fresh-login checks can verify the corresponding outcomes. Administrative setup
 is never natural progression or normal movement evidence.
 
+### Optional direct Tell check
+
+Add `--verify-tell` to exchange exactly two direct Tells between the dedicated
+bots, after optional party disband and before optional reconnect. Each sender and
+receiver must remain idle, non-GM and nonparty, with one exact visible peer.
+The separate `tell_visible` native method rechecks visibility/name/entity identity
+and rejects duplicate players, NPC lookalikes, self/GM targets, transitions,
+scenes and membership/invitation state immediately before ordinary publication.
+It has no remote-party or offline fallback. Older workers are rejected before
+HTTP login. No messages are sent to the viewer.
+
+Each unpredictable message is generated after both baseline snapshots. Received
+sender name, entity ID, character ID, nonparty context and a newer received token
+must match exactly. There is a ten-second publication/delivery budget per
+direction, no mutation retry, and no automatic social cleanup on failure.
+The summary records `tell_verification`, both received messages/token ranges and
+`tell_visible_bidirectional` timing. This is narrow visible-peer messaging, not
+remote/offline Tell coverage or a general social/reset test.
+
 ## Run a short check
 
 ```powershell

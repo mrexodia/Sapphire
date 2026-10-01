@@ -243,6 +243,40 @@ int main()
     rejects([&] { tellRequest(partyActors, tellParty, 2097153, "E2E Target", "Exact tell message"); });
     rejects([&] { tellRequest(partyActors, tellParty, 2097154, "Wrong Target", "Exact tell message"); });
     rejects([&] { tellRequest(partyActors, tellParty, 2097154, "E2E Target", "!debug"); });
+    nlohmann::json visibleState{{"phase", "ready"}, {"gm_rank", 0}, {"entity_id", 2097153},
+      {"between_areas", false}, {"event_id", nullptr}, {"scene", nullptr}, {"pending_party_invite", nullptr},
+      {"party", {{"id", 0}, {"count", 0}, {"members", nlohmann::json::array()}}}, {"actors", partyActors}};
+    visibleState["actors"]["2097154"]["gm_rank"] = 0;
+    const nlohmann::json visibleArgs{{"target", 2097154}, {"name", "E2E Target"}, {"message", tellMessage}};
+    require(visibleTellRequest(visibleState, false, visibleArgs) == expectedTell,
+            "visible-only Tell retains ordinary protocol bytes");
+    rejects([&] { visibleTellRequest(visibleState, true, visibleArgs); });
+    for(int invalid = 0; invalid < 18; ++invalid)
+    {
+      auto state = visibleState, args = visibleArgs;
+      switch(invalid)
+      {
+        case 0: state["actors"]["2097155"] = state["actors"]["2097154"]; break;
+        case 1: state["actors"] = nlohmann::json::object(); break;
+        case 2: state["actors"]["2097154"]["kind"] = 3; break;
+        case 3: state["actors"]["2097154"]["gm_rank"] = 1; break;
+        case 4: state["entity_id"] = 2097154; break;
+        case 5: state["gm_rank"] = 1; break;
+        case 6: state["between_areas"] = true; break;
+        case 7: state["scene"] = nlohmann::json::object(); break;
+        case 8: state["event_id"] = 123; break;
+        case 9: state["pending_party_invite"] = nlohmann::json::object(); break;
+        case 10: state["party"]["id"] = 1; break;
+        case 11: state["phase"] = "logging_out"; break;
+        case 12: args["target"] = uint64_t{0x100200002}; break;
+        case 13: args["target"] = true; break;
+        case 14: args["target"] = -1; break;
+        case 15: args["remote_party"] = true; break;
+        case 16: args["name"] = "Other Player"; break;
+        case 17: args["message"] = "!debug"; break;
+      }
+      rejects([&] { visibleTellRequest(state, false, args); });
+    }
     auto offlineParty = tellParty; offlineParty["members"][0]["territory"] = 0;
     require(tellRequest(nlohmann::json::object(), offlineParty, 2097154, "E2E Target",
                         "Exact tell message", true) == expectedTell,

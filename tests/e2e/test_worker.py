@@ -44,6 +44,16 @@ def test_administrative_journal_records_binding_not_credentials(worker):
     assert "nested-private-password" not in text and "private-session-not-audit-data" not in text
 
 
+def test_visible_tell_journal_records_peer_not_unrelated_credentials(worker):
+    with pytest.raises(WorkerError):
+        worker.request("tell_visible", "absent-bot", target=2, name="Tester Peer", message="Test Tell",
+                       sId="private-session-not-audit-data")
+    worker.close()
+    text = (worker.artifacts / "actions.jsonl").read_text()
+    assert json.loads(text.splitlines()[-1])["args"] == {"target":2, "name":"Tester Peer", "message":"Test Tell"}
+    assert "private-session-not-audit-data" not in text
+
+
 def test_capabilities(worker):
     caps = worker.request("capabilities")
     assert caps["profile"] == "sapphire-3.3"

@@ -1436,6 +1436,12 @@ namespace Sapphire::Testing
       sendZone(WC::FFXIVIpcClientInventoryItemOperation::_ServerIpcType, payload);
       return {{"context", m_inventoryContext}};
     }
+    if(method == "tell_visible")
+    {
+      auto payload = visibleTellRequest(m_state, m_moving, args);
+      sendChat(WC::FFXIVIpcChatTo::_ServerIpcType, payload);
+      return Json::object(); // Local publication only, not delivery evidence.
+    }
     if(method == "tell_remote")
     {
       if(m_moving || !m_state["event_id"].is_null()) throw ProtocolError("remote tell requires an idle character");
