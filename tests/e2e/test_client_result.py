@@ -16,7 +16,7 @@ from .support.client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                                    witness_say_challenge)
 from .support.client_snapshot import git
 from .support.development import DevelopmentError
-from .support.environment import REPO
+from .support.environment import REPO, artifact_tree_sha256
 from .test_client_development import completed, declined
 
 
@@ -153,6 +153,7 @@ def build_output(root, source_revision="1" * 40):
         "quest_catalog_navigation":{"path":"C:/e2e-input/catalog-mesh.nav",
                                     "sha256":input_hashes["catalog-mesh.nav"]}})
     environment_hash = hashlib.sha256(environment_path.read_bytes()).hexdigest()
+    environment_tree_hash = artifact_tree_sha256(environment_path.parent)
     retire = {"server_close_observed": True, "native_bot_removed": True,
               "scope": "normal-witness-session-retirement-not-offline-exclusion"}
     phases = ["setup", "spawn", "movement", "say", "review", "development",
@@ -179,6 +180,7 @@ def build_output(root, source_revision="1" * 40):
                 "scope":"all-exact-owned-isolated-process-generations-observed-terminated",
                 "process_count":4,
                 "generations":{"api":1,"database":1,"lobby":1,"world":1}}},
+        "environment_artifact_tree_sha256":environment_tree_hash,
         "sandbox_disposal": "operator_required", "runtime_removed": True,
         "fixture": {"position": [0, 0, 0], "territory": 130,
                     "catalog_sha256": input_hashes["quest_catalog.json"], "placement_is_travel": False,
@@ -295,6 +297,8 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
     assert proof["environment_manifest"]["evidence"]["server_navigation_file_count"] == 1
     assert proof["environment_manifest"]["evidence"]["worker_sha256"] == proof["worker_sha256"]
     assert proof["environment_process_teardown"]["evidence"]["process_count"] == 4
+    assert proof["environment_artifact_tree_sha256"] == artifact_tree_sha256(
+        root / "artifacts/sapphire-e2e-synthetic")
     assert proof["activity_deadline"]["activity_and_worker_exit_completed_within_budget"] is True
 
 
@@ -346,6 +350,9 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
     lambda root, report: report["environment_process_teardown"].update(
         relative_path="../foreign/process-lifecycle.json"),
     lambda root, report: report["environment_process_teardown"].update(sha256="0" * 64),
+    lambda root, report: report.update(environment_artifact_tree_sha256="0" * 64),
+    lambda root, report: write_json(root /
+        "artifacts/sapphire-e2e-synthetic/foreign.json", {"changed":True}),
     lambda root, report: report["environment_process_teardown"]["evidence"].update(
         process_count=True),
     lambda root, report: json_file(root /

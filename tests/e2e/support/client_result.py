@@ -26,8 +26,8 @@ from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                            validate_review, witness_say_challenge)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
-from .environment import (SetupError, has_cleanup_failure_marker,
-                          require_process_teardowns)
+from .environment import (SetupError, artifact_tree_sha256,
+                          has_cleanup_failure_marker, require_process_teardowns)
 
 
 RESULT_SCOPE = "current-graphical-development-result-before-separate-sandbox-disposal"
@@ -398,6 +398,15 @@ def inspect_client_development_result(output, expected_source_revision):
         raise DevelopmentError("graphical environment identities differ from nested runs")
     environment_teardown = _environment_teardown(
         output, report.get("environment_process_teardown"))
+    environment_tree_hash = report.get("environment_artifact_tree_sha256")
+    relative_lifecycle = PurePosixPath(environment_teardown["relative_path"])
+    environment_artifacts = output.joinpath(*relative_lifecycle.parts).parent
+    try:
+        if (not _hex(environment_tree_hash, 64)
+                or artifact_tree_sha256(environment_artifacts) != environment_tree_hash):
+            raise DevelopmentError("graphical environment artifact tree differs")
+    except SetupError as error:
+        raise DevelopmentError("cannot verify graphical environment artifact tree") from error
 
     ticket = _read_json(output / "review-ticket.json")
     review = _read_json(output / "review.json")
@@ -475,6 +484,7 @@ def inspect_client_development_result(output, expected_source_revision):
             "client_teardown": client_teardown,
             "environment_manifest": environment_identity,
             "environment_process_teardown": environment_teardown,
+            "environment_artifact_tree_sha256": environment_tree_hash,
             "runtime_removed": True, "sandbox_disposal_verified": False,
             "note": "Structured current guest evidence only; inspect rendering and dispose the owned Sandbox separately."}
 

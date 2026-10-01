@@ -18,7 +18,8 @@ from .support.client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                                    received_real_say, received_real_spawn,
                                    validate_interaction_review, validate_review,
                                    witness_say_challenge)
-from .support.environment import Environment, require_process_teardowns, sha256, REPO
+from .support.environment import (Environment, artifact_tree_sha256,
+                                  require_process_teardowns, sha256, REPO)
 from .support.client_snapshot import verify_source
 from .support.client_environment import SCOPE as ENVIRONMENT_IDENTITY_SCOPE
 from .support.client_timing import ClientPhaseTiming
@@ -393,6 +394,7 @@ def run():
                     "scope": "exact-graphical-isolated-service-teardown-before-result-publication",
                     "relative_path": lifecycle_path.relative_to(OUTPUT).as_posix(),
                     "sha256": sha256(lifecycle_path), "evidence": process_proof}
+                report["environment_artifact_tree_sha256"] = artifact_tree_sha256(env.artifacts)
             except BaseException:
                 errors.append("isolated environment cleanup failed")
         if errors:
