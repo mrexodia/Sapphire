@@ -1,5 +1,6 @@
 """Provisioning control-flow/ownership contracts; never connects to a server."""
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -9,9 +10,12 @@ from types import SimpleNamespace
 import pytest
 
 from . import provision_development
+from .inspect_development_provisioning import main as inspect_provisioning_main
 from .support import development_artifact
 from .support.development import DevelopmentError, create_account
 from .support.environment import artifact_tree_sha256
+from .support.development_provisioning_result import (
+    SCOPE as DEVELOPMENT_PROVISIONING_SCOPE, inspect_development_provisioning)
 
 
 @pytest.fixture
@@ -67,7 +71,7 @@ def managed_receipt(session="a"):
             "preflight_worker_pid":456}
 
 
-def execute(server, tmp_path, *, fake=None, register=None, login=None):
+def execute(server, tmp_path, *, fake=None, register=None, login=None, max_seconds=None):
     fake = fake or ProvisionWorker()
     output, artifacts = tmp_path / "private.json", tmp_path / "artifacts"
     calls = []
@@ -82,8 +86,54 @@ def execute(server, tmp_path, *, fake=None, register=None, login=None):
         return {"lobbyHost": "127.0.0.1", "lobbyPort": 54994, "sId": "private-session"}
     result = provision_development.run(server, output, artifacts, confirmed=True,
         worker_factory=lambda *_: fake, register=register or creation, login=login or authentication,
-        lease_root=tmp_path / "leases")
+        lease_root=tmp_path / "leases", max_seconds=max_seconds)
     return result, fake, calls
+
+
+def test_external_provisioning_inspector_is_strict_sanitized_and_read_only(
+        server, tmp_path, capsys):
+    result, _, _ = execute(server, tmp_path, max_seconds=60)
+    summary = tmp_path / "artifacts/provisioning-summary.json"
+    profile_path = tmp_path / "private.json"
+    before = {path:hashlib.sha256(path.read_bytes()).hexdigest()
+              for path in (summary, profile_path, tmp_path / "artifacts/worker/ownership.json")}
+    proof = inspect_development_provisioning(summary, profile_path)
+    assert proof["scope"] == DEVELOPMENT_PROVISIONING_SCOPE
+    assert proof["managed_host"] is False and proof["ready_for_shared_checks"] is False
+    assert proof["worker_artifacts"]["sha256"] == result["worker_artifact_tree_sha256"]
+    rendered = json.dumps(proof)
+    profile = json.loads(profile_path.read_text())
+    assert all(account["username"] not in rendered and account["password"] not in rendered
+               for account in profile["accounts"])
+    assert str(tmp_path) not in rendered
+    assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
+    assert inspect_provisioning_main(
+        ["--summary",str(summary),"--profile",str(profile_path)]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutation", ["status","managed","worker-tree","profile","duplicate"])
+def test_external_provisioning_inspector_rejects_foreign_or_incomplete_evidence(
+        server, tmp_path, mutation):
+    execute(server, tmp_path, max_seconds=60)
+    summary = tmp_path / "artifacts/provisioning-summary.json"
+    profile_path = tmp_path / "private.json"
+    report = json.loads(summary.read_text())
+    if mutation == "status": report["status"] = "failed"
+    elif mutation == "managed": report["managed_host_binding"]["requested"] = True
+    elif mutation == "worker-tree":
+        (tmp_path / "artifacts/worker/foreign.json").write_text("{}")
+    elif mutation == "profile":
+        profile = json.loads(profile_path.read_text())
+        profile["accounts"][0]["character"] = "Foreign Character"
+        profile_path.write_text(json.dumps(profile))
+    else:
+        summary.write_text(summary.read_text().replace(
+            '{\n  "version": 1,', '{\n  "version": 1,\n  "version": 1,', 1))
+    if mutation not in {"worker-tree","profile","duplicate"}:
+        summary.write_text(json.dumps(report))
+    with pytest.raises(DevelopmentError):
+        inspect_development_provisioning(summary, profile_path)
 
 
 def test_worker_artifact_identity_failure_never_retries_account_creation(
