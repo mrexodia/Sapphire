@@ -1499,6 +1499,24 @@ field, and a current authorized isolated run is still required to demonstrate 15
 real distinct fixtures with current process cleanup. No gate, service, account or
 gameplay operation ran.
 
+Follow-up **`718935785`** strengthens `environment_isolation_verified` beyond
+Python object inequality. The gate now privately requires 15 unique, non-nested
+runtime and artifact roots; 15 distinct correctly formed randomized database
+names; four distinct typed local ports inside each fixture; and exact equality of
+each environment's database/runtime/port identity with its retained staged
+`manifest.json`. Missing/malformed manifests, shared roots/artifacts/database,
+nested evidence, altered runtime, duplicate local ports or manifest disagreement
+fail the gate. Values remain private; only the aggregate boolean is published.
+Sequential environments may legitimately reuse a released port, so cross-case
+port uniqueness is explicitly not claimed.
+
+Frozen, remote-free source **`718935785751262ecff7fc2a33b57d02c5ec93a3`**
+passed **83 CI/workflow-policy tests in 2.41s**. Test-log SHA-256:
+`bcef04c6ade889dbc8789900902702faa54c2d03ed588096b205543bb83bbd5d`.
+This remains synthetic policy evidence until a new authorized isolated gate emits
+the current boolean. It does not prove hosted/VM isolation, server-session
+exclusion or cross-case port nonreuse. No gate, service or gameplay operation ran.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
@@ -3720,7 +3738,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
 | Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 and Ring2 round trips, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards and that opening's private-to-public travel; appearance breadth and other cities/classes remain uncovered |
-| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required; current gate additionally requires an exact one-to-one mapping from all 15 case IDs to 15 pairwise-distinct disposable environments and consumes every lifecycle/manifest | Earlier Windows and containerized Ubuntu 22.04 runs are live-verified at their historical scope; current per-case isolation/process-generation public evidence awaits a new gate, and hosted deployment remains unverified |
+| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required; current gate requires an exact one-to-one mapping from all 15 case IDs to 15 pairwise-distinct disposable environments, unique/non-nested runtime/artifact/database identities, exact private manifest agreement, and every lifecycle/manifest | Earlier Windows and containerized Ubuntu 22.04 runs are live-verified at their historical scope; current per-case identity/isolation/process-generation public evidence awaits a new gate, and hosted deployment remains unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
 | Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking, Gil for Gold, opening ring and Coming to Ul'dah acceptance choices | Four live verified adapters; Due Diligence and Coming to Ul'dah completion remain route-blocked |
