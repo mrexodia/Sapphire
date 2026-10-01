@@ -63,6 +63,42 @@ The guest creates its own Documents/game settings, client copy, database and
 runtime. Do not run `run_client_smoke` directly on the host or weaken the WSB
 settings to get a failed run to pass. Do not overlap runs in a reused guest.
 
+## Optional graphical co-presence development check
+
+Add `--development-check` to the **prepare** command to opt into one normal
+shared-development scenario inside the same owned guest runtime. Use a worker
+supporting bound party methods and `tell_visible`; no older-worker fallback is
+provided. The default smoke procedure is unchanged when this flag is absent.
+
+After the usual movement/Say/manual-rendering review, status enters
+`development`. Keep the graphical character in-world. Read the host-visible
+`output/development/viewer-start.json` and later `viewer-finish.json`, and send
+each exact `reply_in_say` through the real client's ordinary Say UI when it
+appears. Each checkpoint has the normal runner's **60-second** reply window.
+Do not pre-send a finish reply or logout before the coordinator requests it.
+
+The coordinator normally logs out/closes its original headless witness before
+reusing that dedicated account as a bot. It creates a second separate non-GM
+pre-connection fixture on a validated corridor point, never an invented offset.
+The viewer's account/credentials are excluded from the two-account runner profile.
+The normal runner performs source-bound movement, party/chat/disband, visible
+Tell, reconnect and the two exact viewer checkpoints. No GM action, reset or
+viewer UI control is performed. Fixture placement is administrative setup only.
+
+`development_check` in the graphical result references the exact normal-runner
+summary and requires every requested subcheck, clean worker/lease lifecycle and
+the same non-GM graphical fixture identity at both checkpoints. The original
+witness then authenticates afresh to verify the graphical client's ordinary
+logout. The existing twenty-minute activity budget remains in use: native RPC
+and observation waits are capped by its remainder; late successes fail. Bounded
+HTTP/fixture calls and cleanup are not forcibly interrupted mid-call.
+
+The prior screenshot review does **not** certify rendering of these added bot
+actions. Even a successful bridge is endpoint co-presence, not continuous presence,
+visual quest/combat agreement, normal opening progression, shared-database
+cleanliness or full acceptance. This opt-in bridge still needs actual graphical
+execution and disposal evidence; preparation/contracts alone do not satisfy it.
+
 ## Manual procedure and machine assertions
 
 Follow `output/status.json`; setup logs are in `output/bootstrap.log`. The

@@ -56,7 +56,9 @@ def approve(output):
     temporary.replace(output / "review.json")
 
 
-def prepare(profile_path, client_path, destination, crt_dirs=()):
+def prepare(profile_path, client_path, destination, crt_dirs=(), *, development_check=False):
+    if type(development_check) is not bool:
+        raise ValueError("development-check must be an explicit boolean")
     if os.name != "nt":
         raise RuntimeError("preparation requires Windows with Windows Sandbox installed")
     destination = Path(destination).resolve()
@@ -79,7 +81,8 @@ def prepare(profile_path, client_path, destination, crt_dirs=()):
     catalog_path = Path(profile["quest_catalog"]).resolve()
     catalog = load_quest_catalog(catalog_path)
     fixture = {"position": catalog["route"][0], "territory": 130,
-               "catalog_sha256": sha256(catalog_path), "placement_is_travel": False}
+               "catalog_sha256": sha256(catalog_path), "placement_is_travel": False,
+               "development_check": development_check}
     binary_root = Path(profile["binaries"]).resolve()
     system = Path(os.environ["WINDIR"]) / "System32"
     git_exe = shutil.which("git")
@@ -132,6 +135,9 @@ def prepare(profile_path, client_path, destination, crt_dirs=()):
     guest_profile = {"binaries": "C:/e2e-input/bin", "worker": "C:/e2e-input/bin/sapphire_test_client.exe",
                      "game_data": "C:/e2e-sqpack", "mariadb_bin": "C:/e2e-mariadb/bin",
                      "navigation": "C:/e2e-navigation"}
+    if development_check:
+        shutil.copy2(catalog_path, inputs / "quest_catalog.json")
+        guest_profile["quest_catalog"] = "C:/e2e-input/quest_catalog.json"
     (inputs / "profile.json").write_text(json.dumps(guest_profile, indent=2), encoding="utf-8")
     (inputs / "fixture.json").write_text(json.dumps(fixture, indent=2), encoding="utf-8")
     (inputs / "bootstrap.ps1").write_text(
@@ -165,12 +171,14 @@ def main():
     for name in ("profile", "client", "output"):
         setup.add_argument("--" + name, required=True)
     setup.add_argument("--crt-dir", action="append", default=[])
+    setup.add_argument("--development-check", action="store_true",
+                       help="After manual rendering review, run two separate bots with manual viewer Say checkpoints")
     review = modes.add_parser("approve-rendering", help="ONLY after manually examining the requested evidence")
     review.add_argument("--output", required=True)
     review.add_argument("--reviewed-all-checks", action="store_true", required=True)
     args = parser.parse_args()
     if args.mode == "prepare":
-        print(prepare(args.profile, args.client, args.output, args.crt_dir))
+        print(prepare(args.profile, args.client, args.output, args.crt_dir, development_check=args.development_check))
     else:
         approve(args.output)
 

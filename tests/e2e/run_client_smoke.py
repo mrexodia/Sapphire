@@ -16,6 +16,9 @@ from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, WITNESS_SAY, other_p
 from .support.environment import Environment, sha256, REPO
 from .support.client_snapshot import verify_source
 from .support.worker import Worker, Bot
+from .support.client_development import ActivityWorker, development_profile, require_graphical_check
+from .support.development import authenticate, movement_route
+from .run_development import run as run_development
 
 INPUT = Path("C:/e2e-input")
 OUTPUT = Path("C:/e2e-output")
@@ -74,11 +77,17 @@ def run():
                            check=True, timeout=20)
         profile = json.loads((INPUT / "profile.json").read_text(encoding="utf-8"))
         profile["artifacts"] = str(OUTPUT / "artifacts")
+        fixture = json.loads((INPUT / "fixture.json").read_text(encoding="utf-8"))
+        development_enabled = fixture.get("development_check", False)
+        if type(development_enabled) is not bool:
+            raise ValueError("invalid graphical development opt-in")
+        if development_enabled and sha256(Path(profile["quest_catalog"])) != fixture["catalog_sha256"]:
+            raise ValueError("development corridor differs from prepared fixture catalog")
         env = Environment(profile)
         env.start()
         report["artifacts"] = str(env.artifacts)
-        fixture = json.loads((INPUT / "fixture.json").read_text(encoding="utf-8"))
         report["fixture"] = fixture
+        report["development_check"] = {"requested": development_enabled, "status": "not_run"}
         with Worker(env.worker, env.artifacts / "observer", env.deadline_scale) as worker:
             witness = env.fresh_character(fixture["position"])
             real = env.fresh_character(fixture["position"])
@@ -150,6 +159,42 @@ def run():
                 return True
 
             wait(reviewed)
+            if development_enabled:
+                phase("development", "Keep this graphical character in-world. Read development/viewer-start.json and viewer-finish.json; send each reply_in_say manually when it appears. Do not logout until instructed.")
+                if client.poll() is not None or time.monotonic() >= deadline:
+                    raise RuntimeError("graphical process/activity unavailable before bot scenario")
+                # Reuse only the owned headless witness account, after ordinary closure.
+                # The graphical viewer account is never passed to the normal runner.
+                bot.logout(wait_server_close=True)
+                bot.close()
+                # Read the validated prefix, never invent an offset for the second bot.
+                route, _ = movement_route({"territory": 130, "quest_catalog": profile["quest_catalog"]})
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("graphical activity expired before peer fixture setup")
+                peer = env.fresh_character(route[-1])  # Administrative pre-connection fixture, not progression.
+                shared = development_profile(env, witness, peer, real, profile["quest_catalog"])
+                def bounded_login(config, account):
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError("graphical activity expired before authentication")
+                    auth = authenticate(config, account)
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError("graphical activity expired during authentication")
+                    return auth
+                result = run_development(shared, OUTPUT / "development", confirmed=True,
+                    verify_party=True, verify_tell=True, verify_reconnect=True, viewer_name=real["name"],
+                    worker_factory=lambda executable, artifacts: ActivityWorker(executable, artifacts, deadline=deadline),
+                    login=bounded_login)
+                report["development_check"] = {"requested": True, "status": result["status"],
+                    "summary_sha256": sha256(OUTPUT / "development/development-summary.json"),
+                    "elapsed_seconds": result["elapsed_seconds"]}
+                proof = require_graphical_check(result, real["name"], entity)
+                if client.poll() is not None or time.monotonic() >= deadline:
+                    raise RuntimeError("graphical process/activity unavailable after bot scenario")
+                report["development_check"]["evidence"] = proof
+                # Restore an independent witness for the original manual logout check.
+                bot = Bot(worker, "witness-after-development")
+                state = bot.login_via_lobby(bounded_login(shared, shared["accounts"][0]), witness["name"])
+                other_player(state, entity)
             phase("logout", "Use /logout and confirm normally. Leave the client running at its title screen.")
             wait(lambda s: other_player(s, entity, allow_absent=True) is None)
             # Despawn alone could mean an abnormal disconnect. Also require the real
