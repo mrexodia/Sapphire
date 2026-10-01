@@ -164,7 +164,7 @@ prepare public-world fixtures with your development tools before running the
 shared checks. The opt-in placement lane below can prepare the registered bots
 without stopping the world. General reprovisioning/reset is still pending.
 
-## Targeted administrative placement (opt-in; live verification pending)
+## Targeted administrative placement (opt-in; narrow owned-runtime verification)
 
 The server now implements a **disabled-by-default**, GM-only `!devbot place`
 command. This is administrative fixture setup, not gameplay. It only places one
@@ -237,10 +237,15 @@ placements retain leases for inspection. Do not
 regenerate approvals to hide failed outcomes. After server restart the in-memory
 one-shot set is lost; this is not crash-consistent/idempotent reset infrastructure.
 
-This implementation has native policy tests, a compiled server command translation
-unit, and synthetic runner tests. Actual GM-triggered placement, client zoning and
-fresh-login persistence on a shared development world **remain unverified**. No
-server has been configured/deployed/modified by the agent to exercise it yet.
+A clean linked server and separate authorized GM operator were exercised in an
+owned private runtime: two normally provisioned non-GM characters received
+182 → 130 transitions, then passed independent movement/party/viewer checks and
+one fresh-login position check. Placement readiness took 1.125s; the combined
+placement/development check took 38.719s. Evidence is recorded in
+`research/e2e-implementation-status.md` under registered-bot placement.
+This is **not** deployment verification for your existing shared database/server,
+real graphical-client evidence, natural opening progression, server-restart
+persistence, or general reset/reprovisioning coverage.
 
 ### Optional scripted GM operator (administrative setup only)
 

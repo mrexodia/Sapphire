@@ -12,6 +12,87 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Registered-bot placement: narrow owned-runtime live verification
+
+Features `ea0d30036`, `0e49ba287` and `a6b2c1143` add a distinct administrative
+worker method, a separate preparation-operator Python API, and credential-field
+filtered request journaling. Ordinary `Bot` login still rejects GM characters;
+ordinary Say still rejects debug commands. The administrative method requires
+exact received operator identity, GM/ready/stationary/public-130/nonparty state,
+an explicit setup flag, one lowercase-hex approval ID and slot 0/1. Each native
+Bot consumes at most those two slots of one approval before publication. The
+helper flushes an exclusive intent before dispatch and never retries uncertain
+publication. These are local safeguards, not server-side transaction locks,
+cross-host exclusion or crash-consistent ledgers. Existing server guards remain
+independent and disabled by default. Operator login/reply methods do not expose
+movement/combat/inventory or create/promote accounts.
+
+**Clean build and focused verification:** linked server/API/lobby/DB tool and
+script modules built with Windows LLVM/Ninja Release from committed `e665c041f`
+and committed submodules, excluding all working-tree experiments. The worker
+was built with the administrative feature at `ea0d30036`; its changed native
+inputs byte-match that commit. Live controller revision was `0e49ba287`.
+`placement-live-inputs-002.json` records separate revisions and binary SHA-256s.
+Native placement and protocol CTests each passed **1/1**. Focused Python checks
+passed **286 in 7.56s** before the separate login API, then an overlapping **107
+in 5.13s** for that API. Final operator/privacy contracts passed **25 in 0.55s**
+from an archived `a6b2c1143` snapshot, not the dirty working-tree worker.
+Logs/timings are under `.e2e-artifacts/placement-{server,operator}-*.log` and
+`development-operator-*-timings*.json`. These are not full acceptance results.
+
+**Failure preserved:** `.e2e-artifacts/placement-live-001` stopped at the ordinary
+Bot's intentional non-GM login guard after successful provisioning. No placement
+request was sent. The separate GM had connected before the wrapper rejected it;
+worker teardown and owned-runtime cleanup followed, not a claimed normal GM
+logout. The exact failed driver/report are retained. This motivated the separate
+`DevelopmentOperator.login_for_preparation`, without weakening ordinary login.
+
+**One fresh, bounded live check passed**, in
+`.e2e-artifacts/placement-live-002`:
+
+- Owned runtime startup **19.797s**, normal account/character provisioning
+  **11.640s**, combined placement and development check **38.719s**, entire driver
+  including operator lifecycle and cleanup **77.250s**. Administrative placement
+  waiting alone was **1.125s**; these timings do not imply acceptance speedups.
+- Only the newly owned runtime enabled the command and loaded the reviewed
+  registry. A distinct owned operator fixture received GM rank 1 before its
+  first lobby/world connection, with exactly one identity-bound DB row updated
+  while it was the database's sole character. No live cached character was
+  edited; both normally provisioned registered targets remained GM rank 0.
+- Both target journals contain **182 → 130** InitZone transitions. Exact
+  registered identities and destination positions were received and independently
+  observed. Two server request records bind approval/slot/operator/target/source/
+  destination/catalog; local receipts remain `placement_verified: false` and
+  intents remain `publication_outcome_unknown`, never rewritten as mutation proof.
+- Normal public-world movement, exact two-member party/chat/disband and fresh
+  HTTP/encrypted-lobby/world reconnect passed. The mover's new session received
+  territory 130 and the same identity/position. This is narrow fresh-login
+  evidence, not restart/crash persistence or natural opening progression.
+- The separate **headless GM operator**, not a graphical client or the user's
+  character, supplied exactly two fresh viewer Say replies. Both normal clients
+  received each checkpoint. Operator identity/territory/GM rank/position/party/
+  pending invitation matched before/after; HP/resources/all-state invariance and
+  continuous presence are not claimed. Its journal contains only login, two
+  registered placement requests, two Say replies, logout, close and remove.
+- Normal logout/server closure and released bot leases were inspected. Owned
+  runtime/process cleanup completed; subsequent process inspection found only
+  the pre-existing MySQL PID 7764. Existing database/client settings/networking
+  were untouched. Private credentials/registry and raw artifacts stay untracked.
+
+`inspected-evidence.json` hashes summaries, bot/operator journals, intents,
+registry and server log. Passing aggregate summary SHA-256:
+`78549787183c9d8f2c1c1050b09c49c22402693ad9776a14bdc0212c95c2a8b8`.
+The original action journal records administrative method names only; exact
+bindings are supported by intents and server records. Richer whitelisted action
+arguments were added afterward and contract-tested, **not** retrospectively
+attributed to this live run. No live mutations were repeated to enrich logs.
+
+**Still pending:** deployment against the user's existing shared server/database,
+a real graphical viewer alongside these bots, general safe character
+reprovisioning/owned-world resets, and the original gameplay/platform/hosted-CI/
+acceptance gaps below. Expanded Linux remains 7/15. No full gate, expensive soak,
+platform sweep, graphical launch, or overall completion claim was made.
+
 ## Named viewer endpoint confirmation (not graphical acceptance)
 
 Feature `1c15616a5` adds `--viewer-name` to `run_development.py`, backed by
@@ -28,7 +109,8 @@ speaker/channel, stale or invalid event tokens, reused start replies, one-sided
 publication, NPC lookalikes, duplicate names, changed identity and bot-as-viewer
 selection fail closed. Viewer movement is permitted; the runner does not hold or
 restore its position or modify that character's gameplay state. A GM viewer is allowed by the
-contract, while test bots remain non-GM; a GM viewer was not live tested.
+contract, while test bots remain non-GM; a GM viewer was not live tested at this
+checkpoint (the subsequent registered-placement check above now covers that role).
 
 **Focused evidence:** 266 applicable contracts passed in **7.09s**. The 36 new
 viewer contracts also passed in **0.34s** from the committed source snapshot.
@@ -69,9 +151,11 @@ journals, `viewer-before-after.json`, and `host-final-status.json`.
 attestation. No graphical executable was launched, existing database/client
 settings were untouched, and normal provisioning was not repeated in this run.
 The prior post-provision snapshot gap remains specific to that failed diagnostic;
-this new case verifies snapshots around the short gameplay check only. Live GM
-placement, broader resets/reprovisioning, original platform/CI/graphical and full
-acceptance requirements remain open. No full gate or soak was run.
+this case verifies snapshots around the short gameplay check only. Live GM
+placement was still pending at this checkpoint; the later owned-runtime evidence
+above is narrower than shared-server deployment. Broader resets/reprovisioning,
+original platform/CI/graphical and full acceptance requirements remain open.
+No full gate or soak was run.
 
 ## Bounded warm host and live dedicated provisioning (not acceptance)
 
