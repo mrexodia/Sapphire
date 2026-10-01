@@ -36,7 +36,12 @@ def test_viewer_cannot_be_either_bot(fixture,key,index):
 def completed():
     identity={'name':'Tester Viewer','entity_id':3,'gm_rank':0}
     return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
-            'worker_closed':True,'administrative_preparation_wait_enabled':False,'database_access':False,
+            'worker_closed':True,
+            'worker_exit':{'scope':'owned-native-worker-exit-not-server-session-closure',
+                           'context_entered':True,'context_exit_attempted':True,
+                           'context_exit_completed':True,'process_exit_observed':True,
+                           'process_id':12345,'returncode':0},
+            'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
             **{key:{'requested':True,'verified':True} for key in ('party_verification','tell_verification','reconnect_verification')},
             'viewer_verification':{'requested':True,'verified':True,'viewer_login_or_control_performed':False,
@@ -55,11 +60,22 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
 
 
 @pytest.mark.parametrize('field,value',[('status','failed'),('lease_retained',True),('worker_closed',False),
-    ('administrative_preparation_wait_enabled',True),('database_access',True),('world_restart_performed',True),
-    ('movement_waypoints_per_cycle',0)])
+    ('worker_exit',None),('administrative_preparation_wait_enabled',True),('database_access',True),
+    ('world_restart_performed',True),('movement_waypoints_per_cycle',0)])
 def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
     report=completed(); report[field]=value
     with pytest.raises(DevelopmentError): bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+@pytest.mark.parametrize('field,value',[
+    ('context_entered',False),('context_exit_attempted',False),
+    ('context_exit_completed',False),('process_exit_observed',False),
+    ('process_id',0),('process_id',True),('returncode',1),('returncode',True),
+    ('scope','server-session-closed')])
+def test_graphical_bridge_rejects_malformed_or_failed_worker_exit(field,value):
+    report=completed();report['worker_exit'][field]=value
+    with pytest.raises(DevelopmentError):
+        bridge.require_graphical_check(report,'Tester Viewer',3)
 
 
 def test_activity_budget_caps_calls_and_rejects_late_success(monkeypatch):

@@ -5,9 +5,9 @@ from pathlib import Path
 import re
 import uuid
 
-from .support.development import DevelopmentError, movement_route, validate_profile
+from .support.development import (DevelopmentError, movement_route, validate_profile,
+                                  require_normal_worker_exit)
 from .support.development_binding import require_provisioning_binding
-from .support.development_worker_exit import require_normal_worker_exit
 from .provision_development import reserve_private_profile
 
 

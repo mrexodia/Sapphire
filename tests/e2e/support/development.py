@@ -16,6 +16,24 @@ class DevelopmentError(RuntimeError):
     pass
 
 
+WORKER_EXIT_SCOPE = "owned-native-worker-exit-not-server-session-closure"
+
+
+def require_normal_worker_exit(report, key="worker_exit"):
+    """Reject legacy, malformed, failed or unbound exact-worker receipts."""
+    receipt = report.get(key)
+    if (not isinstance(receipt, dict) or receipt.get("scope") != WORKER_EXIT_SCOPE
+            or receipt.get("context_entered") is not True
+            or receipt.get("context_exit_attempted") is not True
+            or receipt.get("context_exit_completed") is not True
+            or receipt.get("process_exit_observed") is not True
+            or type(receipt.get("process_id")) is not int or receipt["process_id"] <= 0
+            or type(receipt.get("returncode")) is not int or receipt["returncode"] != 0
+            or "context_exit_error_type" in receipt or receipt.get("process_observation_error") is True):
+        raise DevelopmentError("normal owned native worker exit was not observed")
+    return receipt
+
+
 class Timings:
     def __init__(self):
         self.rows = []
@@ -104,6 +122,7 @@ def check_managed_host(profile, *, clock=time.monotonic, process=psutil.Process)
             raise ValueError()
         if hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest() != status.get("worker_sha256"):
             raise ValueError()
+        require_normal_worker_exit(status, "worker_preflight_exit")
     except Exception:
         raise DevelopmentError("managed development host is unavailable, expired or does not match this profile") from None
 

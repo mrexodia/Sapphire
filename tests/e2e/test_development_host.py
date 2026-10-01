@@ -234,7 +234,12 @@ def managed_profile(tmp_path):
     status = {"version": 1, "kind": "owned-development-host", "status": "ready", "session_id": "a" * 32,
               "owner_pid": process.pid, "owner_created": process.create_time(),
               "deadline_monotonic": time.monotonic() + 60, "api_port": 5000, "lobby_port": 54994,
-              "protocol": "sapphire-3.3", "worker_sha256": hashlib.sha256(worker.read_bytes()).hexdigest()}
+              "protocol": "sapphire-3.3", "worker_sha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
+              "worker_preflight_exit": {
+                  "scope": "owned-native-worker-exit-not-server-session-closure",
+                  "context_entered": True, "context_exit_attempted": True,
+                  "context_exit_completed": True, "process_exit_observed": True,
+                  "process_id": 12345, "returncode": 0}}
     profile = {"version": 1, "mode": "shared-development", "protocol": "sapphire-3.3", "territory": 130,
                "worker": str(worker), "api_port": 5000, "lobby_port": 54994,
                "host_session": {"path": str(status_path), "id": "a" * 32},
@@ -253,7 +258,7 @@ def test_managed_profile_requires_live_owner_and_exact_binding(managed_profile):
 @pytest.mark.parametrize("patch", [{"status": "stopped"}, {"status": "failed"}, {"session_id": "b" * 32},
     {"api_port": 5001}, {"lobby_port": 1}, {"protocol": "wrong"}, {"version": True},
     {"deadline_monotonic": -1}, {"deadline_monotonic": float("nan")}, {"owner_pid": -1},
-    {"owner_created": -1}, {"worker_sha256": "b" * 64}])
+    {"owner_created": -1}, {"worker_sha256": "b" * 64}, {"worker_preflight_exit": None}])
 def test_stale_or_wrong_host_rejected_before_auth_or_artifacts(managed_profile, tmp_path, patch, monkeypatch):
     profile, status, path = managed_profile
     status.update(patch)
@@ -269,7 +274,21 @@ def test_stale_or_wrong_host_rejected_before_auth_or_artifacts(managed_profile, 
     with pytest.raises(DevelopmentError): authenticate(profile, profile["accounts"][0])
 
 
-@pytest.mark.parametrize("running,status", [(False, psutil.STATUS_RUNNING), (True, psutil.STATUS_ZOMBIE), (True, psutil.STATUS_DEAD)])
+@pytest.mark.parametrize("field,value", [
+    ("context_entered", False), ("context_exit_attempted", False),
+    ("context_exit_completed", False), ("process_exit_observed", False),
+    ("process_id", 0), ("process_id", True), ("returncode", 1),
+    ("returncode", True), ("scope", "server-session-closed")])
+def test_managed_profile_rejects_malformed_or_failed_preflight_exit(managed_profile, field, value):
+    profile, record, path = managed_profile
+    record["worker_preflight_exit"][field] = value
+    path.write_text(json.dumps(record))
+    with pytest.raises(DevelopmentError):
+        check_managed_host(profile)
+
+
+@pytest.mark.parametrize("running,status", [(False, psutil.STATUS_RUNNING),
+    (True, psutil.STATUS_ZOMBIE), (True, psutil.STATUS_DEAD)])
 def test_nonlive_owner_is_rejected(managed_profile, running, status):
     profile, record, _ = managed_profile
     owner = SimpleNamespace(is_running=lambda: running, status=lambda: status,

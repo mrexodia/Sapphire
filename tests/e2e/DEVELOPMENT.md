@@ -94,9 +94,10 @@ route start, not normal lobby creation, progression, or GM-placement evidence.
 No live cached character rows are edited, and no runtime reset is offered.
 
 Exported profiles bind the exact host session, owner PID **and creation time**,
-expiry, endpoints and worker hash. Runners/provisioners reject stopped, expired,
-orphaned or mismatched bindings **before authentication**, and HTTP operations
-recheck them. These are cooperating local-process checks, not server-side locks,
+expiry, endpoints, worker hash and successful exact-owned preflight-worker exit.
+Runners/provisioners reject stopped, expired, orphaned, legacy-without-exit-proof
+or mismatched bindings **before authentication**, and HTTP operations recheck
+them. These are cooperating local-process checks, not server-side locks,
 authentication, cross-host exclusion, or atomic protection against process loss
 mid-operation. Coordinator hard-kill cleanup remains unverified; retained
 private runtimes/leases need manual ownership verification, never lease stealing.
