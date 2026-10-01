@@ -49,6 +49,8 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     (PRIVATE, "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
               "    runs-on: ubuntu-latest"),
     (PRIVATE, "  workflow_dispatch:", "  pull_request:\n  workflow_dispatch:"),
+    (PRIVATE, "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\"",
+              "          test \"$SELECTED_REF\" = \"$SELECTED_REF\""),
 ])
 def test_workflow_policy_rejects_mutable_unbounded_or_untrusted_controls(
         tmp_path, source, old, new):

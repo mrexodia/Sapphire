@@ -115,7 +115,12 @@ def inspect_workflow(path, *, private):
         required = ("  cancel-in-progress: false",
                     "    environment: sapphire-private-e2e",
                     "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
-                    "    needs: authorize")
+                    "    needs: authorize",
+                    "        type: boolean",
+                    "        default: false",
+                    "          test \"$ACK\" = true || { echo 'Explicit review acknowledgement required'; exit 1; }",
+                    "          test \"$ENABLED\" = true || { echo 'Private E2E runner is not enabled'; exit 1; }",
+                    "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\" || { echo 'Only the trusted default branch is allowed'; exit 1; }")
         if any(value not in lines for value in required):
             raise DevelopmentError("private workflow lacks protected serialized runner controls")
     normalized = path.as_posix()
