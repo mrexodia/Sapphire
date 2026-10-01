@@ -111,6 +111,28 @@ def inspect_owned_development_host(session_dir):
         raise DevelopmentError("owned-host service teardown receipt is malformed")
     lifecycle_path = session_dir / "process-lifecycle.json"
     lifecycle = _read(lifecycle_path, "process lifecycle")
+    artifact_dir = Path(status["artifacts"])
+    try:
+        artifact_resolved = artifact_dir.resolve()
+    except (OSError, RuntimeError) as error:
+        raise DevelopmentError("cannot resolve owned-host environment artifacts") from error
+    if (not artifact_dir.is_absolute() or artifact_dir.is_symlink()
+            or not artifact_dir.is_dir() or artifact_resolved == session_dir
+            or artifact_resolved in session_dir.parents
+            or session_dir in artifact_resolved.parents):
+        raise DevelopmentError("owned-host environment artifact directory is unsafe")
+    artifact_dir = artifact_resolved
+    try:
+        if has_cleanup_failure_marker(artifact_dir):
+            raise DevelopmentError("owned host environment records terminal cleanup failure")
+    except SetupError as error:
+        raise DevelopmentError("cannot inspect owned-host environment cleanup markers") from error
+    artifact_lifecycle = artifact_dir / "process-lifecycle.json"
+    if artifact_lifecycle.is_symlink() or not artifact_lifecycle.is_file():
+        raise DevelopmentError("owned-host environment lifecycle is missing or unsafe")
+    artifact_lifecycle_value = _read(artifact_lifecycle, "environment process lifecycle")
+    if not _typed_equal(artifact_lifecycle_value, lifecycle):
+        raise DevelopmentError("owned-host retained lifecycle differs from environment artifact")
     if (set(lifecycle) != {"version", "scope", "starts", "teardowns"}
             or type(lifecycle.get("version")) is not int or lifecycle["version"] != 1
             or lifecycle.get("scope") !=

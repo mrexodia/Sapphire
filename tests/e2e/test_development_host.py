@@ -401,6 +401,35 @@ def test_terminal_host_inspector_rejects_nested_renamed_cleanup_marker(assets, t
         inspect_owned_development_host(session)
 
 
+def test_terminal_host_inspector_rejects_session_as_environment_artifact(assets, tmp_path):
+    _, _, session = run_host(assets, tmp_path)
+    status_path = session / "status.json"
+    status = json.loads(status_path.read_text()); status["artifacts"] = str(session)
+    status_path.write_text(json.dumps(status))
+    with pytest.raises(DevelopmentError, match="artifact directory is unsafe"):
+        inspect_owned_development_host(session)
+
+
+def test_terminal_host_inspector_rejects_environment_cleanup_marker(assets, tmp_path):
+    _, _, session = run_host(assets, tmp_path)
+    status = json.loads((session / "status.json").read_text())
+    retained = Path(status["artifacts"]) / "retained"; retained.mkdir()
+    (retained / "Cleanup-Failure.JSON").write_text("{}")
+    with pytest.raises(DevelopmentError, match="environment records terminal cleanup failure"):
+        inspect_owned_development_host(session)
+
+
+def test_terminal_host_inspector_rejects_environment_lifecycle_divergence(assets, tmp_path):
+    _, _, session = run_host(assets, tmp_path)
+    status = json.loads((session / "status.json").read_text())
+    path = Path(status["artifacts"]) / "process-lifecycle.json"
+    lifecycle = json.loads(path.read_text())
+    lifecycle["teardowns"][0]["returncode"] = -9
+    path.write_text(json.dumps(lifecycle))
+    with pytest.raises(DevelopmentError, match="differs from environment artifact"):
+        inspect_owned_development_host(session)
+
+
 def test_terminal_host_inspector_rejects_changed_lifecycle_record(assets, tmp_path):
     _, _, session = run_host(assets, tmp_path)
     path = session / "process-lifecycle.json"
@@ -428,6 +457,7 @@ def test_terminal_host_inspector_requires_all_four_exact_services(assets, tmp_pa
     status["environment_process_teardown"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     status["environment_process_teardown"]["evidence"].update(
         process_count=3, generations={"api":1,"lobby":1,"world":1})
+    (Path(status["artifacts"]) / "process-lifecycle.json").write_text(json.dumps(lifecycle))
     status_path.write_text(json.dumps(status))
     with pytest.raises(DevelopmentError, match="process teardown is incomplete"):
         inspect_owned_development_host(session)
