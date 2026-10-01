@@ -5121,6 +5121,15 @@ contracts in **0.54s**. Receipt:
 This is synthetic orchestration evidence, not graceful shutdown, process-exit,
 hosted cancellation or leak-freedom evidence.
 
+Commit `9d1d9e2c4` also rechecks exact revision and clean status after private
+inspection and before writing any accepted inspection/result. A detached clean
+worktree passed **37** producer/consumer contracts in **0.57s**; receipt SHA-256
+`b9ea4c5a797a657cc69f42233573444b9df0170f29f0960e37253a21fbb68763` at
+`.e2e-artifacts/standalone-case-source-drift-clean-source/receipt.json`. The
+independent publication consumer retains its own before/after checks. These
+observations narrow source drift but do not create a race-free filesystem snapshot,
+signature or build-provenance claim.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the

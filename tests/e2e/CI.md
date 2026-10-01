@@ -282,8 +282,9 @@ separate evidence that its binaries came from the checkout.
   sixteen exact node IDs, strips inherited pytest options/plugins, executes once
   without retry, requires exactly one owned fixture artifact directory, correlates
   the generated manifest to the reviewed profile inputs, and invokes the generic
-  inspector or the specialized fault inspector before writing an accepted private
-  result. A failure retains private pytest/entry diagnostics and cannot create an
+  inspector or the specialized fault inspector. It rechecks exact clean source after
+  inspection before writing an accepted private result. A failure retains private
+  pytest/entry diagnostics and cannot create an
   accepted inspection. If pytest propagates after exposing the owned fixture, the
   producer invokes that not-yet-closed `Environment` exactly once; cleanup
   exceptions or silent incomplete closure remain separate private failure evidence

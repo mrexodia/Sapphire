@@ -275,8 +275,9 @@ The private root and its parent must satisfy the command's ownership checks and
 must not already exist. The producer accepts only the combined gate's exact case
 allowlist, removes inherited pytest selection/plugins, performs one execution with
 no retry, requires one fixture artifact directory, binds its manifest to the
-reviewed profile inputs, and runs the existing generic inspector (or the stronger
-owned-world-fault inspector). It retains private JUnit, pytest output, inspection
+reviewed profile inputs, runs the existing generic inspector (or the stronger
+owned-world-fault inspector), then rechecks exact clean source before accepting.
+It retains private JUnit, pytest output, inspection
 and failure diagnostics. A successful `runner-result.json` explicitly reports
 `short_feedback_only: true` and `combined_gate_verified: false`; generic scenario
 semantics remain non-independent. Reinspect the complete private root while its
