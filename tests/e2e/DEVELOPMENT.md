@@ -897,7 +897,20 @@ complete-tree identity for the owned `worker/` journals, entities, scope,
 completion/error stage, lease disposition, elapsed time and phase durations:
 HTTP login, lobby/world entry, initial witness checks, Say, optional movement,
 logout/despawn and account release. `worker_session_including_close` is an
-inclusive parent timing; do not add it to its child phases.
+inclusive parent timing; do not add it to its child phases. Reinspect one retained
+run against an already-running external shared server with:
+
+```powershell
+python -m tests.e2e.inspect_development_result `
+  --summary .e2e-artifacts/<run>/development-summary.json
+```
+
+This failure-closed consumer requires the explicitly unmanaged host boundary, exact
+normal worker exit, bounded success deadline, clear local leases, run-owned complete
+worker journal tree, and at least one independently validated requested subcheck
+(movement, party, Tell, reconnect/inventory/equipment, Sprint, or decline). A base
+login/Say/logout summary without a retained supported semantic receipt is deliberately
+insufficient. Managed-host runs use the separate composite inspector above.
 
 A configured protocol and successful session are not a server binary fingerprint.
 The report explicitly leaves `server_identity_verified` false. Passing proves

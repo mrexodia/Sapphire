@@ -2282,6 +2282,23 @@ are historical under current consumers. These are synthetic policy/control contr
 no accounts, services, gameplay or graphical client ran, and journal byte identity
 is not independent semantic, server, rendering or compatibility proof.
 
+Feature **`9ed632a6a`** adds the missing external-server read-only command
+`python -m tests.e2e.inspect_development_result --summary
+<private-development-summary>`. It accepts only explicitly unmanaged shared-server
+runs and strictly revalidates bounded deadline, normal exact worker exit, clear local
+leases, run-owned worker tree and each requested supported received-state receipt.
+At least one movement, party, Tell, reconnect/inventory/equipment, Sprint or decline
+receipt is mandatory; a green base login/Say/logout summary lacks sufficient retained
+semantic fields and is intentionally rejected. Managed-host correlation remains a
+separate command/scope.
+
+Frozen, remote-free source **`9ed632a6a02c8695efb9a370321b99cc9223b6ce`**
+passed **921 focused contracts with no skips in 37.51s**. Test-log SHA-256:
+`a6472508f37fb6e95881855118cf07af967d3dc4f302ab2197b0006686e6383a`.
+The inspector is read-only and sanitized but no current external shared-server run
+has passed it. It does not establish server identity, process ownership, isolation,
+offline exclusion, reset authority, rendering, shared-world cleanliness or acceptance.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
