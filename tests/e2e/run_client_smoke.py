@@ -305,15 +305,32 @@ def run():
             message = message.replace(secret, "<redacted>")
         report.update(status="failed", failure_stage=stage, error=f"{type(error).__name__}: {message}")
     finally:
-        # Teardown may terminate the title-screen process; process-exit UI is not tested.
+        # Teardown intentionally terminates the exact title-screen process; this is
+        # owned cleanup, not a normal UI-exit or server-offline assertion.
         timing.transition("cleanup")
         errors = []
-        if client and client.poll() is None:
-            try:
-                client.kill()
-                client.wait(timeout=10)
-            except BaseException:
-                errors.append("client termination failed")
+        if client:
+            pid = client.pid
+            before = client.poll()
+            receipt = {"version": 1, "pid": pid,
+                       "was_running_before_cleanup": before is None,
+                       "forced_termination_requested": False,
+                       "exit_observed": before is not None,
+                       "returncode": before,
+                       "scope": "exact-owned-title-screen-client-forced-cleanup-not-ui-exit-proof"}
+            if before is None:
+                try:
+                    receipt["forced_termination_requested"] = True
+                    client.kill()
+                    returncode = client.wait(timeout=10)
+                    if type(returncode) is not int:
+                        raise RuntimeError("client exit code is unavailable")
+                    receipt.update(exit_observed=True, returncode=returncode)
+                except BaseException:
+                    errors.append("client termination failed")
+            elif report.get("status") == "passed":
+                errors.append("client exited before owned teardown")
+            report["client_teardown"] = receipt
         if env:
             try:
                 env.close()

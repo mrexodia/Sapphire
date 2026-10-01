@@ -30,6 +30,7 @@ HANDOFF_SCOPE = "same-dedicated-witness-across-normal-handoff-not-offline-exclus
 RESTORATION_SCOPE = "fresh-paired-witness-login-and-viewer-presence-not-offline-exclusion"
 RETIREMENT_SCOPE = "normal-witness-session-retirement-not-offline-exclusion"
 DEADLINE_SCOPE = "cooperative-manual-activity-success-deadline-not-hard-cleanup-limit"
+CLIENT_TEARDOWN_SCOPE = "exact-owned-title-screen-client-forced-cleanup-not-ui-exit-proof"
 
 
 def _read_json(path):
@@ -89,6 +90,23 @@ def _activity_deadline(value):
             or value.get("scope") != DEADLINE_SCOPE
             or value.get("environment_cleanup_may_exceed_deadline") is not True):
         raise DevelopmentError("invalid or incomplete graphical activity deadline receipt")
+    return value
+
+
+def _client_teardown(value, expected_pid):
+    if (not isinstance(value, dict)
+            or set(value) != {"version", "pid", "was_running_before_cleanup",
+                              "forced_termination_requested", "exit_observed",
+                              "returncode", "scope"}
+            or type(value.get("version")) is not int or value["version"] != 1
+            or type(value.get("pid")) is not int or value["pid"] <= 0
+            or value["pid"] != expected_pid
+            or value.get("was_running_before_cleanup") is not True
+            or value.get("forced_termination_requested") is not True
+            or value.get("exit_observed") is not True
+            or type(value.get("returncode")) is not int
+            or value.get("scope") != CLIENT_TEARDOWN_SCOPE):
+        raise DevelopmentError("invalid exact graphical-client teardown receipt")
     return value
 
 
@@ -243,6 +261,7 @@ def inspect_client_development_result(output, expected_source_revision):
             or not _hex(run_id, 32)
             or not isinstance(viewer_name, str) or not 1 <= len(viewer_name) <= 31
             or type(viewer_entity) is not int or viewer_entity <= 0
+            or type(report.get("client_pid")) is not int or report["client_pid"] <= 0
             or report.get("client_sha256") != CLIENT_SHA256
             or report.get("sandbox_disposal") != "operator_required"
             or report.get("runtime_removed") is not True):
@@ -297,6 +316,7 @@ def inspect_client_development_result(output, expected_source_revision):
     require_normal_worker_exit({"worker_exit": report.get("observer_worker_exit")})
     deadline = _activity_deadline(report.get("activity_deadline"))
     timing = _timing(report.get("timing"))
+    client_teardown = _client_teardown(report.get("client_teardown"), report["client_pid"])
 
     ticket = _read_json(output / "review-ticket.json")
     review = _read_json(output / "review.json")
@@ -343,6 +363,7 @@ def inspect_client_development_result(output, expected_source_revision):
             "title_screen_review": {"verified": True, "frame_sha256": logout_hash,
                                     "scope": LOGOUT_CAPTURE_SCOPE},
             "activity_deadline": deadline, "timing": timing,
+            "client_teardown": client_teardown,
             "runtime_removed": True, "sandbox_disposal_verified": False,
             "note": "Structured current guest evidence only; inspect rendering and dispose the owned Sandbox separately."}
 

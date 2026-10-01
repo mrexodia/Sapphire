@@ -61,7 +61,8 @@ def test_retirement_failure_is_not_retried_or_converted_to_success(failure):
                                      "stale_real_say", "deadline_before_retirement",
                                      "deadline_during_retirement", "deadline_during_worker_exit",
                                      "observer_worker_exit",
-                                     "observer_worker_exit_unknown"])
+                                     "observer_worker_exit_unknown",
+                                     "client_exit_before_cleanup", "client_exit_unknown"])
 def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, monkeypatch, failure):
     # Exercise coordinator control flow with entirely synthetic setup/UI state.
     # No guest is launched, no host registry/files are changed, no review attested.
@@ -144,12 +145,22 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
 
     class Client:
         pid = 123
+        running = True
+        returncode = None
+        polls = 0
         def poll(self):
-            return None
+            self.polls += 1
+            if failure == "client_exit_before_cleanup" and self.polls >= 7:
+                self.running = False
+                self.returncode = 7
+            return self.returncode
         def kill(self):
             cleanup.append("client")
+            self.running = False
+            self.returncode = None if failure == "client_exit_unknown" else 1
         def wait(self, timeout):
-            pass
+            assert timeout == 10 and not self.running
+            return self.returncode
 
     monkeypatch.setattr(guest, "INPUT", inputs); monkeypatch.setattr(guest, "OUTPUT", output)
     monkeypatch.setattr(guest, "require_guest", lambda: "synthetic guest")
@@ -212,11 +223,22 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     terminal = json.loads((output / "status.json").read_text())
     assert terminal["phase"] == "finished"
     assert report["status"] == terminal["status"] == ("failed" if failure else "passed")
-    assert cleanup == ["worker", "client", "environment"]
+    assert cleanup == (["worker", "environment"] if failure == "client_exit_before_cleanup"
+                       else ["worker", "client", "environment"])
     assert report["runtime_removed"] is True
+    expected_client_teardown = {"version":1,"pid":123,
+        "was_running_before_cleanup":True,"forced_termination_requested":True,
+        "exit_observed":True,"returncode":1,
+        "scope":"exact-owned-title-screen-client-forced-cleanup-not-ui-exit-proof"}
+    if failure == "client_exit_before_cleanup":
+        expected_client_teardown.update(was_running_before_cleanup=False,
+            forced_termination_requested=False, returncode=7)
+    elif failure == "client_exit_unknown":
+        expected_client_teardown.update(exit_observed=False, returncode=None)
+    assert report["client_teardown"] == expected_client_teardown
     assert report["timing"]["phases"][-2]["phase"] == (
         "say" if failure == "stale_real_say" else "witness_retirement")
-    if failure:
+    if failure and failure not in {"client_exit_before_cleanup", "client_exit_unknown"}:
         assert report["failure_stage"] == ("observer_worker_exit"
             if failure in {"observer_worker_exit", "observer_worker_exit_unknown",
                            "deadline_during_worker_exit"}
@@ -272,7 +294,8 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     assert deadline_receipt["environment_cleanup_may_exceed_deadline"] is True
     assert deadline_receipt["expired"] is (failure in {
         "deadline_before_retirement", "deadline_during_retirement", "deadline_during_worker_exit"})
-    assert deadline_receipt["activity_and_worker_exit_completed_within_budget"] is (failure is None)
+    assert deadline_receipt["activity_and_worker_exit_completed_within_budget"] is (
+        failure in {None, "client_exit_before_cleanup", "client_exit_unknown"})
     receipt = report["observer_worker_exit"]
     assert receipt["context_exit_attempted"] and receipt["context_exit_completed"]
     assert receipt["process_id"] == 12345

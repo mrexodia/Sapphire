@@ -276,7 +276,9 @@ are absent, not passing. On completion or failure, `status.json` changes to
    manual-review receipt, logout marker, exact `logout_frame_sha256` plus the
    separate title-screen review receipt, `witness_retirements`, a normal
    `observer_worker_exit` receipt for the exact outer native witness process, exact
-   `activity_deadline` with `expired=false` and
+   positive `client_pid` plus a matching `client_teardown` receipt showing that the
+   title-screen process remained alive until one forced owned-cleanup request and
+   an observed integer return code, exact `activity_deadline` with `expired=false` and
    `activity_and_worker_exit_completed_within_budget=true`, and
    `runtime_removed=true`. A nonzero, unknown, unbound or late outer-worker exit changes
    the terminal result to failed even after successful witness retirement. There
@@ -287,8 +289,11 @@ are absent, not passing. On completion or failure, `status.json` changes to
    session-lifecycle observations, not offline/reset authority, fresh-login
    persistence or crash-consistency proof. Older artifacts without these receipts
    are not upgraded. The runner terminates the remaining title-screen process
-   and private services. Process-exit UI is not a tested journey. A cleanup error
-   changes the result to failed, not a passing gameplay run with a warning. For a
+   and private services. Natural client exit before that teardown, unknown exit or
+   failed termination changes the result to failed. Forced title-screen cleanup is
+   not a tested UI journey, normal graphical logout, or server-offline proof. A
+   cleanup error changes the result to failed, not a passing gameplay run with a
+   warning. For a
    current development-enabled run, execute this read-only host-side verifier from
    the same clean source revision before disposal:
 
@@ -303,8 +308,8 @@ are absent, not passing. On completion or failure, `status.json` changes to
    both nested summaries/hashes and
    strict consumers; pair/handoff/restoration receipts; run-bound Say challenge,
    review-frame binding and the separately approved exact title-screen frame,
-   retirements, outer deadline/worker exit, terminal status and reported runtime
-   removal. `accepted` explicitly leaves
+   retirements, outer deadline/worker exit, exact graphical-client teardown,
+   terminal status and reported runtime removal. `accepted` explicitly leaves
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
    next manual step. Older/incomplete results fail closed.
 7. **Close the owned Sandbox window and confirm its discard dialog.** Guest
