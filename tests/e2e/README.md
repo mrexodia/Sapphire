@@ -290,7 +290,10 @@ python -m tests.e2e.inspect_isolated_case_run \
   > <new-public-summary.json>
 ```
 
-The consumer independently rebinds the local profile to the manifest, reruns the
+If pytest propagates after exposing its owned fixture, the producer attempts that
+not-yet-closed environment's cleanup exactly once; an exception or silent incomplete
+closure remains private failure evidence and is not retried into success. The
+consumer independently rebinds the local profile to the manifest, reruns the
 applicable generic/fault inspector, and rejects failed, changed, linked,
 duplicate-key, ambiguous or overclaimed evidence. Only its stdout receipt is
 allowlisted for publication. Never publish the private root, JUnit, pytest log,

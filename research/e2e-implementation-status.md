@@ -5108,6 +5108,19 @@ available for this increment; PyYAML is not GitHub schema validation. Hosted
 execution, runner-group/environment enforcement, VM destruction and a current live
 standalone result all remain unverified.
 
+Commit `4d2b93d63` closes the standalone producer's propagated-failure ownership gap.
+If pytest has exposed one fixture environment and then raises any `BaseException`,
+the producer now calls that not-yet-closed owned `Environment` exactly once. Normal
+closure, a cleanup `BaseException`, and a close call that returns while still
+incomplete are distinct private failure outcomes; cleanup errors never create an
+inspection or publication, and no mutation is retried. A detached clean worktree at
+`4d2b93d631ad6f10ddba824c37afdbd026bd9abf` passed **36** producer/consumer
+contracts in **0.54s**. Receipt:
+`.e2e-artifacts/standalone-case-cleanup-clean-source/receipt.json` (SHA-256
+`e7f44da35f2f1770e49031d4c1701a07c413ca23d2cfa900e445a39830f6a404`).
+This is synthetic orchestration evidence, not graceful shutdown, process-exit,
+hosted cancellation or leak-freedom evidence.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the

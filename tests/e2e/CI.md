@@ -284,7 +284,11 @@ separate evidence that its binaries came from the checkout.
   the generated manifest to the reviewed profile inputs, and invokes the generic
   inspector or the specialized fault inspector before writing an accepted private
   result. A failure retains private pytest/entry diagnostics and cannot create an
-  accepted inspection. Both workflows run its service-free orchestration contracts.
+  accepted inspection. If pytest propagates after exposing the owned fixture, the
+  producer invokes that not-yet-closed `Environment` exactly once; cleanup
+  exceptions or silent incomplete closure remain separate private failure evidence
+  and are never retried into success. Both workflows run its service-free
+  orchestration contracts.
   The protected private workflow can execute it only through an explicit exact-case
   manual choice and separate execution authorization; no hosted dispatch has been
   performed or inferred from that authored branch. Reinspect a completed private
