@@ -353,7 +353,9 @@ are absent, not passing. On completion or failure, `status.json` changes to
    lifecycle-file hash; the environment manifest's exact staged server/worker/
    script/catalog/combat-data identities against preparation/source plus the
    recorded external navigation digest set; terminal status and reported runtime
-   removal. `accepted` explicitly leaves
+   removal. A terminal cleanup marker anywhere under that exact environment artifact
+   directory is rejected without host filename-case assumptions, even if its lifecycle
+   later became complete. `accepted` explicitly leaves
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
    next manual step. Older/incomplete results fail closed.
 8. **Close the owned Sandbox window and confirm its discard dialog.** Guest

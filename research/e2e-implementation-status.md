@@ -2191,6 +2191,20 @@ passed **228 focused contracts with no skips in 21.13s**. Test-log SHA-256:
 This proves consumer naming policy only, not marker authenticity, cleanup success or
 cross-platform execution.
 
+Fix **`c2ae69314`** applies terminal-marker rejection to every other current
+`Environment` success surface: service-free profile staging, owned warm-development
+host/composite inspection, and current graphical-result inspection. Each uses the
+same recursive case-independent discovery before accepting lifecycle/hash evidence;
+a later complete lifecycle cannot launder an earlier terminal cleanup failure in a
+non-isolated lane either.
+
+Frozen, remote-free source **`c2ae6931411fb255fcda3766880423ad1c899c83`**
+passed **387 focused contracts with no skips in 29.69s**, covering client-result,
+owned-development-host, CI, worker and workflow-policy consumers. Test-log SHA-256:
+`9614ea2a61d77f558655cc4a6a7de8db3a1367489d62a6742078d7f6781e3a29`.
+The marker injections are synthetic. This does not refresh graphical, hosted,
+shared-development, staging, service, account or gameplay execution evidence.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

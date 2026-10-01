@@ -94,7 +94,9 @@ python -m tests.e2e.inspect_development_host `
 Acceptance requires the exact four database/API/lobby/world generation/PID starts,
 running-before-cleanup and terminate-request receipts, observed integer return
 codes, exact status/file digest equality, removed private profiles, and the seven
-ordered successful host phases. This proves exact owned-process teardown only,
+ordered successful host phases. Any recursively discovered, case-variant terminal
+`cleanup-failure.json` marker rejects host and composite managed-run success even
+when the lifecycle itself is complete. This proves exact owned-process teardown only,
 not graceful server shutdown, account offline exclusion, cache quiescence, reset
 authority or cleanup of an already-running external shared server. To correlate one
 passing managed check with that exact terminal host, also run:
