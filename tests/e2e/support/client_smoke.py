@@ -10,6 +10,9 @@ CLIENT_SHA256 = "d818584c782bbe3cacbc2b306391e6f3246bc3065c517a3324784e49d572ba1
 CLIENT_VERSION = "2016.07.05.0000.0001"
 REAL_SAY = "E2E real client verified"
 REVIEW_CHECKS = ["fixture_character_in_world", "run_bound_witness_say_rendered"]
+INTERACTION_REVIEW_CHECKS = ["dedicated_bot_characters_rendered",
+                             "fresh_viewer_say_to_dedicated_bots_rendered"]
+INTERACTION_CAPTURE_SCOPE = "final-fresh-viewer-challenge-while-dedicated-bots-active"
 LOGOUT_REVIEW_CHECKS = ["client_title_screen_rendered"]
 LOGOUT_CAPTURE_SCOPE = "post-ordinary-logout-title-screen-frame"
 
@@ -196,6 +199,39 @@ def received_real_logout(state, expected_entity, baseline):
             "scope": "fresh-real-client-absence-after-logout-phase-not-server-logout-proof",
             "entity_id": expected_entity, "baseline_position": list(baseline["position"]),
             "baseline_sequence": baseline["sequence"], "received_sequence": sequence}
+
+
+def validate_interaction_review(review, ticket):
+    if (not isinstance(ticket, dict)
+            or set(ticket) != {"run", "development_run", "bots", "frame_sha256",
+                               "viewer_say_challenge", "scope"}
+            or ticket.get("scope") != INTERACTION_CAPTURE_SCOPE):
+        raise ValueError("manual interaction review ticket is malformed")
+    witness_say_challenge(ticket.get("run"))
+    development_run = ticket.get("development_run")
+    challenge = ticket.get("viewer_say_challenge")
+    bots = ticket.get("bots")
+    digest = ticket.get("frame_sha256")
+    if (not isinstance(development_run, str) or len(development_run) != 32
+            or any(char not in "0123456789abcdef" for char in development_run)
+            or not isinstance(bots, list) or len(bots) != 2
+            or any(not isinstance(name, str) or not 1 <= len(name) <= 31
+                   or name != name.strip() or any(ord(char) < 32 or ord(char) > 126
+                                                  for char in name) for name in bots)
+            or bots[0].casefold() == bots[1].casefold()
+            or not isinstance(challenge, str)
+            or not challenge.startswith(f"Sapphire viewer {development_run[:8]} finish ")
+            or len(challenge) != len(f"Sapphire viewer {development_run[:8]} finish ") + 32
+            or any(char not in "0123456789abcdef" for char in challenge[-32:])
+            or not isinstance(digest, str) or len(digest) != 64
+            or any(char not in "0123456789abcdef" for char in digest)):
+        raise ValueError("manual interaction review binding is malformed")
+    expected = {"version": 1, **ticket, "checks": INTERACTION_REVIEW_CHECKS,
+                "manual_review": True}
+    if (review != expected or type(review.get("version")) is not int
+            or review.get("manual_review") is not True):
+        raise ValueError("explicit manual review of this run's bot-interaction frame is required")
+    return review
 
 
 def validate_logout_review(review, ticket):

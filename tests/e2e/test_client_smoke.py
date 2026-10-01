@@ -5,15 +5,17 @@ import xml.etree.ElementTree as ET
 
 import pytest
 
-from .prepare_client_smoke import approve, approve_logout, sandbox_xml
-from .support.client_smoke import (LOGOUT_CAPTURE_SCOPE, LOGOUT_REVIEW_CHECKS,
+from .prepare_client_smoke import (approve, approve_interaction, approve_logout,
+                                   sandbox_xml)
+from .support.client_smoke import (INTERACTION_CAPTURE_SCOPE, INTERACTION_REVIEW_CHECKS,
+                                   LOGOUT_CAPTURE_SCOPE, LOGOUT_REVIEW_CHECKS,
                                    REAL_SAY, REVIEW_CHECKS, moved, other_player, position,
                                    real_logout_baseline, real_movement_baseline,
                                    real_say_baseline, real_spawn_baseline,
                                    received_real_logout, received_real_movement,
                                    received_real_say, received_real_spawn,
-                                   validate_logout_review, validate_review,
-                                   witness_say_challenge)
+                                   validate_interaction_review, validate_logout_review,
+                                   validate_review, witness_say_challenge)
 from .support.environment import sha256
 
 
@@ -229,6 +231,32 @@ def test_review_rejects_foreign_run_bound_witness_challenge(tmp_path):
     for value in (True, "g" * 32, "a" * 31, "A" * 32):
         with pytest.raises(ValueError):
             witness_say_challenge(value)
+
+
+def test_explicit_interaction_review_binds_active_bots_fresh_say_and_exact_frame(tmp_path):
+    run_id, development_run = "c" * 32, "d" * 32
+    (tmp_path / "interaction.png").write_bytes(b"synthetic interaction frame, not reviewed pixels")
+    ticket = {"run":run_id, "development_run":development_run,
+              "bots":["bot mover", "bot witness"],
+              "frame_sha256":sha256(tmp_path / "interaction.png"),
+              "viewer_say_challenge":f"Sapphire viewer {development_run[:8]} finish {'e' * 32}",
+              "scope":INTERACTION_CAPTURE_SCOPE}
+    (tmp_path / "interaction-ticket.json").write_text(json.dumps(ticket))
+    (tmp_path / "status.json").write_text(json.dumps(
+        {"run":run_id,"phase":"interaction_review"}))
+    approve_interaction(tmp_path)
+    receipt = json.loads((tmp_path / "interaction-review.json").read_text())
+    assert validate_interaction_review(receipt, ticket)["checks"] == INTERACTION_REVIEW_CHECKS
+    for key, value in (("run", "f" * 32), ("development_run", "f" * 32),
+                       ("bots", ["same", "SAME"]), ("bots", ["one"]),
+                       ("frame_sha256", "0" * 64), ("viewer_say_challenge", "stale"),
+                       ("scope", "foreign"), ("manual_review", 1),
+                       ("version", True), ("checks", []), ("extra", True)):
+        with pytest.raises(ValueError):
+            validate_interaction_review({**receipt, key:value}, ticket)
+    (tmp_path / "interaction.png").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="frame changed"):
+        approve_interaction(tmp_path)
 
 
 def test_explicit_logout_review_is_bound_to_finished_run_and_exact_frame(tmp_path):

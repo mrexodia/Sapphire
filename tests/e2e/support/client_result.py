@@ -13,13 +13,14 @@ from pathlib import Path, PurePosixPath
 
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
-from .client_smoke import (CLIENT_SHA256, LOGOUT_CAPTURE_SCOPE, other_player,
+from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
+                           LOGOUT_CAPTURE_SCOPE, other_player,
                            real_logout_baseline, real_movement_baseline,
                            real_say_baseline, real_spawn_baseline,
                            received_real_logout, received_real_movement,
                            received_real_say, received_real_spawn,
-                           validate_logout_review, validate_review,
-                           witness_say_challenge)
+                           validate_interaction_review, validate_logout_review,
+                           validate_review, witness_say_challenge)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
 from .environment import require_process_teardowns
@@ -145,7 +146,7 @@ def _environment_teardown(output, value):
 
 def _timing(value):
     phases = ["setup", "spawn", "movement", "say", "review", "development",
-              "logout", "witness_retirement", "cleanup"]
+              "interaction_review", "logout", "witness_retirement", "cleanup"]
     note = ("Includes operator waits and worker unwinding; cleanup is client/environment "
             "teardown. Not gameplay CPU time.")
     if (not isinstance(value, dict)
@@ -174,7 +175,8 @@ def _timing(value):
 def _outer_journey(report, pair, fixture):
     states = {key: report.get(key) for key in
               ("pre_client_state", "spawn", "movement_baseline", "movement",
-               "say_baseline", "say", "review", "logout_baseline", "logout")}
+               "say_baseline", "say", "review", "interaction_review",
+               "logout_baseline", "logout")}
     if any(not isinstance(value, dict) for value in states.values()):
         raise DevelopmentError("graphical outer received-state journey is incomplete")
     expected_self = pair["identities"][0]
@@ -193,7 +195,7 @@ def _outer_journey(report, pair, fixture):
             raise DevelopmentError("graphical result lacks exact fresh fixture spawn evidence")
         observations = {}
         for stage in ("spawn", "movement_baseline", "movement", "say_baseline",
-                      "say", "review", "logout_baseline"):
+                      "say", "review", "interaction_review", "logout_baseline"):
             state = states[stage]
             if (type(state.get("entity_id")) is not int
                     or state["entity_id"] != expected_self["entity_id"]
@@ -366,6 +368,29 @@ def inspect_client_development_result(output, expected_source_revision):
         validate_review(review, ticket)
     except ValueError as error:
         raise DevelopmentError("graphical manual-review receipt is invalid") from error
+
+    interaction_path = output / "interaction.png"
+    interaction_ticket = _read_json(output / "interaction-ticket.json")
+    interaction_review = _read_json(output / "interaction-review.json")
+    interaction_hash = _sha256(interaction_path)
+    decline_finish = decline.get("viewer_verification", {}).get("finish", {})
+    replies = decline_finish.get("received_replies") if isinstance(decline_finish, dict) else None
+    decline_challenge = (replies[0].get("message") if isinstance(replies, list)
+                         and len(replies) == 2 and isinstance(replies[0], dict) else None)
+    if (not interaction_path.is_file() or interaction_path.stat().st_size <= 0
+            or not _typed_equal(report.get("manual_interaction_review"), interaction_review)
+            or interaction_ticket.get("run") != run_id
+            or interaction_ticket.get("development_run") != decline.get("run_id")
+            or interaction_ticket.get("bots") != names
+            or interaction_ticket.get("viewer_say_challenge") != decline_challenge
+            or interaction_ticket.get("frame_sha256") != interaction_hash
+            or interaction_ticket.get("scope") != INTERACTION_CAPTURE_SCOPE):
+        raise DevelopmentError("graphical dedicated-bot interaction frame binding is invalid")
+    try:
+        validate_interaction_review(interaction_review, interaction_ticket)
+    except ValueError as error:
+        raise DevelopmentError("graphical dedicated-bot interaction review is invalid") from error
+
     logout = output / "logout.png"
     logout_ticket = _read_json(output / "logout-ticket.json")
     logout_review = _read_json(output / "logout-review.json")
@@ -395,6 +420,10 @@ def inspect_client_development_result(output, expected_source_revision):
             "decline_summary_sha256": decline_hash,
             "worker_sha256": pair["worker_sha256"],
             "outer_journey": outer_journey,
+            "bot_interaction_review": {"verified": True,
+                "frame_sha256": interaction_hash, "scope": INTERACTION_CAPTURE_SCOPE,
+                "development_run": decline["run_id"], "bots": names,
+                "viewer_say_challenge": decline_challenge},
             "title_screen_review": {"verified": True, "frame_sha256": logout_hash,
                                     "scope": LOGOUT_CAPTURE_SCOPE},
             "activity_deadline": deadline, "timing": timing,

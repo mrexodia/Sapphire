@@ -183,7 +183,12 @@ original catalog, both catalog hashes and mesh hash are retained. No corridor,
 actor, quest or route-length fields are regenerated or weakened.
 
 The prior screenshot review does **not** certify rendering of these added bot
-actions, including Sprint and equipment changes. A current successful bridge would add absence of received viewer despawn/
+actions. A second exact frame is now captured by the final decline-run viewer
+checkpoint after both dedicated bots receive its fresh Say and before either bot
+logs out. Its separate manual receipt can establish that both exact bot characters
+and that fresh viewer Say were rendered at that moment; it still does **not**
+certify rendering of earlier movement, Sprint, equipment, Tell or party state.
+A current successful bridge would add absence of received viewer despawn/
 respawn on one persistent witness between endpoint replies, but not a server-side
 continuous-session oracle, continuous rendering, visual quest/combat agreement,
 normal opening progression, shared-database cleanliness or full acceptance. One owned-guest bridge has actual graphical
@@ -246,7 +251,24 @@ are absent, not passing. On completion or failure, `status.json` changes to
    challenge and the exact screenshot SHA-256, not an independently computed
    visual assertion. Stale/foreign challenges or receipts, changed images, wrong
    phases and incomplete checks are rejected.
-5. At `logout`, use the client's normal `/logout` command and confirm. Inspect
+5. With `--development-check`, after all four requested viewer replies the status
+   enters `interaction_review`. The immutable `interaction.png` was captured during
+   the final decline-run checkpoint, after both dedicated bots independently
+   received its fresh finish Say and before their logout began. Compare both exact
+   dedicated bot names and the exact `viewer_say_challenge` in
+   `interaction-ticket.json` with the rendered frame. If both bot characters and
+   that exact message are clearly rendered, record the separate attestation:
+
+   ```sh
+   python -m tests.e2e.prepare_client_smoke approve-interaction \
+     --output .e2e-artifacts/<fresh-private-run>/output --reviewed-bot-interaction
+   ```
+
+   Changed images, a foreign nested run/challenge, wrong phase or incomplete
+   checks fail closed. This one frame is not proof that earlier bot actions,
+   inventory/equipment state, Sprint, party, Tell, movement or continuous presence
+   were rendered. When the development option is absent, this step does not run.
+6. At `logout`, use the client's normal `/logout` command and confirm. Inspect
    any overlapping first-run help notification before clicking; opening and
    closing its help window can uncover the confirmation buttons. Do not interpret
    a click on an obscured button as successful logout. Leave the process running.
@@ -272,8 +294,10 @@ are absent, not passing. On completion or failure, `status.json` changes to
 
    Missing, changed, malformed or failed-run frames cannot receive this receipt.
    Do not approve a loading/error/disconnect view as the title screen.
-6. Inspect `result.json`: require `status=passed`, all received snapshots,
-   manual-review receipt, logout marker, exact `logout_frame_sha256` plus the
+7. Inspect `result.json`: require `status=passed`, all received snapshots,
+   initial manual-review receipt and, for a development-enabled run, the exact
+   dedicated-bot interaction frame/ticket/manual receipt, logout marker, exact
+   `logout_frame_sha256` plus the
    separate title-screen review receipt, `witness_retirements`, a normal
    `observer_worker_exit` receipt for the exact outer native witness process, exact
    positive `client_pid` plus a matching `client_teardown` receipt showing that the
@@ -310,13 +334,14 @@ are absent, not passing. On completion or failure, `status.json` changes to
    presence and fresh post-phase logout absence;
    both nested summaries/hashes and
    strict consumers; pair/handoff/restoration receipts; run-bound Say challenge,
-   review-frame binding and the separately approved exact title-screen frame,
+   initial review-frame binding, the final nested challenge-bound dedicated-bot
+   interaction frame/manual receipt and the separately approved exact title-screen frame,
    retirements, outer deadline/worker exit, exact graphical-client teardown, all
    exact isolated database/API/lobby/world process generations and their private
    lifecycle-file hash, terminal status and reported runtime removal. `accepted` explicitly leaves
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
    next manual step. Older/incomplete results fail closed.
-7. **Close the owned Sandbox window and confirm its discard dialog.** Guest
+8. **Close the owned Sandbox window and confirm its discard dialog.** Guest
    runtime cleanup is not VM disposal. After the launch wrapper returns with
    `status=disposed`, explicitly attest that you inspected and confirmed the exact
    owned dialog, then run the composite read-only verifier:

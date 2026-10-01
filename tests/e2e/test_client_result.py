@@ -10,7 +10,8 @@ from .support.client_development import (require_graphical_check,
                                          require_graphical_decline_check,
                                          require_graphical_run_pair)
 from .support.client_result import inspect_client_development_result, RESULT_SCOPE
-from .support.client_smoke import (CLIENT_SHA256, LOGOUT_CAPTURE_SCOPE,
+from .support.client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
+                                   INTERACTION_REVIEW_CHECKS, LOGOUT_CAPTURE_SCOPE,
                                    LOGOUT_REVIEW_CHECKS, REVIEW_CHECKS,
                                    witness_say_challenge)
 from .support.client_snapshot import git
@@ -66,6 +67,16 @@ def build_output(root, source_revision="1" * 40):
     review = {"version": 1, **ticket, "checks": REVIEW_CHECKS, "manual_review": True}
     write_json(root / "review-ticket.json", ticket)
     write_json(root / "review.json", review)
+    (root / "interaction.png").write_bytes(b"synthetic nonempty interaction frame")
+    interaction_hash = hashlib.sha256((root / "interaction.png").read_bytes()).hexdigest()
+    interaction_ticket = {"run":run_id,"development_run":decline["run_id"],
+        "bots":["bot mover", "bot witness"], "frame_sha256":interaction_hash,
+        "viewer_say_challenge":decline["viewer_verification"]["finish"]["received_replies"][0]["message"],
+        "scope":INTERACTION_CAPTURE_SCOPE}
+    interaction_review = {"version":1, **interaction_ticket,
+        "checks":INTERACTION_REVIEW_CHECKS,"manual_review":True}
+    write_json(root / "interaction-ticket.json", interaction_ticket)
+    write_json(root / "interaction-review.json", interaction_review)
     (root / "logout.png").write_bytes(b"synthetic nonempty logout frame")
     logout_hash = hashlib.sha256((root / "logout.png").read_bytes()).hexdigest()
     logout_ticket = {"run":run_id,"frame_sha256":logout_hash,"scope":LOGOUT_CAPTURE_SCOPE}
@@ -87,7 +98,7 @@ def build_output(root, source_revision="1" * 40):
     retire = {"server_close_observed": True, "native_bot_removed": True,
               "scope": "normal-witness-session-retirement-not-offline-exclusion"}
     phases = ["setup", "spawn", "movement", "say", "review", "development",
-              "logout", "witness_retirement", "cleanup"]
+              "interaction_review", "logout", "witness_retirement", "cleanup"]
     report = {
         "version": 1, "run": run_id, "status": "passed",
         "scope": "manual-real-client-login-movement-say-logout",
@@ -140,7 +151,7 @@ def build_output(root, source_revision="1" * 40):
             "scope": "cooperative-manual-activity-success-deadline-not-hard-cleanup-limit",
             "environment_cleanup_may_exceed_deadline": True},
         "timing": {"version": 1, "scope": "manual-client-phase-wall-time-not-coverage",
-            "elapsed_seconds": 9.0,
+            "elapsed_seconds": 10.0,
             "phases": [{"phase": phase, "seconds": 1.0} for phase in phases],
             "note": "Includes operator waits and worker unwinding; cleanup is client/environment teardown. Not gameplay CPU time."},
         "pre_client_state": outer_state([0,0,0], 6, viewer=False),
@@ -166,6 +177,7 @@ def build_output(root, source_revision="1" * 40):
             "baseline_sequence":10,"message_token":11,"received_sequence":11},
         "review": outer_state([1,0,0], 12,
             [{"actor":3,"kind":10,"message":"E2E real client verified","token":11}]),
+        "interaction_review": outer_state([1,0,0], 13),
         "logout_baseline": outer_state([1,0,0], 13),
         "logout": outer_state([1,0,0], 14, viewer=False),
         "real_logout_receipt": {"verified":True,
@@ -173,6 +185,7 @@ def build_output(root, source_revision="1" * 40):
             "entity_id":3,"baseline_position":[1,0,0],
             "baseline_sequence":13,"received_sequence":14},
         "manual_review": review,
+        "manual_interaction_review": interaction_review,
         "logout_request": "[3] Zone IPC : StartLogoutCountdown",
         "logout_frame_sha256": logout_hash,
     }
@@ -180,6 +193,10 @@ def build_output(root, source_revision="1" * 40):
     write_json(root / "status.json", {"run": run_id, "phase": "finished",
                                       "status": "passed", "instruction": "synthetic"})
     return report
+
+
+def build_output_challenge(root):
+    return json.loads((root / "interaction-ticket.json").read_text())["viewer_say_challenge"]
 
 
 def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_path):
@@ -192,6 +209,11 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
     assert before == after
     assert proof["status"] == "accepted" and proof["scope"] == RESULT_SCOPE
     assert proof["sandbox_disposal_verified"] is False
+    assert proof["bot_interaction_review"] == {"verified":True,
+        "frame_sha256":hashlib.sha256((root / "interaction.png").read_bytes()).hexdigest(),
+        "scope":INTERACTION_CAPTURE_SCOPE, "development_run":"b" * 32,
+        "bots":["bot mover", "bot witness"],
+        "viewer_say_challenge":build_output_challenge(root)}
     assert proof["title_screen_review"] == {"verified":True,
         "frame_sha256":hashlib.sha256((root / "logout.png").read_bytes()).hexdigest(),
         "scope":LOGOUT_CAPTURE_SCOPE}
@@ -266,6 +288,18 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
         {"3":{"kind":1,"name":"Tester Viewer","gm_rank":0,"level":1,
               "hp":94,"position":[1,0,0]}}),
     lambda root, report: report["manual_review"].update(manual_review=False),
+    lambda root, report: report["interaction_review"]["actors"]["3"].update(name="foreign"),
+    lambda root, report: report["manual_interaction_review"].update(manual_review=1),
+    lambda root, report: write_json(root / "interaction-ticket.json",
+        {**json.loads((root / "interaction-ticket.json").read_text()),
+         "development_run":"e" * 32}),
+    lambda root, report: write_json(root / "interaction-ticket.json",
+        {**json.loads((root / "interaction-ticket.json").read_text()),
+         "bots":["bot mover", "foreign"]}),
+    lambda root, report: write_json(root / "interaction-review.json",
+        {**json.loads((root / "interaction-review.json").read_text()),
+         "viewer_say_challenge":"stale"}),
+    lambda root, report: (root / "interaction.png").write_bytes(b"changed interaction frame"),
     lambda root, report: report.update(logout_request="foreign"),
     lambda root, report: report.update(logout_frame_sha256="0" * 64),
     lambda root, report: write_json(root / "logout-review.json",

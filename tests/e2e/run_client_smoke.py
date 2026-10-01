@@ -10,12 +10,13 @@ import subprocess
 import time
 import uuid
 
-from .support.client_smoke import (CLIENT_SHA256, LOGOUT_CAPTURE_SCOPE, REAL_SAY,
-                                   other_player,
+from .support.client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
+                                   LOGOUT_CAPTURE_SCOPE, REAL_SAY, other_player,
                                    real_logout_baseline, real_movement_baseline,
                                    real_say_baseline, real_spawn_baseline,
                                    received_real_logout, received_real_movement,
-                                   received_real_say, received_real_spawn, validate_review,
+                                   received_real_say, received_real_spawn,
+                                   validate_interaction_review, validate_review,
                                    witness_say_challenge)
 from .support.environment import Environment, require_process_teardowns, sha256, REPO
 from .support.client_snapshot import verify_source
@@ -236,9 +237,27 @@ def run():
                 if client.poll() is not None or time.monotonic() >= deadline:
                     raise RuntimeError("graphical process/activity unavailable after bot scenario")
                 report["development_check"]["evidence"] = proof
+                interaction_capture = {}
+                def capture_active_interaction(development_run, finish):
+                    replies = finish.get("received_replies") if isinstance(finish, dict) else None
+                    if (not isinstance(replies, list) or len(replies) != 2
+                            or replies[0].get("message") != replies[1].get("message")):
+                        raise RuntimeError("cannot bind active interaction frame to fresh viewer reply")
+                    # Both exact bot observers have received this fresh Say and remain
+                    # logged in until the callback returns. Allow only drawing time;
+                    # the later human receipt, never this delay, certifies rendering.
+                    time.sleep(2)
+                    frame_path = OUTPUT / "interaction.png"
+                    ImageGrab.grab(all_screens=True).save(frame_path)
+                    interaction_capture.update(
+                        development_run=development_run,
+                        viewer_say_challenge=replies[0]["message"],
+                        frame_sha256=sha256(frame_path))
+
                 decline = run_graphical_decline(
                     run_development, shared, OUTPUT / "development-decline",
-                    viewer_name=real["name"], activity_deadline=deadline, login=bounded_login)
+                    viewer_name=real["name"], activity_deadline=deadline, login=bounded_login,
+                    viewer_finish_callback=capture_active_interaction)
                 report["decline_check"] = {"requested": True, "status": decline["status"],
                     "summary_sha256": sha256(OUTPUT / "development-decline/development-summary.json"),
                     "elapsed_seconds": decline["elapsed_seconds"]}
@@ -253,11 +272,30 @@ def run():
                 report["development_run_pair"] = run_pair
                 report["development_witness_handoff"] = require_graphical_witness_handoff(
                     spawned, initial_witness_retirement, run_pair, witness["name"])
+                if (set(interaction_capture) != {"development_run", "viewer_say_challenge",
+                                                 "frame_sha256"}
+                        or interaction_capture["development_run"] != decline["run_id"]):
+                    raise RuntimeError("active interaction frame was not captured by the decline run")
                 # Restore the exact paired mover as an independent final logout witness.
                 bot = Bot(worker, "witness-after-development")
                 state = bot.login_via_lobby(bounded_login(shared, shared["accounts"][0]), witness["name"])
                 report["logout_witness_restoration"] = require_graphical_logout_witness(
                     state, run_pair, real["name"], entity)
+                interaction_ticket = {"run": report["run"], **interaction_capture,
+                    "bots":[account["character"] for account in shared["accounts"]],
+                    "scope": INTERACTION_CAPTURE_SCOPE}
+                publish("interaction-ticket", interaction_ticket)
+                phase("interaction_review",
+                      "Review interaction.png: both dedicated bot characters and the exact fresh viewer Say must be rendered; see REAL_CLIENT.md.")
+                def interaction_reviewed(state):
+                    other_player(state, entity)
+                    path = OUTPUT / "interaction-review.json"
+                    if not path.exists():
+                        return False
+                    report["manual_interaction_review"] = validate_interaction_review(
+                        json.loads(path.read_text(encoding="utf-8")), interaction_ticket)
+                    return True
+                wait(interaction_reviewed)
             phase("logout", "Use /logout and confirm normally. Leave the client running at its title screen.")
             logout_baseline_state = worker.snapshot(bot.name)
             report["logout_baseline"] = logout_baseline_state

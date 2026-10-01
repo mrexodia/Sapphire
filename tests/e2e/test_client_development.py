@@ -664,17 +664,18 @@ def test_graphical_scenario_forwards_nested_deadline_and_exact_flags(monkeypatch
 
 def test_graphical_decline_is_a_separate_fresh_bounded_run(monkeypatch,tmp_path):
     monkeypatch.setattr(bridge.time,'monotonic',lambda:100.0)
-    calls=[];login=object();profile={'quest_catalog':'private-catalog','keep':'binding'}
+    calls=[];login=object();callback=object();profile={'quest_catalog':'private-catalog','keep':'binding'}
     def runner(*args,**kwargs):
         calls.append((args,kwargs));return {'status':'synthetic'}
     result=bridge.run_graphical_decline(
         runner,profile,tmp_path/'decline',viewer_name='Tester Viewer',
-        activity_deadline=500.8,login=login)
+        activity_deadline=500.8,login=login,viewer_finish_callback=callback)
     assert result=={'status':'synthetic'} and profile['quest_catalog']=='private-catalog'
     args,kwargs=calls[0]
     assert args[0]=={'keep':'binding'} and args[1]==tmp_path/'decline'
     assert kwargs['confirmed'] is True and kwargs['verify_decline'] is True
     assert kwargs['viewer_name']=='Tester Viewer' and kwargs['login'] is login
+    assert kwargs['viewer_finish_callback'] is callback
     assert kwargs['max_seconds']==399 and callable(kwargs['worker_factory'])
     assert all(key not in kwargs for key in ('verify_party','verify_reconnect','verify_sprint'))
 

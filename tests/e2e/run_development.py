@@ -31,7 +31,8 @@ from .support.development_equipment import (require_equipment_worker, begin_roun
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False,
         verify_inventory=False, verify_sprint=False, verify_equipment=False, viewer_name=None, max_seconds=None,
-        worker_factory=Worker, login=authenticate, lease_root=None):
+        worker_factory=Worker, login=authenticate, lease_root=None,
+        viewer_finish_callback=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
     validate_profile(profile)
@@ -41,6 +42,8 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         raise DevelopmentError("max_seconds must be an integer in 1..900")
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
+    if viewer_finish_callback is not None and not callable(viewer_finish_callback):
+        raise DevelopmentError("viewer finish callback must be callable")
     if any(type(flag) is not bool for flag in
            (verify_reconnect, verify_party, verify_tell, verify_decline, verify_inventory, verify_sprint, verify_equipment)):
         raise DevelopmentError("verification flags must be boolean")
@@ -263,6 +266,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                         continuity=viewer_continuity)
                     report["viewer_verification"]["continuous_presence"] = (
                         report["viewer_verification"]["finish"]["continuous_presence"])
+                    if viewer_finish_callback is not None:
+                        with timings.phase("viewer_finish_callback"):
+                            viewer_finish_callback(run_id, report["viewer_verification"]["finish"])
                     report["viewer_verification"]["verified"] = True
                 with timings.phase("logout_and_independent_despawn"):
                     mover.logout(wait_server_close=True)

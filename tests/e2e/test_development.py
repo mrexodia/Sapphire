@@ -142,6 +142,37 @@ def test_shared_smoke_lifecycle_and_timings(profile, tmp_path):
         assert secret not in text
 
 
+def test_viewer_finish_callback_runs_once_while_bots_are_active(profile, tmp_path, monkeypatch):
+    callbacks = []
+    def checkpoint(*args, **kwargs):
+        stage = args[6]
+        result = {"stage":stage, "identity":{"entity_id":3,"name":"Viewer","gm_rank":0},
+                  "presence_tokens":{"mover":20,"witness":21},
+                  "received_replies":[{"message":f"Sapphire viewer {'a' * 8} {stage} {'b' * 32}"}] * 2}
+        if stage == "finish":
+            result["continuous_presence"] = {"verified":True}
+        return result
+    monkeypatch.setattr(run_development, "viewer_checkpoint", checkpoint)
+    fake = FakeWorker()
+    def capture(run_id, finish):
+        callbacks.append((run_id, copy.deepcopy(finish), fake.closed,
+                          "logout" in fake.commands))
+    report, _ = execute(profile, tmp_path, fake, viewer_name="Viewer",
+                        viewer_finish_callback=capture)
+    assert report["status"] == "passed"
+    assert callbacks == [(report["run_id"], report["viewer_verification"]["finish"],
+                          False, False)]
+    assert any(row["phase"] == "viewer_finish_callback" for row in report["timings"])
+
+    failed_root = tmp_path / "callback-failure"; failed_root.mkdir()
+    failed, failed_worker = execute(profile, failed_root, FakeWorker(), viewer_name="Viewer",
+        viewer_finish_callback=lambda *_: (_ for _ in ()).throw(RuntimeError("capture failed")))
+    assert failed["status"] == "failed" and failed["lease_retained"]
+    assert failed_worker.closed
+    assert any(row["phase"] == "viewer_finish_callback" and row["outcome"] == "failed"
+               for row in failed["timings"])
+
+
 def test_failed_precondition_retains_leases_and_closes_worker(profile, tmp_path):
     fake = FakeWorker()
     fake.states["mover"]["territory"] = 141

@@ -534,8 +534,12 @@ contracts but still has no current graphical live attestation. After a current
 run, `python -m tests.e2e.inspect_client_development_result --output <output>`
 revalidates the outer empty baseline/fresh exact-name spawn/fresh movement/fresh
 Say/review/fresh logout snapshots, binds the rendered witness Say challenge to the
-exact outer run and review frame, requires a separate exact-frame manual title-
-screen review receipt, requires an exact PID-bound observed teardown of the owned
+exact outer run and review frame, and requires a second exact frame captured while
+the final decline-run bots are still active plus a separate manual receipt for both
+rendered dedicated bot characters and the fresh nested viewer Say. Use
+`prepare_client_smoke approve-interaction` only after inspecting that frame; it is
+not evidence that earlier bot actions rendered. The inspector also requires a
+separate exact-frame manual title-screen review receipt and an exact PID-bound observed teardown of the owned
 title-screen client plus every database/API/lobby/world generation during guest
 cleanup, binds the private process-lifecycle file hash, and revalidates all nested
 host-visible evidence read-only before disposal. Launch current owned guests through

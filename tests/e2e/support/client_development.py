@@ -62,13 +62,14 @@ def run_graphical_development(runner, profile, artifacts, *, viewer_name, activi
                   login=login, max_seconds=budget)
 
 
-def run_graphical_decline(runner, profile, artifacts, *, viewer_name, activity_deadline, login):
+def run_graphical_decline(runner, profile, artifacts, *, viewer_name, activity_deadline, login,
+                          viewer_finish_callback=None):
     """Run the mutually exclusive exact-peer decline in a second fresh bot session."""
     short_profile = dict(profile)
     short_profile.pop('quest_catalog', None)  # No repeated movement; decline is a distinct fresh run.
     budget = development_run_budget(activity_deadline)
     return runner(short_profile, artifacts, confirmed=True, verify_decline=True,
-                  viewer_name=viewer_name,
+                  viewer_name=viewer_name, viewer_finish_callback=viewer_finish_callback,
                   worker_factory=lambda executable, output: ActivityWorker(
                       executable, output, deadline=activity_deadline),
                   login=login, max_seconds=budget)
