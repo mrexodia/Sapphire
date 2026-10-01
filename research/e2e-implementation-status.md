@@ -286,6 +286,43 @@ increment. Current-code graphical execution therefore still requires a fresh,
 manually attended, approved matching-client run and explicit disposal evidence.
 No full gate, soak or platform sweep ran; overall goal remains incomplete.
 
+## Graphical bridge adds strict read-only reconnect inventory comparison
+
+Feature **`deced4c08`** extends only the fixed nested normal-bot scenario with the
+existing `verify_inventory` option. It performs no item action: immediately before
+ordinary logout and after the already-required fresh login, the actor must provide
+complete received projections for bags0–3, equipment1000 and Currency2000, and
+slot/catalog/count contents must match. The graphical viewer remains a separate
+endpoint witness and neither supplies nor observes private inventory contents.
+
+The graphical consumer now requires `inventory_verification` requested/verified,
+the exact established scope, unchanged empty `changed_slots`, exact projection
+fields and ordered containers, strict sequence integers, canonical slot keys,
+container/slot bounds, positive catalog/count values, exact row fields and equal
+before/after contents. Missing, malformed, type-confused, foreign-container,
+out-of-range, extra-field or changed projections fail. This does not add item-
+instance identity, quality/durability, Crystal/armoury containers, mutation,
+world-restart persistence or independent inventory observation.
+
+From a new remote-free frozen exact commit
+`deced4c085712d29b78dad59ab88e93a3462f83b`, graphical, inventory, reconnect,
+deadline, lifecycle and smoke contracts passed **163 tests in 1.12s**. Contracts
+verify exact `verify_inventory=True` forwarding and malformed/changed consumer
+receipts while preserving nested/outer deadlines, leases, exits, viewer identity
+and prior subchecks. Test-log SHA-256:
+`c2381d059d93a160c32f1cf11a49d1da216c84f780b0798b685cadce9c0563a1`.
+
+The exact current projection validator accepted both projections from existing
+headless `development-inventory-live-001`: five starter-equipment rows, before
+sequence122, after sequence118, unchanged contents. Read-only artifact-check
+SHA-256:
+`fa40532187e7c12c259720a8e4d4c4e06bed3b990ffc41ae55b27af56c62d21f`.
+That confirms consumer compatibility with genuine received headless data only; it
+neither reruns nor upgrades the artifact into graphical evidence. No Sandbox,
+graphical client, endpoint, account or gameplay operation ran. Current graphical
+execution and its explicit disposal remain pending, as do reset and broad gates.
+Overall goal remains incomplete.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1086,8 +1123,8 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested deadline/lease/exit and outer-exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require an aggregate completed deadline plus fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
-| Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; new decline/inventory flags have headless, not graphical, live coverage |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested deadline/inventory/lease/exit and outer-exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
+| Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; decline has headless-only live coverage; current graphical policy requires read-only inventory but awaits graphical execution |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
 | Preserve viewer, private inputs, historical failures and unrelated experiments | Separate viewer profiles; private artifact hashes; failed graphical 001–003 retained; seven experimental paths remain separate | No all-state viewer invariance, shared-world cleanliness or crash-consistency claim |
