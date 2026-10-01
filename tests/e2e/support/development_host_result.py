@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import stat
 
 from .development import DevelopmentError, require_normal_worker_exit
 from .environment import (SetupError, artifact_tree_sha256,
@@ -19,9 +20,28 @@ SCOPE = "terminal-owned-warm-host-cleanup-not-external-server-or-offline-proof"
 TEARDOWN_SCOPE = "exact-owned-warm-host-service-teardown-not-server-offline-proof"
 
 
-def _read(path, label):
+def _pairs(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise DevelopmentError("owned-host evidence contains a duplicate JSON key")
+        value[key] = item
+    return value
+
+
+def _read(path, label, max_bytes=1024 * 1024):
     try:
-        value = json.loads(Path(path).read_text(encoding="utf-8"))
+        path = Path(path)
+        metadata = path.lstat()
+        reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        if (path.is_symlink() or not stat.S_ISREG(metadata.st_mode)
+                or getattr(metadata, "st_file_attributes", 0) & reparse
+                or metadata.st_nlink != 1 or not 0 < metadata.st_size <= max_bytes):
+            raise OSError()
+        raw = path.read_bytes()
+        if not 0 < len(raw) <= max_bytes:
+            raise OSError()
+        value = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs)
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise DevelopmentError(f"cannot read owned-host {label}") from error
     if not isinstance(value, dict):
@@ -59,7 +79,7 @@ def inspect_owned_development_host(session_dir):
             raise DevelopmentError("owned host records terminal cleanup failure")
     except SetupError as error:
         raise DevelopmentError("cannot inspect owned-host cleanup-failure markers") from error
-    status = _read(session_dir / "status.json", "terminal status")
+    status = _read(session_dir / "status.json", "terminal status", 64 * 1024)
     fields = {"version", "kind", "session_id", "status", "scope", "protocol",
               "maximum_seconds", "owner_pid", "owner_created", "existing_database_access",
               "graphical_client_started", "fixture_setup", "normal_lobby_creation_verified",

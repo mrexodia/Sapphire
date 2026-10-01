@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 import time
@@ -291,6 +292,30 @@ def test_composite_managed_run_inspector_correlates_terminal_host_read_only(
     assert json.loads(capsys.readouterr().out) == proof
 
 
+@pytest.mark.parametrize("mutation", ["duplicate","oversized","hardlink"])
+def test_composite_managed_run_rejects_unsafe_summary_file(
+        assets, tmp_path, mutation):
+    captured = {}
+    def ready(env, session, clock):
+        profile = json.loads((session / "bot-profile.json").read_text())
+        captured["receipt"] = check_managed_host(profile, clock=clock)
+        (session / "stop").touch()
+    host_report, _, session = run_host(assets, tmp_path, on_ready=ready)
+    summary = tmp_path / "development-summary.json"
+    managed_summary(summary, captured["receipt"], host_report["worker_sha256"])
+    if mutation == "duplicate":
+        summary.write_text(summary.read_text().replace(
+            '{\n  "version": 1,', '{\n  "version": 1,\n  "version": 1,', 1))
+    elif mutation == "oversized":
+        summary.write_text('{"padding":"' + 'x' * (1024 * 1024) + '"}')
+    else:
+        alias = tmp_path / "summary-alias.json"
+        try: os.link(summary, alias)
+        except OSError as error: pytest.skip(f"hard links unavailable: {error}")
+    with pytest.raises(DevelopmentError):
+        inspect_managed_development_run(session, summary)
+
+
 def test_composite_managed_run_rejects_changed_worker_artifact_tree(assets, tmp_path):
     captured = {}
     def ready(env, session, clock):
@@ -447,6 +472,24 @@ def test_terminal_host_inspector_rejects_partial_or_type_confused_status(
     path = session / "status.json"
     status = json.loads(path.read_text()); mutate(status)
     path.write_text(json.dumps(status))
+    with pytest.raises(DevelopmentError):
+        inspect_owned_development_host(session)
+
+
+@pytest.mark.parametrize("mutation", ["duplicate","oversized","hardlink"])
+def test_terminal_host_inspector_rejects_unsafe_status_file(
+        assets, tmp_path, mutation):
+    _, _, session = run_host(assets, tmp_path)
+    status = session / "status.json"
+    if mutation == "duplicate":
+        status.write_text(status.read_text().replace(
+            '{\n  "version": 1,', '{\n  "version": 1,\n  "version": 1,', 1))
+    elif mutation == "oversized":
+        status.write_text('{"padding":"' + 'x' * (64 * 1024) + '"}')
+    else:
+        alias = session / "status-alias.json"
+        try: os.link(status, alias)
+        except OSError as error: pytest.skip(f"hard links unavailable: {error}")
     with pytest.raises(DevelopmentError):
         inspect_owned_development_host(session)
 

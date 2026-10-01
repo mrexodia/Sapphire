@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import stat
 
 from .development import (DevelopmentError, require_managed_host_binding,
                           require_normal_worker_exit)
@@ -27,9 +28,28 @@ from .development_placement import require_placement_receipt
 SCOPE = "managed-development-received-evidence-and-terminal-owned-host-correlation"
 
 
-def _read(path, label):
+def _pairs(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise DevelopmentError("managed development evidence contains a duplicate JSON key")
+        value[key] = item
+    return value
+
+
+def _read(path, label, max_bytes):
     try:
-        value = json.loads(Path(path).read_text(encoding="utf-8"))
+        path = Path(path)
+        metadata = path.lstat()
+        reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        if (path.is_symlink() or not stat.S_ISREG(metadata.st_mode)
+                or getattr(metadata, "st_file_attributes", 0) & reparse
+                or metadata.st_nlink != 1 or not 0 < metadata.st_size <= max_bytes):
+            raise OSError()
+        raw = path.read_bytes()
+        if not 0 < len(raw) <= max_bytes:
+            raise OSError()
+        value = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs)
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise DevelopmentError(f"cannot read managed development {label}") from error
     if not isinstance(value, dict):
@@ -152,8 +172,8 @@ def validate_requested_checks(report):
 def inspect_managed_development_run(session_dir, summary_path):
     session_dir, summary_path = Path(session_dir).resolve(), Path(summary_path).resolve()
     host = inspect_owned_development_host(session_dir)
-    terminal = _read(session_dir / "status.json", "terminal host status")
-    report = _read(summary_path, "run summary")
+    terminal = _read(session_dir / "status.json", "terminal host status", 64 * 1024)
+    report = _read(summary_path, "run summary", 1024 * 1024)
     run_id = report.get("run_id")
     if (type(report.get("version")) is not int or report["version"] != 1
             or report.get("status") != "passed"
