@@ -9,6 +9,34 @@ on:
         required: true
         type: boolean
         default: false
+      authorized_selected_scope:
+        description: I authorize the selected disposable services and any account/gameplay mutations
+        required: true
+        type: boolean
+        default: false
+      execution_scope:
+        description: Exact standalone case for short feedback, or the complete combined gate
+        required: true
+        type: choice
+        default: "tests/e2e/test_live.py::test_rejected_credentials"
+        options:
+          - "tests/e2e/test_live.py::test_rejected_credentials"
+          - "tests/e2e/test_live.py::test_login_idle_logout"
+          - "tests/e2e/test_live.py::test_received_party_join_and_leave"
+          - "tests/e2e/test_live.py::test_observed_movement_and_position_persistence"
+          - "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[single]"
+          - "tests/e2e/test_live_quest.py::test_quest_cancel_complete_rewards_and_restart[chain]"
+          - "tests/e2e/test_live_zoning.py::test_observed_living_return_action"
+          - "tests/e2e/test_live_zoning.py::test_observed_exit_crossing_and_territory_persistence"
+          - "tests/e2e/test_live_combat.py::test_observed_sprint_status_and_tp_debit"
+          - "tests/e2e/test_live_combat.py::test_observed_fast_blade_damage"
+          - "tests/e2e/test_live_progression.py::test_natural_pugilist_level_two_true_strike"
+          - "tests/e2e/test_live_combo.py::test_natural_level_four_fast_blade_combo"
+          - "tests/e2e/test_live_aggro.py::test_natural_vision_aggro_without_player_action"
+          - "tests/e2e/test_live_player_defeat.py::test_natural_enemy_defeats_level_one_player"
+          - "tests/e2e/test_live_creation.py::test_lobby_character_creation_and_opening_persistence"
+          - "tests/e2e/test_live_fault_diagnostics.py::test_owned_world_exit_preserves_classification_logs_and_cleanup"
+          - "combined"
 
 permissions:
   contents: read
@@ -26,12 +54,14 @@ jobs:
         timeout-minutes: 2
         env:
           ACK: ${{ inputs.reviewed_default_branch }}
+          EXECUTION_ACK: ${{ inputs.authorized_selected_scope }}
           ENABLED: ${{ vars.SAPPHIRE_PRIVATE_E2E_ENABLED }}
           SELECTED_REF: ${{ github.ref }}
           TRUSTED_REF: refs/heads/${{ github.event.repository.default_branch }}
         shell: bash
         run: |
           test "$ACK" = true || { echo 'Explicit review acknowledgement required'; exit 1; }
+          test "$EXECUTION_ACK" = true || { echo 'Selected private execution authorization required'; exit 1; }
           test "$ENABLED" = true || { echo 'Private E2E runner is not enabled'; exit 1; }
           test "$SELECTED_REF" = "$TRUSTED_REF" || { echo 'Only the trusted default branch is allowed'; exit 1; }
 
@@ -107,39 +137,53 @@ jobs:
         timeout-minutes: 75
         env:
           SAPPHIRE_E2E_PROFILE: ${{ secrets.SAPPHIRE_E2E_PROFILE }}
+          EXECUTION_SCOPE: ${{ inputs.execution_scope }}
         run: |
           if (-not $env:SAPPHIRE_E2E_PROFILE) { throw 'Private profile path is not configured' }
-          if (Test-Path .e2e-ci-summary.json) { throw 'Summary destination must start absent' }
+          if (Test-Path .e2e-ci-summary.json) { throw 'Combined summary destination must start absent' }
+          if (Test-Path .e2e-isolated-case-summary.json) { throw 'Standalone summary destination must start absent' }
           $privateRoot = Join-Path $env:RUNNER_TEMP "sapphire-private-e2e-${{ github.run_id }}-${{ github.run_attempt }}"
           if (Test-Path $privateRoot) { throw 'Private run root must start absent' }
           $stageRoot = Join-Path $env:RUNNER_TEMP "sapphire-private-e2e-stage-${{ github.run_id }}-${{ github.run_attempt }}"
           if (Test-Path $stageRoot) { throw 'Private staging root must start absent' }
           python -m tests.e2e.stage_ci_profile --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-artifacts "$stageRoot" --expected-revision "${{ github.sha }}"
           if ($LASTEXITCODE -ne 0) { throw 'Service-free private profile staging failed' }
+          $summaryPath = $null
+          $gateFailed = $false
+          if ($env:EXECUTION_SCOPE -eq 'combined') {
+          $summaryPath = '.e2e-ci-summary.json'
           python -m tests.e2e.run_ci --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --summary .e2e-ci-summary.json --require-clean
           $gateExit = $LASTEXITCODE
           if ($gateExit -ne 0) {
-            if (Test-Path .e2e-ci-summary.json) {
-              python -m tests.e2e.inspect_ci_failure_result --summary .e2e-ci-summary.json --expected-revision "${{ github.sha }}"
-              if ($LASTEXITCODE -ne 0) { throw 'Failed gameplay summary is unsafe to publish' }
-              'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-            }
-            throw 'Gameplay evidence gate failed; inspect private runner diagnostics'
-          }
+          if (-not (Test-Path .e2e-ci-summary.json)) { throw 'Gameplay gate failed without a summary' }
+          python -m tests.e2e.inspect_ci_failure_result --summary .e2e-ci-summary.json --expected-revision "${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { throw 'Failed gameplay summary is unsafe to publish' }
+          $gateFailed = $true
+          } else {
           python -m tests.e2e.inspect_ci_result --summary .e2e-ci-summary.json --expected-revision "${{ github.sha }}"
           if ($LASTEXITCODE -ne 0) { throw 'Published gameplay summary inspection failed' }
           $privateRuns = @(Get-ChildItem -LiteralPath $privateRoot -Directory -Force)
           if ($privateRuns.Count -ne 1) { throw 'Private run root must contain exactly one gate run' }
           python -m tests.e2e.inspect_ci_private_evidence --summary .e2e-ci-summary.json --private-run-dir "$($privateRuns[0].FullName)" --expected-revision "${{ github.sha }}"
           if ($LASTEXITCODE -ne 0) { throw 'Private gameplay evidence inspection failed' }
+          }
+          } else {
+          $summaryPath = '.e2e-isolated-case-summary.json'
+          python -m tests.e2e.run_isolated_case --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" --expected-revision "${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { throw 'Standalone isolated case failed; inspect private runner diagnostics' }
+          python -m tests.e2e.inspect_isolated_case_run --private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" --expected-revision "${{ github.sha }}" | Out-File -FilePath .e2e-isolated-case-summary.json -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { throw 'Standalone isolated case publication inspection failed' }
+          }
           'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "summary_path=$summaryPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          if ($gateFailed) { throw 'Gameplay evidence gate failed; inspect private runner diagnostics' }
       - name: Publish allowlisted evidence only
         if: always() && steps.gameplay.outputs.summary_created == 'true'
         timeout-minutes: 5
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: gameplay-summary-${{ github.run_id }}
-          path: .e2e-ci-summary.json
+          path: ${{ steps.gameplay.outputs.summary_path }}
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7

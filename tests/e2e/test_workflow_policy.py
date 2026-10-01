@@ -44,6 +44,10 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     assert private["ambient_pytest_plugins_disabled"] is True
     assert public["standalone_case_runner_contracts_required"] is True
     assert private["standalone_case_runner_contracts_required"] is True
+    assert private["standalone_dispatch_required"] is True
+    assert private["standalone_private_evidence_inspection_required"] is True
+    assert private["explicit_execution_authorization_required"] is True
+    assert public["standalone_dispatch_required"] is False
     assert inspect_dependency_lock(DEPENDENCIES)["package_count"] == 7
     assert [len(public["pinned_actions"]), len(private["pinned_actions"])] == [3, 3]
     assert all("@" in action and len(action.rsplit("@", 1)[1]) == 40
@@ -98,6 +102,21 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
               "if ($false) { throw 'Service-free private profile staging failed' }"),
     (PRIVATE, "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\"",
               "          test \"$SELECTED_REF\" = \"$SELECTED_REF\""),
+    (PRIVATE, "      authorized_selected_scope:", "      foreign_authorization:"),
+    (PRIVATE, "          test \"$EXECUTION_ACK\" = true",
+              "          test \"$EXECUTION_ACK\" = false"),
+    (PRIVATE, '          - "tests/e2e/test_live.py::test_login_idle_logout"',
+              '          - "tests/e2e/foreign.py::test_foreign"'),
+    (PRIVATE, "python -m tests.e2e.run_isolated_case --profile",
+              "python -m tests.e2e.run_ci --profile"),
+    (PRIVATE, "python -m tests.e2e.inspect_isolated_case_run --private-root",
+              "python -m tests.e2e.inspect_isolated_case --private-root"),
+    (PRIVATE, "          path: ${{ steps.gameplay.outputs.summary_path }}",
+              "          path: .e2e-ci-summary.json"),
+    (PRIVATE, "          $summaryPath = '.e2e-isolated-case-summary.json'",
+              "          $summaryPath = $env:EXECUTION_SCOPE"),
+    (PRIVATE, "          if (Test-Path .e2e-isolated-case-summary.json)",
+              "          if ($false)"),
 ])
 def test_workflow_policy_rejects_mutable_unbounded_or_untrusted_controls(
         tmp_path, source, old, new):

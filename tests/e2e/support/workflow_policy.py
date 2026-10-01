@@ -9,6 +9,7 @@ import hashlib
 from pathlib import Path
 import re
 
+from ..run_ci import CASES
 from .development import DevelopmentError
 
 PINNED_ACTION = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
@@ -162,12 +163,36 @@ def inspect_workflow(path, *, private):
         forbidden = re.compile(r"^  (?:push|pull_request|schedule|workflow_call):")
         if any(forbidden.match(line) for line in triggers):
             raise DevelopmentError("private workflow exposes an untrusted trigger")
+        try:
+            authorization_start = lines.index("      authorized_selected_scope:")
+            authorization_block = _block(lines, authorization_start, 6)
+            scope_start = lines.index("      execution_scope:")
+            scope_block = _block(lines, scope_start, 6)
+            options_start = scope_block.index("        options:")
+        except ValueError as error:
+            raise DevelopmentError("private workflow lacks explicit execution authorization/choice") from error
+        if (authorization_block.count("        required: true") != 1
+                or authorization_block.count("        type: boolean") != 1
+                or authorization_block.count("        default: false") != 1):
+            raise DevelopmentError("private workflow selected execution authorization is not fail-closed")
+        option_lines = [line for line in scope_block[options_start + 1:]
+                        if line.strip() and not line.lstrip().startswith("#")]
+        options = [line[13:-1] for line in option_lines
+                   if line.startswith('          - "') and line.endswith('"')]
+        if (scope_block.count("        required: true") != 1
+                or scope_block.count("        type: choice") != 1
+                or scope_block.count(f'        default: "{CASES[0]}"') != 1
+                or options != [*CASES, "combined"]
+                or len(option_lines) != len(options)):
+            raise DevelopmentError("private workflow execution choices differ from the exact gate allowlist")
         required = ("  cancel-in-progress: false",
                     "    environment: sapphire-private-e2e",
                     "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
                     "    needs: authorize",
                     "        type: boolean",
                     "        default: false",
+                    "          EXECUTION_ACK: ${{ inputs.authorized_selected_scope }}",
+                    "          EXECUTION_SCOPE: ${{ inputs.execution_scope }}",
                     "          ref: ${{ github.sha }}",
                     "      - name: Verify exact clean reviewed checkout",
                     "          EXPECTED_SHA: ${{ github.sha }}",
@@ -175,6 +200,7 @@ def inspect_workflow(path, *, private):
                     "          if ($LASTEXITCODE -ne 0 -or $changes.Count -ne 0) { throw 'Checkout is not clean before build' }",
                     "          if ($LASTEXITCODE -ne 0 -or @($submodules | Where-Object { $_ -match '^[-+U]' }).Count -ne 0) { throw 'Submodule checkout is incomplete or changed' }",
                     "          test \"$ACK\" = true || { echo 'Explicit review acknowledgement required'; exit 1; }",
+                    "          test \"$EXECUTION_ACK\" = true || { echo 'Selected private execution authorization required'; exit 1; }",
                     "          test \"$ENABLED\" = true || { echo 'Private E2E runner is not enabled'; exit 1; }",
                     "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\" || { echo 'Only the trusted default branch is allowed'; exit 1; }",
                     "          $privateRoot = Join-Path $env:RUNNER_TEMP \"sapphire-private-e2e-${{ github.run_id }}-${{ github.run_attempt }}\"",
@@ -221,24 +247,51 @@ def inspect_workflow(path, *, private):
                               '.e2e-ci-summary.json --private-run-dir "$($privateRuns[0].FullName)" '
                               '--expected-revision "${{ github.sha }}"')
         private_failure = "          if ($LASTEXITCODE -ne 0) { throw 'Private gameplay evidence inspection failed' }"
+        standalone_run = ('          python -m tests.e2e.run_isolated_case --profile '
+                          '"$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" '
+                          '--worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" '
+                          '--private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" '
+                          '--expected-revision "${{ github.sha }}"')
+        standalone_run_guard = "          if ($LASTEXITCODE -ne 0) { throw 'Standalone isolated case failed; inspect private runner diagnostics' }"
+        standalone_inspection = ('          python -m tests.e2e.inspect_isolated_case_run --private-root '
+                                 '"$privateRoot" --expected-case "$env:EXECUTION_SCOPE" '
+                                 '--expected-revision "${{ github.sha }}" | Out-File -FilePath '
+                                 '.e2e-isolated-case-summary.json -Encoding utf8')
+        standalone_inspection_guard = "          if ($LASTEXITCODE -ne 0) { throw 'Standalone isolated case publication inspection failed' }"
         publication = "          'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
-        failed_inspection = ('              python -m tests.e2e.inspect_ci_failure_result --summary '
+        publication_path = '          "summary_path=$summaryPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append'
+        failed_inspection = ('          python -m tests.e2e.inspect_ci_failure_result --summary '
                              '.e2e-ci-summary.json --expected-revision "${{ github.sha }}"')
-        failed_inspection_guard = "              if ($LASTEXITCODE -ne 0) { throw 'Failed gameplay summary is unsafe to publish' }"
-        failed_publication = "              'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
+        failed_inspection_guard = "          if ($LASTEXITCODE -ne 0) { throw 'Failed gameplay summary is unsafe to publish' }"
         upload_guard = "        if: always() && steps.gameplay.outputs.summary_created == 'true'"
+        upload_path = "          path: ${{ steps.gameplay.outputs.summary_path }}"
+        combined_destination = "          $summaryPath = '.e2e-ci-summary.json'"
+        standalone_destination = "          $summaryPath = '.e2e-isolated-case-summary.json'"
+        combined_absent = "          if (Test-Path .e2e-ci-summary.json) { throw 'Combined summary destination must start absent' }"
+        standalone_absent = "          if (Test-Path .e2e-isolated-case-summary.json) { throw 'Standalone summary destination must start absent' }"
         if (lines.count(inspection) != 1 or lines.count(inspection_failure) != 1
                 or lines.count(private_inspection) != 1 or lines.count(private_failure) != 1
-                or lines.count(publication) != 1 or lines.count(failed_inspection) != 1
+                or lines.count(standalone_run) != 1 or lines.count(standalone_run_guard) != 1
+                or lines.count(standalone_inspection) != 1
+                or lines.count(standalone_inspection_guard) != 1
+                or lines.count(publication) != 1 or lines.count(publication_path) != 1
+                or lines.count(failed_inspection) != 1
                 or lines.count(failed_inspection_guard) != 1
-                or lines.count(failed_publication) != 1 or lines.count(upload_guard) != 1
+                or lines.count(upload_guard) != 1 or lines.count(upload_path) != 1
+                or lines.count(combined_destination) != 1
+                or lines.count(standalone_destination) != 1
+                or lines.count(combined_absent) != 1 or lines.count(standalone_absent) != 1
+                or lines.count("          if ($env:EXECUTION_SCOPE -eq 'combined') {") != 1
+                or lines.count("          if ($gateFailed) { throw 'Gameplay evidence gate failed; inspect private runner diagnostics' }") != 1
                 or not lines.index(inspection) < lines.index(inspection_failure) \
                     < lines.index(private_inspection) < lines.index(private_failure) \
-                    < lines.index(publication)
+                    < lines.index(standalone_run) < lines.index(standalone_run_guard) \
+                    < lines.index(standalone_inspection) < lines.index(standalone_inspection_guard) \
+                    < lines.index(publication) < lines.index(publication_path)
                 or not lines.index(failed_inspection) < lines.index(failed_inspection_guard) \
-                    < lines.index(failed_publication)
-                or lines.index(upload_guard) < lines.index(private_failure)):
-            raise DevelopmentError("private workflow does not inspect passing/private or failed evidence before publication")
+                    < lines.index(publication)
+                or lines.index(upload_guard) < lines.index(publication_path)):
+            raise DevelopmentError("private workflow does not inspect combined/standalone evidence before publication")
     locked_install = ("          python -m pip install --require-hashes "
                       "--only-binary=:all: --no-deps -r tests/e2e/requirements.txt")
     if lines.count(locked_install) != 1:
@@ -261,6 +314,9 @@ def inspect_workflow(path, *, private):
             "hash_locked_dependencies_required":True,
             "ambient_pytest_plugins_disabled":True,
             "standalone_case_runner_contracts_required":True,
+            "standalone_dispatch_required":private,
+            "standalone_private_evidence_inspection_required":private,
+            "explicit_execution_authorization_required":private,
             "service_free_staging_required":private,
             "exact_clean_checkout_required":private,
             "failed_summary_inspection_required":private,
