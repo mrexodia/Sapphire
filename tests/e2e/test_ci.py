@@ -10,11 +10,14 @@ import pytest
 from . import run_ci
 from .inspect_ci_result import main as inspect_ci_main
 from .inspect_ci_private_evidence import main as inspect_ci_private_main
+from .inspect_ci_failure_result import main as inspect_ci_failure_main
 from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
                                 SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
 from .support.ci_private_result import (FAULT_CASE, FAULT_SCOPE,
                                         SCOPE as CI_PRIVATE_SCOPE,
                                         inspect_ci_private_evidence)
+from .support.ci_failure_result import (SCOPE as CI_FAILURE_SCOPE,
+                                        inspect_ci_failure_result)
 from .support.environment import SetupError, artifact_tree_sha256
 
 
@@ -501,6 +504,8 @@ def test_preflight_exception_is_only_in_private_diagnostics(tmp_path, monkeypatc
     assert run_ci.run(source, private, public) == 1
     assert "PRIVATE_MARKER" not in public.read_text()
     assert json.loads(public.read_text())["stage"] == "preflight"
+    proof = inspect_ci_failure_result(public, "a" * 40)
+    assert proof["gate_status"] == "failed" and proof["success_evidence_accepted"] is False
     assert "PRIVATE_MARKER" in next(private.glob("*/entry-error.log")).read_text()
     assert source.read_text() == '{"example": "PRIVATE_MARKER"}'
     with pytest.raises(run_ci.PreflightError, match="fresh"):
@@ -637,6 +642,52 @@ def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp
     assert proof["scope"] == CI_RESULT_SCOPE and proof["case_count"] == len(run_ci.CASES)
     assert inspect_ci_main(["--summary",str(path),"--expected-revision",revision]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("shape", ["preflight","preflight-source","suite","verification"])
+def test_failed_publication_inspector_accepts_only_sanitized_failure_shapes(tmp_path, capsys, shape):
+    revision = "a" * 40
+    full = current_public_summary(revision)
+    full.update(status="failed", stage="verification", cleanup_verified=False)
+    if shape == "verification":
+        report = full
+    elif shape == "suite":
+        report = {key:full[key] for key in
+                  ("version","status","scope","revision","source_dirty","identities","deadline_scale")}
+        report["stage"] = "suite"
+    elif shape == "preflight-source":
+        report = {key:full[key] for key in
+                  ("version","status","scope","revision","source_dirty","identities","deadline_scale")}
+        report["stage"] = "preflight"
+    else:
+        report = {"version":1,"status":"failed","stage":"preflight",
+                  "scope":"headless-live-not-real-client"}
+    path = tmp_path / f"{shape}.json"; path.write_text(json.dumps(report))
+    before = path.read_bytes()
+    proof = inspect_ci_failure_result(path, revision)
+    assert path.read_bytes() == before and proof["scope"] == CI_FAILURE_SCOPE
+    assert proof["success_evidence_accepted"] is False and proof["gate_status"] == "failed"
+    assert inspect_ci_failure_main(["--summary",str(path),"--expected-revision",revision]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutation", ["passed","foreign","secret","dirty","partial-gate",
+                                      "partial-artifacts","no-failed-outcome","bad-revision"])
+def test_failed_publication_inspector_rejects_unsafe_or_success_shapes(tmp_path, mutation):
+    report = current_public_summary(); report.update(status="failed", stage="verification",
+                                                      cleanup_verified=False)
+    expected = "a" * 40
+    if mutation == "passed": report["status"] = "passed"
+    elif mutation == "foreign": report["stage"] = "unknown"
+    elif mutation == "secret": report["private_path"] = "C:/private/credential"
+    elif mutation == "dirty": report["source_dirty"] = True
+    elif mutation == "partial-gate": report.pop("cases")
+    elif mutation == "partial-artifacts": report["private_test_artifacts"].pop("profile_sha256")
+    elif mutation == "no-failed-outcome": report["cleanup_verified"] = True
+    else: expected = "b" * 40
+    path = tmp_path / "failed.json"; path.write_text(json.dumps(report))
+    with pytest.raises(SetupError):
+        inspect_ci_failure_result(path, expected)
 
 
 def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path, capsys):

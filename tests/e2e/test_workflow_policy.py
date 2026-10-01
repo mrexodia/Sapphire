@@ -31,6 +31,7 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     assert [row["name"] for row in private["jobs"]] == ["authorize", "gameplay"]
     assert [row["timeout_minutes"] for row in private["jobs"]] == [5, 120]
     assert private["private_evidence_inspection_required"] is True
+    assert private["failed_summary_inspection_required"] is True
     assert [len(public["pinned_actions"]), len(private["pinned_actions"])] == [3, 3]
     assert all("@" in action and len(action.rsplit("@", 1)[1]) == 40
                for proof in (public, private) for action in proof["pinned_actions"])
@@ -57,6 +58,8 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
               "if ($false) { throw 'Published gameplay summary inspection failed' }"),
     (PRIVATE, "if ($LASTEXITCODE -ne 0) { throw 'Private gameplay evidence inspection failed' }",
               "if ($false) { throw 'Private gameplay evidence inspection failed' }"),
+    (PRIVATE, "if ($LASTEXITCODE -ne 0) { throw 'Failed gameplay summary is unsafe to publish' }",
+              "if ($false) { throw 'Failed gameplay summary is unsafe to publish' }"),
     (PRIVATE, "$privateRuns.Count -ne 1", "$privateRuns.Count -lt 99"),
     (PRIVATE, '--private-root "$privateRoot"', '--private-root "$env:RUNNER_TEMP"'),
     (PRIVATE, "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\"",

@@ -102,6 +102,8 @@ jobs:
           $gateExit = $LASTEXITCODE
           if ($gateExit -ne 0) {
             if (Test-Path .e2e-ci-summary.json) {
+              python -m tests.e2e.inspect_ci_failure_result --summary .e2e-ci-summary.json --expected-revision "${{ github.sha }}"
+              if ($LASTEXITCODE -ne 0) { throw 'Failed gameplay summary is unsafe to publish' }
               'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             }
             throw 'Gameplay evidence gate failed; inspect private runner diagnostics'

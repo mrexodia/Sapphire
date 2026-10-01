@@ -137,17 +137,23 @@ def inspect_workflow(path, *, private):
                               '--expected-revision "${{ github.sha }}"')
         private_failure = "          if ($LASTEXITCODE -ne 0) { throw 'Private gameplay evidence inspection failed' }"
         publication = "          'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
+        failed_inspection = ('              python -m tests.e2e.inspect_ci_failure_result --summary '
+                             '.e2e-ci-summary.json --expected-revision "${{ github.sha }}"')
+        failed_inspection_guard = "              if ($LASTEXITCODE -ne 0) { throw 'Failed gameplay summary is unsafe to publish' }"
         failed_publication = "              'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
         upload_guard = "        if: always() && steps.gameplay.outputs.summary_created == 'true'"
         if (lines.count(inspection) != 1 or lines.count(inspection_failure) != 1
                 or lines.count(private_inspection) != 1 or lines.count(private_failure) != 1
-                or lines.count(publication) != 1 or lines.count(failed_publication) != 1
-                or lines.count(upload_guard) != 1
+                or lines.count(publication) != 1 or lines.count(failed_inspection) != 1
+                or lines.count(failed_inspection_guard) != 1
+                or lines.count(failed_publication) != 1 or lines.count(upload_guard) != 1
                 or not lines.index(inspection) < lines.index(inspection_failure) \
                     < lines.index(private_inspection) < lines.index(private_failure) \
                     < lines.index(publication)
+                or not lines.index(failed_inspection) < lines.index(failed_inspection_guard) \
+                    < lines.index(failed_publication)
                 or lines.index(upload_guard) < lines.index(private_failure)):
-            raise DevelopmentError("private workflow does not inspect public and private evidence before publication")
+            raise DevelopmentError("private workflow does not inspect passing/private or failed evidence before publication")
     normalized = path.as_posix()
     marker = ".github/workflows/"
     display = normalized[normalized.index(marker):] if marker in normalized else path.name
@@ -157,5 +163,6 @@ def inspect_workflow(path, *, private):
             "sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
             "private_asset_workflow": private,
             "private_evidence_inspection_required":private,
+            "failed_summary_inspection_required":private,
             "permissions": {"contents": "read"},
             "jobs": jobs, "pinned_actions": actions}

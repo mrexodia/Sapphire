@@ -108,7 +108,9 @@ upgraded. The private workflow invokes this inspector against `${{ github.sha }}
 after a passing gate, then requires exactly one run below a fresh run-ID/attempt-ID
 private root and invokes the private-evidence inspector against that run before
 marking the summary publishable. The private root is never uploaded. Failed gate
-summaries retain their separate fixed-schema diagnostic upload path. This verifies
+summaries must pass the separate fail-only `inspect_ci_failure_result` sanitizer
+before their diagnostic upload output is set; acceptance explicitly records that
+success evidence was not accepted. This verifies
 the sanitized public result and retained private evidence contracts. It cannot reconstruct the private
 PID/generation records deleted with disposable fixtures,
 prove hosted execution, or replace an actual current gate run. When the authorized
@@ -172,7 +174,10 @@ separate evidence that its binaries came from the checkout.
   database names, PIDs, return codes, captured output or credentials;
   hashes are correlation, not independent content proof.
   The upload step requires the current gameplay step to create the report. It
-  does not reuse a stale report after an earlier step fails.
+  does not reuse a stale report after an earlier step fails. A nonzero gate can
+  publish only base/source/allowlisted gate diagnostic fields accepted by the
+  fail-only inspector; unknown fields, private paths, partial field groups, a
+  mismatched revision or a relabeled successful outcome are rejected.
 - Private run directories contain `profile.json`, `entry-error.log` on entry
   failure, `pytest.log`, `live.xml`, `gate-diagnostics.json`, and the normal
   per-case server/worker artifacts. Neither
