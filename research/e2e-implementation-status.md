@@ -4993,6 +4993,26 @@ native filter against real traffic, reproduce Linux timing, establish causation,
 provide clean-source evidence or authorize committing the experiment. A bounded
 live Linux case remains separately authorization-gated.
 
+A follow-up native-only probe at the `d923820bc` checkpoint directly dispatched a
+synthetic heartbeat reply and an unhandled IPC segment through an exact dirty
+`Client.cpp` copy. It verified that heartbeat counters still advanced, neither
+input emitted a generic control event, and an explicit semantic event still emitted
+once at sequence 1. To call the private handler without touching the checkout, the
+artifact build changed only the two C++ access labels in a copied `Client.h`; it is
+not a production worker build. Three earlier link attempts remain classified
+failures (PDB argument conversion, over-broad path-conversion suppression, then
+MSVC access-specifier decoration). The fourth compile/link/run passed.
+
+The native receipt is
+`.e2e-artifacts/linux-control-amplification-isolated-001/native-receipt.json`
+(SHA-256 `bc0a350ffdfa5e61f02296f57f7a3d6c03608abdbeea627bccc58719ad980927`).
+It binds the repository source/diff, exact copied implementation, access-only
+header transformation, protocol library, probe, every failed build log, final
+executable and output. This closes only the service-free native filtering question;
+direct synthetic dispatch does not exercise framing, sockets, encrypted sessions,
+server traffic, Linux scheduling or performance, and still does not establish that
+the expanded failures are corrected.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
