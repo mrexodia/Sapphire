@@ -14,8 +14,9 @@ from pathlib import Path
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
 from .client_smoke import (CLIENT_SHA256, other_player,
-                           real_movement_baseline, real_say_baseline,
-                           real_spawn_baseline, received_real_movement,
+                           real_logout_baseline, real_movement_baseline,
+                           real_say_baseline, real_spawn_baseline,
+                           received_real_logout, received_real_movement,
                            received_real_say, received_real_spawn, validate_review)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
@@ -120,7 +121,7 @@ def _timing(value):
 def _outer_journey(report, pair, fixture):
     states = {key: report.get(key) for key in
               ("pre_client_state", "spawn", "movement_baseline", "movement",
-               "say_baseline", "say", "review", "logout")}
+               "say_baseline", "say", "review", "logout_baseline", "logout")}
     if any(not isinstance(value, dict) for value in states.values()):
         raise DevelopmentError("graphical outer received-state journey is incomplete")
     expected_self = pair["identities"][0]
@@ -138,7 +139,8 @@ def _outer_journey(report, pair, fixture):
                 or not _typed_equal(report.get("real_spawn_receipt"), spawn_receipt)):
             raise DevelopmentError("graphical result lacks exact fresh fixture spawn evidence")
         observations = {}
-        for stage in ("spawn", "movement_baseline", "movement", "say_baseline", "say", "review"):
+        for stage in ("spawn", "movement_baseline", "movement", "say_baseline",
+                      "say", "review", "logout_baseline"):
             state = states[stage]
             if (type(state.get("entity_id")) is not int
                     or state["entity_id"] != expected_self["entity_id"]
@@ -168,13 +170,18 @@ def _outer_journey(report, pair, fixture):
         say_receipt = received_real_say(states["say"], report["real_entity"], baseline)
         if say_receipt is None or not _typed_equal(report.get("real_say_receipt"), say_receipt):
             raise DevelopmentError("graphical result lacks exact fresh real-client Say evidence")
+        logout_baseline = real_logout_baseline(
+            states["logout_baseline"], report["real_entity"], report["real_name"])
+        logout_receipt = received_real_logout(
+            states["logout"], report["real_entity"], logout_baseline)
+        if (logout_receipt is None
+                or not _typed_equal(report.get("real_logout_receipt"), logout_receipt)):
+            raise DevelopmentError("graphical result lacks exact fresh logout absence evidence")
         if (type(states["logout"].get("entity_id")) is not int
                 or states["logout"]["entity_id"] != expected_self["entity_id"]
                 or not _typed_equal(received_character_identity(
                     states["logout"], report["witness_name"]), expected_self)):
             raise DevelopmentError("graphical final logout witness differs from paired mover")
-        if other_player(states["logout"], report["real_entity"], allow_absent=True) is not None:
-            raise DevelopmentError("graphical viewer remained present after ordinary logout")
     except (KeyError, TypeError, ValueError) as error:
         raise DevelopmentError("invalid graphical outer received-state journey") from error
     return {"verified": True,
@@ -182,7 +189,8 @@ def _outer_journey(report, pair, fixture):
             "viewer_entity": report["real_entity"], "movement_metres": distance,
             "spawn_scope": spawn_receipt["scope"],
             "movement_scope": movement_receipt["scope"],
-            "say_scope": say_receipt["scope"]}
+            "say_scope": say_receipt["scope"],
+            "logout_scope": logout_receipt["scope"]}
 
 
 def _pair_dependent_receipts(report, pair):

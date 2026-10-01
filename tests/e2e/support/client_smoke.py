@@ -158,6 +158,36 @@ def received_real_say(state, expected_entity, baseline):
             "received_sequence": sequence}
 
 
+def real_logout_baseline(state, expected_entity, expected_name):
+    """Require the exact viewer still present after publishing the logout phase."""
+    entity, actor = other_player(state, expected_entity)
+    sequence = state.get("seq")
+    if (entity != expected_entity or actor.get("name") != expected_name
+            or type(sequence) is not int or not 0 <= sequence < 2**64):
+        raise ValueError("real-client logout baseline is stale or foreign")
+    return {"sequence": sequence, "position": list(position(actor.get("position")))}
+
+
+def received_real_logout(state, expected_entity, baseline):
+    """Return a fresh received absence; ordinary server logout is separate evidence."""
+    if (not isinstance(baseline, dict) or set(baseline) != {"sequence", "position"}
+            or type(baseline.get("sequence")) is not int
+            or not 0 <= baseline["sequence"] < 2**64
+            or not position(baseline.get("position"))):
+        raise ValueError("real-client logout baseline receipt is invalid")
+    sequence = state.get("seq")
+    if (type(sequence) is not int or not baseline["sequence"] <= sequence < 2**64):
+        raise ValueError("real-client logout observation lacks a valid sequence")
+    if other_player(state, expected_entity, allow_absent=True) is not None:
+        return None
+    if sequence <= baseline["sequence"]:
+        raise ValueError("real-client absence is stale")
+    return {"verified": True,
+            "scope": "fresh-real-client-absence-after-logout-phase-not-server-logout-proof",
+            "entity_id": expected_entity, "baseline_position": list(baseline["position"]),
+            "baseline_sequence": baseline["sequence"], "received_sequence": sequence}
+
+
 def validate_review(review, ticket):
     expected = {"version": 1, "run": ticket["run"], "frame_sha256": ticket["frame_sha256"],
                 "checks": REVIEW_CHECKS, "manual_review": True}

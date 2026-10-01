@@ -7,8 +7,9 @@ import pytest
 
 from .prepare_client_smoke import approve, sandbox_xml
 from .support.client_smoke import (REAL_SAY, REVIEW_CHECKS, moved, other_player, position,
-                                   real_movement_baseline, real_say_baseline,
-                                   real_spawn_baseline, received_real_movement,
+                                   real_logout_baseline, real_movement_baseline,
+                                   real_say_baseline, real_spawn_baseline,
+                                   received_real_logout, received_real_movement,
                                    received_real_say, received_real_spawn, validate_review)
 from .support.environment import sha256
 
@@ -129,6 +130,30 @@ def test_real_movement_rejects_stale_displaced_or_excessive_evidence():
             received_real_movement(received, 12, [0,0,0], baseline)
     with pytest.raises(ValueError):
         received_real_movement(state(), 12, [0,0,0], {"sequence":True,"position":[0,0,0]})
+
+
+def test_real_logout_requires_visible_post_phase_baseline_then_fresh_absence():
+    baseline = real_logout_baseline(state(), 12, "Tester Viewer")
+    assert baseline == {"sequence":10,"position":[1,2,3]}
+    still_present = state(); still_present["seq"] = 11
+    assert received_real_logout(still_present, 12, baseline) is None
+    absent = state(); absent["seq"] = 11; absent["actors"].pop("12")
+    assert received_real_logout(absent, 12, baseline) == {
+        "verified":True,
+        "scope":"fresh-real-client-absence-after-logout-phase-not-server-logout-proof",
+        "entity_id":12,"baseline_position":[1,2,3],
+        "baseline_sequence":10,"received_sequence":11}
+
+
+def test_real_logout_rejects_foreign_malformed_or_stale_absence():
+    with pytest.raises(ValueError):
+        real_logout_baseline(state(), 12, "foreign")
+    absent = state(); absent["actors"].pop("12")
+    with pytest.raises(ValueError, match="stale"):
+        received_real_logout(absent, 12, {"sequence":10,"position":[1,2,3]})
+    absent["seq"] = 11
+    with pytest.raises(ValueError):
+        received_real_logout(absent, 12, {"sequence":True,"position":[1,2,3]})
 
 
 def test_real_say_requires_one_fresh_sequence_bound_ordinary_message():

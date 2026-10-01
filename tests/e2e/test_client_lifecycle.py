@@ -119,7 +119,9 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
                 {"actors": {"2": {}}, "seq": 10, "chat": baseline_chat},
                 {"actors": {"2": {}}, "seq": 11,
                  "chat": [{"actor": 2, "kind": 10, "message": guest.REAL_SAY, "token": 11}]},
-                {"actors": {"2": {}}}, {"actors": {}},
+                {"actors": {"2": {}}},
+                {"actors": {"2": {"position": [2,0,0]}}, "seq": 12},
+                {"actors": {}, "seq": 13},
             ])
         def __enter__(self):
             return self
@@ -181,6 +183,14 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
           "actor":entity,"message":guest.REAL_SAY,"kind":10,
           "baseline_sequence":baseline,"message_token":state["chat"][0]["token"],
           "received_sequence":state["seq"]} if state.get("chat") else None))
+    monkeypatch.setattr(guest, "real_logout_baseline", lambda state, entity, name:
+        {"sequence":state["seq"],"position":state["actors"][str(entity)]["position"]})
+    monkeypatch.setattr(guest, "received_real_logout", lambda state, entity, baseline:
+        ({"verified":True,
+          "scope":"fresh-real-client-absence-after-logout-phase-not-server-logout-proof",
+          "entity_id":entity,"baseline_position":baseline["position"],
+          "baseline_sequence":baseline["sequence"],"received_sequence":state["seq"]}
+         if str(entity) not in state["actors"] else None))
     monkeypatch.setattr(guest, "validate_review", lambda *args: {"synthetic_only": True})
     monkeypatch.setattr(guest.time, "sleep", lambda *args: None)
     monkeypatch.setattr(guest.shutil, "copytree", lambda *args: None)
@@ -239,6 +249,13 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
             "scope":"fresh-ordinary-real-client-say-received-by-independent-witness",
             "actor":2,"message":guest.REAL_SAY,"kind":10,
             "baseline_sequence":10,"message_token":11,"received_sequence":11}
+    if failure != "stale_real_say":
+        assert report["logout_baseline"]["seq"] == 12
+        assert report["real_logout_receipt"] == {
+            "verified":True,
+            "scope":"fresh-real-client-absence-after-logout-phase-not-server-logout-proof",
+            "entity_id":2,"baseline_position":[2,0,0],
+            "baseline_sequence":12,"received_sequence":13}
     deadline_receipt = report["activity_deadline"]
     assert deadline_receipt["enabled"] is True and deadline_receipt["limit_seconds"] == 1200
     assert deadline_receipt["scope"] == "cooperative-manual-activity-success-deadline-not-hard-cleanup-limit"

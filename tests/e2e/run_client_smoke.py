@@ -11,8 +11,9 @@ import time
 import uuid
 
 from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, WITNESS_SAY, other_player,
-                                   real_movement_baseline, real_say_baseline,
-                                   real_spawn_baseline, received_real_movement,
+                                   real_logout_baseline, real_movement_baseline,
+                                   real_say_baseline, real_spawn_baseline,
+                                   received_real_logout, received_real_movement,
                                    received_real_say, received_real_spawn, validate_review)
 from .support.environment import Environment, sha256, REPO
 from .support.client_snapshot import verify_source
@@ -253,7 +254,14 @@ def run():
                 report["logout_witness_restoration"] = require_graphical_logout_witness(
                     state, run_pair, real["name"], entity)
             phase("logout", "Use /logout and confirm normally. Leave the client running at its title screen.")
-            wait(lambda s: other_player(s, entity, allow_absent=True) is None)
+            logout_baseline_state = worker.snapshot(bot.name)
+            report["logout_baseline"] = logout_baseline_state
+            logout_baseline = real_logout_baseline(
+                logout_baseline_state, entity, real["name"])
+            logged_out = wait(lambda state: received_real_logout(
+                state, entity, logout_baseline) is not None)
+            report["real_logout_receipt"] = received_real_logout(
+                logged_out, entity, logout_baseline)
             # Despawn alone could mean an abnormal disconnect. Also require the real
             # actor's ordinary logout request and a still-running graphical process.
             marker = f"[{entity}] Zone IPC : StartLogoutCountdown"

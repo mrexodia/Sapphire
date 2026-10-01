@@ -233,9 +233,12 @@ are absent, not passing. On completion or failure, `status.json` changes to
 5. At `logout`, use the client's normal `/logout` command and confirm. Inspect
    any overlapping first-run help notification before clicking; opening and
    closing its help window can uncover the confirmation buttons. Do not interpret
-   a click on an obscured button as successful logout. Leave the process running. The witness must see the same entity disappear, the server
-   must have logged that entity's ordinary StartLogoutCountdown request, and the
-   graphical process must still be alive. Inspect `logout.png` for the title
+   a click on an obscured button as successful logout. Leave the process running.
+   After publishing the phase, the witness first requires the exact named viewer
+   still present and records its sequence/position. Absence must then arrive at a
+   strictly newer sequence; a pre-phase disappearance or cached absence cannot
+   pass. Separately, the server must have logged that entity's ordinary
+   StartLogoutCountdown request and the graphical process must still be alive. Inspect `logout.png` for the title
    screen separately; the automated conditions do not recognize that image.
    At `witness_retirement`, leave the title screen alone. The coordinator waits
    for the headless witness's normal server connection closure, not only its
@@ -268,7 +271,7 @@ are absent, not passing. On completion or failure, `status.json` changes to
 
    It revalidates the empty pre-launch baseline, fresh exact-name received spawn,
    fresh sequence-bound bounded displacement, fresh sequence-bound Say, review
-   presence and logout absence;
+   presence and fresh post-phase logout absence;
    both nested summaries/hashes and
    strict consumers; pair/handoff/restoration receipts; review-frame binding,
    retirements, outer deadline/worker exit, terminal status and reported runtime

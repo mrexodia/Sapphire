@@ -128,7 +128,12 @@ def build_output(root, source_revision="1" * 40):
             "baseline_sequence":10,"message_token":11,"received_sequence":11},
         "review": outer_state([1,0,0], 12,
             [{"actor":3,"kind":10,"message":"E2E real client verified","token":11}]),
-        "logout": outer_state([1,0,0], 13, viewer=False),
+        "logout_baseline": outer_state([1,0,0], 13),
+        "logout": outer_state([1,0,0], 14, viewer=False),
+        "real_logout_receipt": {"verified":True,
+            "scope":"fresh-real-client-absence-after-logout-phase-not-server-logout-proof",
+            "entity_id":3,"baseline_position":[1,0,0],
+            "baseline_sequence":13,"received_sequence":14},
         "manual_review": review,
         "logout_request": "[3] Zone IPC : StartLogoutCountdown",
     }
@@ -193,6 +198,9 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
     lambda root, report: report["say"]["chat"][0].update(token=10),
     lambda root, report: report["real_say_receipt"].update(actor=True),
     lambda root, report: report["review"]["actors"]["3"].update(name="foreign"),
+    lambda root, report: report["logout_baseline"]["actors"]["3"].update(name="foreign"),
+    lambda root, report: report["real_logout_receipt"].update(received_sequence=13),
+    lambda root, report: report["logout"].update(seq=13),
     lambda root, report: report["logout"]["actors"].update(
         {"3":{"kind":1,"name":"Tester Viewer","gm_rank":0,"level":1,
               "hp":94,"position":[1,0,0]}}),
