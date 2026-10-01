@@ -88,6 +88,35 @@ missing fresh Say. These are synthetic/controller and existing-worker contracts,
 not live shared-world reconnect evidence. No server or character was modified
 for this verification; approved shared-world configuration is still needed.
 
+At `7eff55c09`, `--verify-party` adds one optional normal two-bot invitation,
+exact received membership/channel, bidirectional party-chat and disband check.
+It rejects existing party/invitation state, binds the exact received inviter and
+both lobby/world identities, and requires both clients to receive empty party
+state after disband. Foreign/changed ownership fails without cleanup/retry;
+uncertain accounts remain leased. It runs before optional reconnect.
+
+Four separately advertised native `_bound` party methods compare the expected
+received party/invitation context on the Asio thread before invoking the ordinary
+wire operation. Old workers fail capability preflight before HTTP login; they
+cannot silently ignore the new guards. These are received-state guards, not
+server-side transaction locks or multi-host ownership enforcement. The original
+unbound methods and server protocol remain unchanged. Context arguments are
+recorded in bounded journals without unrelated session fields.
+
+Party-focused verification: **199 Python tests passed in 6.66s**, with the new
+`test_development_party.py` and updated worker contracts. MSVC Release worker
+and protocol targets built; `sapphire_protocol` passed **1/1**, including changed
+invitation/roster/party/channel context rejection. Evidence:
+`.e2e-artifacts/development-party-{focused-timings-1.json,msvc-build.log,native-tests.log,verification-inputs.json}`.
+Input hashes explicitly identify the diagnostic worker/controller built with the
+pre-existing uncommitted packet-output/wakeup experiments; those experiments
+were excluded from the feature commit and are **not** validated performance fixes.
+No full acceptance test or live shared-server party run was performed. Only the
+party implementation hunks were staged in the otherwise dirty Client.cpp/worker.py.
+The suggested `.e2e-dev-server.json`, `.e2e-dev.json`, and
+`.e2e-bot-placement.json` are not present locally; approved shared-world inputs
+remain the blocker to live validation. No credentials/endpoints were guessed.
+
 Focused verification: **127 passed in 5.59s**, running `test_development.py`,
 `test_policy.py`, `test_ci.py`, and `test_worker.py` with the existing MSVC worker.
 Evidence: `.e2e-artifacts/development-focused-contract-timings-2.json`. This is
