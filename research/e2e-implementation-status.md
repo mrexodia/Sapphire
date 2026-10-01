@@ -517,6 +517,50 @@ messaging, privacy, delivery under disconnect, general channels or rendering. A
 fresh manually attended current graphical run and explicit guest disposal remain
 pending; no full gate, soak or platform sweep ran.
 
+## Graphical bridge requires exact owned-party evidence
+
+Feature **`e20adfdac`** closes the corresponding party consumer gap without adding
+or repeating a social mutation. The graphical scenario already required the exact
+owned two-bot lifecycle, but its downstream consumer previously accepted only
+`requested:true` and `verified:true`. It now requires the exact eight-field report
+and narrow scope; two ordered distinct identities bound to runner entities; strict
+positive party/channel IDs, count2 and leader index0; two exact typed members in
+public130; the exact successful invitation target; two run-bound chat rows on that
+party/channel with matching actor/character/name and positive tokens; and explicit
+empty-after-disband success. Boolean-as-integer, foreign/reordered/duplicate
+identities, wrong territory/member/channel/invitation/message, one-sided or extra/
+malformed evidence fails closed. The bridge proof names only the owned-two-bot
+party scope, not general social behavior.
+
+Frozen, remote-free source **`e20adfdacaf26bf7d159a5e17941f1a03d6c0a69`**
+passed **376 tests in 3.17s** across graphical policy, party, Tell, equipment,
+Sprint, viewer, movement, reconnect, inventory, deadlines, worker exit, smoke and
+lifecycle. Consumer mutations cover scope, terminal disband state, identities,
+party/count/member typing, territory, invitation, chat count/channel/token/message
+and schema in addition to existing uncertain/foreign-state refusal contracts.
+Test-log SHA-256:
+`f341c554b8ebaed89e1313b9e81219793a1049e42c70a8389c2aab96d417a6be`.
+Artifacts: `client-graphical-party-clean-{source.json,python.log}`.
+
+The strict party subreceipt consumer accepted genuine data from historical owned
+Sandbox `client-development-live-004`: run
+`68139e552f114c8ca59623b4ec931055`, entities2097153/2097155, party
+4672924418049, channel18858827734585344, leader0, both exact level-one members,
+successful invitation, two bound chats and the recorded empty-after-disband result.
+The read-only compatibility artifact is
+`client-graphical-party-historical-artifact-check.json` (SHA-256
+`682f35b968d13b9bcea4f9f78427b63e5b46eb8ff887d9efd133c31a4734c997`).
+This validates only that historical subreceipt. The old overall summary still
+lacks current Sprint, equipment, inventory, deadline, lease and continuity policy
+and is not upgraded to a current graphical pass.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. The result covers one two-member same-zone
+lifecycle, not larger parties, leadership changes, kick/decline, cross-zone chat,
+alliances, free companies, linkshells, persistence or rendering. A fresh manually
+attended current graphical run and explicit guest disposal remain pending; no full
+gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1323,7 +1367,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current Tell/Sprint/equipment/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict reciprocal received Tell, independently received Sprint and fresh-login equipment round-trip evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/Tell/Sprint/equipment/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict owned-party/chat/disband and reciprocal received Tell, independently received Sprint and fresh-login equipment round-trip evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/Sprint/equipment/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage; current graphical policy requires Sprint, starter-body round trip and read-only inventory but awaits current graphical execution |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
