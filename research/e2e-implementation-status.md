@@ -904,6 +904,41 @@ server, account, worker, Sandbox, matching client, endpoint or gameplay operatio
 ran. Current attended execution/disposal remains pending; no full gate, soak or
 platform sweep ran.
 
+## Outer graphical deadline includes exact observer-worker exit
+
+Fix **`8977615b9`** closes a late-success window after final witness retirement.
+The coordinator now initializes a structured 1200-second `activity_deadline`
+receipt when manual activity begins. Successful activity requires the exact outer
+`ObservedWorker` context to finish and report normal process exit before the
+absolute deadline; the post-context check rejects equality with or passage beyond
+the deadline. A late zero-exit worker is therefore a failed
+`observer_worker_exit` stage, not a passing run followed by slow cleanup.
+
+The exact receipt records `enabled:true`, integer `limit_seconds:1200`, strict
+`expired`, and `activity_and_worker_exit_completed_within_budget`, with scope
+`cooperative-manual-activity-success-deadline-not-hard-cleanup-limit` and explicit
+`environment_cleanup_may_exceed_deadline:true`. Failures before expiry remain
+failed/incomplete rather than being mislabeled expired. Final title-screen process
+termination and environment removal are not forcibly interrupted; they may happen
+after activity success, but any cleanup error still changes the overall result to
+failed.
+
+Frozen, remote-free source **`8977615b90ca1d2ccce4289dd94cabb84e09a8f0`**
+passed **463 tests in 3.87s**. Coordinator control tests distinguish normal
+completion, expiry before/during final witness retirement, a newly simulated expiry
+during exact outer worker exit, nonzero/unknown worker exit, server-closure and
+bot-removal failure. The late worker case retains PID/returncode0 but cannot set
+the completed deadline bit. Test-log SHA-256:
+`361c236d2ff97683e83d2a8604e3cbe54f222582eecb63144b4afde3e21c2427`.
+Artifacts: `client-graphical-outer-deadline-clean-{source.json,python.log}`.
+
+Historical graphical results do not contain this receipt and are not upgraded from
+their wall-time diagnostics. No server, account, worker, Sandbox, matching client,
+endpoint or gameplay operation ran. This is cooperative success bounding, not
+hard preemption, crash consistency or proof that cleanup cannot block. Current
+attended execution/disposal remains pending; no full gate, soak or platform sweep
+ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1710,7 +1745,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines, clear leases and exact worker exits pending current graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, clear leases and exact worker exits pending current graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; separate exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage but is now required as a separate fresh current graphical-policy run; all current graphical execution awaits manual approval/assets |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
