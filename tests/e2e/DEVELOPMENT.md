@@ -101,7 +101,10 @@ absolute, separate original `Environment` artifact directory, rejects aliases to
 session tree, requires its lifecycle object to equal the retained session copy, and
 recomputes the producer-recorded bounded complete artifact-tree SHA-256. That tree
 identity is also returned by the composite managed-run/provisioning inspectors;
-checking only the copied lifecycle is insufficient. This proves exact owned-process teardown only,
+checking only the copied lifecycle is insufficient. Host status/lifecycle files and
+the managed-run summary must each be bounded, duplicate-key-free regular files with
+one link and no symlink or Windows reparse alias; oversized or hard-linked evidence
+fails before semantic acceptance. This proves exact owned-process teardown only,
 not graceful server shutdown, account offline exclusion, cache quiescence, reset
 authority or cleanup of an already-running external shared server. To correlate one
 passing managed check with that exact terminal host, also run:

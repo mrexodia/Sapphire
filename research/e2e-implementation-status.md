@@ -2376,6 +2376,23 @@ strict CLI chain is authorization evidence. This still does not prove profile
 secrecy, server-side offline exclusion, unchanged registry bytes at server read,
 or permission to retry an uncertain provisioning mutation.
 
+Fix **`c044ca4cf`** hardens the terminal owned-host and composite managed-run input
+boundary. Status, lifecycle and run-summary JSON must now be bounded regular files
+with exactly one link, no symlink or Windows reparse attribute, valid UTF-8 and no
+duplicate object keys at any depth. Host status is capped at 64 KiB; lifecycle and
+run summaries at 1 MiB. Duplicate, oversized and hard-linked status/summary files
+fail closed before their otherwise valid semantic content can be accepted; the
+existing complete environment and worker-tree checks remain additional controls.
+
+Frozen, remote-free source **`c044ca4cf1dfb6bc17ff62fe2605941ed9337431`**
+passed **1019 focused contracts with no skips in 41.36s**. Test-log SHA-256:
+`f12a798031cbadb98b8ac88655429263a28fdbc6832ab66ceeab70dd427233c1`.
+No host, service, endpoint, account, placement, gameplay or graphical operation
+ran; fake-host contracts exercised file policy and lifecycle correlation only.
+Regular-file checks reduce alias ambiguity but do not create a race-free filesystem
+snapshot, signature, server identity, graceful shutdown, offline exclusion or
+cleanup authority over an external shared server.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
