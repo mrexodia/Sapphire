@@ -123,6 +123,15 @@ class Worker:
                     if method in {"invite_party_bound", "accept_party_bound", "party_chat_bound", "disband_party_bound"}:
                         safe_args = {key: args[key] for key in
                                      ("expected_party", "expected_invite", "target", "name", "message") if key in args}
+                    if method == "development_place_registered":
+                        safe_args = {key: args[key] for key, kind in
+                                     (("administrative_setup", bool), ("approval_id", str), ("slot", int))
+                                     if type(args.get(key)) is kind}
+                        owner = args.get("expected_operator")
+                        if isinstance(owner, dict):
+                            safe_args["expected_operator"] = {key: owner[key] for key, kind in
+                                                              (("name", str), ("entity_id", int), ("character_id", int))
+                                                              if type(owner.get(key)) is kind}
                     if method == "cross_exit":
                         safe_args = {"exit_id": args["exit"]["id"], "territory": args["exit"]["territory"]}
                     self._actions.append({"id": identifier, "method": method, "bot": bot,

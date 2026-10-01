@@ -29,6 +29,21 @@ def test_bound_party_journal_records_context_not_unrelated_secrets(worker):
     assert "not-for-the-journal" not in text and "sId" not in rows[-1]["args"]
 
 
+def test_administrative_journal_records_binding_not_credentials(worker):
+    with pytest.raises(WorkerError):
+        worker.request("development_place_registered", "absent-operator", administrative_setup=True,
+                       approval_id="a" * 32, slot=0,
+                       expected_operator={"name": "Tester Operator", "entity_id": 3, "character_id": 300,
+                                          "password": "nested-private-password"},
+                       sId="private-session-not-audit-data")
+    worker.close()
+    text = (worker.artifacts / "actions.jsonl").read_text()
+    row = json.loads(text.splitlines()[-1])
+    assert row["args"] == {"administrative_setup": True, "approval_id": "a" * 32, "slot": 0,
+                           "expected_operator": {"name": "Tester Operator", "entity_id": 3, "character_id": 300}}
+    assert "nested-private-password" not in text and "private-session-not-audit-data" not in text
+
+
 def test_capabilities(worker):
     caps = worker.request("capabilities")
     assert caps["profile"] == "sapphire-3.3"
