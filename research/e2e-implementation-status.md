@@ -1775,6 +1775,42 @@ passed **140 focused contracts with 14 declared skips in 9.08s**. Test-log SHA-2
 `007c6b5c7264b301e32438a6cfaf5a93c2e04fea22880d0ce724c295b4c88164`.
 No service or live case ran for this schema-only increment.
 
+Feature **`1faeba0e0`** adds generic read-only evidence inspection for one exact
+allowlisted standalone case. `inspect_isolated_case` requires an exact clean
+revision, fixture-v2 manifest/input identities, the exact expected single passing
+JUnit classname/name, bounded pytest log, all exact service generations, complete
+teardown, absent runtime/root and complete artifact-tree identity. Its receipt
+contains no paths, ports, database names or PIDs and explicitly reports
+`scenario_semantics_independently_verified:false`; it is short-feedback evidence,
+not a substitute for the combined gate.
+
+Frozen, remote-free source **`1faeba0e0885e31ba944fae8e417e844686ee858`**
+passed **143 CI/workflow-policy/standalone-inspector tests in 7.41s**. Negatives
+cover a foreign case, changed/failing JUnit, retained runtime, malformed lifecycle,
+changed revision and missing pytest log. Test-log SHA-256:
+`7c0f28124ff6f74c31a1c573aa694e0aec339f01ce552108ff9301cde2a98933`.
+
+The same clean source then ran only the non-mutating, no-account
+`test_rejected_credentials` against the configured private local profile. The first
+24.39s pass intentionally remains incompatible evidence: without explicit frozen
+`--rootdir`, JUnit identified the nested source path and the strict inspector
+rejected it. A single corrected invocation used the same normal invalid HTTP login
+with explicit frozen root, passed in **24.48s**, and produced exact
+`tests.e2e.test_live::test_rejected_credentials` JUnit identity. The committed
+inspector accepted it with receipt SHA-256:
+`d7f26bceb879080bdc6247c244913d6bfe42c3209079e5cf6a714d880e14d28f`.
+Test/JUnit/manifest/lifecycle/tree SHA-256 values respectively:
+`842df35086e7b79b5b19d334a78433b89d11d8e18e8a254a03658aef4524d0bc`,
+`fb366f8149516fc7fc814fd6eceb25c8d3e533da3e5a7745f3079912d5c83c59`,
+`dfe2c6e0ed197cfa6fcba67a481758e1d35db074f7cd88481f97a9fce37b0eb2`,
+`3877efe6c8398aedd0a644b7b40a28d37688e7e4b8a61c57bb60012abaa56b25`,
+`e2be59cbf24920a4cb458e3630e628b97253dd109f3776f570f1e2b0836dce76`.
+Exactly one generation of each disposable service exited and the runtime/root are
+absent; no account, worker or world gameplay session was created. This proves one
+current genuine HTTP rejection path plus runner/fixture cleanup, not encrypted
+lobby/world handoff, broader authentication policy, build provenance or the full
+gate.
+
 Feature **`78b7cb4bb`** closes a separate private cleanup-inspection gap. For every
 case, the read-only inspector now requires an absolute `.../runtime` identity,
 rejects overlap with its retained artifact directory, and requires both that
@@ -4083,7 +4119,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Architecture / dedicated branch / atomic commits | Original proposal `autonomous-testing-plan.md`; `feature/headless-e2e` | Implemented incrementally |
 | External C++ worker / shared schemas and lobby encryption | `src/test_client`; only normal sockets, no server-handler calls | Verified for enabled actions |
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
-| Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
+| Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas; current standalone exact invalid-credential HTTP rejection evidence | Verified historically on Windows/3.3 for full sessions; current evidence refresh covers rejection/cleanup only |
 | Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 and Ring2 round trips, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards and that opening's private-to-public travel; appearance breadth and other cities/classes remain uncovered |
 | Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required; current gate requires an exact one-to-one mapping from all 16 case IDs to 16 pairwise-distinct disposable environments, unique/non-nested runtime/artifact/database identities, exact private manifest agreement, source/schema/profile/deadline binding and every lifecycle/manifest; private reinspection rejects any retained declared root/runtime | Earlier Windows and containerized Ubuntu 22.04 runs are live-verified at their historical scope; current per-case identity/isolation/process-generation/runtime-absence evidence awaits a new gate, and hosted deployment remains unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
