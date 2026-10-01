@@ -1720,6 +1720,32 @@ hashes before rejection. Test-log SHA-256:
 This validates retained private evidence only and does not prove an unexecuted
 current fault case. No fixture, service, gate or gameplay operation ran.
 
+**Bounded live fault-case evidence:** clean, remote-free frozen source
+**`132bd40c49634dffe0e371ede4c47575a965ead5`** ran only
+`test_owned_world_exit_preserves_classification_logs_and_cleanup` against the
+already configured local private profile. It created one disposable database/API/
+lobby/world fixture, created no accounts, intentionally terminated only its exact
+owned world generation, and passed in **24.14s** (23.16s setup, 0.50s call).
+Exact lifecycle validation found one generation each for four services and matching
+start/teardown identities; the manifest-declared runtime and parent root are absent,
+all published logs passed the test's generated-secret/database-password exclusion,
+and no relevant process remained.
+
+Sanitized inspection SHA-256:
+`055c985f27d38c7ab868d780965c91d8544cc152af5cd739f461ee0364cafc72`;
+test-log SHA-256:
+`a94b9f5aea42db595125025c26048278f0949ff131aa59818b90a51c9b7842a6`;
+manifest/lifecycle/failure/verification/tree SHA-256 values respectively:
+`d73add413e2bc1c4f0ab5fb09017e78ccc31e54d26bae74898362ec166a96e04`,
+`32d8bd1c374fad6ebeb32b23f5d203bfda895b341530eba784dbe9d4e713892f`,
+`e494579fad6bc69357b15edaeb6d8d7954ecac3a14f35ab03796640fba8452d9`,
+`109835d1db28777227fc2c8883fa966a7b980597494c44744727cc53f6fa5673`,
+`fb8958e707c7d554607d6aa9f2fd5bdeca702c7bf59de1b75118d38192cd9e82`.
+This direct single-case execution is current positive fault/cleanup evidence only;
+it did not use `run_ci`, produce the 16-case public/private result, compile the
+binaries, create gameplay sessions, simulate an organic crash or run any other
+gate case.
+
 Feature **`78b7cb4bb`** closes a separate private cleanup-inspection gap. For every
 case, the read-only inspector now requires an absolute `.../runtime` identity,
 rejects overlap with its retained artifact directory, and requires both that
@@ -4122,7 +4148,7 @@ a nearby passing test does not close them.
 | Manual/scheduled real-client tier | strict three-frame-review current policy plus historical completed isolated Sandbox lane | Historical lane verified once locally; current combined bot-interaction review policy and scheduled breadth are unverified |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
 | Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and automatic sanitized exact-lease snapshots in shared runner/provisioner summaries | Verified for implemented paths, including current live producer→planner→runner consumption; lease snapshots do not establish server session state |
-| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured exact-generation intentional-owned-process-exit metadata are retained; the current strict allowlist includes this as its sixteenth isolated fixture and private inspection semantically correlates its classification, hashes and teardown | **Partial:** focused contracts and historical owned-world termination exist, but the current 16-case lane awaits execution and platform crash dumps are only retained where externally produced |
+| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured exact-generation intentional-owned-process-exit metadata are retained; the current strict allowlist includes this as its sixteenth isolated fixture and private inspection semantically correlates its classification, hashes and teardown | **Partial:** the current fault case passed independently on one disposable fixture, but the combined current 16-case lane awaits execution and platform crash dumps are only retained where externally produced |
 | Fixture/persistence evidence, redaction, JUnit and summary | scenario JSON snapshots, restart state, redaction contracts, `live.xml` and CI JSON summary | Verified |
 | Bounded soak logs and generator saturation | capped plans/journals, checkpoints, action percentiles and API/lobby/world/DB/worker/runner resource samples | Verified; scenario coverage remains reported separately from concurrency |
 | Initial design decisions | Headless primary + separate real client; Python; 3.3 profile; Ul'dah/Motivational Speaking; local-first; regression then bounded exploration/soak | Resolved and documented |
