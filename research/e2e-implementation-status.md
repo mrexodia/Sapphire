@@ -1376,6 +1376,28 @@ policy-receipt SHA-256:
 The receipt explicitly reports hosted execution, runner-group enforcement and VM
 destruction false.
 
+Feature **`2900654d2`** closes the failed-publication branch. A new fail-only
+`inspect_ci_failure_result` accepts only bounded regular JSON with exact base,
+source, grouped gate and post-gate fields appropriate to preflight/suite/
+verification stage. It type- and allowlist-validates every component hash, case,
+boolean and evidence row, requires the trusted revision once source identity exists,
+and rejects unknown fields, private paths, partial groups, malformed private
+artifact identities, dirty source and a `failed` verification result with no actual
+failed outcome. Its receipt explicitly sets `success_evidence_accepted:false`.
+
+The private workflow now runs this sanitizer after a nonzero gate and before setting
+the failed-summary upload output; inspector failure prevents publication. Static
+policy enforces the command, failure guard and ordering independently of the
+passing public/private inspectors. Frozen, remote-free source
+**`2900654d29589933bf76e30bada80fdc474e2c16`** passed **127 focused
+CI/workflow-policy tests in 5.65s**. Positives cover actual producer preflight plus
+base/source/suite/full-verification shapes; negatives cover unknown/private fields,
+partial groups, mismatched revision and relabeled success. Test-log SHA-256:
+`d9544fffd57078eb0b328bc500e400193ca19e1af86f3361039dc5c9913cdd8e`;
+policy-receipt SHA-256:
+`7fb12aa5e1e461e9404c0fa8db72aa14667ec8a82de391d49d2cab7bd6944fc6`.
+This is sanitized diagnostic-publication policy, not a passing gate or hosted run.
+
 No workflow was dispatched, no runner was registered and no repository/environment
 setting or remote infrastructure changed. Hosted action availability, protected
 environment reviewers, runner-group exclusivity, cancellation destruction and the
@@ -4028,7 +4050,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds ordered manifest/lifecycle/complete-bounded-artifact-tree hashes per exact case plus private profile/diagnostics/pytest/JUnit hashes while keeping names/contents/paths/PIDs private, with a read-only private-byte/process/input/phase/JUnit correlation inspector | Implemented at contract level; current public/private per-case correlation awaits a new gate, and hashes/reported outcomes do not independently prove gameplay, hosted execution or compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, public/private result inspectors and `CI.md`; strict workflow/process-policy and evidence receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy both exact current public result/revision and retained private-byte semantic contracts before upload, and private dispatch remains protected/serialized in YAML; every historical summary predates current evidence fields and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, passing public/private and fail-only result inspectors, and `CI.md`; strict workflow/process-policy and evidence receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy both exact current public result/revision and retained private-byte semantic contracts before upload, while failed summaries require a separate sanitized fail-only contract that never accepts success evidence; private dispatch remains protected/serialized in YAML; every historical summary predates current evidence fields and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
