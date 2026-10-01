@@ -166,11 +166,18 @@ The CLI's single cooperative provisioning budget is `--max-seconds 1..900`
 exclusive credential reservation, lease acquisition, worker startup, both
 sequential HTTP/lobby/world/logout flows and exact worker teardown. Native RPC and
 wait limits are capped to the remaining scaled budget. This is not hard preemption:
-an already-started bounded file, HTTP, worker-construction or cleanup operation may
+an already-started file, bounded HTTP, worker-construction or cleanup operation may
 finish after expiry, but its late result cannot produce `provisioned`. Final lease
 release and summary publication are cleanup outside the success budget. The summary's
 `run_deadline` distinguishes expiration and in-budget session completion from the
 overall status.
+
+A current-code positive check on a fresh owned disposable runtime completed both
+normal GM0 account/character journeys in **11.390s** under `--max-seconds 30`,
+including both server logout observations and exact worker exit before lease
+release. This is bounded provisioning/lifecycle evidence, not gameplay, existing-
+database safety or reset authority. Live expiry was deliberately not induced;
+uncertain creation recovery remains covered by synthetic fail-closed contracts.
 
 Errors and deadline expiry preserve the credential file and, once acquired, local
 leases; inspect partial results instead of retrying creation or deleting characters

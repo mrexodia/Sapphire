@@ -276,12 +276,51 @@ Synthetic faults cover late credential write, lease acquisition, worker factory,
 registration, authentication, lobby request, world-state wait, logout wait and
 worker cleanup, plus invalid limits, CLI defaults and normal/disabled success.
 
-No worker binary/native source, server, endpoint, account or gameplay operation
-was used. The prior live provisioning audit predates this aggregate budget and is
-not current-code live evidence. This adds bounded orchestration, not character
-rollback, offline exclusion, shared-world cleanliness, reset/reprovision authority,
-hard-kill recovery or crash consistency. No full gate, soak or platform sweep ran;
-overall goal remains incomplete.
+### Current-code bounded live provisioning on an owned disposable runtime
+
+`development-provisioning-deadline-live-001` retained a **failed aggregate**. Its
+product CLI did provision normally in **12.015s** with a valid 30-second receipt,
+but the one-off verifier read nonexistent journal key `sequence` instead of `seq`
+and raised `KeyError`. Both normal server closures were present, exact worker exit
+and owned-runtime cleanup succeeded, and no new process remained, but these facts
+do not relabel that aggregate. `inspected-failure.json` SHA-256 is
+`1f36bb88a450945342b681a751534ad42f2deae188df579cde80d5d412035f16`.
+
+Fresh **`development-provisioning-deadline-live-002` passed** with only that
+verifier-key correction, new output/private paths, a newly created private database
+and new generated accounts. It used a clean, remote-free snapshot of controller
+`79227613b616b59727017e8a23dce5c8d902a971` (source-manifest SHA-256
+`80984df099bfa36d6212c00dc68619935f31b9c89e4c8b42cf1567d6d6331437`), unchanged
+worker `899cfa747` / SHA-256
+`b0400f61813c3ee9c7ae1f1b8bdd945b296d1410628e0bf301d937cc11cd0099`, and the
+previously attested clean `e665c041f` backend hashes.
+
+Normal HTTP creation, separate login and encrypted lobby/world entry produced GM0
+Gladiators **Tester GMPZZNDDOKIN / 2097153 / 18014398526259201** and
+**Tester HVZEDIPUQCOC / 2097154 / 18014398526259202** in private182. The exact
+eight native actions are login/logout/close/remove for each bot. Each journal has
+one `server_logout_complete` at sequence131 before its local close. The cooperative
+receipt is enabled at30s, unexpired and completed; product provisioning took
+**11.390s**. Exact worker PID333800 exited0 before lease release; both exact lease
+files were absent after success. Worker stderr is empty and a password scan of
+retained diagnostic artifacts passed.
+
+Startup took **18.719s** and the whole owned driver **31.922s**, including final
+cleanup outside the provisioning success budget. The private runtime is absent;
+source re-verification passed; no Sapphire service/worker remained; only pre-existing
+MySQL PID7764 remained. `inspected-evidence.json` binds all retained diagnostic
+files and has SHA-256
+`fd4123d30ecbbebc7bc30f960bccf4d091a00c7410d7b35d57aafdfea91ac061`;
+provisioning-summary SHA-256 is
+`bbb0885709cf49b9a8f8cc93e084f8bc0991829e5d79a9330da891e3945b1c3a`.
+
+This is current-code positive deadline/provisioning/lifecycle evidence on a fresh
+owned runtime. No expiry fault was injected live because an uncertain account
+creation deliberately requires retained credentials/leases and manual inspection;
+those stop/no-retry paths remain synthetic. It is not gameplay, an existing shared
+database, graphical compatibility, character rollback, offline exclusion,
+shared-world cleanliness, reset/reprovision authority, hard-kill recovery or crash
+consistency. No full gate, soak or platform sweep ran; overall goal remains incomplete.
 
 ## Shared CLI cooperative deadline: session success budget
 
@@ -677,7 +716,7 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit receipt, current aggregate-deadline contracts; provisioning/binding live audits | Implemented and live-verified on owned runtimes; current cooperative whole-session bound is synthetically verified and postdates the live audit; normal worker exit and per-character server closure are distinct, neither grants adoption/reset authority |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts; current bounded provisioning and earlier binding live audits | Implemented and positive-path live-verified on owned runtimes; expiry/no-retry paths are synthetic; normal worker exit and per-character server closure are distinct, neither grants adoption/reset authority |
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
@@ -1697,7 +1736,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
-| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; provisioner aggregate deadline postdates its live audit; worker exit is not server-offline proof and broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; worker exit is not server-offline proof and broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored; current isolated fifteen-case Windows gate passes, older nine-case Linux gate passes, but the current expanded Linux gate remains red under observed delayed scene/action/logout/zoning delivery; hosted execution/runner controls unverified, no registered runners |
