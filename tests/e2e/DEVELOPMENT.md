@@ -536,8 +536,13 @@ revalidates the outer empty baseline/fresh exact-name spawn/fresh movement/fresh
 Say/review/fresh logout snapshots, binds the rendered witness Say challenge to the
 exact outer run and review frame, requires a separate exact-frame manual title-
 screen review receipt, and revalidates all nested host-visible evidence read-only
-before the separately evidenced
-Sandbox disposal. Exact artifacts and limitations are in the implementation audit.
+before disposal. Launch current owned guests through
+`python -m tests.e2e.run_client_sandbox launch --prepared <prepared>`; after
+manually confirming the exact owned discard dialog, use `approve-disposal` and
+`python -m tests.e2e.inspect_client_sandbox_disposal --prepared <prepared>` to
+bind the current result to exact launcher/process-absence evidence. This does not
+prove server-side exclusion. Exact artifacts and limitations are in the
+implementation audit.
 
 ### Optional owned two-bot party check
 

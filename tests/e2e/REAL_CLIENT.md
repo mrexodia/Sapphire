@@ -61,8 +61,21 @@ edit the prepared bundle while it is in use**. This is reproducibility checking,
 not a signature/security boundary or native-binary source attestation. Native
 binaries and external read-only assets retain their separately recorded identities.
 
-Inspect `run.wsb`, then open it yourself. Networking, clipboard, audio/video input
-and printer redirection are disabled. Frozen coordinator repository, Python, Git, MariaDB, game data,
+Inspect `run.wsb`. For current disposal evidence, launch that exact prepared file
+through the bounded host wrapper below rather than double-clicking it; the command
+remains open while the guest runs, so use another trusted host terminal for review
+and inspection commands:
+
+```sh
+python -m tests.e2e.run_client_sandbox launch \
+  --prepared .e2e-artifacts/<fresh-private-run> --timeout-seconds 1800
+```
+
+The wrapper refuses any pre-existing Windows Sandbox UI process, records the exact
+launcher PID plus config/input hashes, never kills or retries it, and fails if the
+owned UI processes are not observed absent before the deadline. Networking,
+clipboard, audio/video input and printer redirection are disabled by the inspected
+configuration. Frozen coordinator repository, Python, Git, MariaDB, game data,
 navigation and prepared inputs are mapped read-only. Only this run's `output/`
 is writable. Both client and services use **guest loopback**, not host services.
 The guest creates its own Documents/game settings, client copy, database and
@@ -295,10 +308,27 @@ are absent, not passing. On completion or failure, `status.json` changes to
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
    next manual step. Older/incomplete results fail closed.
 7. **Close the owned Sandbox window and confirm its discard dialog.** Guest
-   runtime cleanup is not VM disposal. The result deliberately leaves
-   `sandbox_disposal=operator_required`; record that separate check. On a crash,
-   hard kill, deadline or incomplete output, retain diagnostics and dispose of
-   the Sandbox; never infer success from a screenshot, timeout or manifest.
+   runtime cleanup is not VM disposal. After the launch wrapper returns with
+   `status=disposed`, explicitly attest that you inspected and confirmed the exact
+   owned dialog, then run the composite read-only verifier:
+
+   ```sh
+   python -m tests.e2e.run_client_sandbox approve-disposal \
+     --prepared .e2e-artifacts/<fresh-private-run> --confirmed-owned-discard
+   python -m tests.e2e.inspect_client_sandbox_disposal \
+     --prepared .e2e-artifacts/<fresh-private-run>
+   ```
+
+   The final verifier reruns the current graphical-result policy and binds its
+   exact run/result hash to the launch session, observed launcher PID, canonical
+   Sandbox UI process identities, final absence and manual discard confirmation.
+   Its narrow scope is host UI process disposal, not server-side offline exclusion,
+   cache quiescence, pixel recognition or reset authority. The guest result itself
+   deliberately leaves `sandbox_disposal=operator_required`; only this separate
+   composite verifier emits `sandbox_disposal_verified=true`. On a crash, hard
+   kill, deadline or incomplete output, retain diagnostics and dispose of the
+   Sandbox manually; the wrapper records failure, does not kill/retry, and never
+   infers success from a screenshot, timeout or manifest.
 
 No raw packet submission, game memory modification, GM action, automatic scene
 completion, network enablement or host settings workaround is provided.
