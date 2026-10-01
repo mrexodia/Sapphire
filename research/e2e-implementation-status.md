@@ -2575,6 +2575,21 @@ No package was installed and no hosted workflow, service, endpoint, account or
 gameplay operation ran. A matching hash proves selected distribution bytes only,
 not PyPI/pip integrity, package safety, execution, compatibility or hosted use.
 
+Workflow feature **`f93b771a2`** further removes undeclared Python influences:
+both workflow installs use `--no-deps` because every transitive dependency is an
+explicit reviewed lock row, and each pytest-executing job sets
+`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`. The policy consumer requires both controls and
+rejects dependency resolution or ambient plugin autoload. Frozen, remote-free
+source **`f93b771a2a2c61f03a54f803bcf8628b01c66a59`** passed **1100 focused
+contracts with no skips in 39.70s** under that exact plugin-disable environment.
+Test-log SHA-256:
+`42e813062737df1d34a349e3db81eef72a6c5c05887feb716f4f8e3d977addc3`.
+Policy-receipt SHA-256:
+`bde59006fda0ec97ccdb1525738e7dd681dd07f4806515e8a9642820caba01c7`.
+No dependency install, hosted job, service, account or gameplay operation ran.
+This does not remove built-in/explicit pytest plugins, isolate arbitrary Python
+imports, attest pip/packages or prove hosted execution.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

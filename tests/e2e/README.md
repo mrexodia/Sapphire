@@ -183,7 +183,7 @@ From the repository root, with submodules initialized:
 cmake -S src/test_client -B build-e2e -DCMAKE_BUILD_TYPE=Debug
 cmake --build build-e2e --config Debug
 ctest --test-dir build-e2e -C Debug --output-on-failure
-python -m pip install --require-hashes --only-binary=:all: -r tests/e2e/requirements.txt
+python -m pip install --require-hashes --only-binary=:all: --no-deps -r tests/e2e/requirements.txt
 ```
 
 The lock is the reviewed Python 3.11 x86-64 Windows/Linux wheel closure used by
