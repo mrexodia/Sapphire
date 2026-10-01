@@ -1629,6 +1629,57 @@ No preparation, service, account, worker, client, Sandbox, gameplay, screenshot,
 remote or disposal operation ran. A fresh current manually attended run remains
 required; no full gate, soak or platform sweep ran.
 
+## Owned warm-host terminal status binds exact service generations
+
+Feature **`6e28b65b0`** strengthens only `serve_development`'s bounded private warm
+host. After owned Environment cleanup it type-compares the original private
+lifecycle artifact with the Environment's in-memory starts/teardowns, requires all
+four exact database/API/lobby/world generation/PID receipts, and atomically retains
+a private `process-lifecycle.json` copy beside terminal `status.json`. A normal
+`stopped` result now requires both `cleanup_verified` and
+`process_cleanup_verified`; mismatch, missing generation or publication failure
+changes terminal status to failed.
+
+New read-only command
+`python -m tests.e2e.inspect_development_host --session-dir <private-session>`
+requires an exact terminal-success schema, normal exact preflight-worker exit,
+three distinct ports, all four distinct positive owned PIDs equal to lifecycle
+starts, running-before-cleanup/terminate-request/observed integer-return-code rows,
+status/file hash and typed proof equality, removed exported profiles, and seven
+ordered successful host phases. It emits narrow scope
+`terminal-owned-warm-host-cleanup-not-external-server-or-offline-proof` without
+credentials or process rows.
+
+This does not apply to the normal already-running external shared-development
+lane and proves neither graceful service shutdown, server-side account/actor
+offline exclusion, cache quiescence, coordinator hard-kill cleanup, reset authority,
+shared-world cleanliness nor acceptance cleanup. Preflight failures before any
+service starts remain failed status and correctly have no positive service proof.
+
+Frozen, remote-free source **`6e28b65b0d655ee06721f72dda6f7257bc538183`**
+passed **338 tests in 3.83s**. Negative contracts cover failed/type-confused
+terminal fields, duplicate/boolean PIDs, changed digest/proof/timing rows, changed
+return code, and a coherently rewritten three-service artifact; existing host,
+provisioning, placement, lease, deadline, viewer and runner contracts remain
+covered. Test-log SHA-256:
+`85da772da65ed1d69d9b11ba909d96fe4b0a2a1444c2bfa32aedca592caf1547`.
+Artifacts: `development-host-teardown-clean-{source.json,python.log}`.
+
+One negative test expected the later exact-service error even though the shared
+generic lifecycle validator correctly rejected the missing database first. The
+expected fail-closed layer was corrected without changing production policy.
+Retained failure artifact SHA-256:
+`52963e0ac8f8d01891d12abb154e230f811329a5549eb28b7a9fc0678a922a7a`.
+
+Historical `development-binding-live-001` retains neither terminal host status nor
+an exact process-lifecycle file and is not upgraded. Read-only rejection artifact
+SHA-256:
+`f1fc2b4f1f838d2742b0fa29199eacc00a8e9c0458f504849d29bff14a80a472`.
+
+No service, database, account, worker, viewer or gameplay operation ran. A current
+bounded owned-host execution is still needed for positive native service-generation
+evidence; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -3453,7 +3504,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
-| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
+| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md`; strict workflow/process-policy receipts | Authored repository controls are pinned/read-only/bounded and private dispatch remains protected/serialized in YAML; the last fifteen-case Windows gate passed before exact process-generation receipts were required and the older nine-case Linux gate passed, but current gate execution is pending and the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
