@@ -183,6 +183,8 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
                 for row in public["environment_evidence"]}
     found, databases, runtimes = {}, set(), set()
     for child in children:
+        if (child / "cleanup-failure.json").exists():
+            raise SetupError("private isolated evidence records uncertain process cleanup")
         manifest_raw, manifest = _read(child / "manifest.json", 1024 * 1024, "manifest")
         lifecycle_raw, lifecycle = _read(child / "process-lifecycle.json", 256 * 1024, "lifecycle")
         pair = (hashlib.sha256(manifest_raw).hexdigest(),

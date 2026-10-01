@@ -52,6 +52,8 @@ def inspect_isolated_case(artifact_dir, junit_path, pytest_log, expected_case, e
     if supplied.is_symlink() or not supplied.is_dir():
         raise SetupError("standalone isolated artifact directory is missing or unsafe")
     root = supplied.resolve()
+    if (root / "cleanup-failure.json").exists():
+        raise SetupError("standalone isolated evidence records uncertain process cleanup")
     manifest_raw, manifest = _read(root / "manifest.json", 1024 * 1024, "manifest")
     lifecycle_raw, lifecycle = _read(root / "process-lifecycle.json", 256 * 1024, "lifecycle")
     junit_raw = _raw(junit_path, 16 * 1024 * 1024, "JUnit report")

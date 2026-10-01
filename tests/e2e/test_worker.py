@@ -423,9 +423,15 @@ def test_close_attempts_all_owned_processes_and_only_observes_uncertain_retry(tm
     assert all(process.calls == ["terminate",("wait",10)]
                for process in (database, api, lobby)) and world.calls == ["terminate"]
     assert set(env.processes) == {"world"} and env.root.exists() and env._closed is False
+    failure_path = env.artifacts / "cleanup-failure.json"
+    assert json.loads(failure_path.read_text()) == {
+        "version":1,"classification":"owned_process_cleanup_incomplete",
+        "services":["world"],"runtime_retained":True,
+        "retry_policy":"exact-process-poll-only-no-second-termination"}
     world.returncode = -1
     env.close()
     assert world.calls == ["terminate"] and env.processes == {} and not env.root.exists()
+    assert failure_path.exists()
     assert require_process_teardowns(env.process_starts, env.process_teardowns)["process_count"] == 4
 
 

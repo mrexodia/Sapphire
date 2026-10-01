@@ -876,7 +876,8 @@ def test_standalone_isolated_case_inspector_binds_runner_fixture_and_cleanup(tmp
 
 
 @pytest.mark.parametrize("mutation", ["foreign-case","junit-case","junit-failure","runtime",
-                                      "lifecycle","revision","http-receipt","missing-log"])
+                                      "lifecycle","revision","http-receipt","cleanup-failure",
+                                      "missing-log"])
 def test_standalone_isolated_case_inspector_rejects_foreign_or_incomplete_evidence(
         tmp_path, mutation):
     case, artifact, junit, log = standalone_case_files(tmp_path, current_public_summary())
@@ -895,6 +896,8 @@ def test_standalone_isolated_case_inspector_rejects_foreign_or_incomplete_eviden
     elif mutation == "http-receipt":
         path = artifact / "rejected-credentials.json"; value = json.loads(path.read_text())
         value["session_returned"] = True; path.write_text(json.dumps(value))
+    elif mutation == "cleanup-failure":
+        (artifact / "cleanup-failure.json").write_text("{}")
     else: log.unlink()
     with pytest.raises(SetupError):
         inspect_isolated_case(artifact, junit, log, expected, "a" * 40)
@@ -925,7 +928,7 @@ def test_standalone_isolated_fault_inspector_is_strict_sanitized_and_read_only(t
 
 @pytest.mark.parametrize("mutation", ["classification","world-pid","runtime","proof-hash",
                                       "revision","foreign-field","junit-case",
-                                      "junit-failure","pytest-log"])
+                                      "junit-failure","cleanup-failure","pytest-log"])
 def test_standalone_isolated_fault_inspector_rejects_foreign_or_incomplete_evidence(
         tmp_path, mutation):
     report = current_public_summary(); _, directories = private_gate_evidence(tmp_path, report)
@@ -956,6 +959,8 @@ def test_standalone_isolated_fault_inspector_rejects_foreign_or_incomplete_evide
         junit.write_text(junit_document([FAULT_CASE], foreign_first=True))
     elif mutation == "junit-failure":
         junit.write_text(junit_document([FAULT_CASE], failing=True))
+    elif mutation == "cleanup-failure":
+        (artifact / "cleanup-failure.json").write_text("{}")
     elif mutation == "pytest-log":
         log.unlink()
     else:
@@ -966,7 +971,7 @@ def test_standalone_isolated_fault_inspector_rejects_foreign_or_incomplete_evide
         inspect_isolated_fault(artifact, junit, log, "a" * 40)
 
 
-@pytest.mark.parametrize("mutation", ["changed-bytes","missing","profile","pytest-log","junit","junit-case","diagnostics","lifecycle","inputs","database","fault-evidence","rejected-receipt","runtime-retained"])
+@pytest.mark.parametrize("mutation", ["changed-bytes","missing","profile","pytest-log","junit","junit-case","diagnostics","lifecycle","inputs","database","fault-evidence","rejected-receipt","cleanup-failure","runtime-retained"])
 def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_private_bytes(
         tmp_path, mutation):
     report = current_public_summary(); private, directories = private_gate_evidence(tmp_path, report)
@@ -1019,10 +1024,13 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
         path = target / "rejected-credentials.json"
         value = json.loads(path.read_text()); value["received_status"] = 200
         path.write_text(json.dumps(value)); rehash_private_row(report, target, index)
+    elif mutation == "cleanup-failure":
+        (target / "cleanup-failure.json").write_text("{}")
+        rehash_private_row(report, target, 0)
     else:
         runtime = Path(json.loads((target / "manifest.json").read_text())["runtime"])
         runtime.mkdir(parents=True)
-    if mutation in {"lifecycle","inputs","database","fault-evidence","rejected-receipt"}:
+    if mutation in {"lifecycle","inputs","database","fault-evidence","rejected-receipt","cleanup-failure"}:
         sync_private_diagnostics(report, private)
     summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report))
     with pytest.raises(SetupError):

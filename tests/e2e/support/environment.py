@@ -555,6 +555,13 @@ class Environment:
                 failures.append(name)
         self._write_lifecycle()
         if failures:
+            # Keep a terminal marker even if a later poll observes exit. Evidence
+            # with any uncertain cleanup must never be upgraded to a clean run.
+            (self.artifacts / "cleanup-failure.json").write_text(json.dumps({
+                "version":1,"classification":"owned_process_cleanup_incomplete",
+                "services":sorted(failures),"runtime_retained":True,
+                "retry_policy":"exact-process-poll-only-no-second-termination",
+            }, indent=2), encoding="utf-8")
             # Keep streams, logs and runtime for exact retained-process diagnosis.
             raise SetupError("owned process cleanup incomplete; inspect private lifecycle: "
                              + ", ".join(failures))
