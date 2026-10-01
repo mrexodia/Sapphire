@@ -61,6 +61,9 @@ checkout). It contains:
   provisioning. This does not attest that GM placement is deployed.
 - `status.json`: identity, expiry, process IDs, lifecycle/timing and cleanup
   diagnostics, without account credentials.
+- `account-association.json`: retained normalized bot usernames/character names,
+  loopback endpoints and exact host-session identity, without passwords or worker
+  paths. Unlike credential-bearing profiles, this survives normal host cleanup.
 - `process-lifecycle.json`: terminal private exact database/API/lobby/world
   generation/teardown rows, created only after owned cleanup.
 
@@ -99,9 +102,12 @@ ordered successful host phases. Any recursively discovered, case-variant termina
 when the lifecycle itself is complete. The inspector follows the terminal status's
 absolute, separate original `Environment` artifact directory, rejects aliases to the
 session tree, requires its lifecycle object to equal the retained session copy, and
-recomputes the producer-recorded bounded complete artifact-tree SHA-256. That tree
-identity is also returned by the composite managed-run/provisioning inspectors;
-checking only the copied lifecycle is insufficient. Host status/lifecycle files and
+recomputes the producer-recorded bounded complete artifact-tree SHA-256. It also
+requires the bounded, duplicate-free, single-link `account-association.json`, its
+status-recorded digest, exact loopback ports and exact session/status identity.
+That artifact-tree identity and password-free account-association digest are also
+returned by the composite managed-run/provisioning inspectors; checking only the
+copied lifecycle is insufficient. Host status/lifecycle files and
 the managed-run summary must each be bounded, duplicate-key-free regular files with
 one link and no symlink or Windows reparse alias; oversized or hard-linked evidence
 fails before semantic acceptance. This proves exact owned-process teardown only,
@@ -117,9 +123,13 @@ python -m tests.e2e.inspect_managed_development_run `
 
 The composite inspector binds the run's exact start/end host identity, bounded
 success deadline, normal worker exit and clear leases to the same terminal
-session/service lifecycle. It also strictly revalidates every requested structured
-movement/social/persistence receipt and requires every unrequested check to remain
-explicitly false. These retained received-state records are not rendering,
+session/service lifecycle. It recomputes the run's received-identity binding from
+the host-retained account association after credential profiles are removed; the
+managed provisioning composite likewise requires its retained private profile to
+match those exact host-created accounts. It also strictly revalidates every
+requested structured movement/social/persistence receipt and requires every
+unrequested check to remain explicitly false. These retained received-state records
+are not current credential validity, account exclusivity, rendering,
 server-side offline/reset authority, or acceptance proof.
 
 The host also shuts down on process loss, interruption, or expiry (60–14400 seconds **after readiness**).

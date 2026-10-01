@@ -2503,6 +2503,26 @@ Current graphical execution/manual review/disposal remain pending; this digest i
 not a signature, credential-validity check, server identity, account exclusivity,
 offline exclusion, rendering, compatibility, reset or disposal proof.
 
+Feature **`d1012c218`** closes the corresponding post-cleanup gap for the owned
+warm host. Alongside temporary credential profiles, `serve_development` now
+exclusively writes durable private `account-association.json` containing only the
+two normalized usernames/character names, loopback ports and exact host-session
+identity; passwords and worker paths are omitted. Terminal host inspection binds
+its strict alias-free bytes and status digest to that session. Composite managed-
+run inspection recomputes the received-identity binding from those bytes after
+credential profiles are deleted, while managed-provisioning inspection requires
+its separately retained exact private profile to match the host-created accounts.
+Partial publication is terminal failure evidence; changed/duplicate/hard-linked
+association files, changed status receipts and mismatched run bindings fail closed.
+
+Frozen, remote-free source **`d1012c218186cd78f7a2db3dd916895ff18d0b56`**
+passed **1085 focused contracts with no skips in 44.85s**. Test-log SHA-256:
+`18a5e25128e3159791f5f27542897f699ec0c8af9f3c53ac8c1ad33a8b67d293`.
+No service, endpoint, account, session, gameplay, client or Sandbox operation ran.
+This association remains editable correlation—not credential validity, a signature,
+server-side exclusion, reset authority, graceful shutdown or shared-world cleanup.
+Historical managed-host/run/provisioning evidence lacks it and remains historical.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
