@@ -12,6 +12,98 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Shared CLI cooperative deadline: session success budget
+
+Feature **`5ffe7ad43`** adds `support/development_deadline.py`, focused contracts
+and CLI `--max-seconds` (integer1..900, default300). A single budget spans lease
+acquisition, worker startup, HTTP, scenarios/reconnects, normal logout and worker
+closure; it does not restart per operation. New RPC/wait budgets account for the
+worker's deadline scale. Calls begun after expiry and late returns/predicate
+success cannot pass. The raw worker's context manager still owns cleanup.
+
+This is a **cooperative session-success budget**, not hard preemption or rollback.
+Already-started bounded HTTP/startup/snapshot calls and cleanup can overrun. Final
+lease release/report writing remain cleanup outside the accepted-session budget,
+and still must succeed for an overall pass. `run_deadline` explicitly separates
+limit/expiry/session completion from overall status; actual wall times are kept.
+Direct Python callers default to `max_seconds=None` for compatibility and must
+opt in to this aggregate budget; their per-step bounds remain. The graphical
+bridge's existing independent twenty-minute activity cap remains unchanged.
+Neither condition establishes hard-kill/crash-consistent cleanup or offline/reset
+authority, and a worker exiting does not prove immediate actor disappearance.
+
+Focused contracts **106 passed, 0.73s**; clean committed selection **78 passed,
+0.67s**. Tests cover CLI defaults/explicit limits, strict limit/timeout/scale
+validation, scaled delegation and argument preservation, rejected late HTTP/
+startup/RPC/snapshot/wait/predicate results, worker-cleanup overrun, retained
+leases, no additional operations after expiry and unchanged direct-call defaults.
+Existing native protocol CTest **1/1 passed, 0.05s total**; no native code/build
+change in this increment. Logs: `development-deadline-contracts-{001,002}.json`,
+`development-deadline-clean-timings.json`, `development-deadline-native-tests.log`.
+
+### Expected CLI expiry, but retained diagnostic aggregate failure
+
+`development-deadline-live-001` used frozen controller
+`5ffe7ad43d5e3ca88549293ce1360462df8db511`, unchanged equipment worker `899cfa747`
+(SHA-256 `b0400f61813c3ee9c7ae1f1b8bdd945b296d1410628e0bf301d937cc11cd0099`)
+and unchanged clean backend `e665c041f` with checked hashes. Five pre-connection
+GM0 fixtures were prepared; the failed pair was never reused.
+
+The product CLI with `--max-seconds 2` **failed as expected after2.016s** in
+`logout_and_independent_despawn`, with `expired:true`, incomplete session-budget
+receipt and both leases retained. Raw actions contain exactly two logins, two
+Says and one mover logout, with its acknowledgement but **no bot
+`server_logout_complete`**. No subsequent close/remove control command, second
+logout, mutation or retry was published by the runner after the wait failed.
+
+However, the private diagnostic driver additionally required both actors to
+vanish within15s after worker exit. **That postcondition failed**, so its aggregate
+remains failed, not green expected-failure evidence. The separate observer saw
+mover2097153 despawn first, but witness2097154 despawned only later, during the
+observer's own normal logout. Later eventual absence does not upgrade the failed
+15-second check or establish immediate offline/session exclusion. Services were
+still alive after the CLI returned; the driver, not the CLI, finally disposed of
+its owned runtime. Startup **17.250s**, whole failed diagnostic **41.813s**.
+The planned within-budget case never executed in this driver.
+
+### Previously unexecuted positive control on fresh resources
+
+`development-deadline-positive-001` used distinct fresh accounts/runtime, the same
+frozen code and binary identities, and `--max-seconds 30`. It **passed in11.750s**,
+with in-budget session completion, normal bot closure and released leases. Mover
+**Tester CBHLJMNNPD /2097153** and witness **Tester ANCOIEFCIG /2097154** each
+published only login/Say/logout/close/remove. Raw journals confirm normal server
+closure before local close. Separate headless viewer **Tester HMOKNKFECK /
+2097155/18014398526259203** retained sampled identity/territory/GM/position/party/
+invitation state and logged out normally; owned services stayed alive after CLI
+return. Startup **17.031s**, whole control **36.297s**. This is deadline/lifecycle
+integration evidence, not new gameplay breadth or graphical agreement.
+
+The private `development-deadline-live-001/inspect-evidence.py` checks both raw
+outcomes without merging their statuses, source identity, actor/session order,
+viewer samples and cleanup. Final inspection found both owned runtimes absent and
+only pre-existing MySQL7764. Only then were the failed run's two exact run-ID
+leases manually removed, recorded in `manual-lease-cleanup.json`; the successful
+control released its own leases. Failed account profiles were not reused. This
+manual disposal-based check is not a generic shared-world offline fence.
+
+Artifacts include frozen source/inputs, both drivers and summaries/journals,
+`inspected-evidence.json`, the positive viewer samples/final process snapshot,
+and environments `sapphire-e2e-1zdodvf8` / `sapphire-e2e-_avmzeqd`.
+Expired CLI summary SHA-256
+`9219f4d979323b36e949a605d8c65f7a7b0867ee38ee49ac5fb27ec8f0bb1a59`;
+failed diagnostic aggregate
+`b9303c465b677bc6bd8e21f2ba7b6d2547149882562fd6b35b1af8e432e63fc2`;
+positive CLI summary
+`1829c2b1170149df0f38502b2bea8d2e07bf55e2bff586e377629b48a174b5f5`;
+positive aggregate
+`9e4cde98f06be8b980a5ea46a85eebb5502bba415b55deb21bb3f849f92ff502`.
+
+No immediate-disconnect cleanliness, hard process deadline, all-option live
+combination, graphical execution, existing shared deployment, reset/reprovisioning
+or broad acceptance claim is made. No full gate/soak/platform sweep ran; original
+remaining requirements and overall goal remain incomplete.
+
 ## Starter-body round trip: fresh-login mutations and nonempty-bag reconnect
 
 Feature **`899cfa747`**, corrected by **`3420ee4d0`**, adds

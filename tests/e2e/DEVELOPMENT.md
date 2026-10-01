@@ -349,7 +349,9 @@ rejects late returns/predicate success. Budget expiry is failure, never a retry.
 This is **cooperative**, not a hard process-wall-clock limit or a server-side
 cancellation transaction. Already-started bounded HTTP/startup/snapshot calls and
 worker cleanup can overrun; an already-published mutation may have taken effect.
-Do not interpret expiry as rollback or proof that bots are offline. Cleanup is
+Do not interpret expiry as rollback or proof that bots are offline. A worker can
+exit while a character remains visible until ordinary server timeout cleanup;
+never substitute a fixed delay for offline verification. Cleanup is
 not forcibly interrupted; failure retains local leases for explicit offline
 review. The runner does not terminate the shared server or control the viewer.
 
