@@ -12,6 +12,64 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Graphical bridge guest attempts: two retained setup failures
+
+Two fresh owned Sandbox attempts reached the guest's frozen-source/client-hash
+checks but **failed before graphical-client launch/login**. No normal bot scenario,
+viewer challenge, rendering review or gameplay success is claimed.
+
+1. `.e2e-artifacts/client-development-live-001`, coordinator `966a0b9a9`, failed
+   during environment staging: the copied catalog retained its host-only
+   navigation mesh path. Guest artifact collection could not open it. Result
+   SHA-256: `7429827a7dc10ce58e0bd769b7b5c20d3f53009844d686ee5d38928c81103b1e`.
+2. `.e2e-artifacts/client-development-live-002`, coordinator `3582fd8b9`, progressed
+   past that path after staging an exact mesh copy, then failed `db-initialize`
+   with exit **3221225781 / 0xC0000135** (missing runtime dependency). Import-table
+   inspection showed MSVC runtime imports; the bundle lacked MSVCP140 and other
+   explicit Release CRT staging. This identifies a packaging prerequisite, not
+   yet a verified fix for every possible guest loader dependency. Result SHA-256:
+   `442aa0e975b482f9a1d978e745e5ce0deff4df36fa76e9deccae6293e2d0b306`.
+
+The second preparation also failed an exact-transform assertion: the catalog
+validator had added derived `giver`/`recipient` fields. All original fields,
+including route geometry and length, matched, but this was not the promised
+path-only transformation. The assertion failure is retained in
+`preparation-validation-failure.json`; it is not relabelled as a passing check.
+
+Each effective private bundle records an optional guest-only manual UI relay
+and changed bootstrap hashes, while retaining `inputs-base.json`. The relay
+accepts individual screenshot-inspected inputs to the exact owned game window;
+it does not make automatic dialogue/scene choices. Neither attempt reached that
+window, and no game UI input was issued. This private operator tooling is not
+part of the default committed coordinator or an autonomous UI proof.
+
+Both guest results recorded `runtime_removed=true`. Each owned Sandbox's discard
+dialog was actually inspected and confirmed once; screenshots and confirmation
+records are retained. Subsequent process inspection found no Sandbox/client/test
+services, only pre-existing MySQL PID 7764. `inspected-failure.json` hashes each
+failed result, effective manifest and disposal confirmation. Original installed
+client/settings and host networking were untouched. Guest runtime cleanup and
+VM disposal are separate evidence; neither failure became a gameplay pass.
+
+**Corrections:** `3582fd8b9` introduced private catalog mesh localization;
+`121cb0a40` preserves the raw original catalog (discarding validator-derived
+return fields) and adds explicit `--release-crt-dir` packaging without requiring
+Debug UCRT or installing anything. The original catalog/mesh and localized
+catalog are independently hashed. The original source-route/catalog validation
+remains unchanged. **54 focused contracts passed in 0.33s**, including derived-
+field preservation and incomplete-runtime-folder rejection, in
+`.e2e-artifacts/client-staging-corrections-timings.json`.
+
+A corrected bundle at
+`.e2e-artifacts/client-development-corrected-preparation-001` was inspected at
+`121cb0a40c946f1a3a353f7328455c65dcfd457f`: every staged input matches its hash,
+only the catalog mesh path changes, explicit x64 Release CRTs are present and
+Debug UCRT is not required. Manifest SHA-256:
+`fafb8d5ef5d8f2f7f6bf5f1d68fe02dce73ed0abad6c3bdb5f6fa26968868c26`.
+It remains **prepared_verified_not_executed**. Corrected guest startup, actual
+manual graphical co-presence and disposal for a successful run still require
+execution. No full gate, platform sweep or expensive soak was run.
+
 ## Opt-in graphical co-presence bridge: authored and prepared, not executed
 
 Feature `38242cd85` adds `prepare_client_smoke --development-check`. It preserves
