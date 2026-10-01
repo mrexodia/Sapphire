@@ -2041,6 +2041,22 @@ and `39cd7374a3935d811dab69357f477175e5f647900bf3a53fa0644cbb3f4adb5f`.
 No executable/service/database/account/gameplay operation ran. This reusable short
 feedback lane remains staging evidence only, not a service or database rehearsal.
 
+Fix **`cb23fcbad`** additionally requires the fresh private staging parent to retain
+exactly the one generated owned artifact directory after cleanup. A concurrent
+foreign sibling, symlink or replaced/ambiguous root now rejects the receipt even
+when staging and cleanup otherwise succeed. The negative injects such a sibling
+during real staging and confirms the disposable runtime is still removed.
+
+Frozen, remote-free source **`cb23fcbade8b98ffede0611cf0915b4a2ba37465`**
+passed **162 CI/workflow-policy/staging tests in 11.88s**. Test-log SHA-256:
+`3465a5cb7ed922fcf4a7268ff0af0d376614ba12f8b006c5aa85e428d68eb6c5`.
+A first command check used a mistyped expected revision and correctly rejected after
+cleanup; retained failure SHA-256:
+`840009cfac5f7a557847ee0b527494c776a89906e2159ca7d903529c19a48adc`.
+One fresh-root correction with the exact revision passed; receipt SHA-256:
+`79b2a2a4a06f998432251c4a69da40ec244ad7fb1a631d36baa945de62a207d4`.
+No process/service/database/account/gameplay operation ran in either attempt.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
