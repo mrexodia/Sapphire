@@ -1410,7 +1410,7 @@ gate, Linux/platform and hosted execution remain pending.
 
 Feature **`795fc035f`** adds the corresponding strict read-only public consumer:
 `python -m tests.e2e.inspect_ci_result --summary <summary> --expected-revision <40-hex>`.
-It requires the exact ordered current 15-case allowlist, clean caller-supplied
+It requires the exact ordered then-current 15-case allowlist, clean caller-supplied
 source revision, successful verified stage, typed deadline scale, collection,
 inputs and both cleanup booleans, zero pytest exit, and exact worker/four binary/
 eight catalog/two mesh/sorted nonempty script-module digest schemas. Extra fields,
@@ -1631,6 +1631,31 @@ hashes fail closed. Test-log SHA-256:
 The digest preserves exact bounded artifact-tree correlation only; it does not
 sanitize, publish, interpret or independently prove private log contents. No gate,
 service or gameplay operation ran; positive current hashes remain pending.
+
+Feature **`e0ba10db4`** moves the owned-world fault diagnostic into the strict gate
+as a sixteenth independently provisioned fixture. `Environment` now exposes only
+an exact `terminate_world_for_fault_test()` operation: it rejects an absent,
+already-exited or metadata-ambiguous world; uses the existing bounded exact-owned
+terminate/kill/exit path; verifies generation, PID and integer return code; removes
+the target so the operation cannot repeat; and writes a private structured
+`intentional_owned_process_exit` diagnostic. The case requires one matching
+lifecycle receipt, removed runtime, redacted logs and retained hashes. It does not
+count as gameplay, spontaneous crash, crash dump, graceful shutdown or hosted
+cancellation evidence.
+
+The producer and independent public consumer allowlists now contain exactly 16
+cases. Their zoning entries were also corrected to actual pytest source collection
+order (living Return before exit crossing); otherwise exact collection would have
+failed before provisioning under the current source. Frozen, remote-free source
+**`e0ba10db4997a36658b062a6ec31ed8f347622d8`** passed **130 focused
+contracts with 14 declared skips in 6.59s** and separately collected the exact 16
+live node IDs in **0.85s**. Test-log SHA-256:
+`2efcc0580f14f8a18bddb2467cb671e17e29109cbf0bde1eefb59f78a4086c85`;
+collection-log SHA-256:
+`5c6194322ba748cbf4a1c8623ec3ad4548e7a7bf40bead97b14c40cd81c4f3ee`.
+No fixture/service was started and no full gate ran. All earlier 15-case summaries
+are historical and fail the current strict schema; current positive fault-lane,
+per-case process and artifact-tree evidence requires a newly authorized gate.
 
 ## Current graphical results bind exact private service teardown
 
@@ -3892,7 +3917,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
 | Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 and Ring2 round trips, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards and that opening's private-to-public travel; appearance breadth and other cities/classes remain uncovered |
-| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required; current gate requires an exact one-to-one mapping from all 15 case IDs to 15 pairwise-distinct disposable environments, unique/non-nested runtime/artifact/database identities, exact private manifest agreement, source/schema/profile/deadline binding, and every lifecycle/manifest | Earlier Windows and containerized Ubuntu 22.04 runs are live-verified at their historical scope; current per-case identity/isolation/process-generation public evidence awaits a new gate, and hosted deployment remains unverified |
+| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required; current gate requires an exact one-to-one mapping from all 16 case IDs to 16 pairwise-distinct disposable environments, unique/non-nested runtime/artifact/database identities, exact private manifest agreement, source/schema/profile/deadline binding, and every lifecycle/manifest | Earlier Windows and containerized Ubuntu 22.04 runs are live-verified at their historical scope; current per-case identity/isolation/process-generation public evidence awaits a new gate, and hosted deployment remains unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
 | Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking, Gil for Gold, opening ring and Coming to Ul'dah acceptance choices | Four live verified adapters; Due Diligence and Coming to Ul'dah completion remain route-blocked |
@@ -3956,7 +3981,7 @@ a nearby passing test does not close them.
 | Plausible movement cadence, direction and stopping | 100 ms interpolation, bounded speed, computed heading and terminal stop flag; independent position receipt | Verified for curated routes; no real-client movement-trace equivalence claim |
 | Progress watchdog and bounded replanning | workload movement requires every waypoint from an independent observer; exploration permits one recorded fresh-session replan only from the same curated corridor, while soak/regression fail without recovery | Verified for bounded workload navigation; no general-navigation replanner claim |
 | Independent navigation validation | witness clients and narrow graphical-client movement pilot supplement server-derived geometry | Verified narrowly, not general path correctness |
-| Authored regression mode | strict fifteen-case allowlist plus native/Python contracts | Verified for supported suite |
+| Authored regression mode | strict sixteen-case allowlist plus native/Python contracts | Contract-verified; current combined live execution pending |
 | Seeded exploration mode | v1/v2 plans, allowlisted preconditions, decisions, observations and replay | Verified for walk/Say/heartbeat/reconnect subset |
 | Soak/load mode | bounded ramp/pacing/actions, liveness and process/worker resource samples | Verified as bounded smoke and 30-minute low-rate evidence; not capacity/overnight proof |
 | Record actual actions, not seed alone | plan/outcome/checkpoint journals retain semantic order, limits and observations; replay warns that scheduling is nondeterministic | Verified |
@@ -3966,7 +3991,7 @@ a nearby passing test does not close them.
 | Non-GM/full-session config; hot swap disabled | generated `DefaultGMRank=0`, `AllowNoSessionConnect=false`, hot swap false | Verified |
 | Creation journey plus faster pre-provisioned fixtures | normal four-account lobby creation case and separately labeled pre-connection character fixtures | Verified for Ul'dah subset |
 | No live DB mutation/assertion shortcut | fixture SQL occurs only before first connection; journeys use protocol and restart reload | Verified by code path for enabled scenarios |
-| Independent scenarios and no cached reset | Each case creates/removes its owned environment; current gate fail-closes unless all 15 case IDs map to 15 exact distinct private fixture identities; world is stopped before preserved-DB restart | Historical execution plus current controller contracts; current one-to-one live evidence awaits a new gate |
+| Independent scenarios and no cached reset | Each case creates/removes its owned environment; current gate fail-closes unless all 16 case IDs map to 16 exact distinct private fixture identities; world is stopped before preserved-DB restart | Historical execution plus current controller contracts; current one-to-one live evidence awaits a new gate |
 | Observation hierarchy | acting-client messages, independent observers, reconnect/restart and diagnostic-only DB checks are separated in scenarios/artifacts | Verified |
 | Monotonic waits and application readiness | condition/event waits; world binds only after data/territory/script setup and clients require received world-ready | Verified |
 | Record build/script/fixture/protocol/data/nav identities | Gate manifest and summary hashes; current gate requires every per-case manifest to match public source/schema/profile/deadline metadata and all input digests; current graphical policy additionally binds exact prepared source-manifest bytes/revision, rehashes every staged `input/` file, and strictly consumes the isolated environment's server/worker/script/catalog/committed-combat identities plus its recorded external-navigation digest map; external read-only mappings and game assets remain separately identified/private | Historical gate and graphical identities are live-inspected at their original scopes; current all-case source/process binding awaits a new gate; hashes do not prove external-root completeness, compatibility, signatures, or native build provenance |
@@ -3984,7 +4009,7 @@ a nearby passing test does not close them.
 | Manual/scheduled real-client tier | strict three-frame-review current policy plus historical completed isolated Sandbox lane | Historical lane verified once locally; current combined bot-interaction review policy and scheduled breadth are unverified |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
 | Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and automatic sanitized exact-lease snapshots in shared runner/provisioner summaries | Verified for implemented paths, including current live producer→planner→runner consumption; lease snapshots do not establish server session state |
-| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured unexpected-process-exit metadata are retained | **Partial:** one owned-world termination is verified, but platform crash dumps are only retained where externally produced |
+| Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured exact-generation intentional-owned-process-exit metadata are retained; the current strict allowlist includes this as its sixteenth isolated fixture | **Partial:** focused contracts and historical owned-world termination exist, but the current 16-case lane awaits execution and platform crash dumps are only retained where externally produced |
 | Fixture/persistence evidence, redaction, JUnit and summary | scenario JSON snapshots, restart state, redaction contracts, `live.xml` and CI JSON summary | Verified |
 | Bounded soak logs and generator saturation | capped plans/journals, checkpoints, action percentiles and API/lobby/world/DB/worker/runner resource samples | Verified; scenario coverage remains reported separately from concurrency |
 | Initial design decisions | Headless primary + separate real client; Python; 3.3 profile; Ul'dah/Motivational Speaking; local-first; regression then bounded exploration/soak | Resolved and documented |
@@ -3996,8 +4021,8 @@ a nearby passing test does not close them.
   off-mesh destinations rather than accepting a partial Detour path.
 - GNU 11.4/Ubuntu 22.04: the full `sapphire_gameplay_ci` target and all six CTest
   executables pass. The older strict nine-case Linux live gate remains green, but
-  the current expanded fifteen-case Linux gate is not green; it is not counted as
-  platform gameplay verification.
+  the later expanded fifteen-case Linux gate was not green and the current
+  sixteen-case gate is unrun; neither is counted as platform gameplay verification.
 - **281** Python worker/policy/CI/pacing/resource-control contracts pass with the
   current MSVC worker; 17 asset-backed cases skip without an explicit live profile.
   All six native suites pass under current MSVC and GNU builds. The attempted local
@@ -5577,8 +5602,11 @@ Revision and source were clean and the runtime is absent. The full contracts rep
 This is an intentional graceful OS termination of one disposable process, not an
 organic server crash, signal matrix, crash-dump test, hosted cancellation test,
 power-loss recovery, or proof that forced termination of the Python coordinator
-cleans stranded processes. The fault lane remains separate from the fifteen-case
-gameplay gate so an expected world kill cannot mask or contaminate gameplay.
+cleans stranded processes. That historical fault lane was separate from the
+fifteen-case gameplay gate. At `e0ba10db4`, the current gate instead gives it an
+independent sixteenth disposable fixture and requires exact case/fixture/teardown
+evidence, so it cannot share or contaminate a gameplay fixture; combined execution
+remains pending.
 
 ## Corrections exposed by execution
 
@@ -6041,7 +6069,7 @@ compatibility.
    journey and exact received eligibility/match semantics.
 4. Provision and validate the authored gameplay CI on a workflow-restricted disposable
    runner (none is currently registered), including approval/cancellation/disposal.
-   The separate 30-minute paced workload is not part of the fifteen-case CI gate.
+   The separate 30-minute paced workload is not part of the sixteen-case CI gate.
 5. Broaden the now-rehearsed manual real-client lane's presentation-sensitive
    coverage and independently captured trace/layout checks. Strengthen fault and
    cancellation coverage separately from successful-path evidence. Do not alter
