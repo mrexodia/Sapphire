@@ -561,6 +561,43 @@ alliances, free companies, linkshells, persistence or rendering. A fresh manuall
 attended current graphical run and explicit guest disposal remain pending; no full
 gate, soak or platform sweep ran.
 
+## Graphical bridge requires the exact main reconnect lifecycle
+
+Feature **`ef595c058`** replaces the remaining boolean-only main reconnect
+consumption with the same strict receipt validator used for both equipment
+reconnects. Current graphical success now requires the exact mover identity before
+and after, public130, four finite positions within 0.15m of the authored expected
+point, normal old-session server closure, independent despawn, fresh-login
+independent respawn/Say, and `world_restart_performed:false`. The mover must be the
+same strict identity already bound by the equipment round trip. Missing, malformed,
+type-confused or extra fields; changed identity/territory/position; absent closure,
+despawn or Say; and a claimed world restart fail closed. The bridge proof names the
+fresh-login-position scope rather than treating `verified:true` as sufficient.
+
+Frozen, remote-free source **`ef595c058db2ac533760ac8e8e4ea222ee4e4fd4`**
+passed **377 tests in 3.13s** across graphical policy, reconnect, party, Tell,
+equipment, Sprint, viewer, movement, inventory, deadlines, worker exit, smoke and
+lifecycle. New consumer negatives cover boolean identity/territory, malformed and
+distant positions, absent server closure/despawn/Say, restart confusion and extra
+schema fields alongside all existing no-retry reconnect failures. Test-log SHA-256:
+`0af916971aba3a8c104c2ca3f64c32bd7872f535562f6a740a702e839c6e2be0`.
+Artifacts: `client-graphical-reconnect-clean-{source.json,python.log}`.
+
+The strict subreceipt validator accepted historical owned Sandbox
+`client-development-live-004` read-only: exact entity2097153/character
+18014398526259201 before/after, public130, all four bounded positions, normal
+server closure, independent despawn, fresh Say and no world restart. Artifact
+`client-graphical-reconnect-historical-artifact-check.json` has SHA-256
+`8749f7ca749406bb3011be047969f9b286127f7c9f59936754e84f84141350a4`.
+That validates only the reconnect subreceipt; the historical overall run still
+lacks other current requirements and is not upgraded.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. Fresh login proves neither world restart/crash
+persistence, server-side offline exclusion, cache quiescence nor reset authority.
+A fresh manually attended current graphical run and explicit guest disposal remain
+pending; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1367,7 +1404,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/Tell/Sprint/equipment/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict owned-party/chat/disband and reciprocal received Tell, independently received Sprint and fresh-login equipment round-trip evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/Tell/Sprint/equipment/reconnect/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict owned-party/chat/disband, reciprocal received Tell, independently received Sprint, fresh-login equipment round trip and exact main reconnect lifecycle evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/Sprint/equipment/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage; current graphical policy requires Sprint, starter-body round trip and read-only inventory but awaits current graphical execution |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
