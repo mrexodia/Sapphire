@@ -1584,6 +1584,51 @@ No preparation, service, account, worker, client, Sandbox, gameplay, screenshot,
 remote or disposal operation ran. A fresh current prepared and manually attended
 run remains required; no full gate, soak or platform sweep ran.
 
+## Graphical results consume exact isolated-environment identities
+
+Fix **`a86acd6d3`** binds the private Environment `manifest.json` into the terminal
+graphical result by constrained artifact-relative path and SHA-256. The current
+read-only inspector requires the exact graphical environment schema and
+cross-checks its clean committed revision, profile/fixture/deadline boundary,
+unique typed ports, four staged server executable digests, worker digest, complete
+root compiled-script map, localized quest catalog/navigation hashes and three
+committed combat-data hashes against the already strict preparation/source
+manifests. It additionally binds the worker and quest-catalog digests to both
+nested bot summaries and the graphical fixture.
+
+The external server-navigation map is required nonempty with canonical safe
+relative names and strict digests, but there is intentionally no completeness
+claim for the separately mounted host navigation root. Database/runtime/data/nav
+paths are shape evidence only and are not published by the accepted proof. The
+result emits digest/count identities under scope
+`exact-graphical-environment-input-identities-not-native-build-provenance`; it does
+not prove binary source provenance, sqpack/navigation completeness, process
+execution, matching-client behavior, rendering or server-side session exclusion.
+
+Frozen, remote-free source **`a86acd6d37ffd2ea12958515da1716f6f8c1a6bc`**
+passed **580 tests in 22.56s**. Negative contracts cover foreign manifest paths,
+changed hashes, dirty source boundary, boolean executable hash, changed scripts,
+unsafe external navigation rows, changed committed combat data and changed catalog
+identity, while coordinator cleanup publication and all prior graphical/disposal
+consumers remain covered. Test-log SHA-256:
+`333737ebdd2d0a70d45893b7567d17f7237b1fc08413f0ae4322f3e52709b46a`.
+Artifacts: `client-environment-identities-clean-{source.json,python.log}`.
+
+One initial positive synthetic assertion still expected one tracked source file
+after adding three committed combat-data identities; correcting that expectation
+produced the clean aggregate without weakening production policy. Retained failure
+artifact SHA-256:
+`505598d2f79a6257250d62f47ee1a1b6f43b3d865df7bec2912324d3d4d86b41`.
+
+Historical `client-development-live-004` contains one private environment
+manifest but its result predates the required exact path/hash receipt, so current
+policy rejects rather than upgrades it. Read-only rejection artifact SHA-256:
+`171705fe82e554a7f5387db0519efc0a0a8c5f006ee4cf8de02762a402ddcbff`.
+
+No preparation, service, account, worker, client, Sandbox, gameplay, screenshot,
+remote or disposal operation ran. A fresh current manually attended run remains
+required; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -3468,7 +3513,7 @@ a nearby passing test does not close them.
 | Independent scenarios and no cached reset | each case creates/removes its owned environment; world is stopped before preserved-DB restart | Verified |
 | Observation hierarchy | acting-client messages, independent observers, reconnect/restart and diagnostic-only DB checks are separated in scenarios/artifacts | Verified |
 | Monotonic waits and application readiness | condition/event waits; world binds only after data/territory/script setup and clients require received world-ready | Verified |
-| Record build/script/fixture/protocol/data/nav identities | gate manifest and summary hashes; current graphical policy additionally binds exact prepared source-manifest bytes/revision and rehashes every staged `input/` file through strict preparation/guest-result evidence; external read-only mappings and game assets remain separately identified/private | Verified; hashes identify inputs but do not prove compatibility, signatures, or native build provenance |
+| Record build/script/fixture/protocol/data/nav identities | gate manifest and summary hashes; current graphical policy additionally binds exact prepared source-manifest bytes/revision, rehashes every staged `input/` file, and strictly consumes the isolated environment's server/worker/script/catalog/committed-combat identities plus its recorded external-navigation digest map; external read-only mappings and game assets remain separately identified/private | Verified for exact staged/environment identities; hashes do not prove external-root completeness, compatibility, signatures, or native build provenance |
 | Step/run timeout and failure cleanup | worker, action, pytest/workload budgets; cleanup-fault matrix and `cleanup_verified` gate | Verified for tested failure modes; host-kill behavior remains infrastructure-owned |
 | No ambiguous retry of gameplay mutations | timeout marks worker failed; no automatic gameplay retry; receipts are not mutation proof | Verified |
 | Regression versus recovery behavior | strict gate rejects process loss/skips; reconnect occurs only in explicitly authored scenarios/plans | Verified |
