@@ -12,6 +12,57 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Provisioning receipt association and reset-source boundary
+
+Feature `ece249544` adds `support/development_binding.py`: successful provisioning
+receipts bind configured API/lobby endpoints, optional managed-host session,
+ordered case-folded account names and received character/entity IDs using a
+versioned canonical digest. Passwords/authentication tokens/server secrets are
+excluded; worker/catalog/password changes do not select another account and keep
+their independent validation. The placement planner now requires saved credentials,
+clean completed provisioning and an exact receipt association. It rejects mixed
+profiles, edited identities and missing/legacy bindings without synthesizing
+approval. The seven-field server registry schema and server behavior are unchanged.
+
+**Limits:** this prevents accidental artifact mismatches, not intentional editing
+of both files. It is neither a signature nor current authentication, deployed
+server identity, offline proof, cross-host exclusion, or reset permission.
+Historical provisioning/placement artifacts remain historical evidence; their
+old receipts are not retroactively upgraded into current planner approvals.
+
+**Verification:** 81 focused provisioning/placement/host/binding contracts passed
+in **1.07s**; 15 binding contracts passed in **0.33s** from the committed archive.
+No native code changed or new native build was needed. Artifacts:
+`.e2e-artifacts/development-binding-{focused-timings-1,clean-timings}.json`.
+
+One fresh bounded owned-runtime check in
+`.e2e-artifacts/development-binding-live-001` exercised the normal provisioner CLI
+and offline registry CLI. Startup **18.953s**, provisioning **11.750s**, total with
+planning/negative checks/cleanup **31.625s**. Both new non-GM characters received
+territory 182, exact identities and normal server logout closure. The emitted
+association matched the saved profile and the planner retained the exact received
+IDs. Changed endpoint, account name, identity and missing legacy association were
+rejected offline. Bot leases released, worker closed and owned cleanup completed;
+only pre-existing MySQL PID 7764 remained. The controller is `ece249544`, with the
+unchanged clean Tell worker/backend hashes recorded in the summary. No placement,
+reset, graphical client, gameplay scenario or full gate was executed here.
+
+`inspected-evidence.json` hashes the exact driver, summaries, journals and planner
+log. Aggregate SHA-256:
+`fdb315c58dd5dd09c0c6506e711b60535c41097730a12b51655e73b5a182baf6`.
+Credentials, registry, runtimes and raw artifacts remain untracked.
+
+**The reset gap remains open.** `research/development-reset-boundary.md` maps the
+inspected lobby/API deletion chain, session unload ordering and BNPC combat-owner
+lifecycle to missing shared-reset prerequisites. Historical logout is not an
+exclusive fence; combat owner is not durable fixture ownership. No destructive
+live probe, DB-under-cache shortcut, or reset wrapper was added. A future reset
+needs explicit registered ownership, appropriate atomic session/world-thread
+coordination, defined partial-outcome handling and independently observed
+postconditions. This source-suitability review is not a general security verdict.
+All existing graphical/platform/CI/acceptance and broader reprovision/reset gaps
+remain pending.
+
 ## Short visible-peer Tell check (not general messaging/graphical acceptance)
 
 Feature `987b59443` adds optional `run_development.py --verify-tell` and
