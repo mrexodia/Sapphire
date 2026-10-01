@@ -8,11 +8,14 @@ from types import SimpleNamespace
 import pytest
 
 from . import run_development
+from .inspect_development_profile import main as inspect_profile_main
 from .inspect_development_result import main as inspect_development_main
 from .support.development import (AccountLease, DevelopmentError, NoRedirect, Timings,
                                   authenticate, idle_state, movement_route, validate_profile, witnessed)
 from .support.timing import PhaseTiming
 from .support.environment import artifact_tree_sha256
+from .support.development_profile_result import (
+    SCOPE as DEVELOPMENT_PROFILE_SCOPE, inspect_development_profile_result)
 from .support.development_result import (SCOPE as DEVELOPMENT_RESULT_SCOPE,
                                          inspect_development_result)
 
@@ -161,6 +164,37 @@ def test_external_shared_result_inspector_is_strict_sanitized_and_read_only(
     assert "private-one" not in rendered and str(tmp_path) not in rendered
     assert inspect_development_main(["--summary",str(summary)]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+    profile_path = tmp_path / "profile.json"; profile_path.write_text(json.dumps(profile))
+    profile_proof = inspect_development_profile_result(summary, profile_path)
+    assert profile_proof["scope"] == DEVELOPMENT_PROFILE_SCOPE
+    assert profile_proof["received_identities"] == report["received_identities"]
+    rendered_profile = json.dumps(profile_proof)
+    assert "private-one" not in rendered_profile and "private-two" not in rendered_profile
+    assert inspect_profile_main(["--summary",str(summary),"--profile",str(profile_path)]) == 0
+    assert json.loads(capsys.readouterr().out) == profile_proof
+
+
+@pytest.mark.parametrize("mutation", ["profile","binding","identity","hardlink"])
+def test_external_profile_result_rejects_foreign_or_aliased_association(
+        profile, tmp_path, mutation):
+    execute(profile, tmp_path, cycles=1, max_seconds=60)
+    summary = tmp_path / "run/development-summary.json"
+    profile_path = tmp_path / "profile.json"; profile_path.write_text(json.dumps(profile))
+    if mutation == "profile":
+        changed=copy.deepcopy(profile);changed["accounts"][0]["character"]="Foreign Character"
+        profile_path.write_text(json.dumps(changed))
+    elif mutation == "binding":
+        report=json.loads(summary.read_text())
+        report["development_profile_binding"]["sha256"]="0" * 64
+        summary.write_text(json.dumps(report))
+    elif mutation == "identity":
+        report=json.loads(summary.read_text())
+        report["received_identities"][0]["character_id"] += 1
+        summary.write_text(json.dumps(report))
+    else:
+        os.link(profile_path, tmp_path / "profile-alias.json")
+    with pytest.raises(DevelopmentError):
+        inspect_development_profile_result(summary, profile_path)
 
 
 def test_external_shared_result_inspector_accepts_base_received_say(

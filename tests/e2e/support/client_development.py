@@ -16,6 +16,7 @@ from .development_tell import SCOPE as TELL_SCOPE
 from .development_party import EMPTY_PARTY, SCOPE as PARTY_SCOPE
 from .development_decline import SCOPE as DECLINE_SCOPE
 from .development_placement import require_placement_receipt
+from .development_binding import require_development_run_binding
 
 
 def development_run_budget(activity_deadline):
@@ -632,6 +633,7 @@ def require_shared_runner_metadata(result, *, catalog_required,
     if (result['administrative_preparation_wait_enabled'] is False
             and result.get('placement_verification') != {'requested':False,'verified':False}):
         raise DevelopmentError('unrequested administrative placement evidence is retained')
+    require_development_run_binding(result)
     return worker_hash
 
 

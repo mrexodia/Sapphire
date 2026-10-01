@@ -148,6 +148,11 @@ def completed():
             'administrative_command_execution_attested':False,'protocol':'sapphire-3.3',
             'worker_sha256':'d'*64,'lease_retained':False,
             'entities':[1,2],'territory':130,'run_id':run_id,'cycles':1,
+            'received_identities':[
+                {'slot':0,'name':'bot mover','entity_id':1,'character_id':11},
+                {'slot':1,'name':'bot witness','entity_id':2,'character_id':12}],
+            'development_profile_binding':{
+                'schema':'development-run-profile-association-v1','sha256':'e'*64},
             'catalog_sha256':'c'*64,
             'worker_closed':True,
             'worker_exit':{'scope':'owned-native-worker-exit-not-server-session-closure',

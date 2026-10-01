@@ -21,6 +21,7 @@ from .support.development_worker_exit import ObservedWorker
 from .support.development_lease import terminal_account_lease_snapshot
 from .support.development_artifact import (RUN_SCOPE, bind_worker_artifacts,
                                            initialize_worker_artifacts)
+from .support.development_binding import development_run_binding
 from .support.development_reconnect import verify_position_reconnect
 from .support.development_party import require_bound_party_worker, verify_two_bot_party
 from .support.development_viewer import VIEWER_SCOPE, validate_viewer_name, viewer_checkpoint
@@ -100,6 +101,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                   "verified":False,"start":host_start,"finish":None,
                   "same_binding_verified":False},
               "protocol": profile["protocol"], "territory": profile["territory"],
+              "received_identities":[],"development_profile_binding":None,
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
               "catalog_sha256": catalog_hash, "movement_waypoints_per_cycle": len(route),
               "lease_retained": False, "worker_closed": False,
@@ -148,6 +150,14 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                         initial_territory = state.get("territory") if await_placement else profile["territory"]
                         if (await_placement and initial_territory not in {130, 182}) or not idle_state(state, initial_territory):
                             raise DevelopmentError("bot is not idle in the expected territory")
+                received_identities = []
+                for index, (state, account) in enumerate(zip(states, profile["accounts"])):
+                    identity = received_character_identity(state, account["character"])
+                    received_identities.append({"slot":index,"name":identity["name"],
+                        "entity_id":identity["entity_id"],"character_id":identity["character_id"]})
+                report["received_identities"] = received_identities
+                report["development_profile_binding"] = development_run_binding(
+                    profile, received_identities)
                 if await_placement:
                     for index, (state, account, target) in enumerate(zip(
                             states, profile["accounts"], placement["targets"])):

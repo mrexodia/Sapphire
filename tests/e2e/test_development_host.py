@@ -191,6 +191,11 @@ def managed_summary(path, receipt, worker_sha256):
     report = {"version":1,"run_id":"b" * 32,"status":"passed",
         "scope":"shared-development-not-acceptance","protocol":"sapphire-3.3",
         "cycles":1,"entities":[1,2],"territory":130,"catalog_sha256":"d" * 64,
+        "received_identities":[
+            {"slot":0,"name":"Tester AAAAAAAAAAAA","entity_id":1,"character_id":11},
+            {"slot":1,"name":"Tester BBBBBBBBBBBB","entity_id":2,"character_id":12}],
+        "development_profile_binding":{
+            "schema":"development-run-profile-association-v1","sha256":"e" * 64},
         "say_verification":say,
         "movement_waypoints_per_cycle":2,"movement_verification":movement,
         "party_verification":{"requested":False,"verified":False},

@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 
 from .development import DevelopmentError, movement_route
+from .development_binding import require_development_run_binding
 from .development_placement import load_placement_registry
 from .development_result import validate_development_evidence
 from .managed_provisioning_result import validate_provisioning_evidence
@@ -22,6 +23,7 @@ def inspect_development_placement_chain(profile_path, provisioning_summary,
     registry = load_placement_registry(registry_path, profile, catalog_sha256, route)
     development = validate_development_evidence(development_summary)
     run_report = development["report"]
+    require_development_run_binding(run_report, profile)
     placement = run_report.get("placement_verification")
     if (run_report.get("administrative_preparation_wait_enabled") is not True
             or not isinstance(placement, dict) or placement.get("verified") is not True):
