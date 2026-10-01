@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from .support import client_disposal as policy
+from .support.client_smoke import CLIENT_SHA256
 from .support.development import DevelopmentError
 
 
@@ -22,8 +23,18 @@ def prepared_root(tmp_path, monkeypatch):
     root = tmp_path / ".e2e-artifacts/run"
     (root / "output").mkdir(parents=True)
     config = root / "run.wsb"; config.write_text("<Configuration />", encoding="utf-8")
-    write(root / "inputs.json", {"status":"prepared_not_executed",
-        "config_sha256":hashlib.sha256(config.read_bytes()).hexdigest()})
+    source = {"version":1,
+        "scope":"committed-coordinator-source-not-native-build-attestation",
+        "revision":"1" * 40,"dirty":False,
+        "sha256":{"tests/e2e/synthetic.py":"a" * 64},"gitlinks":[],
+        "submodule_fetch_performed":False,"remote_configured":False}
+    source_path = root / "input/source.json"; write(source_path, source)
+    source_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
+    write(root / "inputs.json", {"version":1,"status":"prepared_not_executed",
+        "client_sha256":CLIENT_SHA256,
+        "config_sha256":hashlib.sha256(config.read_bytes()).hexdigest(),
+        "source_revision":"1" * 40,"source_manifest_sha256":source_hash,
+        "working_tree_changes_included":False,"inputs":{"source.json":source_hash}})
     write(root / "output/result.json", {"run":"a"*32,"status":"passed"})
     executable = tmp_path / "WindowsSandbox.exe"; executable.write_bytes(b"synthetic")
     return root, executable
@@ -69,6 +80,27 @@ def test_exact_prepared_launch_absence_and_manual_confirmation(tmp_path, monkeyp
         "run":"a"*32,"launcher_pid":77,"launcher_returncode":0,
         "result_sha256":hashlib.sha256((root / "output/result.json").read_bytes()).hexdigest(),
         "operator_confirmation":True,"sandbox_disposal_verified":True}
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda root: json_file(root / "inputs.json", lambda value:
+        value.update(source_manifest_sha256="0" * 64)),
+    lambda root: json_file(root / "inputs.json", lambda value:
+        value["inputs"].update({"../source.json":"0" * 64})),
+    lambda root: json_file(root / "input/source.json", lambda value:
+        value.update(remote_configured=True)),
+    lambda root: json_file(root / "input/source.json", lambda value:
+        value["gitlinks"].append({"path":"deps/example","revision":True,
+                                  "materialized":False})),
+])
+def test_prepared_source_mismatch_fails_before_sandbox_launch(tmp_path, monkeypatch, mutation):
+    root, executable = prepared_root(tmp_path, monkeypatch)
+    mutation(root)
+    called = []
+    with pytest.raises(DevelopmentError):
+        policy.run_prepared_sandbox(root, 60, snapshot=lambda:[],
+            launch=lambda args:called.append(args), executable=executable)
+    assert called == [] and not (root / "sandbox-session.json").exists()
 
 
 def test_preexisting_sandbox_fails_before_launch_or_publication(tmp_path, monkeypatch):

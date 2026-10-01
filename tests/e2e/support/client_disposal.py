@@ -15,6 +15,7 @@ import subprocess
 import time
 import uuid
 
+from .client_provenance import require_prepared_source
 from .development import DevelopmentError
 from .environment import REPO
 
@@ -87,6 +88,7 @@ def _prepared(prepared):
     if (manifest.get("status") != "prepared_not_executed"
             or manifest.get("config_sha256") != _sha256(config)):
         raise DevelopmentError("prepared Sandbox manifest/config binding is invalid")
+    require_prepared_source(prepared, manifest.get("source_revision"))
     return prepared, config, inputs
 
 

@@ -546,8 +546,11 @@ host-visible evidence read-only before disposal. Launch current owned guests thr
 `python -m tests.e2e.run_client_sandbox launch --prepared <prepared>`; after
 manually confirming the exact owned discard dialog, use `approve-disposal` and
 `python -m tests.e2e.inspect_client_sandbox_disposal --prepared <prepared>` to
-bind the current result to exact launcher/process-absence evidence. This does not
-prove server-side exclusion. Exact artifacts and limitations are in the
+bind the current result to exact launcher/process-absence evidence. Both current
+inspectors also require the result, strict `inputs.json`, and exact private
+`input/source.json` bytes to agree on the committed coordinator revision and
+manifest SHA-256; this is source identity, not native-build attestation or a
+signature. This does not prove server-side exclusion. Exact artifacts and limitations are in the
 implementation audit.
 
 ### Optional owned two-bot party check

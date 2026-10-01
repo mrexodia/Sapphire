@@ -13,6 +13,7 @@ from pathlib import Path, PurePosixPath
 
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
+from .client_provenance import require_prepared_source
 from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                            LOGOUT_CAPTURE_SCOPE, other_player,
                            real_logout_baseline, real_movement_baseline,
@@ -290,6 +291,7 @@ def inspect_client_development_result(output, expected_source_revision):
                                            report.get("real_entity"))
     if (not _hex(expected_source_revision, 40)
             or report.get("source_revision") != expected_source_revision
+            or not _hex(report.get("source_manifest_sha256"), 64)
             or type(report.get("version")) is not int or report["version"] != 1
             or report.get("status") != "passed"
             or report.get("scope") != "manual-real-client-login-movement-say-logout"
@@ -301,6 +303,8 @@ def inspect_client_development_result(output, expected_source_revision):
             or report.get("sandbox_disposal") != "operator_required"
             or report.get("runtime_removed") is not True):
         raise DevelopmentError("graphical result is not a current successful pre-disposal result")
+    prepared_source = require_prepared_source(
+        output.parent, expected_source_revision, report.get("source_manifest_sha256"))
     fixture = report.get("fixture")
     if (not isinstance(fixture, dict)
             or set(fixture) != {"position", "territory", "catalog_sha256",
@@ -415,6 +419,7 @@ def inspect_client_development_result(output, expected_source_revision):
 
     return {"version": 1, "status": "accepted", "scope": RESULT_SCOPE,
             "run": run_id, "source_revision": expected_source_revision,
+            "source_manifest": prepared_source,
             "result_sha256": _sha256(result_path),
             "development_summary_sha256": main_hash,
             "decline_summary_sha256": decline_hash,
