@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from . import provision_development
+from . import prepare_development, provision_development
 from .inspect_development_provisioning import main as inspect_provisioning_main
 from .support import development_artifact
 from .support.development import DevelopmentError, create_account
@@ -110,6 +110,29 @@ def test_external_provisioning_inspector_is_strict_sanitized_and_read_only(
     assert inspect_provisioning_main(
         ["--summary",str(summary),"--profile",str(profile_path)]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+
+
+def test_placement_planner_cli_requires_current_complete_provisioning_evidence(
+        server, tmp_path, monkeypatch):
+    execute(server, tmp_path, max_seconds=60)
+    profile_path = tmp_path / "private.json"
+    summary = tmp_path / "artifacts/provisioning-summary.json"
+    registry = tmp_path / "registry.json"
+    monkeypatch.setattr(prepare_development, "movement_route",
+                        lambda _: ([[0,0,0],[1,0,0]], "a" * 64))
+    args = ["--profile",str(profile_path),"--provisioning-report",str(summary),
+            "--registry",str(registry),"--approve-fixture-placement"]
+    assert prepare_development.main(args) == 0
+    value = json.loads(registry.read_text())
+    report = json.loads(summary.read_text())
+    assert value["provisioning_run_id"] == report["run_id"]
+    assert value["bots"] == [{"name":row["character"],"entity_id":row["entity_id"],
+                              "character_id":row["character_id"]}
+                             for row in report["accounts"]]
+    (tmp_path / "artifacts/worker/foreign.json").write_text("{}")
+    foreign = tmp_path / "foreign-registry.json"
+    args[args.index(str(registry))] = str(foreign)
+    assert prepare_development.main(args) == 1 and not foreign.exists()
 
 
 @pytest.mark.parametrize("mutation", ["status","managed","worker-tree","profile","duplicate"])

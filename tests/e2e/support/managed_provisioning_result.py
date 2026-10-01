@@ -52,12 +52,14 @@ def _hex(value, length):
 
 
 def validate_provisioning_evidence(summary_path, profile_path, *, managed):
-    if type(managed) is not bool:
+    if managed is not None and type(managed) is not bool:
         raise DevelopmentError("provisioning host mode must be explicit")
     summary_path = Path(summary_path).resolve()
     summary_raw, report = _read(summary_path, "summary", 1024 * 1024)
     _, profile = _read(profile_path, "private profile", 64 * 1024)
     validate_profile(profile)
+    if managed is None:
+        managed = profile.get("host_session") is not None
     run_id = report.get("run_id")
     fields = {"version","run_id","status","scope","ready_for_shared_checks",
               "server_identity_verified","server_processes_owned","database_access",

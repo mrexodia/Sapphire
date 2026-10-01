@@ -10,6 +10,7 @@ from .support.development import (DevelopmentError, movement_route, validate_pro
 from .support.development_binding import require_provisioning_binding
 from .support.development_lease import require_clear_terminal_account_leases
 from .provision_development import reserve_private_profile
+from .support.managed_provisioning_result import validate_provisioning_evidence
 
 
 def placement_registry(profile, provisioning):
@@ -64,9 +65,9 @@ def main(argv=None):
     try:
         if not args.approve_fixture_placement:
             raise DevelopmentError("explicit fixture placement approval is required")
-        profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
-        report = json.loads(Path(args.provisioning_report).read_text(encoding="utf-8"))
-        registry = placement_registry(profile, report)
+        evidence = validate_provisioning_evidence(
+            args.provisioning_report, args.profile, managed=None)
+        registry = placement_registry(evidence["profile"], evidence["report"])
         # Same exclusive/private/untracked writer as credential provisioning;
         # the registry includes generated source geometry and must stay private.
         reserve_private_profile(args.registry, registry)

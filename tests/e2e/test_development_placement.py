@@ -126,8 +126,14 @@ def test_registry_requires_unique_bindings(preparation):
         prepare_development.placement_registry(private, report)
 
 
-def test_registry_cli_requires_approval_and_never_overwrites(preparation, tmp_path):
+def test_registry_cli_requires_approval_and_never_overwrites(
+        preparation, tmp_path, monkeypatch):
     private, report = preparation
+    calls = []
+    def validated(report_path, profile_path, *, managed):
+        calls.append((report_path, profile_path, managed))
+        return {"profile":private,"report":report}
+    monkeypatch.setattr(prepare_development, "validate_provisioning_evidence", validated)
     pp, rp, out = [tmp_path / name for name in ("profile.json", "report.json", "registry.json")]
     pp.write_text(json.dumps(private))
     rp.write_text(json.dumps(report))
@@ -137,6 +143,7 @@ def test_registry_cli_requires_approval_and_never_overwrites(preparation, tmp_pa
     original = out.read_bytes()
     assert prepare_development.main([*args, "--approve-fixture-placement"]) == 1
     assert out.read_bytes() == original
+    assert calls == [(str(rp),str(pp),None),(str(rp),str(pp),None)]
 
 
 def test_received_lobby_and_world_identity_must_match():
