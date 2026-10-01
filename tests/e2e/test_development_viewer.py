@@ -160,7 +160,10 @@ def test_end_confirmation_follows_reconnected_bot_instance(profile, tmp_path, mo
         def logout(self, **kwargs): fake.states["witness"]["actors"].pop("1")
         def close(self): pass
     monkeypatch.setattr(run_development, "viewer_checkpoint", check)
-    monkeypatch.setattr(run_development, "verify_position_reconnect", lambda *a: (Replacement(), {"verified": True}))
+    def reconnect(*args, **kwargs):
+        assert kwargs == {"inventory_report": None}
+        return Replacement(), {"verified": True}
+    monkeypatch.setattr(run_development, "verify_position_reconnect", reconnect)
     report, _ = execute(profile, tmp_path, fake, viewer_name=NAME, verify_reconnect=True)
     assert report["status"] == "passed"
     assert calls == [["mover", "witness"], ["mover-reconnected", "witness"]]
