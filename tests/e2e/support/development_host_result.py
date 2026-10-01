@@ -15,6 +15,7 @@ import stat
 from .development import DevelopmentError, require_normal_worker_exit
 from .environment import (SetupError, artifact_tree_sha256,
                           has_cleanup_failure_marker, require_process_teardowns)
+from .development_binding import read_development_account_association
 
 SCOPE = "terminal-owned-warm-host-cleanup-not-external-server-or-offline-proof"
 TEARDOWN_SCOPE = "exact-owned-warm-host-service-teardown-not-server-offline-proof"
@@ -87,7 +88,7 @@ def inspect_owned_development_host(session_dir):
               "api_port", "lobby_port", "world_port", "artifacts", "owned_pids",
               "worker_sha256", "deadline_monotonic", "profiles", "stop_reason",
               "environment_process_teardown", "environment_artifact_tree_sha256",
-              "private_profiles_removed", "elapsed_seconds", "timings"}
+              "account_association", "private_profiles_removed", "elapsed_seconds", "timings"}
     if (set(status) != fields or type(status.get("version")) is not int or status["version"] != 1
             or status.get("kind") != "owned-development-host"
             or not _hex(status.get("session_id"), 32)
@@ -122,6 +123,21 @@ def inspect_owned_development_host(session_dir):
         if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
             raise DevelopmentError("owned-host terminal duration is malformed")
     require_normal_worker_exit({"worker_exit": status.get("worker_preflight_exit")})
+    association_receipt = status.get("account_association")
+    if (not isinstance(association_receipt, dict)
+            or set(association_receipt) != {"relative_path","sha256","passwords_retained"}
+            or association_receipt.get("relative_path") != "account-association.json"
+            or not _hex(association_receipt.get("sha256"), 64)
+            or association_receipt.get("passwords_retained") is not False):
+        raise DevelopmentError("owned-host account association receipt is malformed")
+    association_raw, association = read_development_account_association(
+        session_dir / "account-association.json")
+    expected_session = {"path":str(session_dir / "status.json"),"id":status["session_id"]}
+    if (hashlib.sha256(association_raw).hexdigest() != association_receipt["sha256"]
+            or association.get("host_session") != expected_session
+            or association.get("api_port") != status.get("api_port")
+            or association.get("lobby_port") != status.get("lobby_port")):
+        raise DevelopmentError("owned-host account association differs from session")
 
     receipt = status.get("environment_process_teardown")
     if (not isinstance(receipt, dict)
@@ -197,6 +213,7 @@ def inspect_owned_development_host(session_dir):
             "worker_sha256":status["worker_sha256"],
             "lifecycle_sha256":receipt["sha256"],
             "environment_artifact_tree_sha256":status["environment_artifact_tree_sha256"],
+            "account_association_sha256":association_receipt["sha256"],
             "process_teardown":proof,
             "private_profiles_removed":True,
             "note":"Owned warm-host teardown only; not external-server or offline/reset proof."}

@@ -2,6 +2,7 @@
 import hashlib
 import json
 from pathlib import Path
+import stat
 
 from .development import (DevelopmentError, require_managed_host_binding,
                           validate_profile)
@@ -79,6 +80,31 @@ def validate_development_run_account_association(value):
            for key in ("username","character")):
         raise DevelopmentError("development run account association is ambiguous")
     return value
+
+
+def read_development_account_association(path):
+    def pairs(rows):
+        value = {}
+        for key, item in rows:
+            if key in value:
+                raise DevelopmentError("development account association contains a duplicate JSON key")
+            value[key] = item
+        return value
+    try:
+        path = Path(path)
+        metadata = path.lstat()
+        reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        if (path.is_symlink() or not stat.S_ISREG(metadata.st_mode)
+                or getattr(metadata, "st_file_attributes", 0) & reparse
+                or metadata.st_nlink != 1 or not 0 < metadata.st_size <= 64 * 1024):
+            raise OSError()
+        raw = path.read_bytes()
+        if not 0 < len(raw) <= 64 * 1024:
+            raise OSError()
+        value = json.loads(raw.decode("utf-8"), object_pairs_hook=pairs)
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise DevelopmentError("cannot read private development account association") from error
+    return raw, validate_development_run_account_association(value)
 
 
 def development_run_binding_from_association(association, identities):

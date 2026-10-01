@@ -22,6 +22,8 @@ from .client_development import (INVENTORY_SCOPE, require_decline_receipt,
                                  require_sprint_receipt, require_tell_receipt)
 from .development_host_result import inspect_owned_development_host
 from .development_artifact import RUN_SCOPE, require_worker_artifacts
+from .development_binding import (read_development_account_association,
+                                  require_development_run_binding)
 from .development_lease import require_clear_terminal_account_leases
 from .development_placement import require_placement_receipt
 
@@ -189,6 +191,12 @@ def inspect_managed_development_run(session_dir, summary_path):
             or report.get("lease_snapshot_matches_run_state") is not True):
         raise DevelopmentError("managed development run boundary is not passing or remains mutable")
     worker_artifacts = require_worker_artifacts(summary_path, report, RUN_SCOPE)
+    association_raw, association = read_development_account_association(
+        session_dir / "account-association.json")
+    if hashlib.sha256(association_raw).hexdigest() != host["account_association_sha256"]:
+        raise DevelopmentError("managed account association differs from terminal host")
+    _, profile_binding = require_development_run_binding(
+        report, account_association=association)
     binding = require_managed_host_binding(report.get("managed_host_binding"), True)
     receipt = binding["finish"]
     expected = {"session_id":terminal.get("session_id"),
@@ -216,6 +224,8 @@ def inspect_managed_development_run(session_dir, summary_path):
             "host_session_id":host["session_id"],
             "ready_status_sha256":receipt["status_sha256"],
             "worker_sha256":receipt["worker_sha256"],
+            "development_profile_binding":profile_binding,
+            "account_association_sha256":host["account_association_sha256"],
             "run_deadline":report["run_deadline"],
             "run_worker_exit":report["worker_exit"],"verified_checks":checks,
             "worker_artifacts":worker_artifacts,

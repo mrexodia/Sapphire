@@ -17,6 +17,7 @@ import psutil
 from .provision_development import require_private_output, reserve_private_profile
 from .support.catalog import load_quest_catalog
 from .support.development import DevelopmentError, Timings, validate_profile
+from .support.development_binding import development_run_account_association
 from .support.development_party import require_bound_party_worker
 from .support.environment import (Environment, artifact_tree_sha256,
                                   require_process_teardowns)
@@ -85,6 +86,18 @@ def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Env
         exports = {"bot-profile.json": bots, "server-profile.json": common,
                    "viewer-profile.json": {**common, "role": "separate-viewer", "account": accounts[2]}}
         with timings.phase("private_profile_export"):
+            association_path = session_dir / "account-association.json"
+            association = development_run_account_association(bots)
+            try:
+                reserve_private_profile(association_path, association)
+            except BaseException:
+                if association_path.exists():
+                    report["account_association_export_incomplete"] = True
+                raise
+            report["account_association"] = {
+                "relative_path":"account-association.json",
+                "sha256":hashlib.sha256(association_path.read_bytes()).hexdigest(),
+                "passwords_retained":False}
             for filename, contents in exports.items():
                 path = session_dir / filename
                 try:

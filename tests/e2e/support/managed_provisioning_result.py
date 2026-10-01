@@ -14,7 +14,9 @@ import stat
 
 from .development import (DevelopmentError, require_managed_host_binding,
                           require_normal_worker_exit, validate_profile)
-from .development_binding import require_provisioning_binding
+from .development_binding import (development_run_account_association,
+                                  read_development_account_association,
+                                  require_provisioning_binding)
 from .development_host_result import inspect_owned_development_host
 from .development_artifact import PROVISIONING_SCOPE, require_worker_artifacts
 from .development_lease import require_clear_terminal_account_leases
@@ -154,6 +156,12 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
     report, profile = evidence["report"], evidence["profile"]
     session_dir = Path(session_dir).resolve()
     host = inspect_owned_development_host(session_dir)
+    association_raw, association = read_development_account_association(
+        session_dir / "account-association.json")
+    if (association != development_run_account_association(profile)
+            or hashlib.sha256(association_raw).hexdigest()
+                != host["account_association_sha256"]):
+        raise DevelopmentError("managed provisioning profile differs from host accounts")
     _, terminal = _read(session_dir / "status.json", "terminal host status", 64 * 1024)
     receipt = evidence["binding"]["finish"]
     expected = {"session_id":terminal.get("session_id"),
@@ -177,6 +185,7 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
             "host_session_id":host["session_id"],"ready_status_sha256":receipt["status_sha256"],
             "worker_sha256":receipt["worker_sha256"],"run_deadline":evidence["deadline"],
             "provisioning_binding":report["provisioning_binding"],
+            "account_association_sha256":host["account_association_sha256"],
             "received_identities":[{"slot":row["slot"],"character":row["character"],
                                     "entity_id":row["entity_id"],"character_id":row["character_id"]}
                                    for row in accounts],

@@ -22,7 +22,9 @@ from .support.managed_development_result import (SCOPE as MANAGED_RESULT_SCOPE,
                                                  inspect_managed_development_run)
 from .support.managed_provisioning_result import (SCOPE as MANAGED_PROVISIONING_SCOPE,
                                                   inspect_managed_provisioning)
-from .support.development_binding import provisioning_binding
+from .support.development_binding import (development_run_binding_from_association,
+                                          provisioning_binding,
+                                          read_development_account_association)
 from .support.development_artifact import (PROVISIONING_SCOPE, RUN_SCOPE,
                                             bind_worker_artifacts,
                                             initialize_worker_artifacts)
@@ -148,7 +150,10 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
         "process_count":4,"generations":{"api":1,"database":1,"lobby":1,"world":1}}
     assert env.starts == env.closes == 1 and not env.root.exists()
     assert not list(session.glob("*-profile.json"))
+    association = json.loads((session / "account-association.json").read_text())
+    assert set(association["accounts"][0]) == {"username","character"}
     assert "private-password" not in (session / "status.json").read_text()
+    assert "private-password" not in json.dumps(association)
     assert report["normal_lobby_creation_verified"] is False
     assert report["worker_preflight_exit"] == {
         "context_entered": True, "context_exit_attempted": True, "context_exit_completed": True,
@@ -159,9 +164,10 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
     assert proof["status"] == "accepted" and proof["scope"] == HOST_RESULT_SCOPE
     assert proof["process_teardown"]["process_count"] == 4
     assert proof["environment_artifact_tree_sha256"] == report["environment_artifact_tree_sha256"]
+    assert proof["account_association_sha256"] == report["account_association"]["sha256"]
 
 
-def managed_summary(path, receipt, worker_sha256):
+def managed_summary(path, receipt, worker_sha256, session_dir=None):
     snapshot = {"version":1,
         "scope":"exact-local-account-lease-snapshot-not-server-session-or-offline-proof",
         "state":"clear","expected_lease_count":2,"present_lease_count":0,
@@ -194,8 +200,7 @@ def managed_summary(path, receipt, worker_sha256):
         "received_identities":[
             {"slot":0,"name":"Tester AAAAAAAAAAAA","entity_id":1,"character_id":11},
             {"slot":1,"name":"Tester BBBBBBBBBBBB","entity_id":2,"character_id":12}],
-        "development_profile_binding":{
-            "schema":"development-run-profile-association-v1","sha256":"e" * 64},
+        "development_profile_binding":None,
         "say_verification":say,
         "movement_waypoints_per_cycle":2,"movement_verification":movement,
         "party_verification":{"requested":False,"verified":False},
@@ -223,6 +228,13 @@ def managed_summary(path, receipt, worker_sha256):
             "context_entered":True,"context_exit_attempted":True,
             "context_exit_completed":True,"process_exit_observed":True,
             "process_id":999,"returncode":0}}
+    session_dir = Path(session_dir) if session_dir is not None else path.parent / "session"
+    _, association = read_development_account_association(
+        session_dir / "account-association.json")
+    for identity, account in zip(report["received_identities"], association["accounts"]):
+        identity["name"] = account["character"]
+    report["development_profile_binding"] = development_run_binding_from_association(
+        association, report["received_identities"])
     worker_artifacts = initialize_worker_artifacts(path.parent / "worker", report["run_id"], RUN_SCOPE)
     bind_worker_artifacts(report, worker_artifacts)
     path.write_text(json.dumps(report, indent=2))
@@ -230,7 +242,8 @@ def managed_summary(path, receipt, worker_sha256):
 
 
 def managed_provisioning_summary(path, profile, receipt, worker_sha256):
-    base = managed_summary(path, receipt, worker_sha256)
+    base = managed_summary(path, receipt, worker_sha256,
+                           Path(profile["host_session"]["path"]).parent)
     accounts = []
     for index, account in enumerate(profile["accounts"]):
         accounts.append({"slot":index,"character":account["character"],
@@ -293,6 +306,8 @@ def test_composite_managed_run_inspector_correlates_terminal_host_read_only(
     assert before == after and proof["scope"] == MANAGED_RESULT_SCOPE
     assert proof["host_session_id"] == host_report["session_id"]
     assert proof["worker_artifacts"]["scope"] == RUN_SCOPE
+    assert proof["account_association_sha256"] == host_report["account_association"]["sha256"]
+    assert "e2e_fixture_0" not in json.dumps(proof)
     assert inspect_managed_main(["--session-dir",str(session),"--summary",str(summary)]) == 0
     assert json.loads(capsys.readouterr().out) == proof
 
@@ -340,6 +355,7 @@ def test_composite_managed_run_rejects_changed_worker_artifact_tree(assets, tmp_
     lambda report:report.update(server_processes_owned=True),
     lambda report:report["managed_host_binding"]["finish"].update(owner_pid=True),
     lambda report:report.update(worker_sha256="0" * 64),
+    lambda report:report["development_profile_binding"].update(sha256="0" * 64),
     lambda report:report["worker_exit"].update(returncode=1),
     lambda report:report.update(lease_snapshot_matches_run_state=1),
     lambda report:report["run_deadline"].update(expired=True),
@@ -467,6 +483,8 @@ def test_composite_managed_run_inspector_rejects_terminal_identity_mismatch(
     lambda status:status["owned_pids"].update(world=status["owned_pids"]["api"]),
     lambda status:status["environment_process_teardown"].update(sha256="0" * 64),
     lambda status:status.update(environment_artifact_tree_sha256="0" * 64),
+    lambda status:status["account_association"].update(sha256="0" * 64),
+    lambda status:status["account_association"].update(passwords_retained=True),
     lambda status:status["environment_process_teardown"]["evidence"].update(process_count=True),
     lambda status:status["timings"][0].update(seconds=float("nan")),
     lambda status:status.update(extra=True),
@@ -494,6 +512,25 @@ def test_terminal_host_inspector_rejects_unsafe_status_file(
     else:
         alias = session / "status-alias.json"
         try: os.link(status, alias)
+        except OSError as error: pytest.skip(f"hard links unavailable: {error}")
+    with pytest.raises(DevelopmentError):
+        inspect_owned_development_host(session)
+
+
+@pytest.mark.parametrize("mutation", ["changed","duplicate","hardlink"])
+def test_terminal_host_inspector_rejects_changed_or_aliased_account_association(
+        assets, tmp_path, mutation):
+    _, _, session = run_host(assets, tmp_path)
+    association = session / "account-association.json"
+    if mutation == "changed":
+        value = json.loads(association.read_text())
+        value["accounts"][0]["username"] = "e2e_foreign"
+        association.write_text(json.dumps(value))
+    elif mutation == "duplicate":
+        association.write_text(association.read_text().replace(
+            '{\n  "schema":', '{\n  "schema":"development-run-account-input-v1",\n  "schema":', 1))
+    else:
+        try: os.link(association, session / "association-alias.json")
         except OSError as error: pytest.skip(f"hard links unavailable: {error}")
     with pytest.raises(DevelopmentError):
         inspect_owned_development_host(session)
@@ -650,7 +687,10 @@ def test_changed_private_file_is_not_deleted(assets, tmp_path):
 
 
 def test_partial_export_is_reported_not_silently_removed(assets, tmp_path, monkeypatch):
+    original = serve_development.reserve_private_profile
     def broken(path, value):
+        if Path(path).name == "account-association.json":
+            return original(path, value)
         Path(path).write_text("partial private profile")
         raise OSError("disk error")
     monkeypatch.setattr(serve_development, "reserve_private_profile", broken)
@@ -658,6 +698,20 @@ def test_partial_export_is_reported_not_silently_removed(assets, tmp_path, monke
     assert report["status"] == "failed" and report["cleanup_verified"]
     assert report["profile_export_incomplete"] and not report["private_profiles_removed"]
     assert (session / "bot-profile.json").read_text() == "partial private profile"
+
+
+def test_partial_account_association_is_terminal_failure_evidence(
+        assets, tmp_path, monkeypatch):
+    def broken(path, value):
+        Path(path).write_text("partial account association")
+        raise OSError("disk error")
+    monkeypatch.setattr(serve_development, "reserve_private_profile", broken)
+    report, env, session = run_host(assets, tmp_path)
+    assert report["status"] == "failed" and report["cleanup_verified"]
+    assert report["account_association_export_incomplete"] is True
+    assert (session / "account-association.json").read_text() == "partial account association"
+    with pytest.raises(DevelopmentError):
+        inspect_owned_development_host(session)
 
 
 def test_status_write_failure_does_not_skip_owned_cleanup(assets, tmp_path, monkeypatch):

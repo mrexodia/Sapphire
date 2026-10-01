@@ -27,8 +27,8 @@ from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
 from .development_artifact import RUN_SCOPE, require_worker_artifacts
-from .development_binding import require_development_run_binding
-from .development_profile_result import read_development_account_association
+from .development_binding import (read_development_account_association,
+                                  require_development_run_binding)
 from .environment import (SetupError, artifact_tree_sha256,
                           has_cleanup_failure_marker, require_process_teardowns)
 
