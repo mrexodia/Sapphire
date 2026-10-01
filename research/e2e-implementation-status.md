@@ -1450,6 +1450,60 @@ No service, database, account, worker, graphical client, Sandbox, gameplay or
 disposal operation ran. A fresh current manually attended execution remains
 pending; no full gate, soak or platform sweep ran.
 
+## Graphical bot interaction now requires its own exact reviewed frame
+
+Feature **`510889dfc`** closes a narrower rendering-evidence gap without treating
+headless receipts as pixels. The final route-free decline-run viewer checkpoint
+now invokes one coordinator-only callback after both exact dedicated bots have
+freshly received the shared run/stage-bound finish Say and before either begins
+logout. While those sessions remain active, the guest allows two seconds only for
+drawing and captures `interaction.png`. Delay/file existence is not a rendering
+oracle.
+
+The coordinator then restores its exact independent logout witness and enters a
+new `interaction_review` phase. The operator must inspect the immutable frame for
+both exact dedicated bot names and the exact fresh viewer Say, then explicitly run
+`prepare_client_smoke approve-interaction --reviewed-bot-interaction`. The strict
+ticket binds the outer run, nested decline run, ordered bot names, exact challenge,
+frame SHA-256 and scope
+`final-fresh-viewer-challenge-while-dedicated-bots-active`. Changed images, stale
+or foreign challenges/runs/bot names, wrong phases, malformed types and incomplete
+checks fail closed. Callback/capture failure retains bot leases and cannot publish
+a passing nested result.
+
+The read-only current-result inspector independently rehashes the frame, compares
+ticket names/run/challenge with the strict nested summaries, validates the manual
+receipt, and requires a fresh outer witness snapshot from the review wait. This
+third manual review is separate from the earlier fixture/witness-Say frame and the
+post-logout title-screen frame. It proves only one reviewed co-presence/Say moment;
+it does not prove rendering of prior movement, party, Tell, Sprint, equipment,
+inventory, decline UI, continuous presence, or any server-side exclusion.
+
+Frozen, remote-free source **`510889dfc44099a8549347d0b03cfd0a498857fd`**
+passed **546 tests in 6.04s**. Contracts include callback-before-logout ordering,
+callback-failure lease retention, strict bridge forwarding, exact active-phase
+approval, changed-frame rejection, independent result inspection, and foreign or
+type-confused run/challenge/bot/frame/receipt negatives. Test-log SHA-256:
+`b9d4c6156615777b87f8bd042bd81bf32659000948d19c1f43d64117451af74d`.
+Artifacts: `client-bot-interaction-review-clean-{source.json,python.log}`.
+
+The first focused aggregate correctly failed two positive synthetic fixtures that
+omitted the new `interaction_review` state. Completing those inputs made current
+policy pass without weakening its requirement. Retained failure artifact SHA-256:
+`a42f0e9f1107c18494552bd75b0e3d54b7a529c40a3a70eeee375dd5d09d9636`.
+
+Current policy correctly rejects historical `client-development-live-004`: it has
+none of the interaction phase snapshot, manual interaction receipt, frame, ticket
+or review file. Read-only rejection artifact SHA-256:
+`d03711ec32bf2f43f35824f21b2b7d8d86af7ce5c2ef6611bc5628a8821f0fbd`.
+Its prior fixture/Say and title-screen rendering attestations retain only their
+original narrow historical scopes.
+
+No service, account, worker, client, Sandbox, gameplay, screenshot capture, pixel
+review or disposal operation ran. A fresh current manually attended run must
+produce all three explicit reviews and composite disposal evidence. No full gate,
+soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -3278,7 +3332,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md`; strict workflow/process-policy receipts | Authored repository controls are pinned/read-only/bounded and private dispatch remains protected/serialized in YAML; the last fifteen-case Windows gate passed before exact process-generation receipts were required and the older nine-case Linux gate passed, but current gate execution is pending and the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
-| Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent lane live-verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
+| Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
 ## Explicit plan-to-artifact closure checklist
@@ -3346,7 +3400,7 @@ a nearby passing test does not close them.
 | Public/unprovisioned CI tier | `.github/workflows/test-client.yml` | Authored and locally validated; **hosted run unverified** |
 | Provisioned trusted CI tier | `.github/workflows/gameplay-e2e.yml`, protected-runner contract, Windows/Linux local rehearsals | Authored/local only; **blocked by no registered authorized runner** |
 | Scheduled exploration/soak tier | local workload commands and artifacts | **Partial:** no authorized hosted scheduled execution |
-| Manual/scheduled real-client tier | policy plus completed isolated manual Sandbox lane | Verified once locally; no scheduled breadth |
+| Manual/scheduled real-client tier | strict three-frame-review current policy plus historical completed isolated Sandbox lane | Historical lane verified once locally; current combined bot-interaction review policy and scheduled breadth are unverified |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
 | Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and automatic sanitized exact-lease snapshots in shared runner/provisioner summaries | Verified for implemented paths, including current live producer→planner→runner consumption; lease snapshots do not establish server session state |
 | Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured unexpected-process-exit metadata are retained | **Partial:** one owned-world termination is verified, but platform crash dumps are only retained where externally produced |
