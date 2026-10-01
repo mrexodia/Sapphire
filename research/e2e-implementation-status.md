@@ -130,6 +130,43 @@ progression, normal gameplay, existing-database access, graphical compatibility,
 general reprovisioning/reset or a server-side session fence. No full gate, soak or
 platform sweep ran; overall goal remains incomplete.
 
+## Warm host requires normal native preflight exit before startup
+
+Feature **`6360eae53`** wraps `serve_development.py`'s capability preflight with
+the same exact-owned-process observer. `status.json` starts with an unknown
+`worker_preflight_exit` and retains the sanitized result. The host may start its
+owned environment and prepare three fixtures only after the required bound-party
+capabilities were returned and that exact native process completed context teardown
+with a positive integer PID and return code zero. Constructor failure, unknown,
+boolean or nonzero exit fails in `worker_preflight`; the still-unstarted environment
+is cleaned and no fixture is created. This preflight never authenticates and is
+not a server-session/offline receipt.
+
+Focused host contracts passed **36 tests, 0.76s**. The combined host/worker-exit/
+provisioning/placement/deadline selection passed **186 tests, 1.87s** in the feature
+worktree and **186 tests, 1.88s** from frozen clean `6360eae53`. Negatives cover
+return codes1/-9, unknown and boolean values, constructor failure, unsupported
+capabilities, no server start/fixture creation, sanitized status and owned
+environment cleanup. Artifacts:
+`development-host-worker-exit-{contracts-001,clean-timings,source}.json` and its
+frozen source.
+
+`development-host-worker-exit-native-001` then exercised the committed host order
+with the unchanged native worker `899cfa747`. In a fake environment that starts no
+server and uses no endpoint/account/gameplay action, a normal capabilities-only
+worker exited zero, after which the synthetic environment reached ready/stopped.
+A second exact-owned worker was terminated after capabilities; return code1 was
+recorded, host status stayed failed, environment starts remained0, fixture count0
+and cleanup completed. Both native journals are empty, source integrity passed and
+only pre-existing MySQL7764 remained. Whole two-case control **0.062s**;
+verification-summary SHA-256
+`ae49f8e29982fdd8d3b73629ef0e0b3d78cc1f5ba7d55a2b22b60e88ea0d2e71`.
+
+No actual server or warm-host live scenario was rerun, so this adds pre-start
+lifecycle enforcement rather than gameplay, server cleanup, fixture correctness,
+hosted execution or hard-kill proof. No full gate, soak or platform sweep ran;
+overall goal remains incomplete.
+
 ## Shared CLI cooperative deadline: session success budget
 
 Feature **`5ffe7ad43`** adds `support/development_deadline.py`, focused contracts
