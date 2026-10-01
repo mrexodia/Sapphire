@@ -12,6 +12,67 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Graphical-lane witness retirement: normal server closure required
+
+Feature **`5c4d8fa62`** adds `support/client_lifecycle.py::retire_witness` and
+uses it at both `run_client_smoke.py` witness retirements. The final witness now
+waits for `Bot.logout(wait_server_close=True)` before local close/removal, rather
+than stopping at acknowledgement. Successful retirements are recorded in
+`witness_retirements`; the final `witness_retirement` phase has its own wall time.
+A logout, closure or removal failure propagates without retry and cannot produce
+a passing result. The final activity deadline is checked before and after this
+retirement; bounded in-flight calls/cleanup are not forcibly interrupted.
+`REAL_CLIENT.md` documents the one-receipt ordinary lane and two-receipt
+optional-development lane. Receipts are lifecycle reports, not offline locks or
+fresh-login persistence proof.
+
+Focused contracts: **76 passed / 14 native-dependent skipped, 2.74s**; clean
+committed-source coordinator/contracts: **56 passed, 0.49s**. The new 11 synthetic
+contracts exercise real Python `Bot.logout` wait predicates and operation order,
+acknowledgement/local-close rejection, failures at all five retirement steps,
+no retries, and coordinator terminal failure/cleanup on missing server closure,
+failed removal or expiry before/during retirement. Synthetic setup/UI/review
+objects are explicitly not graphical attestation. Existing unchanged native
+protocol CTest: **1/1 passed, 0.04s total**; no new native build or new native
+lifecycle unit coverage is claimed. Logs:
+`.e2e-artifacts/client-lifecycle-{contracts-001,clean-timings}.json` and
+`client-lifecycle-native-tests.log`.
+
+Bounded **`client-lifecycle-live-001` passed**, using frozen controller
+`5c4d8fa626b37f8b07f310ab825737ee4c829692`, unchanged decline worker `401e93223`
+and unchanged clean placement backend `e665c041f`, with their recorded binary
+hashes checked before startup. This is a headless helper/integration check, not
+a rerun of the graphical rehearsal or shared-development acceptance:
+
+- Two newly prepared pre-connection fixtures entered public130 through ordinary
+  lobby/world sessions as GM0. Witness **Tester AMOMOHMBCO /2097153/
+  18014398526259201** retired in **5.156s**; observer **Tester PHDKHHOKMA /
+  2097154/18014398526259202** independently received its exact spawn/despawn.
+- Raw witness events advance from `logout_ack` sequence122 to
+  `server_logout_complete` sequence128, **5.125s** later, before local close and
+  removal. Observer retirement advances131→137 and takes **5.984s**. Each bot's
+  action journal contains exactly login/logout/close/remove, once each.
+- Observer identity and sampled territory/GM/position/party/invitation state
+  remained equal across witness retirement. This is not all-state invariance,
+  continuous viewer presence or graphical rendering proof.
+- Startup **16.844s**, whole check **29.250s**. Worker closure, owned runtime
+  removal and post-cleanup process inspection passed; only pre-existing MySQL7764
+  remained. No shared account lease, existing database mutation, reset, gameplay
+  mutation, installed-client change or graphical process was involved.
+
+The private `client-lifecycle-live-001/inspect-evidence.py` independently checked
+raw events/actions, identities, ordering, observer snapshots, exact frozen source,
+runtime absence and process snapshot. Retained artifacts include that script,
+`inspected-evidence.json`, `observations.json`, native journals and environment
+`sapphire-e2e-aa4xr0jx`. Verification-summary SHA-256:
+`bcfee1303b6d9cb1ae6862bde187a680c63110f1e55184737ecb40a4b766b5bb`.
+
+**Still pending:** actual graphical execution of this new coordinator version.
+Graphical004's final witness remains acknowledgement/local-close-only evidence;
+this change does not retroactively upgrade it. Safe general reprovisioning/reset,
+existing shared-deployment verification and the broader original acceptance gaps
+remain open. No full gate, soak or platform sweep ran; overall goal is incomplete.
+
 ## Owned-world-actor reset follow-up: lifecycle prerequisites, no reset exposed
 
 Review **`377a523c1`** extends `research/development-reset-boundary.md` with a
