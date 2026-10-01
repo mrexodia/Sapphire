@@ -11,6 +11,7 @@ from . import run_ci
 from .inspect_ci_result import main as inspect_ci_main
 from .inspect_ci_private_evidence import main as inspect_ci_private_main
 from .inspect_ci_failure_result import main as inspect_ci_failure_main
+from .inspect_isolated_fault import main as inspect_isolated_fault_main
 from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
                                 SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
 from .support.ci_private_result import (FAULT_CASE, FAULT_SCOPE,
@@ -18,6 +19,8 @@ from .support.ci_private_result import (FAULT_CASE, FAULT_SCOPE,
                                         inspect_ci_private_evidence)
 from .support.ci_failure_result import (SCOPE as CI_FAILURE_SCOPE,
                                         inspect_ci_failure_result)
+from .support.isolated_fault_result import (SCOPE as ISOLATED_FAULT_SCOPE,
+                                            inspect_isolated_fault)
 from .support.environment import SetupError, artifact_tree_sha256
 
 
@@ -710,6 +713,59 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     assert inspect_ci_private_main(["--summary",str(summary),"--private-run-dir",str(private),
                                     "--expected-revision",revision]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+
+
+def test_standalone_isolated_fault_inspector_is_strict_sanitized_and_read_only(tmp_path, capsys):
+    revision = "a" * 40
+    report = current_public_summary(revision)
+    _, directories = private_gate_evidence(tmp_path, report)
+    artifact = directories[run_ci.CASES.index(FAULT_CASE)]
+    files = [path for path in artifact.rglob("*") if path.is_file()]
+    before = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
+    proof = inspect_isolated_fault(artifact, revision)
+    assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
+    assert proof["scope"] == ISOLATED_FAULT_SCOPE
+    assert proof["exact_world_teardown_correlated"] is True
+    assert proof["private_paths_ports_database_or_pids_disclosed"] is False
+    text = json.dumps(proof)
+    assert str(artifact) not in text and "sapphire_e2e_" not in text
+    assert inspect_isolated_fault_main(
+        ["--artifact-dir",str(artifact),"--expected-revision",revision]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutation", ["classification","world-pid","runtime","proof-hash",
+                                      "revision","foreign-field"])
+def test_standalone_isolated_fault_inspector_rejects_foreign_or_incomplete_evidence(
+        tmp_path, mutation):
+    report = current_public_summary(); _, directories = private_gate_evidence(tmp_path, report)
+    artifact = directories[run_ci.CASES.index(FAULT_CASE)]
+    if mutation == "classification":
+        path = artifact / "process-failure.json"
+        value = json.loads(path.read_text()); value["classification"] = "organic_crash"
+        path.write_text(json.dumps(value))
+    elif mutation == "world-pid":
+        path = artifact / "process-lifecycle.json"
+        value = json.loads(path.read_text())
+        next(row for row in value["teardowns"] if row["process"] == "world")["pid"] += 1
+        path.write_text(json.dumps(value))
+    elif mutation == "runtime":
+        runtime = Path(json.loads((artifact / "manifest.json").read_text())["runtime"])
+        runtime.mkdir(parents=True)
+    elif mutation == "proof-hash":
+        path = artifact / "fault-diagnostics-verification.json"
+        value = json.loads(path.read_text()); value["world_log_sha256"] = "0" * 64
+        path.write_text(json.dumps(value))
+    elif mutation == "revision":
+        path = artifact / "manifest.json"
+        value = json.loads(path.read_text()); value["revision"] = "b" * 40
+        path.write_text(json.dumps(value))
+    else:
+        path = artifact / "process-failure.json"
+        value = json.loads(path.read_text()); value["private_path"] = "C:/private"
+        path.write_text(json.dumps(value))
+    with pytest.raises(SetupError):
+        inspect_isolated_fault(artifact, "a" * 40)
 
 
 @pytest.mark.parametrize("mutation", ["changed-bytes","missing","profile","pytest-log","junit","junit-case","diagnostics","lifecycle","inputs","database","fault-evidence","runtime-retained"])

@@ -193,8 +193,11 @@ separate evidence that its binaries came from the checkout.
   The sixteenth case, `test_live_fault_diagnostics.py`, intentionally terminates
   the exact owned world generation in its own fixture, requires one matching
   lifecycle receipt, then verifies private exit classification, redacted log
-  publication and runtime removal. It is fault-evidence coverage, not gameplay,
-  spontaneous server-crash, crash-dump or hosted cancellation-cleanup proof.
+  publication and runtime removal. Retained standalone evidence can be checked
+  read-only with `python -m tests.e2e.inspect_isolated_fault --artifact-dir
+  <private-artifact-dir> --expected-revision <40-hex>`. This is fault-evidence
+  coverage, not gameplay, spontaneous server-crash, crash-dump or hosted
+  cancellation-cleanup proof.
 
 Latest local evidence: clean revision `39198db88` passed the fifteen-case strict
 gate in 2991.257 seconds with zero skips/errors/failures, exact collection and
