@@ -22,6 +22,7 @@ import uuid
 
 REPO = Path(__file__).resolve().parents[3]
 ISOLATED_FAULT_CLASSIFICATION = "intentional_owned_process_exit"
+HTTP_RECEIPT_SCOPE = "genuine-http-response-metadata-no-request-or-response-content"
 ISOLATED_FAULT_SCOPE = (
     "one intentional termination of the exact owned disposable world process; "
     "proves bounded exit classification, generation-correlated teardown, "
@@ -213,6 +214,7 @@ class Environment:
         self.process_teardowns = []
         self.streams = []
         self._closed = False
+        self.last_api_receipt = None
         self._http = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
     def stage(self):
@@ -385,6 +387,16 @@ class Environment:
         if status != expected:
             raise SetupError(f"{method}: expected HTTP {expected}, received {status}")
         result = json.loads(body) if body else {}
+        self.last_api_receipt = {
+            "version": 1,
+            "scope": HTTP_RECEIPT_SCOPE,
+            "method": method,
+            "expected_status": expected,
+            "received_status": status,
+            "response_bytes": len(body),
+            "response_sha256": hashlib.sha256(body).hexdigest(),
+            "session_returned": isinstance(result, dict) and "sId" in result,
+        }
         if "sId" in result:
             self.redactions.add(result["sId"])
         return result

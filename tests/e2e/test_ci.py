@@ -18,14 +18,18 @@ from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
 from .support.ci_private_result import (FAULT_CASE,
                                         FAULT_CLASSIFICATION as PRIVATE_FAULT_CLASSIFICATION,
                                         FAULT_SCOPE as PRIVATE_FAULT_SCOPE,
+                                        HTTP_RECEIPT_SCOPE as PRIVATE_HTTP_RECEIPT_SCOPE,
                                         SCOPE as CI_PRIVATE_SCOPE,
                                         inspect_ci_private_evidence)
 from .support.ci_failure_result import (SCOPE as CI_FAILURE_SCOPE,
                                         inspect_ci_failure_result)
-from .support.environment import (ISOLATED_FAULT_CLASSIFICATION as PRODUCER_FAULT_CLASSIFICATION,
+from .support.environment import (HTTP_RECEIPT_SCOPE as PRODUCER_HTTP_RECEIPT_SCOPE,
+                                  ISOLATED_FAULT_CLASSIFICATION as PRODUCER_FAULT_CLASSIFICATION,
                                   ISOLATED_FAULT_SCOPE as PRODUCER_FAULT_SCOPE,
                                   SetupError, artifact_tree_sha256)
-from .support.isolated_case_result import (SCOPE as ISOLATED_CASE_SCOPE,
+from .support.isolated_case_result import (HTTP_RECEIPT_SCOPE as STANDALONE_HTTP_RECEIPT_SCOPE,
+                                           REJECTED_CREDENTIALS_CASE,
+                                           SCOPE as ISOLATED_CASE_SCOPE,
                                            inspect_isolated_case)
 from .support.isolated_fault_result import (FAULT_CLASSIFICATION as STANDALONE_FAULT_CLASSIFICATION,
                                             FAULT_SCOPE as STANDALONE_FAULT_SCOPE,
@@ -583,6 +587,11 @@ def private_gate_evidence(tmp_path, report):
         lifecycle_path = directory / "process-lifecycle.json"
         manifest_path.write_text(json.dumps(manifest, indent=2))
         lifecycle_path.write_text(json.dumps(lifecycle, indent=2))
+        if case == REJECTED_CREDENTIALS_CASE:
+            (directory / "rejected-credentials.json").write_text(json.dumps({
+                "version":1,"scope":PRODUCER_HTTP_RECEIPT_SCOPE,"method":"login",
+                "expected_status":400,"received_status":400,"response_bytes":24,
+                "response_sha256":"9" * 64,"session_returned":False}, indent=2))
         if case == FAULT_CASE:
             world = next(row for row in teardowns if row["process"] == "world")
             world_path = directory / "world.log"; world_path.write_text("redacted world fault log\n")
@@ -649,7 +658,9 @@ def test_fault_producer_and_independent_consumers_require_explicit_schema_sync()
     assert PRODUCER_FAULT_CLASSIFICATION == PRIVATE_FAULT_CLASSIFICATION \
         == STANDALONE_FAULT_CLASSIFICATION
     assert PRODUCER_FAULT_SCOPE == PRIVATE_FAULT_SCOPE == STANDALONE_FAULT_SCOPE
-    assert FAULT_CASE in run_ci.CASES
+    assert PRODUCER_HTTP_RECEIPT_SCOPE == PRIVATE_HTTP_RECEIPT_SCOPE \
+        == STANDALONE_HTTP_RECEIPT_SCOPE
+    assert FAULT_CASE in run_ci.CASES and REJECTED_CREDENTIALS_CASE in run_ci.CASES
 
 
 def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp_path, capsys):
@@ -723,6 +734,7 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     assert proof["scope"] == CI_PRIVATE_SCOPE and proof["case_count"] == len(run_ci.CASES)
     assert proof["fault_evidence_verified"] is True
+    assert proof["rejected_credentials_evidence_verified"] is True
     assert proof["runtime_absence_verified"] is True
     assert proof["profile_schema_verified"] is True
     text = json.dumps(proof)
@@ -748,6 +760,7 @@ def test_standalone_isolated_case_inspector_binds_runner_fixture_and_cleanup(tmp
     proof = inspect_isolated_case(artifact, junit, log, case, revision)
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     assert proof["scope"] == ISOLATED_CASE_SCOPE and proof["case"] == case
+    assert proof["sanitized_scenario_receipt_verified"] is True
     assert proof["scenario_semantics_independently_verified"] is False
     assert proof["private_paths_ports_database_or_pids_disclosed"] is False
     text = json.dumps(proof)
@@ -758,7 +771,7 @@ def test_standalone_isolated_case_inspector_binds_runner_fixture_and_cleanup(tmp
 
 
 @pytest.mark.parametrize("mutation", ["foreign-case","junit-case","junit-failure","runtime",
-                                      "lifecycle","revision","missing-log"])
+                                      "lifecycle","revision","http-receipt","missing-log"])
 def test_standalone_isolated_case_inspector_rejects_foreign_or_incomplete_evidence(
         tmp_path, mutation):
     case, artifact, junit, log = standalone_case_files(tmp_path, current_public_summary())
@@ -774,6 +787,9 @@ def test_standalone_isolated_case_inspector_rejects_foreign_or_incomplete_eviden
     elif mutation == "revision":
         path = artifact / "manifest.json"; value = json.loads(path.read_text())
         value["revision"] = "b" * 40; path.write_text(json.dumps(value))
+    elif mutation == "http-receipt":
+        path = artifact / "rejected-credentials.json"; value = json.loads(path.read_text())
+        value["session_returned"] = True; path.write_text(json.dumps(value))
     else: log.unlink()
     with pytest.raises(SetupError):
         inspect_isolated_case(artifact, junit, log, expected, "a" * 40)
@@ -832,7 +848,7 @@ def test_standalone_isolated_fault_inspector_rejects_foreign_or_incomplete_evide
         inspect_isolated_fault(artifact, "a" * 40)
 
 
-@pytest.mark.parametrize("mutation", ["changed-bytes","missing","profile","pytest-log","junit","junit-case","diagnostics","lifecycle","inputs","database","fault-evidence","runtime-retained"])
+@pytest.mark.parametrize("mutation", ["changed-bytes","missing","profile","pytest-log","junit","junit-case","diagnostics","lifecycle","inputs","database","fault-evidence","rejected-receipt","runtime-retained"])
 def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_private_bytes(
         tmp_path, mutation):
     report = current_public_summary(); private, directories = private_gate_evidence(tmp_path, report)
@@ -880,10 +896,15 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
         value = json.loads(path.read_text()); value["scope"] = "forged scope"
         path.write_text(json.dumps(value))
         rehash_private_row(report, target, index)
+    elif mutation == "rejected-receipt":
+        index = run_ci.CASES.index(REJECTED_CREDENTIALS_CASE); target = directories[index]
+        path = target / "rejected-credentials.json"
+        value = json.loads(path.read_text()); value["received_status"] = 200
+        path.write_text(json.dumps(value)); rehash_private_row(report, target, index)
     else:
         runtime = Path(json.loads((target / "manifest.json").read_text())["runtime"])
         runtime.mkdir(parents=True)
-    if mutation in {"lifecycle","inputs","database","fault-evidence"}:
+    if mutation in {"lifecycle","inputs","database","fault-evidence","rejected-receipt"}:
         sync_private_diagnostics(report, private)
     summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report))
     with pytest.raises(SetupError):

@@ -10,6 +10,31 @@ from .support.environment import (Environment, SetupError, allocate_ports,
 from .support.worker import Bot, UnsupportedScene, Worker, WorkerError
 
 
+def test_environment_api_retains_only_sanitized_http_response_metadata():
+    body = b'{"error":"invalid login"}'
+    class Response:
+        status = 400
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def read(self, limit): assert limit == 1024 * 1024; return body
+    class Http:
+        def open(self, request, timeout):
+            assert timeout == 10 and request.full_url.endswith("/login")
+            return Response()
+    env = object.__new__(Environment)
+    env.api_port, env._http, env.redactions, env.last_api_receipt = 1234, Http(), set(), None
+    result = env.api("login", {"username":"private-user","pass":"private-pass"}, expected=400)
+    assert result == {"error":"invalid login"}
+    assert env.last_api_receipt == {
+        "version":1,"scope":"genuine-http-response-metadata-no-request-or-response-content",
+        "method":"login","expected_status":400,"received_status":400,
+        "response_bytes":len(body),
+        "response_sha256":"6e03870c255dfacde1b315ac838f44988bf6e210c77748a5b3c089339c7afa40",
+        "session_returned":False}
+    assert "private-user" not in json.dumps(env.last_api_receipt)
+    assert "private-pass" not in json.dumps(env.last_api_receipt)
+
+
 def test_worker_rejects_unbounded_deadline_scale(tmp_path):
     with pytest.raises(WorkerError, match="deadline scale"):
         Worker(tmp_path / "unused", tmp_path / "artifacts", deadline_scale=4)

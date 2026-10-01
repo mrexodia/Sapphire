@@ -1,14 +1,29 @@
 """Normal-network journeys against disposable servers, never synthetic peers."""
 from concurrent.futures import ThreadPoolExecutor
+import json
 import math
 import pytest
+from .support.environment import HTTP_RECEIPT_SCOPE
 from .support.worker import Bot, WorkerError
 
 pytestmark = pytest.mark.live
 
 
 def test_rejected_credentials(environment):
-    environment.api("login", {"username": "absent_e2e_user", "pass": "invalid"}, expected=400)
+    result = environment.api(
+        "login", {"username": "absent_e2e_user", "pass": "invalid"}, expected=400)
+    receipt = environment.last_api_receipt
+    assert isinstance(result, dict) and "sId" not in result
+    assert receipt == {
+        "version":1,
+        "scope":HTTP_RECEIPT_SCOPE,
+        "method":"login","expected_status":400,"received_status":400,
+        "response_bytes":receipt["response_bytes"],
+        "response_sha256":receipt["response_sha256"],"session_returned":False}
+    assert type(receipt["response_bytes"]) is int and receipt["response_bytes"] >= 0
+    assert len(receipt["response_sha256"]) == 64
+    (environment.artifacts / "rejected-credentials.json").write_text(
+        json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def test_login_idle_logout(environment, live_worker):

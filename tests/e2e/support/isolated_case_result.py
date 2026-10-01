@@ -10,6 +10,8 @@ from .ci_result import EXPECTED_CASES
 from .environment import SetupError, artifact_tree_sha256, require_process_teardowns
 
 SCOPE = "current-standalone-allowlisted-isolated-case-evidence"
+REJECTED_CREDENTIALS_CASE = "tests/e2e/test_live.py::test_rejected_credentials"
+HTTP_RECEIPT_SCOPE = "genuine-http-response-metadata-no-request-or-response-content"
 
 
 def _hex(value, length=64):
@@ -88,6 +90,24 @@ def inspect_isolated_case(artifact_dir, junit_path, pytest_log, expected_case, e
         raise SetupError("standalone isolated lifecycle schema is invalid")
     lifecycle_proof = require_process_teardowns(lifecycle["starts"], lifecycle["teardowns"])
 
+    scenario_receipt_verified = False
+    if expected_case == REJECTED_CREDENTIALS_CASE:
+        _, receipt = _read(root / "rejected-credentials.json", 64 * 1024,
+                           "rejected-credentials receipt")
+        if (set(receipt) != {"version","scope","method","expected_status","received_status",
+                             "response_bytes","response_sha256","session_returned"}
+                or type(receipt.get("version")) is not int or receipt["version"] != 1
+                or receipt.get("scope") != HTTP_RECEIPT_SCOPE or receipt.get("method") != "login"
+                or type(receipt.get("expected_status")) is not int
+                or receipt["expected_status"] != 400
+                or type(receipt.get("received_status")) is not int
+                or receipt["received_status"] != 400
+                or type(receipt.get("response_bytes")) is not int or receipt["response_bytes"] < 0
+                or not _hex(receipt.get("response_sha256"))
+                or receipt.get("session_returned") is not False):
+            raise SetupError("standalone rejected-credentials HTTP receipt is malformed")
+        scenario_receipt_verified = True
+
     try:
         junit = ET.fromstring(junit_raw)
     except ET.ParseError as error:
@@ -110,5 +130,6 @@ def inspect_isolated_case(artifact_dir, junit_path, pytest_log, expected_case, e
             "pytest_log_sha256":hashlib.sha256(pytest_raw).hexdigest(),
             "artifact_tree_sha256":artifact_tree_sha256(root),
             "private_paths_ports_database_or_pids_disclosed":False,
+            "sanitized_scenario_receipt_verified":scenario_receipt_verified,
             "scenario_semantics_independently_verified":False,
             "note":"Exact standalone runner/fixture evidence only; test pass is not independent scenario truth, compatibility, hosted execution or build provenance."}

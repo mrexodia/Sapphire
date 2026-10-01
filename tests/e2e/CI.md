@@ -203,9 +203,12 @@ separate evidence that its binaries came from the checkout.
   --artifact-dir <private-artifact-dir> --junit <private-junit> --pytest-log
   <private-log> --expected-case <exact-allowlisted-node-id> --expected-revision
   <40-hex>`. This proves exact runner identity/outcome, source/fixture identity,
-  service-generation cleanup and runtime absence for only that case. It explicitly
-  does not independently prove the scenario semantics and is not a substitute for
-  the combined gate.
+  service-generation cleanup and runtime absence for only that case. For the
+  rejected-credentials case it additionally requires the sanitized genuine-HTTP
+  receipt: exact login method, expected/received 400 status, response byte/hash
+  identity and no returned session field, without retaining request or response
+  content. It explicitly does not independently prove the scenario semantics and
+  is not a substitute for the combined gate.
 
 Latest local evidence: clean revision `39198db88` passed the fifteen-case strict
 gate in 2991.257 seconds with zero skips/errors/failures, exact collection and

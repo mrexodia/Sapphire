@@ -14,6 +14,8 @@ SCOPE = "current-isolated-public-summary-to-private-per-case-evidence-correlatio
 FAULT_CASE = ("tests/e2e/test_live_fault_diagnostics.py::"
               "test_owned_world_exit_preserves_classification_logs_and_cleanup")
 FAULT_CLASSIFICATION = "intentional_owned_process_exit"
+REJECTED_CREDENTIALS_CASE = "tests/e2e/test_live.py::test_rejected_credentials"
+HTTP_RECEIPT_SCOPE = "genuine-http-response-metadata-no-request-or-response-content"
 FAULT_SCOPE = ("one intentional termination of the exact owned disposable world process; "
                "proves bounded exit classification, generation-correlated teardown, "
                "redacted text-log publication and cleanup, not crash-dump retention, "
@@ -94,6 +96,23 @@ def _verify_fault_evidence(root, manifest_raw, lifecycle_raw, lifecycle):
             or proof.get("secrets_absent_from_published_logs") is not True
             or proof.get("scope") != FAULT_SCOPE):
         raise SetupError("private isolated fault verification is invalid")
+
+
+def _verify_rejected_credentials(root):
+    _, receipt = _read(root / "rejected-credentials.json", 64 * 1024,
+                       "rejected-credentials receipt")
+    if (set(receipt) != {"version","scope","method","expected_status","received_status",
+                         "response_bytes","response_sha256","session_returned"}
+            or type(receipt.get("version")) is not int or receipt["version"] != 1
+            or receipt.get("scope") != HTTP_RECEIPT_SCOPE or receipt.get("method") != "login"
+            or type(receipt.get("expected_status")) is not int or receipt["expected_status"] != 400
+            or type(receipt.get("received_status")) is not int or receipt["received_status"] != 400
+            or type(receipt.get("response_bytes")) is not int or receipt["response_bytes"] < 0
+            or not isinstance(receipt.get("response_sha256"), str)
+            or len(receipt["response_sha256"]) != 64
+            or any(char not in "0123456789abcdef" for char in receipt["response_sha256"])
+            or receipt.get("session_returned") is not False):
+        raise SetupError("private isolated rejected-credentials HTTP receipt is malformed")
 
 
 def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision):
@@ -178,6 +197,8 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
         require_process_teardowns(lifecycle.get("starts"), lifecycle.get("teardowns"))
         if case == FAULT_CASE:
             _verify_fault_evidence(child, manifest_raw, lifecycle_raw, lifecycle)
+        elif case == REJECTED_CREDENTIALS_CASE:
+            _verify_rejected_credentials(child)
         if not inputs_match(public["identities"], manifest, public["revision"],
                             public["source_dirty"], public["deadline_scale"]):
             raise SetupError("private isolated staged source/input identity differs from public summary")
@@ -219,6 +240,7 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
             "profile_schema_verified":True,
             "environment_evidence":rows,
             "process_generations_verified":True,"fault_evidence_verified":True,
+            "rejected_credentials_evidence_verified":True,
             "runtime_absence_verified":True,"staged_inputs_verified":True,
             "private_paths_or_runtime_identities_disclosed":False,
             "note":"Exact private-byte correlation only; hashes do not prove hosted execution, VM disposal or gameplay beyond the gate."}
