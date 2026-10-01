@@ -12,6 +12,119 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Starter-body round trip: fresh-login mutations and nonempty-bag reconnect
+
+Feature **`899cfa747`**, corrected by **`3420ee4d0`**, adds
+`--verify-starter-equipment`, explicitly requiring `--verify-reconnect` and
+`--verify-reconnect-inventory`. `support/development_equipment.py` binds exact
+received identity/class and complete selected containers, body2983/count1 at
+1000:3, empty ordinary bag0:0, and idle nonparty state. `main.cpp` now advertises
+the two existing ordinary equipment methods; no server behavior or wire action
+was changed. Unsupported workers fail before login. Defaults do not acquire
+these inventory operations, and the read-only inventory comparison stays intact.
+
+The corrected scenario explicitly performs **three normal reconnects**:
+
+1. Publish one ordinary unequip, retain its acknowledgement as non-mutation
+   evidence, then close/despawn/re-authenticate as `mover-equipment-unequipped`.
+   Require newly received complete inventory equal to the planned body-to-bag move.
+2. Run the original read-only inventory reconnect as `mover-reconnected`, proving
+   that the now-observed nonempty bag persists through another normal login.
+3. Recheck exact identity/class/unequipped projection, publish one ordinary
+   re-equip, and close/despawn/re-authenticate as `mover-equipment-reequipped`.
+   Require newly received inventory equal to the original selected slot/catalog/
+   count projection. Only this completed observation marks the round trip verified.
+
+Each reconnect checks independent absence/respawn, identity/position and a
+**distinct per-session Say**. Reconnect labels reject aliases/unknown roles before
+logout. Session-local sequence/context values may restart; they are not compared
+across connections. Both operation receipts keep `inventory_change_verified:false`.
+No cache mutation is synthesized from an acknowledgement. Re-equip is a successful
+scenario step, never failure cleanup: failed/uncertain publication, observation,
+class/identity change or reconnect stops without retry or restoration. Evidence
+and leases remain for explicit offline review. Six equipment phases separate
+preparation, acknowledgement and fresh-login observation from reconnect time.
+
+### Retained failed live001 and source-supported correction
+
+`development-equipment-live-001`, controller/worker `899cfa747`, **failed** after
+one unequip request. It received context1073741825/operation8/error0 at sequence124,
+but no current-session inventory update beyond baseline122. The ten-second
+mutation observation failed; runner **10.203s**, whole check **33.469s**. No
+reconnect/re-equip/retry occurred. Its normal bot closure and post-check viewer
+comparison are not established; the separate viewer did log out normally.
+
+Source inspection of `Player::moveItem`, `writeInventory` and `unequipItem` explains
+why in-session inventory projection was unsuitable: containers are written, but
+that move path does not send their contents to the current session. The failure
+does **not** establish that the server failed to mutate inventory. The original
+synthetic model updated the client cache immediately, so its passing contracts
+were not live mutation evidence. The corrected model separates persisted contents
+from deliberately stale current-session caches. Assertions still require the
+complete exact projection, now from a genuine fresh login; the server was not
+modified to accommodate the framework.
+
+The failed owned runtime was removed; process inspection found only pre-existing
+MySQL7764. Its two local failed leases were manually removed **only after** exact
+run-ID, runtime-absence and process checks, recorded in `inspected-failure.json`.
+The failed result remains unchanged. Fresh live002 used new fixtures, not a retry
+against an uncertain character.
+
+### Focused verification and successful live002
+
+Final focused contracts **159 passed, 1.29s**; clean committed-source selection
+**99 passed, 0.92s**. Coverage includes acknowledgements without persisted changes,
+missing closure/ack, changed identity/class/currency, wrong/occupied slots,
+incomplete projections, stale cache separation, three distinct liveness messages,
+invalid contexts/session aliases, late results, retained evidence/leases and no
+failure restoration. Initial/intermediate results are retained separately in
+`development-equipment-contracts-{001,002,003}.json` and clean timing records.
+Existing targeted native rewards contracts **1/1 passed, 0.04s total**; 36 committed
+test-client/reward-test source files were byte-checked before the focused native
+build. This source association is not complete native-build attestation.
+
+**`development-equipment-live-002` passed** via the product CLI. Frozen controller
+`3420ee4d0a48b03e37b48cb2dc4c60d24f067844`; native worker
+`899cfa747abbb7fc8a6bdcbbd71866d325526171`, SHA-256
+`b0400f61813c3ee9c7ae1f1b8bdd945b296d1410628e0bf301d937cc11cd0099`;
+unchanged clean backend `e665c041f` with checked hashes.
+
+- Mover **Tester DPLOPOEFCA /2097153/18014398526259201**, class1/GM0/public130.
+  Initial five starter equipment rows at sequence122; first fresh login118 has
+  body2983/count1 at bag0:0 and no1000:3. Read-only reconnect118 preserves precisely
+  that projection. Final fresh login118 restores all original selected rows.
+  Equal counters across fresh sessions are valid, not reused mutation evidence.
+- Exactly one unequip and one re-equip. Both have context1073741825 in **different
+  native sessions**, not duplicate publication in one session. Raw received
+  container snapshots independently reconstruct bags0–3/equipment1000/Currency2000
+  in all four mover sessions. This adds live nonempty-bag coverage for **one
+  starter-body row**, not arbitrary stacks, item instances or nonzero currency.
+- Independent witness receives each lifecycle and three distinct fresh-login Say
+  messages. Private inventory is proved by the mover's received state, not the
+  witness. Separate headless viewer **Tester IBCDBOCDJE /2097155/
+  18014398526259203** retained its sampled identity/territory/GM/position/party/
+  invitation fields and inventory snapshot; no all-state/continuous-presence claim.
+- Runner **29.453s**, startup **18.328s**, whole check **55.250s**. Both ack phases
+  **0.015s**; final fresh equipment observation **0.016s**. Other inventory phases
+  recorded0.000s at timer resolution, not zero-cost claims. Five normal bot-session
+  closures plus viewer closure, worker/lease/runtime cleanup and OS process
+  inspection passed. Only pre-existing MySQL7764 remained; no existing DB mutation.
+
+Private artifacts: `.e2e-artifacts/development-equipment-{source,inputs}.json`,
+corrected `*-source-002.json`/`*-inputs-002.json`, clean sources, native build/test
+logs and source hashes; live001 retained failure; live002 driver, journals,
+`inspect-evidence.py`, `inspected-evidence.json`, viewer samples and process list;
+environment `sapphire-e2e-ue09d1v4`. CLI summary SHA-256
+`88f4c47f9e4af7198e047fafea3c29a193bc4fd7634a17502178298bbb2c6ae5`;
+aggregate SHA-256
+`c1be3a0bb21b3ef64dc3b0db461b4c0069aa14b0692cbf68c0d5a6489146e9d6`.
+
+No matching graphical equipment/appearance, item-instance/durability, all-character-
+state, world-restart or crash-consistency proof is claimed. Nonzero-currency live
+comparison, existing shared deployment, safe general reprovisioning/owned-world
+reset and broader original requirements remain pending. No full gate, soak or
+platform sweep ran; overall goal is incomplete.
+
 ## Shared-development self-Sprint: independently received effect and zero TP
 
 Feature **`06bc49312`** adds `--verify-sprint` to `run_development.py`, documented
