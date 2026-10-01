@@ -24,6 +24,9 @@ def placement_registry(profile, provisioning):
             or provisioning.get("credential_profile_saved") is not True):
         raise DevelopmentError("a completed clean provisioning report is required")
     require_clear_terminal_account_leases(provisioning)
+    run_id = provisioning.get("run_id")
+    if not isinstance(run_id, str) or not re.fullmatch("[0-9a-f]{32}", run_id):
+        raise DevelopmentError("exact provisioning run identity is required; legacy reports cannot authorize placement")
     require_provisioning_binding(profile, provisioning)
     require_normal_worker_exit(provisioning)
     rows = provisioning.get("accounts", [])
@@ -46,8 +49,9 @@ def placement_registry(profile, provisioning):
     for key in ("entity_id", "character_id", "name"):
         if len({row[key] for row in bindings}) != 2:
             raise DevelopmentError("duplicate bot identity")
-    return {"version": 1, "purpose": "development-bot-placement", "approval_id": uuid.uuid4().hex,
-            "territory": 130, "position": route[0], "catalog_sha256": catalog_hash, "bots": bindings}
+    return {"version": 2, "purpose": "development-bot-placement", "approval_id": uuid.uuid4().hex,
+            "provisioning_run_id": run_id, "territory": 130, "position": route[0],
+            "catalog_sha256": catalog_hash, "bots": bindings}
 
 
 def main(argv=None):

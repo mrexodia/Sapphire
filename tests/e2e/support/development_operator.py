@@ -81,11 +81,13 @@ def request_registered_placement(worker, operator, operator_name, registry, slot
     if approved is not True:
         raise DevelopmentError("explicit administrative placement approval is required")
     if (type(slot) is not int or slot not in (0, 1) or not isinstance(registry, dict)
-            or type(registry.get("version")) is not int or registry["version"] != 1
+            or type(registry.get("version")) is not int or registry["version"] != 2
             or registry.get("purpose") != "development-bot-placement"
             or type(registry.get("territory")) is not int or registry["territory"] != 130
             or not isinstance(registry.get("approval_id"), str)
-            or not re.fullmatch("[0-9a-f]{32}", registry["approval_id"])):
+            or not re.fullmatch("[0-9a-f]{32}", registry["approval_id"])
+            or not isinstance(registry.get("provisioning_run_id"), str)
+            or not re.fullmatch("[0-9a-f]{32}", registry["provisioning_run_id"])):
         raise DevelopmentError("invalid reviewed placement registry/slot")
     bindings = registry.get("bots")
     if not isinstance(bindings, list) or len(bindings) != 2:
@@ -106,6 +108,7 @@ def request_registered_placement(worker, operator, operator_name, registry, slot
            for row in bindings):
         raise DevelopmentError("operator must be separate from both registered targets")
     report = {"scope": "administrative-preparation-not-gameplay", "approval_id": registry["approval_id"],
+              "provisioning_run_id": registry["provisioning_run_id"],
               "slot": slot, "operator": identity, "expected_target": bindings[slot],
               "status": "publication_outcome_unknown", "placement_verified": False,
               "note": "Never retry an uncertain request; require normal-client received-state evidence."}

@@ -20,6 +20,7 @@ namespace Sapphire::World::Development
   struct PlacementRegistry
   {
     std::string approvalId;
+    std::string provisioningRunId;
     std::array< BotBinding, 2 > bots;
     std::array< float, 3 > position;
     std::string catalogHash;
@@ -41,14 +42,16 @@ namespace Sapphire::World::Development
 
   inline PlacementRegistry parsePlacementRegistry( const nlohmann::json& value )
   {
-    if( !value.is_object() || value.size() != 7 || !value.at( "version" ).is_number_integer() ||
-        value.at( "version" ) != 1 || value.at( "purpose" ) != "development-bot-placement" ||
+    if( !value.is_object() || value.size() != 8 || !value.at( "version" ).is_number_integer() ||
+        value.at( "version" ) != 2 || value.at( "purpose" ) != "development-bot-placement" ||
         !value.at( "territory" ).is_number_integer() || value.at( "territory" ) != 130 )
       throw std::runtime_error( "unsupported development placement registry" );
     PlacementRegistry result;
     result.approvalId = value.at( "approval_id" ).get< std::string >();
+    result.provisioningRunId = value.at( "provisioning_run_id" ).get< std::string >();
     result.catalogHash = value.at( "catalog_sha256" ).get< std::string >();
-    if( !lowerHex( result.approvalId, 32 ) || !lowerHex( result.catalogHash, 64 ) )
+    if( !lowerHex( result.approvalId, 32 ) || !lowerHex( result.provisioningRunId, 32 ) ||
+        !lowerHex( result.catalogHash, 64 ) )
       throw std::runtime_error( "invalid development approval identity" );
     const auto& position = value.at( "position" );
     if( !position.is_array() || position.size() != 3 ) throw std::runtime_error( "invalid development destination" );

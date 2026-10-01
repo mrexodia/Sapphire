@@ -17,8 +17,9 @@ def preparation(tmp_path, monkeypatch):
     worker.write_bytes(b"synthetic-worker")
     private = new_profile({"version": 1, "mode": "shared-development", "protocol": "sapphire-3.3",
                            "worker": str(worker), "api_port": 5000, "lobby_port": 54994, "territory": 130})
-    report = {"scope": "shared-development-provisioning-not-gameplay", "status": "provisioned",
-              "lease_retained": False, "worker_closed": True, "credential_profile_saved": True,
+    report = {"scope": "shared-development-provisioning-not-gameplay", "run_id": "c" * 32,
+              "status": "provisioned", "lease_retained": False, "worker_closed": True,
+              "credential_profile_saved": True,
               "worker_exit": {"scope": "owned-native-worker-exit-not-server-session-closure",
                               "context_entered": True, "context_exit_attempted": True,
                               "context_exit_completed": True, "process_exit_observed": True,
@@ -49,7 +50,8 @@ def preparation(tmp_path, monkeypatch):
 def test_registry_binds_exact_observed_characters_and_source_destination(preparation):
     private, report = preparation
     registry = prepare_development.placement_registry(private, report)
-    assert registry["position"] == [1, 2, 3] and registry["territory"] == 130
+    assert registry["version"] == 2 and registry["position"] == [1, 2, 3] and registry["territory"] == 130
+    assert registry["provisioning_run_id"] == report["run_id"]
     assert registry["catalog_sha256"] == "a" * 64 and len(registry["approval_id"]) == 32
     assert [row["character_id"] for row in registry["bots"]] == [100, 101]
     for account in private["accounts"]:
@@ -60,6 +62,7 @@ def test_registry_binds_exact_observed_characters_and_source_destination(prepara
 @pytest.mark.parametrize("patch", [{"status": "failed"}, {"lease_retained": True},
     {"worker_closed": False}, {"worker_exit": None}, {"credential_profile_saved": False},
     {"lease_snapshot": None}, {"lease_snapshot_matches_run_state": False},
+    {"run_id": None}, {"run_id": True}, {"run_id": "C" * 32}, {"run_id": "c" * 31},
     {"scope": "headless-live-not-real-client"}])
 def test_registry_requires_complete_provisioning(preparation, patch):
     private, report = preparation

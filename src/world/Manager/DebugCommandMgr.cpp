@@ -1661,8 +1661,9 @@ void DebugCommandMgr::developmentBot( char* data, Entity::Player& player, std::s
     auto territory = Common::Service< TerritoryMgr >::ref().getTerritoryByTypeId( 130 );
     if( !territory ) throw std::runtime_error( "Public Ul'dah destination is unavailable" );
     m_usedDevelopmentPlacements.insert( key );
-    Logger::info( "DevelopmentBotPlacement requested approval={} slot={} operator={} character={} entity={} source={} destination=130 catalog={}; administrative setup, not gameplay proof",
-      approval, slot, player.getCharacterId(), binding.characterId, binding.entityId, state.territory, registry.catalogHash );
+    Logger::info( "DevelopmentBotPlacement requested approval={} provisioning={} slot={} operator={} character={} entity={} source={} destination=130 catalog={}; administrative setup, not gameplay proof",
+      approval, registry.provisioningRunId, slot, player.getCharacterId(), binding.characterId,
+      binding.entityId, state.territory, registry.catalogHash );
     // This deliberately bypasses the opening as administrative fixture setup.
     // It does not grant EXP/items/quests or reset any other player/world actor.
     target->setCondition( Common::PlayerCondition::BetweenAreas );

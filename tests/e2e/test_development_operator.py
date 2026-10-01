@@ -52,8 +52,8 @@ class OperatorWorker:
 
 @pytest.fixture
 def registry():
-    return {"version": 1, "purpose": "development-bot-placement", "approval_id": "a" * 32, "territory": 130,
-            "bots": [{"name": "Tester " + "A" * 12, "entity_id": 1, "character_id": 100},
+    return {"version": 2, "purpose": "development-bot-placement", "approval_id": "a" * 32,
+            "provisioning_run_id": "b" * 32, "territory": 130, "bots": [{"name": "Tester " + "A" * 12, "entity_id": 1, "character_id": 100},
                      {"name": "Tester " + "B" * 12, "entity_id": 2, "character_id": 200}]}
 
 
@@ -68,6 +68,9 @@ def test_explicit_setup_and_local_only_receipt(tmp_path, registry):
     assert not worker.requests and not list(tmp_path.iterdir())
     result = invoke(worker, registry, tmp_path, approved=True)
     assert not result["placement_verified"] and result["status"] == "local_publication_only"
+    assert result["provisioning_run_id"] == registry["provisioning_run_id"]
+    intent = json.loads(next(tmp_path.glob("*.json")).read_text())
+    assert intent["provisioning_run_id"] == registry["provisioning_run_id"]
     assert worker.requests[0]["expected_operator"] == worker.identity
     assert worker.requests[0]["administrative_setup"] is True
     with pytest.raises(FileExistsError): invoke(worker, registry, tmp_path, approved=True)
@@ -99,6 +102,18 @@ def test_old_worker_and_self_target_rejected(tmp_path, registry):
     registry["bots"][0]["character_id"] = 300
     with pytest.raises(DevelopmentError): invoke(worker, registry, tmp_path, approved=True)
     assert not worker.requests
+
+
+@pytest.mark.parametrize("field,value", [
+    ("version", 1), ("version", True), ("provisioning_run_id", None),
+    ("provisioning_run_id", True), ("provisioning_run_id", "B" * 32),
+    ("provisioning_run_id", "b" * 31)])
+def test_legacy_or_malformed_provisioning_identity_never_dispatches(tmp_path, registry, field, value):
+    registry[field] = value
+    worker = OperatorWorker(tmp_path)
+    with pytest.raises(DevelopmentError):
+        invoke(worker, registry, tmp_path, approved=True)
+    assert not worker.requests and not list(tmp_path.iterdir())
 
 
 @pytest.mark.parametrize("slot", [True, -1, 2, "0"])

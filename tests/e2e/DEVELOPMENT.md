@@ -258,14 +258,17 @@ It does not grant items/levels/quest completion or reset enemies/other players.
    It requires a completed provisioning receipt whose
    `development-provisioning-association-v1` digest matches the configured
    API/lobby endpoint, optional managed-host session, ordered account names and
-   received character/entity IDs. Mixed-profile, edited-identity and legacy
-   receipts without this binding or without exact `clear` terminal lease evidence
-   are rejected; do not synthesize approval for old reports. Passwords,
+   received character/entity IDs. Registry schema v2 also retains the exact
+   lowercase provisioning `run_id`; legacy v1 registries and reports with a
+   missing/malformed run identity fail closed. Mixed-profile, edited-identity and
+   legacy receipts without this binding or without exact `clear` terminal lease
+   evidence are rejected; do not synthesize approval for old reports. Passwords,
    authentication sessions and server secrets are excluded. Worker and
    catalog changes/password rotation do not select another account and retain
    their separate validation. This is accidental-artifact association, **not** a
    signature, current authentication, server fingerprint, offline proof or lock.
-   Check both names, entity IDs, character IDs, catalog hash and position. The
+   Check the provisioning run ID, both names, entity IDs, character IDs, catalog
+   hash and position. The
    registry is an operator-controlled allowlist, **not a cryptographic attestation**;
    protect it against untrusted edits. The server checks its schema/bounds and
    live identities, not navigation provenance. The planner binds the source route.
@@ -303,7 +306,8 @@ execute through the existing world-thread input queue. The warp uses the existin
 WarpMgr path, with BetweenAreas set immediately to prevent overlapping placement.
 An approval/slot is consumed once per server process (maximum 1024 retained keys).
 A queued-warp message is **not success or permission to retry**. Server logs record
-operator, approval, target identities, source and catalog hash, not credentials.
+operator, approval, provisioning run identity, target identities, source and
+catalog hash, not credentials.
 
 The runner waits for received public-world readiness and position, then checks
 both identities/positions independently before normal Say and per-waypoint
