@@ -4969,6 +4969,30 @@ retained action/event journal. It explicitly reports
 `mutation_performed: false` and `rerun_performed: false`. Exact-hash correlation
 is not a signature, content attestation, or causation proof.
 
+### Service-free experiment check (`9044be419` checkpoint)
+
+The two preserved wakeup/filter experiments were then checked without staging or
+changing them. The dirty-source `sapphire_test_client` target rebuilt successfully,
+and all **51** asset-independent `test_worker.py` contracts passed in **4.79s**
+with pytest plugin autoload disabled. A separate in-memory controller probe retained
+128 generic packet/heartbeat diagnostics while allowing only one semantic phase
+event to advance the bot version; the unsatisfied wait issued exactly two snapshots
+(initial and post-semantic), rather than one per generic event. The probe's first
+invocation failed before collection because its repository import path was absent;
+the retained second invocation explicitly set `PYTHONPATH=.` and passed. The first
+failure is not reclassified as evidence.
+
+The private receipt is
+`.e2e-artifacts/linux-control-amplification-isolated-001/receipt.json` (SHA-256
+`fef8c223816e34b0bd5e90929edcc6097c0936e237b4e7e44b28b3853971bc34`). It binds
+the dirty file/diff identities, rebuilt worker (`229058db91ca6b95e020255dfab8834ed048bf62096e8f251265738e1e9036ae`),
+build log, contract log and probe input/output. No service, socket, account or
+gameplay operation ran. This establishes only Python scheduling behavior plus
+build/contract compatibility of the unstaged experiment. It does not execute the
+native filter against real traffic, reproduce Linux timing, establish causation,
+provide clean-source evidence or authorize committing the experiment. A bounded
+live Linux case remains separately authorization-gated.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
