@@ -12,6 +12,67 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Short visible-peer Tell check (not general messaging/graphical acceptance)
+
+Feature `987b59443` adds optional `run_development.py --verify-tell` and
+`support/development_tell.py`. Exactly two messages go between the dedicated
+bots, after optional party disband and before optional reconnect. The distinct
+native `tell_visible` method validates its three typed arguments and current
+idle/non-GM/nonparty state, then requires one unambiguous separate visible
+non-GM player with the exact entity/name. It rejects NPC lookalikes, duplicate
+player names, self/GM targets, transitions/scenes/invites and remote/offline
+fallback, on the Asio thread immediately before ordinary Tell publication.
+Old workers fail capability preflight before authentication.
+
+Both participant identities are rechecked, including received lobby character
+IDs. Each unpredictable message is generated after both baseline snapshots;
+delivery must carry the exact actor/name/character ID/nonparty context and an
+integer token strictly newer than baseline and no newer than the received state.
+Each direction has a ten-second publication/delivery budget; late successful
+waits fail. Publication acknowledgements are never delivery evidence. Failure
+retains leases; there is no retry or automatic party cleanup. The viewer is not
+addressed. Context-filtered action journals retain target/name/message without
+unrelated credential fields.
+
+**Focused verification:** 158 applicable Python contracts passed in **5.92s**;
+24 new Tell/journal contracts passed in **0.65s** from an archived committed
+snapshot. Native protocol CTest passed **1/1**, including ordinary-byte equality
+and 19 rejected visible-send cases. Timing/build artifacts:
+`.e2e-artifacts/development-tell-{focused-timings-1,clean-contract-timings}.json`
+and `development-tell-native-{build,tests}.log`. Combined party/disband/Tell/
+reconnect ordering is contract-tested; the new live check exercised Tell alone
+with required login/Say/logout rather than repeating the other scenarios.
+
+**One bounded product-CLI live check passed:**
+`.e2e-artifacts/development-tell-live-001` used three new pre-connection non-GM
+fixtures in an owned private runtime, not normal provisioning/progression. The
+controller/native feature inputs match `987b59443`, with preserved experiments
+excluded. The worker SHA-256 is
+`b25644e04fa18aa52c9de6e95ee0d43e6a4f62b30dea5d85606994a03ff9105f`;
+backend hashes remain those of the clean linked `e665c041f` placement build.
+`development-tell-inputs.json` records these identities separately.
+
+- Startup **18.016s**, short development check **11.906s**, Tell phase **0.047s**,
+  complete driver including third-client lifecycle and cleanup **37.234s**.
+- Exactly two `tell_visible` publications bind the other dedicated recipient.
+  Exact received journal matches advance witness token **120→122** and mover
+  token **122→124**, including the full sender character IDs.
+- The separate **headless** observer received public Say from both bots. Its
+  recorded lifecycle contains no test Tell, and selected identity/territory/GM
+  rank/position/party/pending-invitation snapshots match. This is bounded observed
+  nonreceipt, not general privacy, continuous-presence or all-state invariance.
+  Its only journaled actions are login/logout/close/remove.
+- All three normal server logout closures were inspected. Bot leases released,
+  workers closed and owned runtime/process cleanup completed. Only pre-existing
+  MySQL PID 7764 remained. Existing DB/client settings/networking were untouched.
+
+`inspected-evidence.json` hashes the exact driver, summaries and bot/observer
+journals and records the two token proofs. Aggregate summary SHA-256:
+`fc2744853744b56ed488df2fd20590d5b938d55b04fb8c5092268de094b978a5`.
+No placement/reset, movement, party, reconnect, graphical launch, full gate,
+expensive soak or platform sweep was run for this live increment. The original
+requirements and broader reprovisioning/reset/deployment gaps remain pending.
+
 ## Registered-bot placement: narrow owned-runtime live verification
 
 Features `ea0d30036`, `0e49ba287` and `a6b2c1143` add a distinct administrative

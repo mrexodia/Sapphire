@@ -304,6 +304,12 @@ The summary records `tell_verification`, both received messages/token ranges and
 `tell_visible_bidirectional` timing. This is narrow visible-peer messaging, not
 remote/offline Tell coverage or a general social/reset test.
 
+A bounded owned-runtime CLI check verified both exact received Tells in 0.047s
+within an 11.906s short check (including normal login/Say/logout). A separate
+headless observer received public Say but no test Tell in its recorded lifecycle.
+This does not establish graphical-client or general privacy coverage. See the
+implementation audit for input hashes, token evidence, cleanup and scope.
+
 ## Run a short check
 
 ```powershell
