@@ -391,6 +391,43 @@ def test_exact_owned_process_stop_records_terminate_and_kill_fallback():
         "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}]
 
 
+def test_close_attempts_all_owned_processes_and_only_observes_uncertain_retry(tmp_path):
+    class Process:
+        def __init__(self, pid, fail=False):
+            self.pid, self.fail, self.returncode, self.calls = pid, fail, None, []
+        def poll(self): return self.returncode
+        def terminate(self):
+            self.calls.append("terminate")
+            if self.fail: raise OSError("synthetic uncertain termination")
+            self.returncode = -15
+        def wait(self, timeout):
+            self.calls.append(("wait", timeout)); return self.returncode
+    database, api, lobby, world = (Process(42), Process(43), Process(44),
+                                   Process(45, fail=True))
+    env = object.__new__(Environment)
+    env.root = tmp_path / "root"; env.runtime = env.root / "runtime"
+    env.runtime.mkdir(parents=True)
+    env.artifacts = tmp_path / "artifacts"; env.artifacts.mkdir()
+    env.redactions, env.streams, env._closed = set(), [], False
+    env.processes = {"database":database,"api":api,"lobby":lobby,"world":world}
+    env._process_metadata = {
+        "database":{"process":"database","generation":1,"pid":42},
+        "api":{"process":"api","generation":1,"pid":43},
+        "lobby":{"process":"lobby","generation":1,"pid":44},
+        "world":{"process":"world","generation":1,"pid":45}}
+    env.process_starts = list(env._process_metadata.values())
+    env.process_teardowns = []
+    with pytest.raises(SetupError, match="cleanup incomplete.*world"):
+        env.close()
+    assert all(process.calls == ["terminate",("wait",10)]
+               for process in (database, api, lobby)) and world.calls == ["terminate"]
+    assert set(env.processes) == {"world"} and env.root.exists() and env._closed is False
+    world.returncode = -1
+    env.close()
+    assert world.calls == ["terminate"] and env.processes == {} and not env.root.exists()
+    assert require_process_teardowns(env.process_starts, env.process_teardowns)["process_count"] == 4
+
+
 def test_owned_world_fault_is_exact_bounded_and_not_repeatable(tmp_path):
     class Process:
         pid = 45

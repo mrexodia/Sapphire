@@ -493,12 +493,26 @@ class Environment:
             f"({receipt['returncode']}); see {self.artifacts}")
 
     def _stop(self, name):
-        process = self.processes.pop(name, None)
-        metadata = self._process_metadata.pop(name, None)
+        process = self.processes.get(name)
+        metadata = self._process_metadata.get(name)
         if process is None:
             return
         if not isinstance(metadata, dict):
             raise SetupError(f"owned process metadata is missing: {name}")
+        prior = next((row for row in self.process_teardowns
+                      if all(row.get(key) == metadata.get(key)
+                             for key in ("process","generation","pid"))
+                      and row.get("exit_observed") is False), None)
+        if prior is not None:
+            # Never issue a second uncertain terminate/kill request. A later close
+            # may only observe that the exact retained process has exited.
+            returncode = process.poll()
+            if type(returncode) is not int:
+                raise SetupError(f"owned process cleanup remains uncertain: {name}")
+            prior.update(exit_observed=True, returncode=returncode)
+            self.processes.pop(name, None)
+            self._process_metadata.pop(name, None)
+            return
         before = process.poll()
         receipt = {**metadata, "was_running_before_cleanup": before is None,
                    "terminate_requested": False, "kill_requested": False,
@@ -519,20 +533,33 @@ class Environment:
                 receipt.update(exit_observed=True, returncode=returncode)
         finally:
             self.process_teardowns.append(receipt)
+        self.processes.pop(name, None)
+        self._process_metadata.pop(name, None)
 
-    def close(self):
-        if self._closed:
-            return
-        for name in reversed(list(self.processes)):
-            self._stop(name)
-        for stream in self.streams:
-            stream.close()
+    def _write_lifecycle(self):
         lifecycle = {"version": 1,
                      "scope": "exact-owned-isolated-process-teardown-not-graceful-server-exit",
                      "starts": getattr(self, "process_starts", []),
                      "teardowns": getattr(self, "process_teardowns", [])}
         (self.artifacts / "process-lifecycle.json").write_text(
             json.dumps(lifecycle, indent=2), encoding="utf-8")
+
+    def close(self):
+        if self._closed:
+            return
+        failures = []
+        for name in reversed(list(self.processes)):
+            try:
+                self._stop(name)
+            except Exception:
+                failures.append(name)
+        self._write_lifecycle()
+        if failures:
+            # Keep streams, logs and runtime for exact retained-process diagnosis.
+            raise SetupError("owned process cleanup incomplete; inspect private lifecycle: "
+                             + ", ".join(failures))
+        for stream in self.streams:
+            stream.close()
         # Only publish redacted text logs, never DB files, game assets or credentials/configs.
         for path in self.runtime.rglob("*.log"):
             text = path.read_text(encoding="utf-8", errors="replace")
