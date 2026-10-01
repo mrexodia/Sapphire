@@ -121,6 +121,40 @@ def inputs_match(identities, manifest):
         return False
 
 
+def isolated_environment_identities(environments, case_environments):
+    """Validate private fixture identities without returning publishable values."""
+    if (set(case_environments) != set(CASES)
+            or len({id(environment) for environment in case_environments.values()}) != len(CASES)
+            or len(environments) != len(CASES)
+            or {id(environment) for environment in environments}
+               != {id(environment) for environment in case_environments.values()}):
+        return False
+    roots, artifacts, databases = set(), set(), set()
+    try:
+        for environment in environments:
+            root, runtime = Path(environment.root).resolve(), Path(environment.runtime).resolve()
+            artifact = Path(environment.artifacts).resolve()
+            database = environment.db_name
+            ports = {"database":environment.db_port,"api":environment.api_port,
+                     "lobby":environment.lobby_port,"world":environment.zone_port}
+            manifest = json.loads((artifact / "manifest.json").read_text(encoding="utf-8"))
+            if (runtime != root / "runtime" or root == artifact
+                    or root in artifact.parents or artifact in root.parents
+                    or not isinstance(database, str) or not database.startswith("sapphire_e2e_")
+                    or len(database) != len("sapphire_e2e_") + 32
+                    or any(char not in "0123456789abcdef" for char in database[len("sapphire_e2e_"):])
+                    or any(type(port) is not int or not 1 <= port <= 65535 for port in ports.values())
+                    or len(set(ports.values())) != 4
+                    or manifest.get("database") != database
+                    or manifest.get("runtime") != str(environment.runtime)
+                    or manifest.get("ports") != ports):
+                return False
+            roots.add(root); artifacts.add(artifact); databases.add(database)
+    except (AttributeError, OSError, UnicodeError, json.JSONDecodeError, TypeError):
+        return False
+    return len(roots) == len(artifacts) == len(databases) == len(CASES)
+
+
 class EvidenceGate:
     def __init__(self):
         self.collected = []
@@ -156,9 +190,8 @@ class EvidenceGate:
                  for case, phases in self.reports.items()}
         collection_ok = len(self.collected) == len(CASES) and set(self.collected) == set(CASES)
         environments = self.environments or ([self.environment] if self.environment is not None else [])
-        environment_isolation_ok = (set(self.case_environments) == set(CASES)
-            and len({id(environment) for environment in self.case_environments.values()}) == len(CASES)
-            and len(environments) == len(CASES))
+        environment_isolation_ok = isolated_environment_identities(
+            environments, self.case_environments)
         process_cleanup_ok = bool(environments)
         for environment in environments:
             try:

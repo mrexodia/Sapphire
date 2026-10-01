@@ -318,15 +318,27 @@ def write_lifecycle(environment):
         "starts":environment.process_starts,"teardowns":environment.process_teardowns}))
 
 
+def write_environment_identity(environment):
+    environment.artifacts.mkdir(parents=True, exist_ok=True)
+    (environment.artifacts / "manifest.json").write_text(json.dumps({
+        "database":environment.db_name,"runtime":str(environment.runtime),
+        "ports":{"database":environment.db_port,"api":environment.api_port,
+                 "lobby":environment.lobby_port,"world":environment.zone_port}}))
+
+
 def complete_gate(tmp_path):
     gate = run_ci.EvidenceGate()
     gate.collected = list(run_ci.CASES)
     for index, case in enumerate(run_ci.CASES):
         starts, teardowns = lifecycle_rows()
-        environment = SimpleNamespace(_closed=True, root=tmp_path / f"removed-{index}", processes={},
-            artifacts=tmp_path / f"process-evidence-{index}", process_starts=starts,
-            process_teardowns=teardowns)
+        root = tmp_path / f"removed-{index}"
+        environment = SimpleNamespace(_closed=True, root=root, runtime=root / "runtime", processes={},
+            artifacts=tmp_path / f"process-evidence-{index}",
+            db_name="sapphire_e2e_" + format(index,"032x"), db_port=10000 + index * 4,
+            api_port=10001 + index * 4, lobby_port=10002 + index * 4,
+            zone_port=10003 + index * 4, process_starts=starts, process_teardowns=teardowns)
         write_lifecycle(environment)
+        write_environment_identity(environment)
         gate.environments.append(environment)
         gate.case_environments[case] = environment
         gate.environment = environment
@@ -366,6 +378,25 @@ def test_report_requires_one_distinct_environment_per_exact_case(tmp_path):
     gate = complete_gate(tmp_path / "missing")
     gate.case_environments.pop(first)
     assert gate.summary(0)["environment_isolation_verified"] is False
+
+
+@pytest.mark.parametrize("mutation", ["root","artifacts","nested","database","runtime","ports","manifest"])
+def test_report_rejects_shared_or_mismatched_private_fixture_identity(tmp_path, mutation):
+    gate = complete_gate(tmp_path)
+    first, second = gate.environments[:2]
+    if mutation == "root": second.root = first.root
+    elif mutation == "artifacts": second.artifacts = first.artifacts
+    elif mutation == "nested": second.artifacts = second.root / "evidence"
+    elif mutation == "database": second.db_name = first.db_name
+    elif mutation == "runtime": second.runtime = second.root / "other"
+    elif mutation == "ports": second.api_port = second.db_port
+    else:
+        manifest = json.loads((second.artifacts / "manifest.json").read_text())
+        manifest["ports"]["world"] += 1
+        (second.artifacts / "manifest.json").write_text(json.dumps(manifest))
+    report = gate.summary(0)
+    assert report["status"] == "failed"
+    assert report["environment_isolation_verified"] is False
 
 
 @pytest.mark.parametrize("mutation", ["skip", "missing", "duplicate", "foreign",
@@ -417,7 +448,10 @@ def test_entry_point_isolates_pytest_options_and_output(profile, tmp_path, monke
         for index, environment in enumerate(gate.environments):
             artifacts = tmp_path / f"staged-evidence-{index}"
             artifacts.mkdir()
-            (artifacts / "manifest.json").write_text(json.dumps(manifest))
+            (artifacts / "manifest.json").write_text(json.dumps({**manifest,
+                "database":environment.db_name,"runtime":str(environment.runtime),
+                "ports":{"database":environment.db_port,"api":environment.api_port,
+                         "lobby":environment.lobby_port,"world":environment.zone_port}}))
             environment.artifacts = artifacts
             write_lifecycle(environment)
         plugins[0].__dict__.update(gate.__dict__)

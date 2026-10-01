@@ -120,11 +120,15 @@ separate evidence that its binaries came from the checkout.
   Inherited pytest selection options and automatic third-party plugins are
   disabled. The gate records the exact fixture object used by each node ID and
   requires exactly fifteen pairwise-distinct environments mapped one-to-one to the
-  exact fifteen cases. Every allowlisted case therefore provisions and removes its
-  own disposable database/API/lobby/world environment, preventing an earlier case's
-  sessions, roaming actors, or teardown backlog from becoming a later case's
-  fixture. The public summary exposes only `environment_isolation_verified`; private
-  object identities remain private. No tests, skipped cases, missing/duplicate phase reports, unexpected tests, failing
+  exact fifteen cases. Private validation additionally requires 15 distinct,
+  non-nested runtime roots and artifact roots, 15 valid randomized database names,
+  four distinct typed ports per fixture, and exact agreement of database/runtime/
+  ports with each retained staged manifest. Every allowlisted case therefore
+  provisions and removes its own disposable database/API/lobby/world environment,
+  preventing an earlier case's sessions, roaming actors, or teardown backlog from
+  becoming a later case's fixture. Sequential fixtures may legitimately reuse a
+  released port, so cross-case port uniqueness is not claimed. The public summary
+  exposes only `environment_isolation_verified`; private identities remain private. No tests, skipped cases, missing/duplicate phase reports, unexpected tests, failing
   setup/call/teardown, nonzero pytest exit, live child processes, missing/foreign/
   type-confused process generations or teardown receipts, or a retained private
   runtime prevent a passing summary. `process_cleanup_verified` requires every
