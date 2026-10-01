@@ -18,6 +18,8 @@ from .inspect_ci_private_evidence import main as inspect_ci_private_main
 from .inspect_ci_failure_result import main as inspect_ci_failure_main
 from .inspect_isolated_fault import main as inspect_isolated_fault_main
 from .inspect_isolated_case import main as inspect_isolated_case_main
+from .inspect_cleanup_failure import main as inspect_cleanup_failure_main
+from .support.cleanup_failure_result import inspect_cleanup_failure
 from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
                                 SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
 from .support.ci_private_result import (FAULT_CASE,
@@ -901,6 +903,94 @@ def test_standalone_isolated_case_inspector_rejects_foreign_or_incomplete_eviden
     else: log.unlink()
     with pytest.raises(SetupError):
         inspect_isolated_case(artifact, junit, log, expected, "a" * 40)
+
+
+def cleanup_failure_files(tmp_path):
+    root = tmp_path / "cleanup-artifact"; root.mkdir()
+    marker = {
+        "version":1,"classification":"owned_process_cleanup_incomplete",
+        "services":["world"],"runtime_retained":True,
+        "retry_policy":"exact-process-poll-only-no-second-termination"}
+    starts = [{"process":name,"generation":1,"pid":pid}
+              for name,pid in zip(("database","api","lobby","world"), range(41,45))]
+    teardowns = []
+    for row in starts:
+        unresolved = row["process"] == "world"
+        teardowns.append({**row,"was_running_before_cleanup":True,
+            "terminate_requested":True,"kill_requested":False,
+            "exit_observed":not unresolved,"returncode":None if unresolved else -15,
+            "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"})
+    lifecycle = {"version":1,
+        "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
+        "starts":starts,"teardowns":teardowns}
+    (root / "cleanup-failure.json").write_text(json.dumps(marker))
+    (root / "process-lifecycle.json").write_text(json.dumps(lifecycle))
+    return root
+
+
+def test_cleanup_failure_inspector_is_terminal_sanitized_and_read_only(tmp_path, capsys):
+    root = cleanup_failure_files(tmp_path)
+    proof = inspect_cleanup_failure(root)
+    assert proof["status"] == "terminal-cleanup-failure"
+    assert proof["services"] == ["world"]
+    assert proof["current_lifecycle_complete"] is False
+    assert proof["current_unresolved_generation_count"] == 1
+    assert proof["success_evidence"] is False
+    rendered = json.dumps(proof)
+    assert str(root) not in rendered and '"pid"' not in rendered
+    lifecycle = json.loads((root / "process-lifecycle.json").read_text())
+    world = next(row for row in lifecycle["teardowns"] if row["process"] == "world")
+    world.update(exit_observed=True, returncode=-1)
+    (root / "process-lifecycle.json").write_text(json.dumps(lifecycle))
+    recovered = inspect_cleanup_failure(root)
+    assert recovered["current_lifecycle_complete"] is True
+    assert recovered["current_unresolved_generation_count"] == 0
+    assert recovered["status"] == "terminal-cleanup-failure"
+    assert inspect_cleanup_failure_main(["--artifact-dir",str(root)]) == 0
+    assert json.loads(capsys.readouterr().out) == recovered
+
+
+def test_cleanup_failure_inspector_accepts_evidence_only_failure_without_lifecycle(tmp_path):
+    root = tmp_path / "cleanup-artifact"; root.mkdir()
+    marker = {"version":1,
+        "classification":"owned_process_cleanup_evidence_incomplete",
+        "services":[],"runtime_retained":True,
+        "retry_policy":"exact-process-poll-only-no-second-termination"}
+    (root / "cleanup-failure.json").write_text(json.dumps(marker))
+    proof = inspect_cleanup_failure(root)
+    assert proof["lifecycle_present"] is False
+    assert proof["current_lifecycle_complete"] is None
+    assert proof["owned_process_generation_count"] == 0
+    assert proof["success_evidence"] is False
+
+
+@pytest.mark.parametrize("mutation", ["classification","services","foreign-service","retry",
+                                      "private-field","duplicate-key","foreign-teardown",
+                                      "undeclared-uncertainty","typed-pid","relative-root"])
+def test_cleanup_failure_inspector_rejects_malformed_or_foreign_evidence(tmp_path, mutation):
+    root = cleanup_failure_files(tmp_path)
+    marker_path = root / "cleanup-failure.json"
+    lifecycle_path = root / "process-lifecycle.json"
+    marker = json.loads(marker_path.read_text())
+    lifecycle = json.loads(lifecycle_path.read_text())
+    supplied = root
+    if mutation == "classification": marker["classification"] = "success"
+    elif mutation == "services": marker["services"] = []
+    elif mutation == "foreign-service": marker["services"] = ["shell"]
+    elif mutation == "retry": marker["retry_policy"] = "terminate-again"
+    elif mutation == "private-field": marker["private_path"] = str(root)
+    elif mutation == "duplicate-key":
+        marker_path.write_text('{"version":1,"version":1}')
+    elif mutation == "foreign-teardown": lifecycle["teardowns"][0]["pid"] += 100
+    elif mutation == "undeclared-uncertainty":
+        lifecycle["teardowns"][0].update(exit_observed=False, returncode=None)
+    elif mutation == "typed-pid": lifecycle["starts"][0]["pid"] = True
+    else: supplied = Path("cleanup-artifact")
+    if mutation not in {"duplicate-key","relative-root"}:
+        marker_path.write_text(json.dumps(marker))
+        lifecycle_path.write_text(json.dumps(lifecycle))
+    with pytest.raises(SetupError):
+        inspect_cleanup_failure(supplied)
 
 
 def test_standalone_isolated_fault_inspector_is_strict_sanitized_and_read_only(tmp_path, capsys):
