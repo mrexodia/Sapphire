@@ -59,7 +59,8 @@ def test_retirement_failure_is_not_retried_or_converted_to_success(failure):
 
 @pytest.mark.parametrize("failure", [None, "server logout connection close", "remove",
                                      "deadline_before_retirement", "deadline_during_retirement",
-                                     "observer_worker_exit", "observer_worker_exit_unknown"])
+                                     "deadline_during_worker_exit", "observer_worker_exit",
+                                     "observer_worker_exit_unknown"])
 def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, monkeypatch, failure):
     # Exercise coordinator control flow with entirely synthetic setup/UI state.
     # No guest is launched, no host registry/files are changed, no review attested.
@@ -118,6 +119,8 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
             return self
         def __exit__(self, *args):
             self.closed = True
+            if failure == "deadline_during_worker_exit":
+                now[0] = 1300.0
             cleanup.append("worker")
         def snapshot(self, bot):
             return next(self.snapshots)
@@ -171,7 +174,8 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     assert report["timing"]["phases"][-2]["phase"] == "witness_retirement"
     if failure:
         assert report["failure_stage"] == ("observer_worker_exit"
-            if failure in {"observer_worker_exit", "observer_worker_exit_unknown"}
+            if failure in {"observer_worker_exit", "observer_worker_exit_unknown",
+                           "deadline_during_worker_exit"}
             else "witness_retirement")
     if failure == "deadline_before_retirement":
         assert retired.calls == []
@@ -180,6 +184,13 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     else:
         assert report["witness_retirements"] == [{"bot": "owned-witness", "server_close_observed": True,
             "native_bot_removed": True, "scope": "normal-witness-session-retirement-not-offline-exclusion"}]
+    deadline_receipt = report["activity_deadline"]
+    assert deadline_receipt["enabled"] is True and deadline_receipt["limit_seconds"] == 1200
+    assert deadline_receipt["scope"] == "cooperative-manual-activity-success-deadline-not-hard-cleanup-limit"
+    assert deadline_receipt["environment_cleanup_may_exceed_deadline"] is True
+    assert deadline_receipt["expired"] is (failure in {
+        "deadline_before_retirement", "deadline_during_retirement", "deadline_during_worker_exit"})
+    assert deadline_receipt["activity_and_worker_exit_completed_within_budget"] is (failure is None)
     receipt = report["observer_worker_exit"]
     assert receipt["context_exit_attempted"] and receipt["context_exit_completed"]
     assert receipt["process_id"] == 12345

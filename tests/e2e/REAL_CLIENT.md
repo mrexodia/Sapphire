@@ -153,12 +153,16 @@ receives an integer cooperative deadline strictly inside the remaining graphical
 activity budget (maximum 900 seconds); bridge success requires both exact enabled,
 unexpired, completed deadline receipts. Older graphical evidence without these
 receipts is not retroactively upgraded. The original witness then authenticates
-afresh to verify the graphical client's ordinary logout. The existing twenty-minute activity budget remains in use: native RPC
-and observation waits are capped by its remainder; late successes fail. The nested
-runner budget is cooperative rather than hard preemption, and its final cleanup
-may exceed that nested success budget while still remaining subject to the outer
-activity/lifecycle checks. Bounded HTTP/fixture calls and cleanup are not forcibly
-interrupted mid-call.
+afresh to verify the graphical client's ordinary logout. The existing twenty-minute
+activity budget remains in use: native RPC and observation waits are capped by its
+remainder; late successes fail. Exact normal final-witness retirement **and the
+outer native observer-worker exit** must complete before the outer deadline. The
+strict `activity_deadline` receipt records limit1200, expiry and completed-within-
+budget status. The nested runner budget is cooperative rather than hard preemption,
+and its final cleanup may exceed that nested success budget while still remaining
+subject to the outer activity/lifecycle checks. Bounded HTTP/fixture calls and
+final client/environment cleanup are not forcibly interrupted mid-call and may run
+after activity success; cleanup failure still changes the overall result to failed.
 
 The development catalog is copied with only `navigation.mesh` localized to an
 exact byte-for-byte mesh copy inside the guest input mapping. The untouched
@@ -229,8 +233,10 @@ are absent, not passing. On completion or failure, `status.json` changes to
    bounded calls and final environment cleanup are not forcibly interrupted.
 6. Inspect `result.json`: require `status=passed`, all received snapshots,
    manual-review receipt, logout marker, `witness_retirements`, a normal
-   `observer_worker_exit` receipt for the exact outer native witness process, and
-   `runtime_removed=true`. A nonzero, unknown or unbound outer-worker exit changes
+   `observer_worker_exit` receipt for the exact outer native witness process, exact
+   `activity_deadline` with `expired=false` and
+   `activity_and_worker_exit_completed_within_budget=true`, and
+   `runtime_removed=true`. A nonzero, unknown, unbound or late outer-worker exit changes
    the terminal result to failed even after successful witness retirement. There
    is one retirement receipt for the ordinary lane;
    with `--development-check` there are two (original witness handoff and final

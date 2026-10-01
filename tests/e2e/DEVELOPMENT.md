@@ -454,7 +454,10 @@ actual wall times, including overrun/unwinding rather than truncating at the lim
 For compatibility, direct Python `run(..., max_seconds=None)` callers retain
 per-step bounds without this aggregate budget; pass an explicit integer to enable
 it. The graphical bridge independently retains its existing twenty-minute
-activity cap. Neither boundary establishes hard-kill/crash-consistent cleanup.
+activity cap, and current policy requires final witness retirement plus exact
+outer observer-worker exit within that cap before emitting a completed activity
+receipt. Final client/environment cleanup remains bounded but may occur afterward.
+Neither boundary establishes hard-kill/crash-consistent cleanup.
 
 ### Native worker exit evidence
 

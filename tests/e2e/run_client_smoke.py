@@ -60,6 +60,7 @@ def run():
               "documents": documents, "sandbox_disposal": "operator_required",
               "witness_retirements": [], "observer_worker_exit": unobserved_worker_exit()}
     env = client = None
+    deadline = None
     timing = ClientPhaseTiming()
     stage = "setup"
     root = Path("C:/e2e-client")
@@ -122,6 +123,11 @@ def run():
                 client = subprocess.Popen(args, cwd=root, stdout=stream, stderr=subprocess.STDOUT)
             report.update(real_name=real["name"], witness_name=witness["name"], client_pid=client.pid)
             deadline = time.monotonic() + 1200
+            report["activity_deadline"] = {
+                "enabled": True, "limit_seconds": 1200, "expired": False,
+                "activity_and_worker_exit_completed_within_budget": False,
+                "scope": "cooperative-manual-activity-success-deadline-not-hard-cleanup-limit",
+                "environment_cleanup_may_exceed_deadline": True}
 
             def phase(name, instruction):
                 nonlocal stage
@@ -253,7 +259,15 @@ def run():
             # The context exit after this line must also observe a normal exact-
             # owned native process exit or the terminal result is changed to failed.
             stage = "observer_worker_exit"
+        # Exact outer-worker exit is part of activity success, not post-success cleanup.
+        if time.monotonic() >= deadline:
+            report["activity_deadline"]["expired"] = True
+            raise TimeoutError("manual activity deadline exceeded during observer worker exit")
+        report["activity_deadline"]["activity_and_worker_exit_completed_within_budget"] = True
     except BaseException as error:
+        if deadline is not None and not report["activity_deadline"][
+                "activity_and_worker_exit_completed_within_budget"]:
+            report["activity_deadline"]["expired"] = time.monotonic() >= deadline
         message = str(error)
         for secret in env.redactions if env else ():
             message = message.replace(secret, "<redacted>")
