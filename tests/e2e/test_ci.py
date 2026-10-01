@@ -12,6 +12,7 @@ from .inspect_ci_result import main as inspect_ci_main
 from .inspect_ci_private_evidence import main as inspect_ci_private_main
 from .inspect_ci_failure_result import main as inspect_ci_failure_main
 from .inspect_isolated_fault import main as inspect_isolated_fault_main
+from .inspect_isolated_case import main as inspect_isolated_case_main
 from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
                                 SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
 from .support.ci_private_result import (FAULT_CASE,
@@ -24,6 +25,8 @@ from .support.ci_failure_result import (SCOPE as CI_FAILURE_SCOPE,
 from .support.environment import (ISOLATED_FAULT_CLASSIFICATION as PRODUCER_FAULT_CLASSIFICATION,
                                   ISOLATED_FAULT_SCOPE as PRODUCER_FAULT_SCOPE,
                                   SetupError, artifact_tree_sha256)
+from .support.isolated_case_result import (SCOPE as ISOLATED_CASE_SCOPE,
+                                           inspect_isolated_case)
 from .support.isolated_fault_result import (FAULT_CLASSIFICATION as STANDALONE_FAULT_CLASSIFICATION,
                                             FAULT_SCOPE as STANDALONE_FAULT_SCOPE,
                                             SCOPE as ISOLATED_FAULT_SCOPE,
@@ -727,6 +730,53 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     assert inspect_ci_private_main(["--summary",str(summary),"--private-run-dir",str(private),
                                     "--expected-revision",revision]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+
+
+def standalone_case_files(tmp_path, report):
+    _, directories = private_gate_evidence(tmp_path, report)
+    case = run_ci.CASES[0]
+    junit = tmp_path / "standalone.xml"; junit.write_text(junit_document([case]))
+    log = tmp_path / "standalone.log"; log.write_text("1 passed\n")
+    return case, directories[0], junit, log
+
+
+def test_standalone_isolated_case_inspector_binds_runner_fixture_and_cleanup(tmp_path, capsys):
+    revision = "a" * 40
+    case, artifact, junit, log = standalone_case_files(tmp_path, current_public_summary(revision))
+    files = [junit,log,*[path for path in artifact.rglob("*") if path.is_file()]]
+    before = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
+    proof = inspect_isolated_case(artifact, junit, log, case, revision)
+    assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
+    assert proof["scope"] == ISOLATED_CASE_SCOPE and proof["case"] == case
+    assert proof["scenario_semantics_independently_verified"] is False
+    assert proof["private_paths_ports_database_or_pids_disclosed"] is False
+    text = json.dumps(proof)
+    assert str(artifact) not in text and "sapphire_e2e_" not in text
+    assert inspect_isolated_case_main(["--artifact-dir",str(artifact),"--junit",str(junit),
+        "--pytest-log",str(log),"--expected-case",case,"--expected-revision",revision]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutation", ["foreign-case","junit-case","junit-failure","runtime",
+                                      "lifecycle","revision","missing-log"])
+def test_standalone_isolated_case_inspector_rejects_foreign_or_incomplete_evidence(
+        tmp_path, mutation):
+    case, artifact, junit, log = standalone_case_files(tmp_path, current_public_summary())
+    expected = case
+    if mutation == "foreign-case": expected = "tests/e2e/test_live.py::foreign"
+    elif mutation == "junit-case": junit.write_text(junit_document([case], foreign_first=True))
+    elif mutation == "junit-failure": junit.write_text(junit_document([case], failing=True))
+    elif mutation == "runtime":
+        Path(json.loads((artifact / "manifest.json").read_text())["runtime"]).mkdir(parents=True)
+    elif mutation == "lifecycle":
+        path = artifact / "process-lifecycle.json"; value = json.loads(path.read_text())
+        value["teardowns"][0]["returncode"] = True; path.write_text(json.dumps(value))
+    elif mutation == "revision":
+        path = artifact / "manifest.json"; value = json.loads(path.read_text())
+        value["revision"] = "b" * 40; path.write_text(json.dumps(value))
+    else: log.unlink()
+    with pytest.raises(SetupError):
+        inspect_isolated_case(artifact, junit, log, expected, "a" * 40)
 
 
 def test_standalone_isolated_fault_inspector_is_strict_sanitized_and_read_only(tmp_path, capsys):

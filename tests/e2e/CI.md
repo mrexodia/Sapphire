@@ -198,6 +198,14 @@ separate evidence that its binaries came from the checkout.
   <private-artifact-dir> --expected-revision <40-hex>`. This is fault-evidence
   coverage, not gameplay, spontaneous server-crash, crash-dump or hosted
   cancellation-cleanup proof.
+- A bounded single-case development execution can retain its own JUnit, pytest log
+  and fixture artifact directory, then use `python -m tests.e2e.inspect_isolated_case
+  --artifact-dir <private-artifact-dir> --junit <private-junit> --pytest-log
+  <private-log> --expected-case <exact-allowlisted-node-id> --expected-revision
+  <40-hex>`. This proves exact runner identity/outcome, source/fixture identity,
+  service-generation cleanup and runtime absence for only that case. It explicitly
+  does not independently prove the scenario semantics and is not a substitute for
+  the combined gate.
 
 Latest local evidence: clean revision `39198db88` passed the fifteen-case strict
 gate in 2991.257 seconds with zero skips/errors/failures, exact collection and
