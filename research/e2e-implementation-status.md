@@ -2160,6 +2160,24 @@ failures, prove independent stream attempts and a retained terminal artifact aft
 resource recovery. No real service or filesystem fault was induced; this does not
 prove OS-level removal reliability, durable storage or leak-freedom.
 
+Feature **`2e911e7cc`** adds the failure-only command
+`python -m tests.e2e.inspect_cleanup_failure --artifact-dir
+<absolute-private-artifact-dir>`. Its independent strict parser bounds bytes,
+rejects duplicate keys/symlinks/foreign fields/types/services/retry policy and
+validates any available exact start/teardown identities, contiguous generations,
+receipt semantics and declared unresolved services. Output contains generic service
+names, counts and byte hashes—not PIDs or paths—and is always explicitly terminal
+failure with `success_evidence: false` and
+`process_exit_independently_verified: false`. Missing lifecycle is accepted only as
+unavailable failure evidence, never as success. A later complete lifecycle changes
+only current diagnostic counts; it cannot upgrade terminal status.
+
+Frozen, remote-free source **`2e911e7cccac1592828c76f8d9ab0d600306fb1b`**
+passed **226 focused contracts with no skips in 17.96s**. Test-log SHA-256:
+`0f82b87a141fe53d9afd8a6062d0808a23507207e2909658d55bf15491456af7`.
+These are synthetic consumer contracts; they do not establish that any real process
+exited, that runtime bytes were retained, or that failure evidence is authentic.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

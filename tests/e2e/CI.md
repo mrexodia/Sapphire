@@ -205,7 +205,12 @@ separate evidence that its binaries came from the checkout.
   runtime removal writes (or latches and retries) private `cleanup-failure.json`;
   later poll-only exit
   observation cannot upgrade that artifact, and standalone plus
-  combined private success inspectors reject its presence. A passed summary covers
+  combined private success inspectors reject its presence. Inspect one retained
+  terminal artifact without exposing paths or PIDs using `python -m
+  tests.e2e.inspect_cleanup_failure --artifact-dir <absolute-private-artifact-dir>`.
+  It strictly correlates any available exact lifecycle identities, but always emits
+  `success_evidence: false`; marker acceptance is failure diagnosis, never cleanup
+  success or independent process-exit proof. A passed summary covers
   this sixteen-scenario headless suite only. The sixteenth case, `test_live_fault_diagnostics.py`, intentionally terminates
   the exact owned world generation in its own fixture, requires one matching
   lifecycle receipt, then verifies private exit classification, redacted log
