@@ -14,14 +14,20 @@ from .inspect_ci_failure_result import main as inspect_ci_failure_main
 from .inspect_isolated_fault import main as inspect_isolated_fault_main
 from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
                                 SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
-from .support.ci_private_result import (FAULT_CASE, FAULT_SCOPE,
+from .support.ci_private_result import (FAULT_CASE,
+                                        FAULT_CLASSIFICATION as PRIVATE_FAULT_CLASSIFICATION,
+                                        FAULT_SCOPE as PRIVATE_FAULT_SCOPE,
                                         SCOPE as CI_PRIVATE_SCOPE,
                                         inspect_ci_private_evidence)
 from .support.ci_failure_result import (SCOPE as CI_FAILURE_SCOPE,
                                         inspect_ci_failure_result)
-from .support.isolated_fault_result import (SCOPE as ISOLATED_FAULT_SCOPE,
+from .support.environment import (ISOLATED_FAULT_CLASSIFICATION as PRODUCER_FAULT_CLASSIFICATION,
+                                  ISOLATED_FAULT_SCOPE as PRODUCER_FAULT_SCOPE,
+                                  SetupError, artifact_tree_sha256)
+from .support.isolated_fault_result import (FAULT_CLASSIFICATION as STANDALONE_FAULT_CLASSIFICATION,
+                                            FAULT_SCOPE as STANDALONE_FAULT_SCOPE,
+                                            SCOPE as ISOLATED_FAULT_SCOPE,
                                             inspect_isolated_fault)
-from .support.environment import SetupError, artifact_tree_sha256
 
 
 @pytest.fixture
@@ -586,7 +592,8 @@ def private_gate_evidence(tmp_path, report):
             proof.update(world_log_sha256=hashlib.sha256(world_path.read_bytes()).hexdigest(),
                 manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
                 lifecycle_sha256=hashlib.sha256(lifecycle_path.read_bytes()).hexdigest(),
-                runtime_removed=True,secrets_absent_from_published_logs=True,scope=FAULT_SCOPE)
+                runtime_removed=True,secrets_absent_from_published_logs=True,
+                scope=PRODUCER_FAULT_SCOPE)
             (directory / "fault-diagnostics-verification.json").write_text(
                 json.dumps(proof, indent=2))
         rows.append({"case":case,
@@ -633,6 +640,13 @@ def sync_private_diagnostics(report, private):
 def test_public_result_consumer_allowlists_require_explicit_producer_sync():
     assert EXPECTED_CASES == run_ci.CASES
     assert EXPECTED_CATALOGS == run_ci.CATALOGS
+
+
+def test_fault_producer_and_independent_consumers_require_explicit_schema_sync():
+    assert PRODUCER_FAULT_CLASSIFICATION == PRIVATE_FAULT_CLASSIFICATION \
+        == STANDALONE_FAULT_CLASSIFICATION
+    assert PRODUCER_FAULT_SCOPE == PRIVATE_FAULT_SCOPE == STANDALONE_FAULT_SCOPE
+    assert FAULT_CASE in run_ci.CASES
 
 
 def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp_path, capsys):

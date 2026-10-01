@@ -13,6 +13,7 @@ from .environment import SetupError, artifact_tree_sha256, require_process_teard
 SCOPE = "current-isolated-public-summary-to-private-per-case-evidence-correlation"
 FAULT_CASE = ("tests/e2e/test_live_fault_diagnostics.py::"
               "test_owned_world_exit_preserves_classification_logs_and_cleanup")
+FAULT_CLASSIFICATION = "intentional_owned_process_exit"
 FAULT_SCOPE = ("one intentional termination of the exact owned disposable world process; "
                "proves bounded exit classification, generation-correlated teardown, "
                "redacted text-log publication and cleanup, not crash-dump retention, "
@@ -66,7 +67,7 @@ def _verify_fault_evidence(root, manifest_raw, lifecycle_raw, lifecycle):
                       "returncode","log","cleanup_required"}
     if (set(failure) != failure_fields
             or type(failure.get("version")) is not int or failure["version"] != 1
-            or failure.get("classification") != "intentional_owned_process_exit"
+            or failure.get("classification") != FAULT_CLASSIFICATION
             or failure.get("process") != "world" or failure.get("log") != "world.log"
             or type(failure.get("generation")) is not int or failure["generation"] <= 0
             or type(failure.get("pid")) is not int or failure["pid"] <= 0

@@ -8,6 +8,7 @@ from pathlib import Path
 from .environment import SetupError, artifact_tree_sha256, require_process_teardowns
 
 SCOPE = "current-standalone-owned-world-fault-evidence"
+FAULT_CLASSIFICATION = "intentional_owned_process_exit"
 FAULT_SCOPE = ("one intentional termination of the exact owned disposable world process; "
                "proves bounded exit classification, generation-correlated teardown, "
                "redacted text-log publication and cleanup, not crash-dump retention, "
@@ -112,7 +113,7 @@ def inspect_isolated_fault(artifact_dir, expected_revision):
                       "returncode","log","cleanup_required"}
     if (set(failure) != failure_fields
             or type(failure.get("version")) is not int or failure["version"] != 1
-            or failure.get("classification") != "intentional_owned_process_exit"
+            or failure.get("classification") != FAULT_CLASSIFICATION
             or failure.get("process") != "world" or failure.get("log") != "world.log"
             or type(failure.get("generation")) is not int or failure["generation"] != 1
             or type(failure.get("pid")) is not int or failure["pid"] <= 0
@@ -141,7 +142,7 @@ def inspect_isolated_fault(artifact_dir, expected_revision):
 
     return {"version":1,"status":"accepted","scope":SCOPE,
             "source_revision":expected_revision,"source_dirty":False,
-            "classification":"intentional_owned_process_exit","service":"world",
+            "classification":FAULT_CLASSIFICATION,"service":"world",
             "exact_world_teardown_correlated":True,"lifecycle":lifecycle_proof,
             "runtime_and_disposable_root_absent":True,
             "secrets_absent_from_published_logs":True,

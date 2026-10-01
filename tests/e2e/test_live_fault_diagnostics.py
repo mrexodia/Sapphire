@@ -4,7 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from .support.environment import SetupError, sha256
+from .support.environment import (ISOLATED_FAULT_CLASSIFICATION as FAULT_CLASSIFICATION,
+                                  ISOLATED_FAULT_SCOPE as FAULT_SCOPE,
+                                  SetupError, sha256)
 
 pytestmark = pytest.mark.live
 
@@ -23,7 +25,7 @@ def test_owned_world_exit_preserves_classification_logs_and_cleanup(environment)
     diagnostic = json.loads((artifacts / "process-failure.json").read_text(encoding="utf-8"))
     assert diagnostic == {
         "version": 1,
-        "classification": "intentional_owned_process_exit",
+        "classification": FAULT_CLASSIFICATION,
         "process": "world",
         "generation": metadata["generation"],
         "pid": metadata["pid"],
@@ -63,5 +65,5 @@ def test_owned_world_exit_preserves_classification_logs_and_cleanup(environment)
         "lifecycle_sha256": sha256(lifecycle_path),
         "runtime_removed": True,
         "secrets_absent_from_published_logs": True,
-        "scope": "one intentional termination of the exact owned disposable world process; proves bounded exit classification, generation-correlated teardown, redacted text-log publication and cleanup, not crash-dump retention, cancellation cleanup or server crash behavior"
+        "scope": FAULT_SCOPE
     }, indent=2), encoding="utf-8")

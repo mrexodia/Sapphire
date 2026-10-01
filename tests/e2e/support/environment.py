@@ -21,6 +21,12 @@ import urllib.request
 import uuid
 
 REPO = Path(__file__).resolve().parents[3]
+ISOLATED_FAULT_CLASSIFICATION = "intentional_owned_process_exit"
+ISOLATED_FAULT_SCOPE = (
+    "one intentional termination of the exact owned disposable world process; "
+    "proves bounded exit classification, generation-correlated teardown, "
+    "redacted text-log publication and cleanup, not crash-dump retention, "
+    "cancellation cleanup or server crash behavior")
 
 
 class SetupError(RuntimeError):
@@ -446,7 +452,7 @@ class Environment:
             raise SetupError("owned world fault exit receipt is incomplete")
         diagnostic = {
             "version": 1,
-            "classification": "intentional_owned_process_exit",
+            "classification": ISOLATED_FAULT_CLASSIFICATION,
             "process": "world",
             "generation": metadata["generation"],
             "pid": metadata["pid"],
