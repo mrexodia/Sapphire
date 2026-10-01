@@ -1464,6 +1464,21 @@ This proves authored repository ordering only—not GitHub expression evaluation
 hosted execution, runner/environment policy, artifact availability or VM disposal.
 No workflow was dispatched and no gate/service/gameplay operation ran.
 
+Follow-up **`906591455`** removes a shared-code false-confidence path: the public
+result consumer no longer imports `CASES` or `CATALOGS` from `run_ci.py`. It owns
+independent exact ordered copies of all 15 case node IDs and all eight identity
+catalog keys, while a separate producer/consumer drift contract requires explicit
+reviewed synchronization. Thus an accidental producer expansion, case reorder or
+catalog addition cannot automatically broaden what the publication consumer
+accepts. Negatives now cover reordered cases and extra catalog identities in
+addition to missing/typed-confused data.
+
+Frozen, remote-free source **`90659145562e6be3b5da0e86f9827703a9a5f5cd`**
+passed **74 CI/workflow-policy tests in 1.24s**. Test-log SHA-256:
+`75299c2bdb96b5ac635aba31511001f1609621cd7a39d44eaac2c2784ccf617b`.
+This is independent schema review, not independent gameplay observation or a new
+gate. No workflow, service, account or gameplay operation ran.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
