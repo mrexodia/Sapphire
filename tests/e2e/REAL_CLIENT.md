@@ -114,7 +114,13 @@ execution and disposal evidence; preparation/contracts alone do not satisfy it.
 
 Follow `output/status.json`; setup logs are in `output/bootstrap.log`. The
 activity deadline is twenty minutes after graphical-client launch, not an
-assertion that twenty minutes of gameplay occurred.
+assertion that twenty minutes of gameplay occurred. Each phase publication includes
+`activity_remaining_seconds_at_publication` (a snapshot, not a live countdown).
+The final result's `timing` separates setup, each entered manual/scenario phase,
+and client/environment cleanup. These monotonic wall durations include operator
+waiting and worker unwinding, not isolated gameplay CPU time. Unentered phases
+are absent, not passing. On completion or failure, `status.json` changes to
+`finished`; inspect `result.json` before further input and discard the owned guest.
 
 1. In the real client's ordinary first-run UI choose the local data centre,
    decline character creation if offered, and select the exact fixture name in

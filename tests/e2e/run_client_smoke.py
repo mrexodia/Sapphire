@@ -15,6 +15,7 @@ from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, WITNESS_SAY, other_p
                                    moved, validate_review)
 from .support.environment import Environment, sha256, REPO
 from .support.client_snapshot import verify_source
+from .support.client_timing import ClientPhaseTiming
 from .support.worker import Worker, Bot
 from .support.client_development import ActivityWorker, development_profile, require_graphical_check
 from .support.development import authenticate, movement_route
@@ -51,6 +52,7 @@ def run():
               "scope": "manual-real-client-login-movement-say-logout",
               "documents": documents, "sandbox_disposal": "operator_required"}
     env = client = None
+    timing = ClientPhaseTiming()
     stage = "setup"
     root = Path("C:/e2e-client")
     try:
@@ -109,8 +111,11 @@ def run():
             def phase(name, instruction):
                 nonlocal stage
                 stage = name
+                timing.transition(name)
                 publish("status", {"run": report["run"], "phase": name, "instruction": instruction,
-                                   "real_name": real["name"], "client_pid": client.pid})
+                                   "real_name": real["name"], "client_pid": client.pid,
+                                   "activity_budget_seconds": 1200,
+                                   "activity_remaining_seconds_at_publication": max(0, deadline - time.monotonic())})
 
             def wait(predicate):
                 while time.monotonic() < deadline:
@@ -216,6 +221,7 @@ def run():
         report.update(status="failed", failure_stage=stage, error=f"{type(error).__name__}: {message}")
     finally:
         # Teardown may terminate the title-screen process; process-exit UI is not tested.
+        timing.transition("cleanup")
         errors = []
         if client and client.poll() is None:
             try:
@@ -232,7 +238,10 @@ def run():
         if errors:
             report.update(status="failed", cleanup_errors=errors)
         # Artifact-write failures cannot skip process/environment cleanup.
+        report["timing"] = timing.finish()
         publish("result", report)
+        publish("status", {"run": report["run"], "phase": "finished", "status": report["status"],
+                           "instruction": "Read result.json and discard the owned Sandbox. Do not send game input."})
     return 0 if report["status"] == "passed" else 1
 
 
