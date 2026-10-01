@@ -289,6 +289,42 @@ local filesystem evidence only, not proof those characters are offline or safe t
 reset/reprovision. No full gate, soak or platform sweep ran; overall goal remains
 incomplete.
 
+### Runner/provisioner terminal summaries bind their reported lease state
+
+Feature **`09c0ee071`** attaches the exact read-only snapshot to every terminal
+`run_development` and `provision_development` summary. After a successful release,
+`clear` is mandatory; unavailable, retained or ambiguous inspection changes an
+otherwise successful result to failed. The provisioner also removes its completed
+association/next-step fields, so a fixture receipt cannot be published when exact
+lease release is unverifiable. No release/retry/repair is attempted.
+
+For an acquired failed run, both valid retained receipts normally match the
+summary's `run_id`; this is recorded separately from the older intended-state
+boolean. A partial release remains failed with one present receipt and
+`state:ambiguous`, rather than being rewritten or described as retained. Failure
+before this run acquires leases does not adopt another run's receipt. Inspection
+exceptions, including a second interruption during terminal publication, become a
+sanitized `state:unavailable` plus error type; exception text is not retained and
+the original operation evidence can still be written.
+
+The expanded focused selection passed **298 tests, 2.91s** in the feature worktree.
+Detached clean exact `09c0ee071a072ecd82cf20f5503f490c18451174` passed **298 tests,
+3.14s** with clean before/after state; harness wall time was **6.828s**. Negative
+contracts include partial release, malformed/ambiguous state, terminal-inspection
+failure, sanitized interruption, runner success rejection and provisioner binding
+suppression. Artifact: `.e2e-artifacts/development-terminal-lease-clean-001.json`;
+test-log SHA-256
+`4c19264a7745e8c82704a4cd92f73de9efe2a7966abdbad202fec1702eb6bdc7`.
+
+No server, account, endpoint or real lease-release fault was exercised for this
+producer integration. The current bounded live provisioning evidence predates the
+embedded snapshot and is not upgraded. Historical consumers are likewise not yet
+required to accept/reject this new field; their existing strict status, binding and
+worker-exit checks remain unchanged. This is stronger terminal evidence, not
+server-offline proof, release authority, crash consistency or reset/reprovisioning
+coordination. No full gate, soak or platform sweep ran; overall goal remains
+incomplete.
+
 ## Dedicated provisioning has one cooperative success deadline
 
 Feature **`86caebe3a`** applies the existing `RunDeadline`/`DeadlineWorker`
@@ -763,7 +799,7 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts; current bounded provisioning and earlier binding live audits | Implemented and positive-path live-verified on owned runtimes; expiry/no-retry paths are synthetic; normal worker exit and per-character server closure are distinct, neither grants adoption/reset authority |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and terminal exact-lease snapshots; current bounded provisioning and earlier binding live audits | Implemented and positive-path live-verified on owned runtimes; embedded terminal lease snapshot postdates live evidence and expiry/no-retry paths are synthetic; worker exit, server closure and local lease state remain distinct and grant no adoption/reset authority |
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
@@ -1857,7 +1893,7 @@ a nearby passing test does not close them.
 | Scheduled exploration/soak tier | local workload commands and artifacts | **Partial:** no authorized hosted scheduled execution |
 | Manual/scheduled real-client tier | policy plus completed isolated manual Sandbox lane | Verified once locally; no scheduled breadth |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
-| Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and sanitized exact-lease snapshots | Verified for implemented paths; lease snapshots do not establish server session state |
+| Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and automatic sanitized exact-lease snapshots in shared runner/provisioner summaries | Verified for implemented paths; embedded snapshot producer is synthetic-only and lease snapshots do not establish server session state |
 | Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured unexpected-process-exit metadata are retained | **Partial:** one owned-world termination is verified, but platform crash dumps are only retained where externally produced |
 | Fixture/persistence evidence, redaction, JUnit and summary | scenario JSON snapshots, restart state, redaction contracts, `live.xml` and CI JSON summary | Verified |
 | Bounded soak logs and generator saturation | capped plans/journals, checkpoints, action percentiles and API/lobby/world/DB/worker/runner resource samples | Verified; scenario coverage remains reported separately from concurrency |
