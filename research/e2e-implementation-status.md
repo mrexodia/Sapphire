@@ -1408,6 +1408,41 @@ No service, database, account, worker, client, gameplay or gate operation ran.
 A new isolated gate is required for positive process-generation evidence; full
 gate, Linux/platform and hosted execution remain pending.
 
+Feature **`795fc035f`** adds the corresponding strict read-only public consumer:
+`python -m tests.e2e.inspect_ci_result --summary <summary> --expected-revision <40-hex>`.
+It requires the exact ordered current 15-case allowlist, clean caller-supplied
+source revision, successful verified stage, typed deadline scale, collection,
+inputs and both cleanup booleans, zero pytest exit, and exact worker/four binary/
+eight catalog/two mesh/sorted nonempty script-module digest schemas. Extra fields,
+type-confused booleans, reordered scripts, altered/missing cases, malformed hashes,
+legacy summaries and revision mismatch fail closed. Accepted output binds the
+summary SHA-256 under scope
+`current-isolated-public-summary-with-exact-process-cleanup-claim`.
+
+This inspector verifies only the sanitized public contract. The gate producer saw
+and validated exact private PID/generation rows before fixture disposal; the
+public file intentionally contains only `process_cleanup_verified`, so the
+consumer cannot independently reconstruct those records or prove graceful exit,
+hosted execution, VM disposal, Linux behavior or gameplay outside the allowlist.
+It cannot replace the still-required current isolated gate run.
+
+Frozen, remote-free source **`795fc035f9017a0ef761002e54da76895b5c4818`**
+passed **69 CI/workflow-policy tests in 1.41s**. Test-log SHA-256:
+`3d826f8d77aa95216b52ede36fcb32eebe9965b5bab63fa99e51dde767d64549`.
+A first frozen attempt improperly depended on an untracked historical build file
+and failed one test with `FileNotFoundError`; it remains failed as
+`ci-result-inspector-synthetic-failure.log`, SHA-256
+`5967fd897d0ae183d4e24e207de894d94c8a21fa90571b489936ff9cfee829c7`,
+while the committed contract now constructs its legacy input locally.
+
+Read-only compatibility inspection rejected historical Windows summary
+`ci-summary-windows-isolated.json`, whose SHA-256 is
+`665328be156fff96479a9ad94ee753c1dc59c05a12a345d93374eddb9562ff05`
+and which has no `process_cleanup_verified` field. Rejection evidence SHA-256:
+`4139c58a64177d82925d0cd73050bea5f38757a8474b4978307b381e7e96c780`.
+No service, database, account, worker, client, gameplay or gate operation ran. A
+new authorized isolated gate remains required for positive current evidence.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
@@ -3649,7 +3684,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md`; strict workflow/process-policy receipts | Authored repository controls are pinned/read-only/bounded and private dispatch remains protected/serialized in YAML; the last fifteen-case Windows gate passed before exact process-generation receipts were required and the older nine-case Linux gate passed, but current gate execution is pending and the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `inspect_ci_result.py`, `CI.md`; strict workflow/process-policy and public-summary receipts | Authored repository controls and the exact current sanitized result contract are pinned/read-only/bounded and private dispatch remains protected/serialized in YAML; every historical summary predates public exact process-generation cleanup and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
