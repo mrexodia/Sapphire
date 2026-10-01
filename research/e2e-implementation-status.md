@@ -12,6 +12,91 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Shared-development self-Sprint: independently received effect and zero TP
+
+Feature **`06bc49312`** adds `--verify-sprint` to `run_development.py`, documented
+in `DEVELOPMENT.md`, with `support/development_sprint.py` and 40 synthetic
+contracts in `test_development_sprint.py`. Default runs remain unchanged. One
+ordinary self-Sprint is published after existing movement/social checks and
+before optional reconnect; the viewer is never a target or controlled participant.
+
+Preflight requires the semantic native method before login. The check binds two
+distinct received character/entity/name identities, unique visible non-GM peers,
+idle nonparty state, received sequences, naturally available TP>=50 and the
+native starting-action pacing guard. Prior Sprint history is rejected. Readiness
+has a ten-second success budget; publication/observations share a further ten
+seconds. Late success is rejected, without retry or forced interruption of
+bounded native calls. No cooldown bypass, grant, reset or resource restoration
+is provided; fresh-session readiness is not proof of an earlier Sprint cooldown's
+expiry. A server refusal fails the check and retains its local leases.
+
+Both bots must receive the exact action3/self-target/request effect with status50
+payload and equal complete effect records, plus **fresh** zero-TP HUD rows. The
+mover must also receive fresh group56/3000-centisecond action-start metadata.
+Detached baseline histories are retained; only append-only suffixes qualify.
+Changed or saturated histories fail rather than clearing caches or accepting
+login-era zero TP. The Sprint receipt/publication response alone is insufficient.
+This proves received status-application effects and a zero-TP update, **not**
+speed, status expiry, exact net TP debit, persistence, rendered agreement or
+natural progression. Normal TP regeneration and cooldown behavior are preserved.
+
+Focused contracts **143 passed, 1.07s**; clean committed-source selection
+**103 passed, 0.71s**. Negatives cover foreign/changed/duplicate/GM/NPC peers,
+transitions/parties/invitations, missing/old/saturated histories, unavailable TP or
+pacing, wrong/missing/duplicate effects and start metadata, stale zero TP,
+boolean metadata, independent-result disagreement, unchanged sequence, invalid
+request IDs and late readiness/publication/observation. Failures never republish;
+post-publication negatives assert exactly one cast so an earlier preflight failure
+cannot mask them. Initial `development-sprint-contracts-001.json` retains
+**3 failed /122 passed**: the synthetic fixture omitted the mover's own actor,
+preventing readiness. The fixture was corrected and negative publication-count
+assertions strengthened, not the product guard weakened. Corrected intermediate
+002 and final003 results are retained.
+
+Targeted native **`sapphire_combat` 1/1 passed, 0.05s total**, including existing
+Sprint wire/low-TP/actor/request and combat decoding contracts. The test and
+CombatState/Protocol source inputs were byte-compared with committed sources
+before building that target in the existing clean source/build area. Native
+build/test logs are `development-sprint-native-{build,tests}.log`; the worker
+binary and backend remained unchanged. No full native suite was run.
+
+**`development-sprint-live-001` passed** via the product CLI, frozen controller
+`06bc4931270b58cf09321daafb184c6eeb7eb67f`, unchanged decline worker `401e93223`
+and clean backend `e665c041f` with checked input hashes:
+
+- Three explicitly prepared pre-connection GM0 fixtures, public130; setup is not
+  progression. Mover **Tester MJFKDKIFPG /2097153/18014398526259201**, witness
+  **Tester BMHMAFOCND /2097154/18014398526259202**; no movement route requested.
+- Naturally received **100TP** preceded the single request1. Mover baseline126
+  → zero-TP139 → effect141; witness baseline124 → zero-TP126 → effect128.
+  Empty baseline combat histories, matching target/source2097153, separate empty
+  source-effect array and exact target status50 payload were checked against raw
+  `combat_changed` events, not just summaries. Mover start metadata also matched.
+- Separate headless viewer **Tester JKNDMBPCGP /2097155/18014398526259203**
+  received the same self-targeted effect, not a viewer-targeted action. Its sampled
+  identity/territory/GM/position/party/invitation fields remained equal. Resources,
+  continuous presence, rendering and all-state invariance are not claimed.
+- Natural readiness **2.844s**, independent effect/TP phase **0.031s**, runner
+  **14.422s**, startup **19.078s**, whole check **41.141s**. Exactly one Sprint;
+  ordinary Say/lifecycle operations otherwise. Three normal server closures,
+  worker closure, released leases and removed owned runtime verified. Process
+  inspection found only pre-existing MySQL7764; existing database untouched.
+
+Private artifacts: `.e2e-artifacts/development-sprint-{source,inputs}.json`,
+`development-sprint-clean-source`, focused results and
+`development-sprint-live-001/{driver.py,inspect-evidence.py,inspected-evidence.json,
+verification-summary.json,viewer-before-after.json,processes-after.json}`, CLI
+summary/journals and environment `sapphire-e2e-cdfkbzbu`. Raw verification also
+checked source cleanliness, journal order, actual lease absence and cleanup.
+CLI summary SHA-256:
+`3f271a7e07125dbfe9a6946e4b31eb9feb80af941415f16bff1dc183ee249c08`;
+aggregate SHA-256:
+`f6fb529420b6adc9414f75e0864f9fe4e2e1fa9eb1ec149c69f0b8d287e4f8b0`.
+
+No matching graphical Sprint check, existing-shared-deployment verification,
+reset/reprovisioning closure or broader acceptance coverage is inferred. Those
+remain pending. No full acceptance/soak/platform sweep ran; goal is incomplete.
+
 ## Graphical-lane witness retirement: normal server closure required
 
 Feature **`5c4d8fa62`** adds `support/client_lifecycle.py::retire_witness` and
