@@ -201,8 +201,9 @@ separate evidence that its binaries came from the checkout.
   details are never uploaded. This is forced owned-process cleanup, not graceful
   server shutdown or server-session exclusion. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
-  local run. Any uncertain owned teardown or cleanup-evidence publication writes
-  (or latches and retries) private `cleanup-failure.json`; later poll-only exit
+  local run. Any uncertain owned teardown, lifecycle/stream/log publication, or
+  runtime removal writes (or latches and retries) private `cleanup-failure.json`;
+  later poll-only exit
   observation cannot upgrade that artifact, and standalone plus
   combined private success inspectors reject its presence. A passed summary covers
   this sixteen-scenario headless suite only. The sixteenth case, `test_live_fault_diagnostics.py`, intentionally terminates

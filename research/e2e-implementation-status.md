@@ -2144,6 +2144,22 @@ first marker-write failure and lifecycle-write failure. No service/account/gamep
 operation ran; this is fail-closed in-process evidence policy, not durable storage,
 hard-preemption, crash consistency or proof of process exit.
 
+Fix **`85c6162b7`** extends the same terminal latch across post-process disposal.
+Independent stream closes and bounded redacted-log publications are all attempted;
+any stream close, runtime-log enumeration/read/redaction/write, or runtime-removal
+failure retains the private runtime, publishes (or later retries) the terminal marker,
+and fails cleanup. A later successful retry may remove resources but cannot remove or
+upgrade the marker. The marker records actual root existence at publication rather
+than asserting retention unconditionally.
+
+Frozen, remote-free source **`85c6162b7d668add68982bf59e8dbd793d8ba35b`**
+passed **214 focused contracts with no skips in 18.02s**. Test-log SHA-256:
+`609e880943c64b2bb3d2e0eacbccbd01b631149bc29bcacfb9d47e0e8d1dcdf7`.
+Negative contracts inject first stream-close, redacted-log-write and runtime-removal
+failures, prove independent stream attempts and a retained terminal artifact after
+resource recovery. No real service or filesystem fault was induced; this does not
+prove OS-level removal reliability, durable storage or leak-freedom.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
