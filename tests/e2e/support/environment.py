@@ -197,11 +197,8 @@ class Environment:
             raise SetupError("missing required assets/binaries: " + ", ".join(missing))
         if profile.get("navigation") and not self.navigation.is_dir():
             raise SetupError("configured navigation root must exist")
-        self.root = Path(tempfile.mkdtemp(prefix="sapphire-e2e-"))
-        self.runtime = self.root / "runtime"
-        self.runtime.mkdir()
-        self.artifacts = Path(profile.get("artifacts", REPO / ".e2e-artifacts")) / self.root.name
-        self.artifacts.mkdir(parents=True)
+        # Complete fallible non-filesystem setup before allocating a disposable root;
+        # a constructor exception has no owner available to call close().
         self.db_port, self.api_port, self.lobby_port, self.zone_port = allocate_ports(4)
         self.db_name = "sapphire_e2e_" + uuid.uuid4().hex
         self.secret = secrets.token_hex(24)
@@ -216,6 +213,23 @@ class Environment:
         self._closed = False
         self.last_api_receipt = None
         self._http = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        self.root = Path(tempfile.mkdtemp(prefix="sapphire-e2e-"))
+        self.runtime = self.root / "runtime"
+        self.artifacts = Path(profile.get("artifacts", REPO / ".e2e-artifacts")) / self.root.name
+        artifact_preexisting = self.artifacts.exists()
+        try:
+            self.runtime.mkdir()
+            self.artifacts.mkdir(parents=True)
+        except BaseException:
+            # Remove only directories allocated by this constructor; never remove a
+            # pre-existing ambiguous artifact path.
+            try:
+                if (not artifact_preexisting and self.artifacts.is_dir()
+                        and not any(self.artifacts.iterdir())):
+                    self.artifacts.rmdir()
+            finally:
+                remove_runtime(self.root)
+            raise
 
     def stage(self):
         for name in ("api", "lobby", "server", "dbm"):

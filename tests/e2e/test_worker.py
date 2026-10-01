@@ -1,10 +1,12 @@
 """Asset-independent worker contract tests. These do NOT establish game E2E coverage."""
 import json
+from pathlib import Path
 import socket
 import subprocess
 
 import pytest
 
+from .support import environment as environment_support
 from .support.environment import (Environment, SetupError, allocate_ports,
                                   require_process_teardowns)
 from .support.worker import Bot, UnsupportedScene, Worker, WorkerError
@@ -286,6 +288,62 @@ def test_missing_assets_fail_setup(tmp_path):
     with pytest.raises(SetupError, match="missing required"):
         Environment({key: str(tmp_path / "missing")
                      for key in ("binaries", "game_data", "mariadb_bin", "worker")})
+
+
+def _constructor_profile(tmp_path):
+    binaries, game, mariadb = (tmp_path / name for name in ("bin", "game", "mariadb"))
+    for directory in (binaries, game, mariadb, tmp_path / "artifacts"):
+        directory.mkdir()
+    for name in ("api", "lobby", "server", "dbm"):
+        (binaries / (name + ".exe")).write_bytes(b"executable")
+    for name in ("mariadbd", "mariadb-install-db"):
+        (mariadb / (name + ".exe")).write_bytes(b"executable")
+    worker = tmp_path / "worker.exe"; worker.write_bytes(b"worker")
+    return {"binaries":str(binaries),"game_data":str(game),"mariadb_bin":str(mariadb),
+            "worker":str(worker),"artifacts":str(tmp_path / "artifacts")}
+
+
+def test_environment_constructor_failure_before_root_allocation_leaves_no_root(
+        tmp_path, monkeypatch):
+    profile = _constructor_profile(tmp_path); called = []
+    def fail_ports(_): raise OSError("synthetic port allocation failure")
+    def unexpected_root(**_): called.append(True); return str(tmp_path / "unexpected")
+    monkeypatch.setattr(environment_support, "allocate_ports", fail_ports)
+    monkeypatch.setattr(environment_support.tempfile, "mkdtemp", unexpected_root)
+    with pytest.raises(OSError, match="port allocation"):
+        Environment(profile)
+    assert called == []
+
+
+def test_environment_constructor_directory_failure_removes_owned_root(
+        tmp_path, monkeypatch):
+    profile = _constructor_profile(tmp_path)
+    disposable = tmp_path / "sapphire-e2e-owned"
+    original_mkdir = Path.mkdir
+    def make_root(**_): original_mkdir(disposable); return str(disposable)
+    def fail_runtime(path, *args, **kwargs):
+        if path == disposable / "runtime": raise PermissionError("synthetic runtime failure")
+        return original_mkdir(path, *args, **kwargs)
+    monkeypatch.setattr(environment_support, "allocate_ports", lambda _: [1,2,3,4])
+    monkeypatch.setattr(environment_support.tempfile, "mkdtemp", make_root)
+    monkeypatch.setattr(Path, "mkdir", fail_runtime)
+    with pytest.raises(PermissionError, match="runtime failure"):
+        Environment(profile)
+    assert not disposable.exists()
+
+
+def test_environment_constructor_collision_preserves_foreign_artifact(
+        tmp_path, monkeypatch):
+    profile = _constructor_profile(tmp_path)
+    disposable = tmp_path / "sapphire-e2e-collision"
+    foreign = Path(profile["artifacts"]) / disposable.name
+    foreign.mkdir(); marker = foreign / "owner.txt"; marker.write_text("foreign")
+    def make_root(**_): disposable.mkdir(); return str(disposable)
+    monkeypatch.setattr(environment_support, "allocate_ports", lambda _: [1,2,3,4])
+    monkeypatch.setattr(environment_support.tempfile, "mkdtemp", make_root)
+    with pytest.raises(FileExistsError):
+        Environment(profile)
+    assert not disposable.exists() and marker.read_text() == "foreign"
 
 
 def test_artifacts_are_redacted_and_runtime_removed(tmp_path):
