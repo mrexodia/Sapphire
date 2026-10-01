@@ -1764,6 +1764,17 @@ test-log SHA-256:
 `c1a9b40285d3f4ddc9359f528aeee19b9eeb10b4ae3bae63e823aa6951b552ff`.
 This revalidates retained bytes; it does not broaden the single-case live scope.
 
+Fix **`3b88b65cf`** gives the producer one canonical fault classification/scope and
+makes both independently implemented consumers retain explicit copies. A focused
+drift contract requires producer, combined-gate consumer and standalone consumer
+to match exactly and requires the fault case to remain in the gate allowlist. This
+prevents a wording/schema update from generating evidence that either current
+inspector silently cannot consume, without sharing consumer validation logic.
+Frozen, remote-free source **`3b88b65cfcaf7089fef9de6d77ca31ab939a14f2`**
+passed **140 focused contracts with 14 declared skips in 9.08s**. Test-log SHA-256:
+`007c6b5c7264b301e32438a6cfaf5a93c2e04fea22880d0ce724c295b4c88164`.
+No service or live case ran for this schema-only increment.
+
 Feature **`78b7cb4bb`** closes a separate private cleanup-inspection gap. For every
 case, the read-only inspector now requires an absolute `.../runtime` identity,
 rejects overlap with its retained artifact directory, and requires both that
