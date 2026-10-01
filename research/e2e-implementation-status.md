@@ -375,6 +375,54 @@ worker process, Sandbox, matching client, endpoint or gameplay operation ran for
 this increment. A fresh manually attended current graphical run remains pending;
 no full gate, soak or platform sweep ran.
 
+## Graphical companion scenario now requires ordinary self-Sprint
+
+Feature **`8afbbeb0a`** adds the existing `verify_sprint=True` normal-gameplay
+option to the fixed nested graphical companion scenario. It publishes exactly one
+ordinary action3 self-Sprint from the non-GM mover after movement/social work and
+before reconnect; the separate viewer is neither targeted nor controlled. Both bot
+sessions must independently receive the same fresh self-target status50 effect and
+a fresh zero-TP HUD update, while the mover must also receive group56/
+3000-centisecond start metadata. Natural TP/pacing readiness, the existing
+cooperative nested deadline and the outer graphical activity deadline still apply.
+There is no grant, cooldown bypass, retry, resource restoration or reset.
+
+The graphical consumer does not accept `requested/verified` booleans alone. It
+requires the exact current eight-field Sprint receipt and narrow scope; two
+ordered distinct character/entity identities bound to the runner entities; a
+strict uint16 request; natural TP50..1000; two bounded three-history baselines
+without prior mover Sprint; advancing uint64 received sequences; exact typed
+source/target/action/kind/request/result/status payloads; typed HP/MP/zero-TP
+rows; exact mover start and absent witness start; and equal independent effect
+records. Missing, malformed, extra, reordered, stale, foreign, type-confused or
+internally inconsistent evidence fails closed. The returned bridge proof names
+only the narrow Sprint scope and explicitly leaves rendered action verification
+false. Historical graphical summaries without Sprint remain rejected.
+
+Frozen, remote-free source **`8afbbeb0afe488cbd4d62482d02d7546ae15df06`**
+passed **342 tests in 3.03s** across graphical policy, Sprint, viewer, movement,
+reconnect, inventory, party, Tell, deadlines, worker exit, smoke and lifecycle.
+The selection includes publication/no-retry contracts plus consumer mutations of
+scope, identities, request/TP, baselines, effect typing/target, zero TP, start,
+sequence and schema. Test-log SHA-256:
+`6486023f5795849056103eb9d7384f9f311ea6969a2b1a36a8ad9595ea685dfb`.
+Artifacts: `client-graphical-sprint-clean-{source.json,python.log}`.
+
+The current strict receipt consumer accepted the genuine retained headless report
+from `development-sprint-live-001`: request1 after 100TP, baseline sequences
+126/124, received sequences141/128, equal independently received effects, exact
+mover start and no witness start. The read-only result is
+`client-graphical-sprint-live-artifact-check.json` (SHA-256
+`e4fbe74b6385d6ef0b7affe1f9862c4024af26a79d4a9ac970684f184b988505`).
+This verifies compatibility with genuine normal-client data only; that older run
+used a separate headless viewer and is not upgraded to graphical evidence.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. Received effect/TP evidence does not prove
+movement speed, status expiry, exact net TP debit, cooldown readiness, persistence
+or rendering. A fresh manually attended current graphical run and explicit guest
+disposal remain pending; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1063,9 +1111,12 @@ CLI summary SHA-256:
 aggregate SHA-256:
 `f6fb529420b6adc9414f75e0864f9fe4e2e1fa9eb1ec149c69f0b8d287e4f8b0`.
 
-No matching graphical Sprint check, existing-shared-deployment verification,
-reset/reprovisioning closure or broader acceptance coverage is inferred. Those
-remain pending. No full acceptance/soak/platform sweep ran; goal is incomplete.
+At this checkpoint there was no matching graphical Sprint check. Current policy
+at `8afbbeb0a` now requires this ordinary bot action and strict received receipts
+inside a future graphical companion run, but current graphical execution remains
+pending. Existing-shared-deployment verification, reset/reprovisioning closure
+and broader acceptance coverage also remain open. No full acceptance/soak/
+platform sweep ran; goal is incomplete.
 
 ## Graphical-lane witness retirement: normal server closure required
 
@@ -1175,7 +1226,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested deadline/inventory/lease/exit and outer-exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current Sprint/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict independently received Sprint evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; decline has headless-only live coverage; current graphical policy requires read-only inventory but awaits graphical execution |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
