@@ -24,6 +24,12 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2), encoding="utf-8")
 
 
+def json_file(path, mutate):
+    value = json.loads(path.read_text(encoding="utf-8"))
+    mutate(value)
+    write_json(path, value)
+
+
 def outer_state(position, sequence, chat=None, *, viewer=True):
     actors = ({"3":{"kind":1,"name":"Tester Viewer","gm_rank":0,"level":1,
                     "hp":94,"position":position}} if viewer else {})
@@ -66,6 +72,18 @@ def build_output(root, source_revision="1" * 40):
     write_json(root / "logout-ticket.json", logout_ticket)
     write_json(root / "logout-review.json", {"version":1, **logout_ticket,
         "checks":LOGOUT_REVIEW_CHECKS,"manual_review":True})
+    starts = [{"process":name,"generation":1,"pid":index + 20}
+              for index, name in enumerate(("database","api","lobby","world"))]
+    teardowns = [{**row,"was_running_before_cleanup":True,
+        "terminate_requested":True,"kill_requested":False,"exit_observed":True,
+        "returncode":-15,
+        "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}
+        for row in reversed(starts)]
+    lifecycle_path = root / "artifacts/sapphire-e2e-synthetic/process-lifecycle.json"
+    write_json(lifecycle_path, {"version":1,
+        "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
+        "starts":starts,"teardowns":teardowns})
+    lifecycle_hash = hashlib.sha256(lifecycle_path.read_bytes()).hexdigest()
     retire = {"server_close_observed": True, "native_bot_removed": True,
               "scope": "normal-witness-session-retirement-not-offline-exclusion"}
     phases = ["setup", "spawn", "movement", "say", "review", "development",
@@ -81,6 +99,13 @@ def build_output(root, source_revision="1" * 40):
             "was_running_before_cleanup":True,"forced_termination_requested":True,
             "exit_observed":True,"returncode":1,
             "scope":"exact-owned-title-screen-client-forced-cleanup-not-ui-exit-proof"},
+        "environment_process_teardown": {"verified":True,
+            "scope":"exact-graphical-isolated-service-teardown-before-result-publication",
+            "relative_path":"artifacts/sapphire-e2e-synthetic/process-lifecycle.json",
+            "sha256":lifecycle_hash,"evidence":{"verified":True,
+                "scope":"all-exact-owned-isolated-process-generations-observed-terminated",
+                "process_count":4,
+                "generations":{"api":1,"database":1,"lobby":1,"world":1}}},
         "sandbox_disposal": "operator_required", "runtime_removed": True,
         "fixture": {"position": [0, 0, 0], "territory": 130,
                     "catalog_sha256": "c" * 64, "placement_is_travel": False,
@@ -170,6 +195,7 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
     assert proof["title_screen_review"] == {"verified":True,
         "frame_sha256":hashlib.sha256((root / "logout.png").read_bytes()).hexdigest(),
         "scope":LOGOUT_CAPTURE_SCOPE}
+    assert proof["environment_process_teardown"]["evidence"]["process_count"] == 4
     assert proof["activity_deadline"]["activity_and_worker_exit_completed_within_budget"] is True
 
 
@@ -193,6 +219,14 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
     lambda root, report: report["client_teardown"].update(forced_termination_requested=False),
     lambda root, report: report["client_teardown"].update(exit_observed=False),
     lambda root, report: report["client_teardown"].update(returncode=True),
+    lambda root, report: report["environment_process_teardown"].update(
+        relative_path="../foreign/process-lifecycle.json"),
+    lambda root, report: report["environment_process_teardown"].update(sha256="0" * 64),
+    lambda root, report: report["environment_process_teardown"]["evidence"].update(
+        process_count=True),
+    lambda root, report: json_file(root /
+        "artifacts/sapphire-e2e-synthetic/process-lifecycle.json",
+        lambda value:value["teardowns"][0].update(returncode=True)),
     lambda root, report: report["fixture"].update(catalog_sha256="e" * 64),
     lambda root, report: report["development_check"].update(summary_sha256="0" * 64),
     lambda root, report: report["development_run_pair"]["identities"][0].update(entity_id=True),

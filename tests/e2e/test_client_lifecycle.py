@@ -88,15 +88,25 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     cleanup = []
     said = []
 
+    lifecycle_starts = [{"process":name,"generation":1,"pid":index + 20}
+                        for index, name in enumerate(("database","api","lobby","world"))]
+    lifecycle_teardowns = [{**row,"was_running_before_cleanup":True,
+        "terminate_requested":True,"kill_requested":False,"exit_observed":True,
+        "returncode":-15,
+        "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}
+        for row in reversed(lifecycle_starts)]
+
     class Environment:
         redactions = []
         worker = "unused"
-        artifacts = tmp_path / "artifacts"
+        artifacts = output / "artifacts/sapphire-e2e-synthetic"
         deadline_scale = 1
         lobby_port = 0
         root = tmp_path / "removed"
         def __init__(self, profile):
             self.runtime = runtime
+            self.process_starts = lifecycle_starts
+            self.process_teardowns = lifecycle_teardowns
         def start(self):
             pass
         def check_alive(self):
@@ -104,6 +114,11 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
         def fresh_character(self, position):
             return {"name": "synthetic", "auth": {"sId": "not-a-session"}}
         def close(self):
+            self.artifacts.mkdir(parents=True, exist_ok=True)
+            (self.artifacts / "process-lifecycle.json").write_text(json.dumps({
+                "version":1,
+                "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
+                "starts":self.process_starts,"teardowns":self.process_teardowns}))
             cleanup.append("environment")
 
     class Worker:
@@ -226,6 +241,14 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     assert cleanup == (["worker", "environment"] if failure == "client_exit_before_cleanup"
                        else ["worker", "client", "environment"])
     assert report["runtime_removed"] is True
+    assert report["environment_process_teardown"] == {"verified":True,
+        "scope":"exact-graphical-isolated-service-teardown-before-result-publication",
+        "relative_path":"artifacts/sapphire-e2e-synthetic/process-lifecycle.json",
+        "sha256":guest.CLIENT_SHA256,
+        "evidence":{"verified":True,
+            "scope":"all-exact-owned-isolated-process-generations-observed-terminated",
+            "process_count":4,
+            "generations":{"api":1,"database":1,"lobby":1,"world":1}}}
     expected_client_teardown = {"version":1,"pid":123,
         "was_running_before_cleanup":True,"forced_termination_requested":True,
         "exit_observed":True,"returncode":1,

@@ -17,7 +17,7 @@ from .support.client_smoke import (CLIENT_SHA256, LOGOUT_CAPTURE_SCOPE, REAL_SAY
                                    received_real_logout, received_real_movement,
                                    received_real_say, received_real_spawn, validate_review,
                                    witness_say_challenge)
-from .support.environment import Environment, sha256, REPO
+from .support.environment import Environment, require_process_teardowns, sha256, REPO
 from .support.client_snapshot import verify_source
 from .support.client_timing import ClientPhaseTiming
 from .support.client_lifecycle import retire_witness
@@ -335,6 +335,20 @@ def run():
             try:
                 env.close()
                 report["runtime_removed"] = not env.root.exists()
+                lifecycle_path = env.artifacts / "process-lifecycle.json"
+                lifecycle = json.loads(lifecycle_path.read_text(encoding="utf-8"))
+                expected_lifecycle = {"version": 1,
+                    "scope": "exact-owned-isolated-process-teardown-not-graceful-server-exit",
+                    "starts": env.process_starts, "teardowns": env.process_teardowns}
+                if lifecycle != expected_lifecycle:
+                    raise RuntimeError("isolated process lifecycle artifact differs from cleanup")
+                process_proof = require_process_teardowns(
+                    lifecycle["starts"], lifecycle["teardowns"])
+                report["environment_process_teardown"] = {
+                    "verified": True,
+                    "scope": "exact-graphical-isolated-service-teardown-before-result-publication",
+                    "relative_path": lifecycle_path.relative_to(OUTPUT).as_posix(),
+                    "sha256": sha256(lifecycle_path), "evidence": process_proof}
             except BaseException:
                 errors.append("isolated environment cleanup failed")
         if errors:

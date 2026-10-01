@@ -293,7 +293,10 @@ are absent, not passing. On completion or failure, `status.json` changes to
    failed termination changes the result to failed. Forced title-screen cleanup is
    not a tested UI journey, normal graphical logout, or server-offline proof. A
    cleanup error changes the result to failed, not a passing gameplay run with a
-   warning. For a
+   warning. The same applies if `process-lifecycle.json` differs from the in-memory
+   cleanup rows or any exact service generation lacks a running-before-cleanup,
+   terminate-request and observed integer-return-code receipt. This forced owned
+   cleanup is not graceful server shutdown or offline exclusion. For a
    current development-enabled run, execute this read-only host-side verifier from
    the same clean source revision before disposal:
 
@@ -308,8 +311,9 @@ are absent, not passing. On completion or failure, `status.json` changes to
    both nested summaries/hashes and
    strict consumers; pair/handoff/restoration receipts; run-bound Say challenge,
    review-frame binding and the separately approved exact title-screen frame,
-   retirements, outer deadline/worker exit, exact graphical-client teardown,
-   terminal status and reported runtime removal. `accepted` explicitly leaves
+   retirements, outer deadline/worker exit, exact graphical-client teardown, all
+   exact isolated database/API/lobby/world process generations and their private
+   lifecycle-file hash, terminal status and reported runtime removal. `accepted` explicitly leaves
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
    next manual step. Older/incomplete results fail closed.
 7. **Close the owned Sandbox window and confirm its discard dialog.** Guest

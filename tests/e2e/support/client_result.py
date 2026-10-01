@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
@@ -22,6 +22,7 @@ from .client_smoke import (CLIENT_SHA256, LOGOUT_CAPTURE_SCOPE, other_player,
                            witness_say_challenge)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
+from .environment import require_process_teardowns
 
 
 RESULT_SCOPE = "current-graphical-development-result-before-separate-sandbox-disposal"
@@ -107,6 +108,38 @@ def _client_teardown(value, expected_pid):
             or type(value.get("returncode")) is not int
             or value.get("scope") != CLIENT_TEARDOWN_SCOPE):
         raise DevelopmentError("invalid exact graphical-client teardown receipt")
+    return value
+
+
+def _environment_teardown(output, value):
+    if (not isinstance(value, dict)
+            or set(value) != {"verified", "scope", "relative_path", "sha256", "evidence"}
+            or value.get("verified") is not True
+            or value.get("scope") !=
+                "exact-graphical-isolated-service-teardown-before-result-publication"
+            or not _hex(value.get("sha256"), 64)
+            or not isinstance(value.get("relative_path"), str)):
+        raise DevelopmentError("invalid graphical environment teardown binding")
+    relative = PurePosixPath(value["relative_path"])
+    if (relative.is_absolute() or len(relative.parts) != 3
+            or relative.parts[0] != "artifacts"
+            or not relative.parts[1].startswith("sapphire-e2e-")
+            or relative.parts[2] != "process-lifecycle.json"):
+        raise DevelopmentError("graphical environment teardown path is foreign")
+    path = Path(output).joinpath(*relative.parts)
+    lifecycle = _read_json(path)
+    if (set(lifecycle) != {"version", "scope", "starts", "teardowns"}
+            or type(lifecycle.get("version")) is not int or lifecycle["version"] != 1
+            or lifecycle.get("scope") !=
+                "exact-owned-isolated-process-teardown-not-graceful-server-exit"
+            or _sha256(path) != value["sha256"]):
+        raise DevelopmentError("graphical environment lifecycle artifact is invalid")
+    try:
+        proof = require_process_teardowns(lifecycle["starts"], lifecycle["teardowns"])
+    except (KeyError, TypeError, ValueError, RuntimeError) as error:
+        raise DevelopmentError("graphical environment process teardown is incomplete") from error
+    if not _typed_equal(value.get("evidence"), proof):
+        raise DevelopmentError("graphical environment teardown receipt differs from artifact")
     return value
 
 
@@ -317,6 +350,8 @@ def inspect_client_development_result(output, expected_source_revision):
     deadline = _activity_deadline(report.get("activity_deadline"))
     timing = _timing(report.get("timing"))
     client_teardown = _client_teardown(report.get("client_teardown"), report["client_pid"])
+    environment_teardown = _environment_teardown(
+        output, report.get("environment_process_teardown"))
 
     ticket = _read_json(output / "review-ticket.json")
     review = _read_json(output / "review.json")
@@ -364,6 +399,7 @@ def inspect_client_development_result(output, expected_source_revision):
                                     "scope": LOGOUT_CAPTURE_SCOPE},
             "activity_deadline": deadline, "timing": timing,
             "client_teardown": client_teardown,
+            "environment_process_teardown": environment_teardown,
             "runtime_removed": True, "sandbox_disposal_verified": False,
             "note": "Structured current guest evidence only; inspect rendering and dispose the owned Sandbox separately."}
 

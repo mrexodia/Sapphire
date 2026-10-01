@@ -536,8 +536,9 @@ revalidates the outer empty baseline/fresh exact-name spawn/fresh movement/fresh
 Say/review/fresh logout snapshots, binds the rendered witness Say challenge to the
 exact outer run and review frame, requires a separate exact-frame manual title-
 screen review receipt, requires an exact PID-bound observed teardown of the owned
-title-screen client during guest cleanup, and revalidates all nested host-visible
-evidence read-only before disposal. Launch current owned guests through
+title-screen client plus every database/API/lobby/world generation during guest
+cleanup, binds the private process-lifecycle file hash, and revalidates all nested
+host-visible evidence read-only before disposal. Launch current owned guests through
 `python -m tests.e2e.run_client_sandbox launch --prepared <prepared>`; after
 manually confirming the exact owned discard dialog, use `approve-disposal` and
 `python -m tests.e2e.inspect_client_sandbox_disposal --prepared <prepared>` to
