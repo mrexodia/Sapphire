@@ -5031,6 +5031,41 @@ changes rather than the probes passing independently of source. It still does no
 prove operating-system/server causation, production traffic behavior, timing or a
 corrected gameplay outcome; both diffs remain unstaged and uncommitted.
 
+## Strict standalone isolated-case producer (`27815c9fc` checkpoint)
+
+Commit `e7164806b` adds `python -m tests.e2e.run_isolated_case` as the missing
+producer behind the existing read-only standalone inspectors. It accepts only one
+of the combined gate's exact sixteen node IDs and one exact clean reviewed revision,
+requires a new absolute private root outside the checkout, validates the complete
+private profile, strips inherited pytest selection/plugins, and invokes pytest once
+without retry. Acceptance requires one exact collected/passing setup-call-teardown
+identity, one owned fixture artifact directory, exact profile-input/manifest
+correlation, runtime/process cleanup accepted by the existing inspector, and either
+the generic standalone inspection or the specialized owned-world-fault inspection.
+Private JUnit, pytest output, inspection and fixed-schema runner result remain under
+the caller-owned root; failures retain private diagnostics and cannot publish an
+accepted inspection. The result states `short_feedback_only: true`,
+`generic_scenario_semantics_independently_verified: false` and
+`combined_gate_verified: false`.
+
+Commit `27815c9fc` adds the producer's orchestration contracts to both repository
+workflow contract jobs and makes their presence mandatory in the static workflow
+policy. A detached clean worktree at
+`27815c9fceb25a21add0b541198717b4bc8035f7` reported zero status entries and
+**207 passed in 15.81s** across the standalone-runner, CI and workflow-policy
+contracts. The policy inspector accepted both YAML files and still reports
+`hosted_execution_verified: false`, `runner_group_policy_verified: false` and
+`ephemeral_vm_destruction_verified: false`.
+
+Verification receipt:
+`.e2e-artifacts/isolated-case-runner-clean-source/receipt.json` (SHA-256
+`30a0a14749eb0eb71f27f49c01c70f7e71489ba7e27e328896aa18418554ce0e`);
+clean focused log SHA-256
+`7d87128e4a02aaa345fbd98b30b40b2ae5f5fffafb1ba4209880077f514bbb07`.
+No service, account or gameplay operation ran. The producer has not yet executed a
+live case at this revision, generic scenario semantics remain non-independent, and
+one standalone result cannot replace the current combined sixteen-case gate.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
@@ -5056,7 +5091,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | --- | --- | --- |
 | External C++ worker, Python coordinator and normal public behavior | `src/test_client`, `tests/e2e/support/{worker,environment}.py`, native/protocol and Python contracts; detailed plan rows below | **Implemented for the supported subset.** The seven dirty experiments were not staged or treated as evidence. |
 | Genuine HTTP, encrypted lobby, world-ready/keepalive/logout sessions | Historical clean full-session gates plus current retained rejected-login receipt | **Partial/currently stale as a combined run.** Current read-only `inspect_isolated_case` accepted the exact `6dbd1380e` rejected-login fixture; receipt SHA-256 `f83c2a8919ec1dcee149889281f217ea23a6da5b151a22ee68e8f97c86258681`. It is one no-account case, not current full-session acceptance. |
-| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, `support/ci_{result,private_result}.py`, `inspect_ci_{result,private_evidence}.py`; exact 16-case contracts | **Pending live gate.** Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
+| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, strict `run_isolated_case.py` short-feedback producer, `support/ci_{result,private_result}.py`, and public/private/standalone inspectors; exact 16-case contracts | **Pending live gate.** The strict one-case producer is clean-source contract-verified but has no current live result. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
 | Intentional owned-process fault and cleanup diagnostics | Retained exact world-fault fixture, JUnit, pytest log, lifecycle and artifact tree | **Verified standalone only.** Current `inspect_isolated_fault` reinspection accepted it with SHA-256 `8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`; it is not gameplay, organic crash, dump, hosted cancellation or the combined sixteenth-case gate. |
 | Shared dedicated account/character provisioning and ordinary non-GM checks | `provision_development.py`, `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
 | Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |
@@ -5116,7 +5151,7 @@ requirements follows and remains normative.
 | More quests / zoning / inventory operations / combat / social | Two-quest chain, optional reward, reconnect, persisted ordinary-bag whole-stack move, occupied-slot swap, partial split, same-item merge, discard, persisted round trips for all five Gladiator starter slots, all three starter main hands, all four source-defined Ring1 and Ring2 choices plus one exact gil-shop sale/three-item purchase/VFX action/liquidation/three-stage later-gear purchase/resale/equip path; ordinary Say, exact same- and cross-zone nonparty plus cross-zone party direct Tell and a received three-client party decline/reinvite/join, leadership-transfer, kick and explicit-disband lifecycle with exact same-zone fan-out and bidirectional cross-zone party chat; bidirectional 130↔141 physical crossing/persistence; one enemy defeat with persisted EXP/loot; independently observed living Return, Sprint status/TP debit, Pugilist Bootshine, six-defeat level-two progression, True Strike, Thaumaturge Blizzard, 18 four-attacker level-14 defeats with shared persisted rewards and one naturally earned Fast Blade→Savage Blade combo; one source-bound unprovoked active-vision aggro/defeat path; one pursuit/leash position-and-health reset/re-engagement/player defeat plus observed/persisted homepoint return and unchanged tracked EXP/level/currency/items/inventory | Representative subset verified; arbitrary shops/quantities, other later gear and positive direct currency-container moves (generic moves are rejected), alliances/free companies/linkshell channels, general aggro/leash policy beyond the two exact source-bound paths, combo chains/other combos, broader abilities and general combat remain uncovered; level-one off-hand/waist purchases, shop-funded overflow-merge inputs and supported consuming-item shop paths are source-shop-blocked under the evidenced economy; raise is blocked by absent normal offer/execution semantics |
 | Range/discovery/territory event triggers | Curated bidirectional physical ExitRange crossings, bounded source-defined Ul'dah enter-territory operation, source-LGB opening WithinRange scene 20, and two source-LGB Central Thanalan map discoveries (sphere and rotated box) | Exact represented paths are verified; general adapters remain missing |
 | Yield/resume and broader scene variants | Explicit unsupported yield capability; fixed one/two-result quest returns plus source-bound scene-40 gil-shop sale/purchase returns | Yield missing; broader variants uncovered |
-| Deterministic authored regression suite | Sixteen allowlisted cases (15 gameplay plus one isolated owned-world fault case), native tests and Python contracts; current producer/consumer additionally require independent exact allowlists, per-case environment identities, process generations, artifact-tree identities and private semantic inspection | The historical 15-gameplay-case suite was live-verified; current rejected-credentials and intentional-fault cases pass separately against the clean-built profile, but standalone evidence cannot satisfy the current 16-case combined gate, which remains authorization-pending |
+| Deterministic authored regression suite | Sixteen allowlisted cases (15 gameplay plus one isolated owned-world fault case), native tests and Python contracts; current combined and strict single-case producers/consumers require exact allowlists, source/input binding, process generations, artifact-tree identities and the applicable private inspection | The historical 15-gameplay-case suite was live-verified; current rejected-credentials and intentional-fault cases pass separately against the clean-built profile, while the new strict producer is contract-only. Standalone evidence cannot satisfy the current 16-case combined gate, which remains authorization-pending |
 | Seeded exploration / preconditions / invariants | `support/workload.py`, reproducible allowlisted decisions, server/state checks, independent per-waypoint observers and one bounded fresh-session corridor replan | Two-bot exploration verified; narrow supported-state coverage |
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |

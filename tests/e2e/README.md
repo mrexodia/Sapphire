@@ -195,7 +195,8 @@ For a single-config generator:
 
 ```sh
 python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
-  tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
+  tests/e2e/test_isolated_case_runner.py tests/e2e/test_soak.py \
+  tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
   tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py \
   --e2e-worker build-e2e/sapphire_test_client --junitxml=build-e2e/contracts.xml
 ```
@@ -257,7 +258,32 @@ python -m pytest tests/e2e/test_live.py tests/e2e/test_live_quest.py \
   --e2e-profile .e2e-local.json -v --junitxml=build-e2e/live.xml
 ```
 
-Select only `test_live.py` for the smaller login/movement/social smoke slice.
+For one exact allowlisted case on a clean reviewed revision, use the strict
+short-feedback producer rather than an inherited `-k` expression:
+
+```sh
+python -m tests.e2e.run_isolated_case \
+  --profile .e2e-local.json \
+  --private-root <new-absolute-private-root-outside-the-checkout> \
+  --expected-case tests/e2e/test_live.py::test_rejected_credentials \
+  --expected-revision <exact-40-hex-reviewed-HEAD> \
+  --binaries <clean-built-binary-directory> \
+  --worker <clean-built-headless-worker>
+```
+
+The private root and its parent must satisfy the command's ownership checks and
+must not already exist. The producer accepts only the combined gate's exact case
+allowlist, removes inherited pytest selection/plugins, performs one execution with
+no retry, requires one fixture artifact directory, binds its manifest to the
+reviewed profile inputs, and runs the existing generic inspector (or the stronger
+owned-world-fault inspector). It retains private JUnit, pytest output, inspection
+and failure diagnostics. A successful `runner-result.json` explicitly reports
+`short_feedback_only: true` and `combined_gate_verified: false`; generic scenario
+semantics remain non-independent. Never publish the private root. This command is
+not a replacement for the combined sixteen-case gate.
+
+Select only `test_live.py` for an ad-hoc smaller login/movement/social smoke slice;
+such selection is not strict standalone evidence.
 
 Missing required assets, missing binaries or setup errors **fail** an explicitly
 requested live run. Without `--e2e-profile`, live tests are explicitly skipped.

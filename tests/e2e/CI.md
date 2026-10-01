@@ -242,17 +242,30 @@ separate evidence that its binaries came from the checkout.
   runner/JUnit contract as well as fault semantics. This is fault-evidence coverage,
   not gameplay, spontaneous server-crash, crash-dump or hosted cancellation-cleanup
   proof.
-- A bounded single-case development execution can retain its own JUnit, pytest log
-  and fixture artifact directory, then use `python -m tests.e2e.inspect_isolated_case
-  --artifact-dir <private-artifact-dir> --junit <private-junit> --pytest-log
-  <private-log> --expected-case <exact-allowlisted-node-id> --expected-revision
-  <40-hex>`. This proves exact runner identity/outcome, source/fixture identity,
+- Produce one bounded strict short-feedback execution with `python -m
+  tests.e2e.run_isolated_case --profile <private-profile> --private-root
+  <new-absolute-private-root-outside-the-checkout> --expected-case
+  <exact-allowlisted-node-id> --expected-revision <40-hex> [--binaries
+  <clean-build>] [--worker <clean-worker>]`. The producer requires the exact clean
+  reviewed revision and full private profile, accepts only the combined gate's
+  sixteen exact node IDs, strips inherited pytest options/plugins, executes once
+  without retry, requires exactly one owned fixture artifact directory, correlates
+  the generated manifest to the reviewed profile inputs, and invokes the generic
+  inspector or the specialized fault inspector before writing an accepted private
+  result. A failure retains private pytest/entry diagnostics and cannot create an
+  accepted inspection. Both workflows run its service-free orchestration contracts,
+  but neither currently dispatches a standalone live case automatically.
+- Existing retained single-case evidence can still be checked read-only with
+  `python -m tests.e2e.inspect_isolated_case --artifact-dir
+  <private-artifact-dir> --junit <private-junit> --pytest-log <private-log>
+  --expected-case <exact-allowlisted-node-id> --expected-revision <40-hex>`.
+  This proves exact runner identity/outcome, source/fixture identity,
   service-generation cleanup and runtime absence for only that case. For the
   rejected-credentials case it additionally requires the sanitized genuine-HTTP
   receipt: exact login method, expected/received 400 status, response byte/hash
   identity and no returned session field, without retaining request or response
-  content. It explicitly does not independently prove the scenario semantics and
-  is not a substitute for the combined gate.
+  content. Generic inspection explicitly does not independently prove scenario
+  semantics and neither producer nor inspector substitutes for the combined gate.
 
 Latest local evidence: clean revision `39198db88` passed the fifteen-case strict
 gate in 2991.257 seconds with zero skips/errors/failures, exact collection and
