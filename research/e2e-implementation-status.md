@@ -12,6 +12,67 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Named viewer endpoint confirmation (not graphical acceptance)
+
+Feature `1c15616a5` adds `--viewer-name` to `run_development.py`, backed by
+`support/development_viewer.py`. It never logs into or controls that character.
+Both normal bots must first receive the same unambiguous, separate player
+identity (name/entity ID/GM rank). At start and finish, a newly generated random
+nonce in ordinary Say must be received by **both** clients, with chat tokens
+newer than their respective pre-challenge snapshot sequences. The finish check
+uses the fresh mover session when reconnect verification is enabled.
+
+The identity window is 10 seconds total; the reply window is 60 seconds total
+per checkpoint, not per observer. Late successful waits are rejected. Wrong
+speaker/channel, stale or invalid event tokens, reused start replies, one-sided
+publication, NPC lookalikes, duplicate names, changed identity and bot-as-viewer
+selection fail closed. Viewer movement is permitted; the runner does not hold or
+restore its position or modify that character's gameplay state. A GM viewer is allowed by the
+contract, while test bots remain non-GM; a GM viewer was not live tested.
+
+**Focused evidence:** 266 applicable contracts passed in **7.09s**. The 36 new
+viewer contracts also passed in **0.34s** from the committed source snapshot.
+Artifacts: `.e2e-artifacts/development-viewer-focused-timings-1.json` and
+`development-viewer-clean-contract-timings-1.json`. Native code/binary is unchanged;
+the live worker remains the previously verified clean `64793b3034…` binary.
+The live controller snapshot byte-matches `1c15616a5`, excluding the separate
+working-tree performance experiments. Backend binary hashes match `e34d695fd`.
+
+**One bounded live product-CLI check passed**, with an externally controlled third
+non-GM **headless** client supplying exactly two normal Say publications:
+
+- Owned host startup **25.859s**, development check **25.485s**, complete driver
+  including viewer lifecycle and owned cleanup **60.437s**.
+- Start received chat tokens: mover **118→122**, witness **118→120**.
+  Finish: reconnected mover **118→120**, original witness **302→304**.
+  All four exact actor/channel/message/token matches were inspected in journals.
+- Viewer identity/reply phases totaled about **0.157s** with automated replies;
+  this is not a human response-time estimate. Movement, exact party/chat/disband
+  and fresh-login position checks also passed.
+- The external viewer remained ready after the check. Its received identity,
+  territory, GM rank, position, party and pending-invitation fields matched
+  between captured before/after snapshots. HP/MP/TP and all other state were not
+  claimed unchanged; normal regeneration and unrelated updates remain possible.
+- Both runner leases released, the viewer completed normal logout/server closure,
+  host exit was zero, owned runtime/process cleanup verified, host credential
+  exports removed, and stopped-profile reuse rejected. Subsequent process
+  inspection found only the pre-existing MySQL service (PID 7764).
+
+Evidence root: `.e2e-artifacts/development-viewer-live-001`. It contains the passing
+`verification-summary.json` (SHA-256
+`cff2adf1d8f9af320088513d61149cc5b18a55985ff0e72a6ee1bb717736b297`),
+`check/development-summary.json`, both challenge files, bot/viewer action/event
+journals, `viewer-before-after.json`, and `host-final-status.json`.
+`inspected-evidence.json` binds file hashes and all four received-token proofs.
+
+**Limits:** endpoint presence is not continuous presence or graphical/client
+attestation. No graphical executable was launched, existing database/client
+settings were untouched, and normal provisioning was not repeated in this run.
+The prior post-provision snapshot gap remains specific to that failed diagnostic;
+this new case verifies snapshots around the short gameplay check only. Live GM
+placement, broader resets/reprovisioning, original platform/CI/graphical and full
+acceptance requirements remain open. No full gate or soak was run.
+
 ## Bounded warm host and live dedicated provisioning (not acceptance)
 
 Feature `203bf98f7` adds `tests/e2e/serve_development.py`: one owned private

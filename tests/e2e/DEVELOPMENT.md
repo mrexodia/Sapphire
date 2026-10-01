@@ -406,6 +406,13 @@ rendered appearance, screenshots, or graphical compatibility. A third headless
 client can exercise this contract but cannot substitute for the independent
 real-client lane. Allow enough managed-host lifetime for operator replies.
 
+One clean-source live check of this option passed in **25.5s**, including
+movement, party and reconnect verification. A separate headless client supplied
+the two replies; all four independent received message/token matches were
+inspected. Its selected before/after identity, position and party fields matched,
+and all owned processes cleaned up. Graphical compatibility remains unverified;
+see the audit for the exact scope and `.e2e-artifacts/development-viewer-live-001`.
+
 ## Evidence and limitations
 
 `development-summary.json` records worker/catalog hashes, entities, scope,
