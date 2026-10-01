@@ -192,7 +192,10 @@ separate evidence that its binaries came from the checkout.
   mismatched revision or a relabeled successful outcome are rejected.
 - Private run directories contain `profile.json`, `entry-error.log` on entry
   failure, `pytest.log`, `live.xml`, `gate-diagnostics.json`, and the normal
-  per-case server/worker artifacts. Neither
+  per-case server/worker artifacts. Complete-tree hashing enumerates without
+  following aliases and rejects symlinks, Windows reparse points, cross-filesystem
+  directories, resolved paths outside the root, hard-linked files, special entries,
+  and existing count/size bounds. Neither
   JUnit nor pytest failures are safe public artifacts: they can contain received
   positions, paths, scene parameters and exception details. Do not broaden the
   upload glob to include these directories, catalogs, assets or runtime trees.

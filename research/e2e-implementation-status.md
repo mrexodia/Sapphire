@@ -2249,6 +2249,21 @@ Historical graphical artifacts lack this field and remain incompatible with curr
 policy. No client/Sandbox/service/account/gameplay operation ran; complete-tree byte
 identity does not prove rendering, gameplay, compatibility, disposal or secure erasure.
 
+Fix **`b488efc13`** hardens the common complete-tree primitive used by isolated,
+staging, owned-host and graphical consumers. Enumeration no longer follows aliases;
+it rejects symlinks, Windows reparse points, paths resolving outside the canonical
+root, cross-filesystem directories, hard-linked files, special entries, and existing
+entry/file/aggregate-size bounds before hashing. This prevents an apparently owned
+artifact tree from silently incorporating bytes through another directory entry.
+
+Frozen, remote-free source **`b488efc13c1593ccc86f52ff2fb98cd06a99cce0`**
+passed **428 focused contracts with no skips in 29.91s**. Test-log SHA-256:
+`1e2a1ef036a91ccab0bdad293f66eea5f63322ae407087739e4829cfb3c0af6e`.
+Focused filesystem contracts exercise deterministic normal hashing plus real temporary
+hard-link and directory-symlink rejection; reparse/cross-device checks remain policy
+branches, not a platform sweep. This does not prove race-free snapshots, durable
+storage, secure erasure or external-root completeness.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
