@@ -1890,9 +1890,21 @@ Read-only inspection of the existing `.e2e-local.json` correctly failed before a
 service startup: it lacks `opening_quest_catalog`, `pursuit_catalog`,
 `respawn_catalog` and `shop_catalog`. Sanitized rejection-log SHA-256:
 `ed5ad522ef50a1b7f4ead9a4aae8c0dbafbed2dd071d973066f66086cc244444`.
-Therefore renewed gate authorization alone is insufficient for the current local
-profile: approved paths to those exact four source-generated catalogs (or a new
-complete private profile) are required. No path was guessed or disclosed.
+Therefore renewed gate authorization alone is insufficient for the checked-in
+local profile: approved paths to those exact four source-generated catalogs (or a
+new complete private profile) are required. No path was guessed or disclosed.
+
+A subsequent read-only search found pre-existing ignored candidates and validated
+them with all four exact catalog loaders. A private, untracked overlay—not a change
+to `.e2e-local.json`—using the byte-identical validated shop/pursuit candidates and
+current Windows-navmesh opening candidate passed the complete 13-path/eight-catalog
+static inspection. Sanitized receipt SHA-256:
+`e4bff075c5421f13dc33f508ebacab8642ef3929549f8e49f3f24f9eed19d662`;
+private profile SHA-256:
+`1202a2eb132af6c54e05afcd8e13a2012d0184a51fb6a1bba4944bf8cf25d125`.
+No service or account started. This proves current local byte availability and
+schema/route/mesh agreement only: it does not approve those private inputs, bind the
+existing executables to current source, or authorize/execute the combined gate.
 
 Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
 to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
