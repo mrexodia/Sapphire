@@ -239,8 +239,52 @@ and its frozen source.
 No Windows Sandbox, graphical client, server, account or gameplay operation was
 run. Bridge004 predates both new process receipts and remains historical evidence
 only at its original coordinator version; current-code graphical execution and
-operator disposal evidence are pending. No full gate, soak or platform sweep ran;
-overall goal remains incomplete.
+operator disposal evidence are pending.
+
+## Graphical bot scenario requires an aggregate deadline receipt
+
+Feature **`54f4e01ba`** closes a distinct nested-run deadline gap. The manual lane
+already had a 20-minute absolute activity deadline and `ActivityWorker` capped
+individual native calls by its remainder, but its direct `run_development()` call
+used the programmatic unbounded default and emitted no aggregate runner deadline
+receipt. `run_graphical_development()` now computes an integer 1..900-second
+cooperative budget from the remaining activity window with a one-second admission
+margin, passes the exact normal party/Tell/reconnect/viewer flags plus
+`max_seconds`, and retains the existing absolute `ActivityWorker` cap. Too little,
+NaN or infinite remaining time rejects before runner/worker startup.
+
+`require_graphical_check()` now requires the exact six-field enabled deadline
+receipt: strict integer limit, unexpired, session work completed within budget,
+cooperative-not-hard-limit scope, and explicit cleanup-outside-budget boundary.
+Missing, disabled, expired, malformed, type-confused, extra-field or incomplete
+receipts cannot close the bridge. The accepted receipt is copied into the bridge
+evidence. It is not hard preemption: in-flight bounded calls and cleanup can finish
+later, while the outer graphical activity/lifecycle checks remain authoritative.
+
+From new remote-free frozen exact commit
+`54f4e01ba67823cc19275ec9202e8a71d6cf9fd1`, graphical bridge, smoke, lifecycle,
+runner and deadline contracts passed **140 tests in 0.97s**. Tests verify exact
+flag/budget forwarding, 900-second cap and admission margin, late/invalid budget
+rejection, every receipt field/type/bound and missing/extra shape while retaining
+all prior worker-exit, lease, viewer and server-lifecycle policies. Test-log
+SHA-256:
+`0b5047c4a32bfa7ec6d2a985d16d4b41bd2b00ab8b9f8ac35a83680c29b81110`.
+
+The current validator rejected historical `client-development-live-004` read-only;
+that report predates nested worker-exit, terminal-lease and aggregate-deadline
+receipts. Artifact-check SHA-256:
+`b7b98aaead07ddb03183943710f9cf5797a2117bce056c531fb478b9c8a2008e`.
+This does not erase or upgrade its original graphical evidence and does not isolate
+which of the three later policies would fail first. A post-test display command
+then used `.e2-artifacts` instead of `.e2e-artifacts`; that failed shell aggregate
+is retained in `client-nested-deadline-verifier-display-failure.json` and was not
+relabeled. The tests/artifact check had already completed; only read-only display
+and clean-source status were rerun.
+
+No Sandbox, graphical client, server, account or gameplay operation ran for this
+increment. Current-code graphical execution therefore still requires a fresh,
+manually attended, approved matching-client run and explicit disposal evidence.
+No full gate, soak or platform sweep ran; overall goal remains incomplete.
 
 ## Retained bot leases have a read-only fail-closed inspector
 
@@ -1042,7 +1086,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit and terminal-lease receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested deadline/lease/exit and outer-exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require an aggregate completed deadline plus fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; new decline/inventory flags have headless, not graphical, live coverage |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
@@ -2058,7 +2102,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
-| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; worker exit is not server-offline proof and broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; worker exit is not server-offline proof and broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored; current isolated fifteen-case Windows gate passes, older nine-case Linux gate passes, but the current expanded Linux gate remains red under observed delayed scene/action/logout/zoning delivery; hosted execution/runner controls unverified, no registered runners |
@@ -2082,7 +2126,7 @@ a nearby passing test does not close them.
 | HTTP, encrypted lobby selection and normal handoff | `Client.cpp`, rejected-login/live-login tests and creation journey | Verified |
 | Zone/chat startup, both keepalives, logout and reconnect | live smoke, zoning, workload reconnect and fresh-login scenarios | Verified |
 | Explicit disconnected/loading/ready/zoning/closing lifecycle | worker state snapshots and phase guards; live zoning/logout assertions | Verified for represented phases |
-| Bounded queues, deadlines and cancellation | 64 KiB control limit, two-frame send-queue cap, bounded journals, monotonic Python/native timers, shared runner/provisioner whole-session budgets, recorded deadline scale 1..3, asynchronous final-movement write completion, and explicit `close`/`remove` cancellation of timers/sockets | Verified for implemented paths; timed-out operations are never retried and owned teardown cancels the worker; cooperative budgets are not hard preemption |
+| Bounded queues, deadlines and cancellation | 64 KiB control limit, two-frame send-queue cap, bounded journals, monotonic Python/native timers, shared runner/provisioner whole-session budgets plus graphical nested/outer budgets, recorded deadline scale 1..3, asynchronous final-movement write completion, and explicit `close`/`remove` cancellation of timers/sockets | Verified for implemented paths; timed-out operations are never retried and owned teardown cancels the worker; cooperative budgets are not hard preemption |
 | Useful error classes | protocol/invalid-request worker errors; setup, assertion, worker-death and owned-process exit distinctions | Verified at harness boundary and for one live owned-world termination; not a universal server error taxonomy |
 | Do not copy authoritative server gameplay | Worker uses shared low-level definitions/crypto only and has no world-service linkage or handler calls | Verified |
 | Identity, territory/loading, conditions and channel health | snapshots plus liveness/checkpoint policy | Verified for modeled fields |
