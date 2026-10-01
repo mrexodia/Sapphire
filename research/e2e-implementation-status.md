@@ -12,6 +12,60 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Owned-world-actor reset follow-up: lifecycle prerequisites, no reset exposed
+
+Review **`377a523c1`** extends `research/development-reset-boundary.md` with a
+committed-source assessment of dedicated NPC creation and later work ownership.
+The 13-file evidence snapshot is
+`.e2e-artifacts/owned-actor-reset-review-001`, from
+`2a6d05b95c53c4fb7c8e5fffefa443ef903ada6f`; its manifest SHA-256 is
+`aec2de5ab2e7b66c8d2227240fa4956578845f3565790093fdfdebe976cc86f5`.
+All retained bytes were checked against that commit, excluding the preserved
+scheduler/navigation experiments. `review-summary.json` explicitly records
+`source_review_only_reset_not_implemented`.
+
+The layout-based creation factories exist, but do not establish administrative
+test ownership/generation. `BNpc::init` resets HP/FSM initialization rather than
+providing task/reward retirement. Delayed hostility and fade/removal work retain
+actor references; delayed loot has player/table fields without source-actor
+provenance. The inspected task interface/manager has enqueue/update, not an
+actor-scoped cancellation/quiescence contract. Current action processing and
+natural spawn bookkeeping are additional lifecycle surfaces; a world-thread
+command or current empty hate list alone does not settle them.
+
+No server command, destructive reset, replay of a failure, general task cancellation
+or live probe was added. This is a functional suitability review, not a binary/
+vulnerability verdict or proof that all callback producers were audited. No test
+suite was run for this documentation-only increment; the source hash check and
+`git diff --check` are reproducibility/format checks, not gameplay evidence.
+
+The next required implementation artifact is a default-disabled creation registry
+for **new dedicated actor lifetimes**, plus integrated lifetime-scoped work
+accounting/exclusion, reward provenance, exact reset semantics and negative
+lifecycle tests. Only then can a bounded owned live reset be offered. A new
+credential profile or longer timeout cannot supply that missing coordination.
+Approved private assets remain available; this is a reset-subtask boundary, not a
+claim that all local live work is blocked. Offline character reprovisioning still
+separately requires a session fence across its mutation. Overall goal is incomplete.
+
+### Updated shared-development requirement map (scope-preserving checkpoint)
+
+These links consolidate the existing narrow evidence, not a fresh full acceptance
+or completion audit. The original plan checklist below still applies.
+
+| Updated requirement | Concrete artifact/evidence | Current boundary |
+| --- | --- | --- |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`; provisioning/binding live audits | Implemented and live-verified on owned runtimes; not adoption/reset authority |
+| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
+| Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
+| Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `support/client_development.py`; client-development-live-004 | Verified narrow owned-guest bridge, not user's existing shared deployment or continuous/rendered-action agreement |
+| Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; new decline/inventory flags have headless, not graphical, live coverage |
+| Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results | Verified for implemented operations; not a substitute for the missing reset/session fence |
+| Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
+| Preserve viewer, private inputs, historical failures and unrelated experiments | Separate viewer profiles; private artifact hashes; failed graphical 001–003 retained; seven experimental paths remain separate | No all-state viewer invariance, shared-world cleanliness or crash-consistency claim |
+| Separate shared development from isolated acceptance | `DEVELOPMENT.md`, `REAL_CLIENT.md`, summaries with explicit scope; original requirement checklist below | Full gate/soak/platform sweeps remain unauthorized for this iteration; Linux/hosted/broader gameplay gaps remain open |
+
 ## Read-only inventory projection across shared reconnect: implemented and live verified
 
 Feature **`d39c1c1266815c044f26f2e07827c52ebde527e1`** adds
