@@ -2112,6 +2112,20 @@ with no skips in 17.00s**. Test-log SHA-256:
 This is cooperative in-process failure handling only—not hard preemption, runner
 loss, hosted cancellation, VM disposal or proof that an unresponsive process exits.
 
+Fix **`f495ebe0e`** prevents later observation from laundering that uncertainty.
+The first incomplete cleanup writes private `cleanup-failure.json` with only exact
+classification, sorted service names, retained-runtime truth and the poll-only/no-
+second-termination policy. It remains terminal even if every exit is later observed.
+Generic standalone, specialized fault (through its mandatory generic consumer), and
+combined private success inspectors all reject its presence, including when public
+artifact hashes are recomputed to match the contaminated tree.
+
+Frozen, remote-free source **`f495ebe0e6e2428cd1781cb3def3e863c6a554a5`**
+passed **209 focused contracts with no skips in 22.98s**. Test-log SHA-256:
+`45003c3cffceb6a166f8fe42f37bd69492af7a1c4acdb30f38f381254e4a3f51`.
+No real failure/service/account/gameplay operation ran. The terminal marker proves
+fail-closed evidence policy, not process exit, hard-cancellation cleanup or VM disposal.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
