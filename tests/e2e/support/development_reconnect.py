@@ -4,10 +4,11 @@ import math
 from .development import (DevelopmentError, authenticate, idle_state,
                           received_character_identity, witnessed)
 from .worker import Bot
+from .development_inventory import SCOPE, capture_inventory, compare_inventory
 
 
 def verify_position_reconnect(profile, worker, mover, witness, baseline_state,
-                              expected_position, run_id, timings, login=authenticate):
+                              expected_position, run_id, timings, login=authenticate, *, inventory_report=None):
     account = profile["accounts"][0]
     identity = received_character_identity(baseline_state, account["character"])
     actor, name = identity["entity_id"], identity["name"]
@@ -17,6 +18,10 @@ def verify_position_reconnect(profile, worker, mover, witness, baseline_state,
             lambda s: idle_state(s, territory) and witnessed(s, actor, name, expected_position),
             "mover endpoint independently received before reconnect", timeout=10)
         received_before = list(before["actors"][str(actor)]["position"])
+    if inventory_report is not None:
+        inventory_report["scope"] = SCOPE
+        with timings.phase("reconnect_inventory_before_logout"):
+            inventory_report["before"] = capture_inventory(worker, mover, identity, territory)
     with timings.phase("reconnect_logout_and_despawn"):
         # Server close is required, not merely its logout acknowledgement. Keep
         # the witness online and require absence before creating a new client.
@@ -37,6 +42,10 @@ def verify_position_reconnect(profile, worker, mover, witness, baseline_state,
                 or math.dist(state["observed_position"], expected_position) > 0.15
                 or math.dist(state["observed_position"], received_before) > 0.15):
             raise DevelopmentError("fresh login did not receive the independently observed endpoint")
+    if inventory_report is not None:
+        with timings.phase("reconnect_inventory_after_login"):
+            inventory_report["after"] = capture_inventory(worker, reloaded, identity, territory)
+            compare_inventory(inventory_report)
     with timings.phase("reconnect_independent_respawn_and_say"):
         after = worker.wait_state(witness.name,
             lambda s: idle_state(s, territory) and witnessed(s, actor, name, expected_position)

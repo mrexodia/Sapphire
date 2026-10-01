@@ -22,7 +22,8 @@ from .support.development_decline import require_decline_worker, verify_party_de
 
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
-        verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False, viewer_name=None,
+        verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False,
+        verify_inventory=False, viewer_name=None,
         worker_factory=Worker, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
@@ -31,8 +32,11 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     validate_viewer_name(viewer_name, profile["accounts"])
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
-    if any(type(flag) is not bool for flag in (verify_reconnect, verify_party, verify_tell, verify_decline)):
+    if any(type(flag) is not bool for flag in
+           (verify_reconnect, verify_party, verify_tell, verify_decline, verify_inventory)):
         raise DevelopmentError("verification flags must be boolean")
+    if verify_inventory and not verify_reconnect:
+        raise DevelopmentError("inventory comparison requires explicit --verify-reconnect")
     if verify_decline and verify_party:
         raise DevelopmentError("decline and party-creation checks require separate fresh runs")
     route, catalog_hash = movement_route(profile)
@@ -50,6 +54,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "administrative_preparation_wait_enabled": await_placement,
               "administrative_command_execution_attested": False,
               "reconnect_verification": {"requested": verify_reconnect, "verified": False},
+              "inventory_verification": {"requested": verify_inventory, "verified": False},
               "party_verification": {"requested": verify_party, "verified": False},
               "tell_verification": {"requested": verify_tell, "verified": False},
               "decline_verification": {"requested": verify_decline, "verified": False},
@@ -158,7 +163,8 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                 if verify_reconnect:
                     mover, report["reconnect_verification"] = verify_position_reconnect(
                         profile, worker, mover, witness, states[0],
-                        route[0] if route else states[0]["observed_position"], run_id, timings, login)
+                        route[0] if route else states[0]["observed_position"], run_id, timings, login,
+                        inventory_report=report["inventory_verification"] if verify_inventory else None)
                     bots = [mover, witness]
                 if viewer_name is not None:
                     report["viewer_verification"]["finish"] = viewer_checkpoint(
@@ -203,6 +209,8 @@ def main(argv=None):
                         help="Allow up to 120s for separate GM-approved placement; requires quest_catalog")
     parser.add_argument("--verify-reconnect", action="store_true",
                         help="One explicit fresh-login identity/position check with the witness kept online; no restart")
+    parser.add_argument("--verify-reconnect-inventory", dest="verify_inventory", action="store_true",
+                        help="Compare complete received slot/catalog/count projections; requires --verify-reconnect")
     parser.add_argument("--verify-party", action="store_true",
                         help="One owned two-bot invite/chat/disband check; refuses existing social state")
     parser.add_argument("--verify-party-decline", dest="verify_decline", action="store_true",
@@ -216,7 +224,8 @@ def main(argv=None):
         result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles,
                      await_placement=args.await_placement, verify_reconnect=args.verify_reconnect,
                      verify_party=args.verify_party, verify_tell=args.verify_tell,
-                     verify_decline=args.verify_decline, viewer_name=args.viewer_name)
+                     verify_decline=args.verify_decline, verify_inventory=args.verify_inventory,
+                     viewer_name=args.viewer_name)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.
         print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))

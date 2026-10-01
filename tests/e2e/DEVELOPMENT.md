@@ -455,12 +455,38 @@ phases are timed separately. No database access, server restart, administrative
 command or automatic second attempt is performed. Failures keep account leases;
 the command never falls back to resetting a character to make the check pass.
 
-This checks only the selected character's identity/position across a fresh
-session. It does not prove restart/crash persistence, full inventory/quest/EXP
+Without the additional option below, this checks only the selected character's
+identity/position across a fresh session. It does not prove restart/crash persistence, full inventory/quest/EXP
 persistence, or that an administrative command actually ran. The shared-world
 run is still non-isolated. Controller/negative contracts and the owned-warm-world
 rehearsal above verify the bounded check. Existing shared-database/graphical-viewer
 compatibility and restart/crash persistence remain unverified.
+
+### Optional received inventory comparison across reconnect
+
+Add `--verify-reconnect-inventory` **alongside `--verify-reconnect`** to compare
+received inventory immediately before normal logout and after fresh authentication
+of the same dedicated mover. The flag does not implicitly authorize reconnect.
+Both observations require complete snapshots for ordinary bags 0–3, equipment
+1000 and Currency 2000; `inventory_ready` alone is insufficient because that
+native readiness flag does not include equipment. Empty completed containers
+are compared as empty, not treated as missing evidence.
+
+This option is read-only: no equip/move/grant/discard/reset operation is sent.
+It compares exact received storage/slot/catalog-ID/count projections and records
+both snapshots, their session-local received sequence numbers, changed slots and
+separate before/after timings under `inventory_verification`. Sequence numbers
+may restart across sessions; freshness comes from normal closure/despawn, fresh
+HTTP/lobby/world login, exact identity and the independent respawn/Say check.
+The peer witnesses the lifecycle/position, **not the mover's private inventory**.
+
+A missing container, changed projection or malformed/late observation fails;
+partial before/after evidence is retained, and there is no restore or retry.
+Each observation has a ten-second success budget. This does not prove item
+instance IDs, quality, durability/spiritbond, Crystal/armoury/other containers,
+quest/EXP persistence, an intentional inventory mutation or restart/crash
+persistence. Currency is read separately and never exposed as a generic bag
+operation. The default reconnect check is unchanged when this option is absent.
 
 ### Leases and failed runs
 
