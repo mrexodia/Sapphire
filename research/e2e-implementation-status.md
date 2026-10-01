@@ -1327,9 +1327,9 @@ CI commits **`279623c59`** and **`1f26e71f6`** harden both `.github/workflows/te
 `.github/workflows/gameplay-e2e.yml`. All six external action uses are pinned to
 exact 40-hex revisions; both workflows declare only `contents:read`, disable
 checkout credential persistence, bound every job and every individual step, and
-set explicit artifact missing-file/retention policy. The public matrix job is
-bounded to25 minutes. Private authorization is bounded to5 minutes, private
-gameplay remains45 minutes, serialized without cancellation, manually dispatched,
+set explicit artifact missing-file/retention policy. At those revisions, the public matrix job was
+bounded to25 minutes, private authorization to5 minutes and private gameplay to45
+minutes, serialized without cancellation, manually dispatched,
 default-branch reviewed, protected-environment named and selected only by the four
 self-hosted/Windows/X64/ephemeral labels.
 
@@ -1353,6 +1353,28 @@ Artifacts: `workflow-authorization-clean-{source.json,python.log,receipt.json}`.
 A separate PyYAML BaseLoader syntax parse of both committed files passed; its log
 SHA-256 is `30630799f965d2d1296180bda59c626d9c45c26fc3b1055bb4a4fe43a9b4cd23`.
 That is YAML syntax evidence only, not GitHub Actions schema validation.
+
+Feature **`8e61da644`** now requires the trusted private workflow to inspect retained
+private bytes before marking a passing public summary publishable. Each run derives
+a private root from exact GitHub run/attempt IDs and rejects a preexisting root;
+after the public inspector passes, exactly one generated run directory must exist
+and `inspect_ci_private_evidence` must accept it against `${{ github.sha }}`. The
+private root remains outside the upload allowlist. Policy inspection enforces the
+fresh-root declaration, exact-one discovery, producer use of that root, private
+inspector command/failure guard and ordering before publication.
+
+The prior 45/35-minute job/gate ceilings could not contain the historically
+observed roughly 56-minute 15-case gate, even before the sixteenth fixture. They
+are now bounded at 120 minutes for the whole gameplay job and 75 minutes for the
+gate step, leaving the existing build/contracts bounds intact. This is scheduling
+feasibility based on observed local duration, not capacity or hosted evidence.
+Frozen, remote-free source **`8e61da644eebbeecd06920e14548492329774b76`**
+passed **110 focused CI/workflow-policy tests in 4.86s**. Test-log SHA-256:
+`091ee240f051eb77e36be83960c043692efc0f3be11a6e46e31169185832127d`;
+policy-receipt SHA-256:
+`f0758b7b389ae604e852af5046458c5e84c7152b27eb4583c7f77a241ea6e035`.
+The receipt explicitly reports hosted execution, runner-group enforcement and VM
+destruction false.
 
 No workflow was dispatched, no runner was registered and no repository/environment
 setting or remote infrastructure changed. Hosted action availability, protected
@@ -4023,7 +4045,7 @@ a nearby passing test does not close them.
 | Stages 1–4 acceptance | repeated login, observer movement, persisted quest and selected regression actions with CI reports | Verified for declared subset |
 | Stages 5–6 acceptance | readable replay/minimization; action latency, disconnect/liveness, resources, cleanup and load-generator utilization | Verified for narrow bounded workloads; no capacity claim |
 | Public/unprovisioned CI tier | `.github/workflows/test-client.yml` | Authored and locally validated; **hosted run unverified** |
-| Provisioned trusted CI tier | `.github/workflows/gameplay-e2e.yml`, protected-runner contract, Windows/Linux local rehearsals | Authored/local only; **blocked by no registered authorized runner** |
+| Provisioned trusted CI tier | `.github/workflows/gameplay-e2e.yml`, protected-runner contract, fresh per-run private root plus mandatory public/private inspectors before publication, Windows/Linux local rehearsals | Authored/static-policy verified only; **blocked by no registered authorized runner** |
 | Scheduled exploration/soak tier | local workload commands and artifacts | **Partial:** no authorized hosted scheduled execution |
 | Manual/scheduled real-client tier | strict three-frame-review current policy plus historical completed isolated Sandbox lane | Historical lane verified once locally; current combined bot-interaction review policy and scheduled breadth are unverified |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
