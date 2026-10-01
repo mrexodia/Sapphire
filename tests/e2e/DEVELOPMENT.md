@@ -376,7 +376,8 @@ It does not grant items/levels/quest completion or reset enemies/other players.
 
    ```powershell
    python -m tests.e2e.run_development --profile .e2e-dev.json `
-     --allow-shared-development --await-placement --cycles 1 `
+     --allow-shared-development --await-placement `
+     --placement-registry .e2e-bot-placement.json --cycles 1 `
      --artifacts .e2e-artifacts/dev-prepare-001
    ```
 
@@ -398,12 +399,26 @@ A queued-warp message is **not success or permission to retry**. Server logs rec
 operator, approval, provisioning run identity, target identities, source and
 catalog hash, not credentials.
 
+`--await-placement` and `--placement-registry` must now be selected together.
+Before creating artifacts, acquiring leases or logging in, the runner strictly
+reads that exact private v2 registry, rejects duplicate keys, and binds its SHA-256,
+approval/provisioning IDs, source catalog/route, ordered generated names and exact
+character/entity IDs. After login those received identities must still equal the
+reviewed targets. `placement-ready.json` carries the same non-secret binding.
+This byte hash is not a signature and does not prove the server read unchanged
+bytes later; protect the private file and do not replace it during the run.
+
 The runner waits for received public-world readiness and position, then checks
 both identities/positions independently before normal Say and per-waypoint
-movement checks. Administrative waiting is timed and labelled separately. It
-never sends the debug command itself and does not attest that the command fired:
-if the bots already satisfy the destination preconditions, that is not proof of
-an administrative mutation. By default this run does not check fresh-login
+movement checks. It retains each pre-wait territory/sequence and post-wait
+identity/position/sequence. A transition from 182 must advance received state; a
+bot already at 130 is classified without claiming a new transition.
+Administrative waiting is timed and labelled separately. The runner never sends
+the debug command itself and does not attest that the command fired: if the bots
+already satisfy the destination preconditions, that is not proof of an
+administrative mutation. The strict external/managed result inspectors revalidate
+this preparation receipt as administrative evidence, never gameplay. By default
+this run does not check fresh-login
 position persistence. Add `--verify-reconnect` (below) to check received positions
 across one fresh authentication without a server restart. Failed/uncertain
 placements retain leases for inspection. Do not

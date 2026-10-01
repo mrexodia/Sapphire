@@ -2336,6 +2336,27 @@ control evidence. Earlier retained shared and graphical summaries lack the manda
 Say receipt and remain historical. Received Say is not rendering, server authority,
 viewer control, isolation, offline exclusion, reset authority or acceptance breadth.
 
+Feature **`c3a851675`** closes the runner-side gap between the reviewed private
+placement registry and received preparation evidence. `--await-placement` now
+requires `--placement-registry`; before artifact creation, lease acquisition or
+login, the runner strictly validates the exact v2 bytes, duplicate keys, catalog/
+route, approval and provisioning identities, and ordered generated bot bindings.
+Fresh login identities must equal both reviewed character/entity IDs. The retained
+receipt binds the registry SHA-256 plus each pre-wait territory/sequence and
+post-wait identity/position/sequence; a 182→130 transition must advance received
+state, while an already-130 target is not misclassified as a new transition.
+External and managed result inspectors independently validate this administrative
+receipt and keep graphical runs placement-free.
+
+Frozen, remote-free source **`c3a851675a8a480c708e900021f67bc56c0ba5f6`**
+passed **1012 focused contracts with no skips in 38.98s**. Test-log SHA-256:
+`5476cefd20aa0f1f352c14a8724820ec9ef30d51dfe4493b50f0a4e6445069e4`.
+No server, account, GM command, placement, gameplay or graphical operation ran.
+These are synthetic producer/consumer controls. The registry digest is not a
+signature, same-byte server-read proof, offline/exclusive-session fence, command
+attestation or crash-consistent approval. Historical placement runs lack this
+mandatory receipt and remain historical.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
