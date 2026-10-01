@@ -9,9 +9,12 @@ from .support.isolated_fault_result import inspect_isolated_fault
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--artifact-dir", required=True)
+    parser.add_argument("--junit", required=True)
+    parser.add_argument("--pytest-log", required=True)
     parser.add_argument("--expected-revision", required=True)
     args = parser.parse_args(argv)
-    proof = inspect_isolated_fault(args.artifact_dir, args.expected_revision)
+    proof = inspect_isolated_fault(
+        args.artifact_dir, args.junit, args.pytest_log, args.expected_revision)
     print(json.dumps(proof, indent=2))
     return 0
 

@@ -6,8 +6,11 @@ import json
 from pathlib import Path
 
 from .environment import SetupError, artifact_tree_sha256, require_process_teardowns
+from .isolated_case_result import inspect_isolated_case
 
 SCOPE = "current-standalone-owned-world-fault-evidence"
+FAULT_CASE = ("tests/e2e/test_live_fault_diagnostics.py::"
+              "test_owned_world_exit_preserves_classification_logs_and_cleanup")
 FAULT_CLASSIFICATION = "intentional_owned_process_exit"
 FAULT_SCOPE = ("one intentional termination of the exact owned disposable world process; "
                "proves bounded exit classification, generation-correlated teardown, "
@@ -58,7 +61,7 @@ def _digest(path, limit, label):
         raise SetupError(f"cannot hash isolated fault {label}") from error
 
 
-def inspect_isolated_fault(artifact_dir, expected_revision):
+def inspect_isolated_fault(artifact_dir, junit_path, pytest_log, expected_revision):
     if not _hex(expected_revision, 40):
         raise SetupError("expected isolated fault revision must be exact lowercase git identity")
     supplied = Path(artifact_dir)
@@ -71,6 +74,7 @@ def inspect_isolated_fault(artifact_dir, expected_revision):
     verification_raw, verification = _read(
         root / "fault-diagnostics-verification.json", 64 * 1024, "verification")
     world_sha256 = _digest(root / "world.log", 512 * 1024 * 1024, "world log")
+    runner = inspect_isolated_case(root, junit_path, pytest_log, FAULT_CASE, expected_revision)
 
     database, runtime, ports = manifest.get("database"), manifest.get("runtime"), manifest.get("ports")
     runtime_path = Path(runtime).resolve() if isinstance(runtime, str) else None
@@ -142,6 +146,10 @@ def inspect_isolated_fault(artifact_dir, expected_revision):
 
     return {"version":1,"status":"accepted","scope":SCOPE,
             "source_revision":expected_revision,"source_dirty":False,
+            "case":FAULT_CASE,"exact_single_passing_junit_case":True,
+            "junit_sha256":runner["junit_sha256"],
+            "pytest_log_sha256":runner["pytest_log_sha256"],
+            "runner_scope":runner["scope"],
             "classification":FAULT_CLASSIFICATION,"service":"world",
             "exact_world_teardown_correlated":True,"lifecycle":lifecycle_proof,
             "runtime_and_disposable_root_absent":True,
@@ -152,4 +160,4 @@ def inspect_isolated_fault(artifact_dir, expected_revision):
             "verification_sha256":hashlib.sha256(verification_raw).hexdigest(),
             "world_log_sha256":world_sha256,"artifact_tree_sha256":artifact_tree_sha256(root),
             "private_paths_ports_database_or_pids_disclosed":False,
-            "note":"One intentional exact-owned world exit only; not gameplay, organic crash, dump, hosted cancellation or build provenance."}
+            "note":"Exact single-case runner binding plus one intentional exact-owned world exit; not gameplay, organic crash, dump, hosted cancellation or build provenance."}

@@ -845,26 +845,33 @@ def test_standalone_isolated_fault_inspector_is_strict_sanitized_and_read_only(t
     report = current_public_summary(revision)
     _, directories = private_gate_evidence(tmp_path, report)
     artifact = directories[run_ci.CASES.index(FAULT_CASE)]
+    junit = tmp_path / "fault.xml"; junit.write_text(junit_document([FAULT_CASE]))
+    log = tmp_path / "pytest.log"; log.write_text("one fault case passed\n")
     files = [path for path in artifact.rglob("*") if path.is_file()]
     before = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
-    proof = inspect_isolated_fault(artifact, revision)
+    proof = inspect_isolated_fault(artifact, junit, log, revision)
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     assert proof["scope"] == ISOLATED_FAULT_SCOPE
     assert proof["exact_world_teardown_correlated"] is True
+    assert proof["exact_single_passing_junit_case"] is True
     assert proof["private_paths_ports_database_or_pids_disclosed"] is False
     text = json.dumps(proof)
     assert str(artifact) not in text and "sapphire_e2e_" not in text
     assert inspect_isolated_fault_main(
-        ["--artifact-dir",str(artifact),"--expected-revision",revision]) == 0
+        ["--artifact-dir",str(artifact),"--junit",str(junit),
+         "--pytest-log",str(log),"--expected-revision",revision]) == 0
     assert json.loads(capsys.readouterr().out) == proof
 
 
 @pytest.mark.parametrize("mutation", ["classification","world-pid","runtime","proof-hash",
-                                      "revision","foreign-field"])
+                                      "revision","foreign-field","junit-case",
+                                      "junit-failure","pytest-log"])
 def test_standalone_isolated_fault_inspector_rejects_foreign_or_incomplete_evidence(
         tmp_path, mutation):
     report = current_public_summary(); _, directories = private_gate_evidence(tmp_path, report)
     artifact = directories[run_ci.CASES.index(FAULT_CASE)]
+    junit = tmp_path / "fault.xml"; junit.write_text(junit_document([FAULT_CASE]))
+    log = tmp_path / "pytest.log"; log.write_text("one fault case passed\n")
     if mutation == "classification":
         path = artifact / "process-failure.json"
         value = json.loads(path.read_text()); value["classification"] = "organic_crash"
@@ -885,12 +892,18 @@ def test_standalone_isolated_fault_inspector_rejects_foreign_or_incomplete_evide
         path = artifact / "manifest.json"
         value = json.loads(path.read_text()); value["revision"] = "b" * 40
         path.write_text(json.dumps(value))
+    elif mutation == "junit-case":
+        junit.write_text(junit_document([FAULT_CASE], foreign_first=True))
+    elif mutation == "junit-failure":
+        junit.write_text(junit_document([FAULT_CASE], failing=True))
+    elif mutation == "pytest-log":
+        log.unlink()
     else:
         path = artifact / "process-failure.json"
         value = json.loads(path.read_text()); value["private_path"] = "C:/private"
         path.write_text(json.dumps(value))
     with pytest.raises(SetupError):
-        inspect_isolated_fault(artifact, "a" * 40)
+        inspect_isolated_fault(artifact, junit, log, "a" * 40)
 
 
 @pytest.mark.parametrize("mutation", ["changed-bytes","missing","profile","pytest-log","junit","junit-case","diagnostics","lifecycle","inputs","database","fault-evidence","rejected-receipt","runtime-retained"])

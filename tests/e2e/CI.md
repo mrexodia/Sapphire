@@ -199,9 +199,11 @@ separate evidence that its binaries came from the checkout.
   lifecycle receipt, then verifies private exit classification, redacted log
   publication and runtime removal. Retained standalone evidence can be checked
   read-only with `python -m tests.e2e.inspect_isolated_fault --artifact-dir
-  <private-artifact-dir> --expected-revision <40-hex>`. This is fault-evidence
-  coverage, not gameplay, spontaneous server-crash, crash-dump or hosted
-  cancellation-cleanup proof.
+  <private-artifact-dir> --junit <private-junit> --pytest-log <private-log>
+  --expected-revision <40-hex>`. It requires the independent exact single-case
+  runner/JUnit contract as well as fault semantics. This is fault-evidence coverage,
+  not gameplay, spontaneous server-crash, crash-dump or hosted cancellation-cleanup
+  proof.
 - A bounded single-case development execution can retain its own JUnit, pytest log
   and fixture artifact directory, then use `python -m tests.e2e.inspect_isolated_case
   --artifact-dir <private-artifact-dir> --junit <private-junit> --pytest-log
