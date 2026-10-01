@@ -12,6 +12,75 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Read-only inventory projection across shared reconnect: implemented and live verified
+
+Feature **`d39c1c1266815c044f26f2e07827c52ebde527e1`** adds
+`--verify-reconnect-inventory`, requiring explicit `--verify-reconnect`. It adds
+no inventory operation, reset or native/server change. Immediately before normal
+logout and after fresh authentication of the same mover, the controller requires
+complete received containers **0–3, 1000 and 2000** and compares canonical
+storage/slot/catalog-ID/count rows. Equipment completeness is checked separately
+because native `inventory_ready` covers bags/currency, not equipment.
+
+`inventory_verification` retains both projections, their **session-local** received
+sequence numbers, changed slot keys and requested/verified scope. Partial evidence
+survives a failure. Missing containers, malformed metadata, changed identity/state,
+changed contents and late observations fail without restoration/retry or lease
+release. The original independent logout/despawn, fresh identity/position,
+respawn/Say and normal cleanup requirements remain. The observer proves the
+lifecycle/position, not private inventory contents. Default reconnect is unchanged.
+No item-instance IDs, quality, durability/spiritbond, Crystal/armoury/other
+containers, quest/EXP or restart/crash persistence are claimed by this option.
+
+Contracts: **117 passed in 0.89s**, including missing individual containers,
+nonempty synthetic bag/currency comparisons, changed/added/removed rows, malformed
+slots/types/counts, identity/GM/transition changes, late success and no restore/
+retry on failure. Clean committed snapshot: **66 passed in 0.59s**, including
+reconnect and graphical-bridge policy compatibility; source integrity remained
+unchanged. Targeted existing native rewards CTest **1/1, 0.04s total** checks the
+underlying decoder, not the new Python orchestration. Logs/timings:
+`.e2e-artifacts/development-inventory-{contracts-001,clean-timings}.json` and
+`development-inventory-native-{build,tests}.log`. No full gate ran.
+
+Bounded product CLI live check:
+`.e2e-artifacts/development-inventory-live-001`. Controller is the feature revision;
+worker remains clean `401e93223` / SHA-256
+`2ada8b0b3b04734ae6ee3f64313e32aa03a6fc5562d61b132c4e4922e3edbc48`, backend remains
+clean `e665c041f`. Separate identities/hashes are in
+`development-inventory-inputs.json`; native source bytes were checked against the
+committed controller snapshot as well. Preserved experiments were not inputs.
+
+**Tester AFCFNKPCAI / entity2097153 / character18014398526259201** retained five
+received starter equipment rows, each count1: **1601, 2983, 3520, 3296, 3750** at
+slots **1000:0/3/4/6/7**. All four bags and Currency were received as complete empty
+snapshots in both sessions. Before/after sequence numbers are **122** and **118**;
+freshness is session-bound, not a false requirement that sequence increase across
+new sessions. `inspect-evidence.py` independently reconstructed all six selected
+containers from each session's `rewards_changed.snapshot` journal records and
+matched both report projections. No item-action publication appears in the action
+journal. This is **not** live coverage of nonempty bags, nonzero gil, deliberate
+inventory mutations or instance identity; those new-option cases remain synthetic.
+
+Check **17.547s**; startup **17.375s**; complete owned driver **42.266s**. The two
+inventory observation phases each recorded **0.000s at the recorded resolution**;
+this is not a zero-latency/cost claim. Three normal bot-session server closures,
+independent despawn/respawn, worker closure and lease release were inspected. A
+third separate headless observer's selected identity/position/territory/rank/
+party/invitation fields matched before/after and it closed normally. Owned runtime
+cleanup passed; process inspection afterward found only pre-existing MySQL7764.
+No graphical client, existing DB access, grants/reset, party/Tell/decline or
+movement scenario was added to this check. Three owned pre-connection fixtures
+remain administrative setup, not normal provisioning/progression.
+
+`inspected-evidence.json` hashes the exact driver, summaries, native journals,
+viewer snapshots, environment logs and process check. Product summary SHA-256:
+`b45a0ef893af2c74ef103cf1ac5d62bd9fa6b2d23560c5b04867df21b8c0abdf`;
+aggregate SHA-256:
+`b59be304cf9aba740ce46ed1b9e0412b70b727166f685025258576293bf904f0`.
+General safe reset/reprovisioning, existing shared deployment, broader graphical/
+gameplay, Linux, hosted CI and acceptance gaps remain pending. No full acceptance,
+soak or platform sweep ran; overall goal remains incomplete.
+
 ## Short shared-development exact-peer decline: implemented and live verified
 
 Feature **`401e9322337f1025adac2fca8d0e1c44f6632c12`** adds

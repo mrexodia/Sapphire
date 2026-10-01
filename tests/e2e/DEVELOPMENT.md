@@ -488,6 +488,13 @@ quest/EXP persistence, an intentional inventory mutation or restart/crash
 persistence. Currency is read separately and never exposed as a generic bag
 operation. The default reconnect check is unchanged when this option is absent.
 
+One bounded owned-runtime CLI check passed in **17.547s**, independently matching
+both sessions' raw snapshot journals to five starter-equipment rows and completed
+empty bag/currency snapshots. Nonempty bags/nonzero currency for this new option
+are covered by synthetic contracts, not that live run. A separate headless
+observer and normal cleanup were inspected; no graphical attestation or existing
+shared-database deployment is inferred. See the implementation audit for hashes.
+
 ### Leases and failed runs
 
 The runner uses exclusive local files in the system temporary directory under
