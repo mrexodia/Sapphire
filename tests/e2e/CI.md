@@ -88,6 +88,10 @@ python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/tes
   tests/e2e/test_workflow_policy.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
 python -m tests.e2e.inspect_ci_profile --profile .e2e-local.json \
   --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe
+python -m tests.e2e.stage_ci_profile --profile .e2e-local.json \
+  --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe \
+  --private-artifacts <new-absolute-private-directory> \
+  --expected-revision <exact-40-hex-checked-out-revision>
 python -m tests.e2e.run_ci --profile .e2e-local.json \
   --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe \
   --private-root .e2e-artifacts/ci --summary build-e2e/ci-summary.json --require-clean
@@ -100,7 +104,11 @@ python -m tests.e2e.inspect_ci_private_evidence --summary build-e2e/ci-summary.j
 
 The profile inspector performs the same static availability/catalog/mesh/hash
 preflight and emits no private paths; it starts no services or accounts and proves
-neither build provenance nor compatibility. The summary destination must not already exist. Without `--require-clean`, local
+neither build provenance nor compatibility. The optional staging command requires a
+clean exact revision and a new absolute private artifact directory, exercises the
+real fixture-v2 copy/config/manifest path, starts no process, removes its disposable
+runtime/root, and retains only private manifest/lifecycle evidence plus a sanitized
+receipt. It is not a service or database rehearsal. The summary destination must not already exist. Without `--require-clean`, local
 rehearsals may use a dirty checkout; the summary explicitly records that fact.
 The workflow always requires a clean checkout. The read-only inspector owns an
 independent exact ordered copy of the current 16-case and eight-catalog allowlists;

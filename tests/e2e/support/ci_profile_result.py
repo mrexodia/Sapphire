@@ -20,7 +20,7 @@ def _unique_object(pairs):
     return result
 
 
-def inspect_ci_profile(profile_path, *, worker=None, binaries=None, suffix=None):
+def _validated_profile(profile_path, *, worker=None, binaries=None, suffix=None):
     requested = Path(profile_path)
     try:
         if requested.is_symlink():
@@ -49,9 +49,15 @@ def inspect_ci_profile(profile_path, *, worker=None, binaries=None, suffix=None)
     if binaries is not None:
         effective["binaries"] = str(Path(binaries).resolve())
     try:
-        _, identities = preflight(effective, suffix=suffix)
+        normalized, identities = preflight(effective, suffix=suffix)
     except Exception as error:
         raise SetupError("isolated-gate private profile preflight failed; inspect private inputs") from error
+    return raw, normalized, identities
+
+
+def inspect_ci_profile(profile_path, *, worker=None, binaries=None, suffix=None):
+    raw, effective, identities = _validated_profile(
+        profile_path, worker=worker, binaries=binaries, suffix=suffix)
     return {"version":1,"status":"accepted","scope":SCOPE,
             "profile_sha256":hashlib.sha256(raw).hexdigest(),
             "deadline_scale":effective.get("deadline_scale", 1),

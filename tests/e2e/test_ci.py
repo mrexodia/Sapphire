@@ -11,6 +11,9 @@ from . import run_ci
 from .inspect_ci_result import main as inspect_ci_main
 from .support.ci_profile_result import (SCOPE as CI_PROFILE_SCOPE,
                                         inspect_ci_profile)
+from .support.ci_staging_result import (SCOPE as CI_STAGING_SCOPE,
+                                        stage_ci_profile)
+from .support import environment as environment_support
 from .inspect_ci_private_evidence import main as inspect_ci_private_main
 from .inspect_ci_failure_result import main as inspect_ci_failure_main
 from .inspect_isolated_fault import main as inspect_isolated_fault_main
@@ -306,6 +309,46 @@ def test_private_profile_inspector_rejects_symlink(profile, tmp_path):
         pytest.skip("profile symlinks are unavailable on this host")
     with pytest.raises(SetupError, match="cannot read"):
         inspect_ci_profile(link, suffix=".exe")
+
+
+def _clean_staging_git(monkeypatch, revision="a" * 40, dirty=False):
+    def check_output(args, **_):
+        if args[1:] == ["rev-parse", "HEAD"]: return revision + "\n"
+        if args[1:] == ["status", "--porcelain"]: return " M private\n" if dirty else ""
+        raise AssertionError(args)
+    monkeypatch.setattr(environment_support.subprocess, "check_output", check_output)
+
+
+def test_service_free_profile_staging_binds_manifest_and_removes_runtime(
+        profile, tmp_path, monkeypatch):
+    revision = "a" * 40; _clean_staging_git(monkeypatch, revision)
+    path = tmp_path / "profile.json"; path.write_text(json.dumps(profile))
+    private = (tmp_path / "private-stage").resolve()
+    proof = stage_ci_profile(path, private, revision, suffix=".exe")
+    assert proof["scope"] == CI_STAGING_SCOPE
+    assert proof["process_start_count"] == proof["process_teardown_count"] == 0
+    assert proof["runtime_and_disposable_root_absent"] is True
+    assert proof["services_database_accounts_or_gameplay_started"] is False
+    assert len(list(private.iterdir())) == 1 and str(tmp_path) not in json.dumps(proof)
+
+
+def test_service_free_profile_staging_rejects_preexisting_private_root(profile, tmp_path):
+    path = tmp_path / "profile.json"; path.write_text(json.dumps(profile))
+    private = tmp_path / "existing"; private.mkdir()
+    with pytest.raises(SetupError, match="new absolute"):
+        stage_ci_profile(path, private.resolve(), "a" * 40, suffix=".exe")
+
+
+def test_service_free_profile_staging_rejects_dirty_source_and_still_removes_runtime(
+        profile, tmp_path, monkeypatch):
+    _clean_staging_git(monkeypatch, dirty=True)
+    path = tmp_path / "profile.json"; path.write_text(json.dumps(profile))
+    private = (tmp_path / "private-stage").resolve()
+    with pytest.raises(SetupError, match="clean source/profile"):
+        stage_ci_profile(path, private, "a" * 40, suffix=".exe")
+    artifact = next(private.iterdir())
+    runtime = Path(json.loads((artifact / "manifest.json").read_text())["runtime"])
+    assert not runtime.exists() and not runtime.parent.exists()
 
 
 @pytest.mark.parametrize("scale", [True, 0, 4, 1.5])
