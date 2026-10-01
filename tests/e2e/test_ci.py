@@ -12,7 +12,8 @@ from .inspect_ci_result import main as inspect_ci_main
 from .inspect_ci_private_evidence import main as inspect_ci_private_main
 from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
                                 SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
-from .support.ci_private_result import (SCOPE as CI_PRIVATE_SCOPE,
+from .support.ci_private_result import (FAULT_CASE, FAULT_SCOPE,
+                                        SCOPE as CI_PRIVATE_SCOPE,
                                         inspect_ci_private_evidence)
 from .support.environment import SetupError, artifact_tree_sha256
 
@@ -550,8 +551,25 @@ def private_gate_evidence(tmp_path, report):
         lifecycle = {"version":1,
             "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
             "starts":starts,"teardowns":teardowns}
-        (directory / "manifest.json").write_text(json.dumps(manifest, indent=2))
-        (directory / "process-lifecycle.json").write_text(json.dumps(lifecycle, indent=2))
+        manifest_path = directory / "manifest.json"
+        lifecycle_path = directory / "process-lifecycle.json"
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+        lifecycle_path.write_text(json.dumps(lifecycle, indent=2))
+        if case == FAULT_CASE:
+            world = next(row for row in teardowns if row["process"] == "world")
+            world_path = directory / "world.log"; world_path.write_text("redacted world fault log\n")
+            failure = {"version":1,"classification":"intentional_owned_process_exit",
+                "process":"world","generation":world["generation"],"pid":world["pid"],
+                "returncode":world["returncode"],"log":"world.log","cleanup_required":True}
+            (directory / "process-failure.json").write_text(json.dumps(failure, indent=2))
+            proof = {key:failure[key] for key in
+                     ("classification","process","generation","pid","returncode")}
+            proof.update(world_log_sha256=hashlib.sha256(world_path.read_bytes()).hexdigest(),
+                manifest_sha256=hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+                lifecycle_sha256=hashlib.sha256(lifecycle_path.read_bytes()).hexdigest(),
+                runtime_removed=True,secrets_absent_from_published_logs=True,scope=FAULT_SCOPE)
+            (directory / "fault-diagnostics-verification.json").write_text(
+                json.dumps(proof, indent=2))
         rows.append({"case":case,
             "manifest_sha256":hashlib.sha256((directory / "manifest.json").read_bytes()).hexdigest(),
             "lifecycle_sha256":hashlib.sha256((directory / "process-lifecycle.json").read_bytes()).hexdigest(),
@@ -582,6 +600,14 @@ def rehash_private_row(report, directory, index):
         artifact_tree_sha256=artifact_tree_sha256(directory))
 
 
+def sync_private_diagnostics(report, private):
+    path = private / "gate-diagnostics.json"
+    value = json.loads(path.read_text())
+    value["environment_evidence"] = report["environment_evidence"]
+    path.write_text(json.dumps(value, indent=2))
+    report["gate_diagnostics_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def test_public_result_consumer_allowlists_require_explicit_producer_sync():
     assert EXPECTED_CASES == run_ci.CASES
     assert EXPECTED_CATALOGS == run_ci.CATALOGS
@@ -605,12 +631,13 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     private, directories = private_gate_evidence(tmp_path, report)
     summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report, indent=2))
     files = [summary, private / "gate-diagnostics.json", private / "pytest.log",
-             private / "live.xml", *[path / name for path in directories
-               for name in ("manifest.json","process-lifecycle.json")]]
+             private / "live.xml", *[file for path in directories
+                                      for file in path.rglob("*") if file.is_file()]]
     before = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     proof = inspect_ci_private_evidence(summary, private, revision)
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     assert proof["scope"] == CI_PRIVATE_SCOPE and proof["case_count"] == len(run_ci.CASES)
+    assert proof["fault_evidence_verified"] is True
     text = json.dumps(proof)
     assert str(private) not in text and "sapphire_e2e_" not in text
     assert inspect_ci_private_main(["--summary",str(summary),"--private-run-dir",str(private),
@@ -618,7 +645,7 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     assert json.loads(capsys.readouterr().out) == proof
 
 
-@pytest.mark.parametrize("mutation", ["changed-bytes","missing","pytest-log","junit","diagnostics","lifecycle","inputs","database"])
+@pytest.mark.parametrize("mutation", ["changed-bytes","missing","pytest-log","junit","diagnostics","lifecycle","inputs","database","fault-evidence"])
 def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_private_bytes(
         tmp_path, mutation):
     report = current_public_summary(); private, directories = private_gate_evidence(tmp_path, report)
@@ -651,12 +678,20 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
         value["worker_sha256"] = "0" * 64
         (target / "manifest.json").write_text(json.dumps(value))
         rehash_private_row(report, target, 0)
-    else:
+    elif mutation == "database":
         first = json.loads((directories[0] / "manifest.json").read_text())
         second = json.loads((directories[1] / "manifest.json").read_text())
         second["database"] = first["database"]
         (directories[1] / "manifest.json").write_text(json.dumps(second))
         rehash_private_row(report, directories[1], 1)
+    else:
+        index = run_ci.CASES.index(FAULT_CASE); target = directories[index]
+        path = target / "fault-diagnostics-verification.json"
+        value = json.loads(path.read_text()); value["scope"] = "forged scope"
+        path.write_text(json.dumps(value))
+        rehash_private_row(report, target, index)
+    if mutation in {"lifecycle","inputs","database","fault-evidence"}:
+        sync_private_diagnostics(report, private)
     summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report))
     with pytest.raises(SetupError):
         inspect_ci_private_evidence(summary, private, "a" * 40)

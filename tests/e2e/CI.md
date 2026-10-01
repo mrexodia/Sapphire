@@ -111,8 +111,9 @@ private run directory is retained, the second inspector matches every public has
 pair one-to-one to exactly 16 safe private environment directories, revalidates all
 service generations and staged source/input identities, requires exact private
 collection plus one passed setup/call/teardown per case, requires exactly 16 JUnit
-testcases with no failure/error/skip element, and emits no private path, database,
-runtime, port, PID or captured log content. It never makes absent private bytes
+testcases with no failure/error/skip element, and correlates the fault case's private
+classification/verification hashes to its exact world generation teardown. It emits
+no private path, database, runtime, port, PID or captured log content. It never makes absent private bytes
 recoverable. `run_ci` does not itself compile
 binaries, so running it against an external profile does not prove build provenance.
 Component hashes identify the actual tested inputs; the workflow's build step is
