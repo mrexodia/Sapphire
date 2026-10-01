@@ -1,21 +1,27 @@
 """Read-only correlation of one managed development run and terminal owned host.
 
-This validates lifecycle/provenance boundaries only. It does not revalidate the
-run's gameplay details or prove offline exclusion, reset authority, external-server
-identity, shared-world cleanliness, or acceptance coverage.
+This validates retained structured received-state evidence plus lifecycle/provenance
+boundaries. It does not prove rendering, offline exclusion, reset authority,
+external-server identity, shared-world cleanliness, or acceptance coverage.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
 
 from .development import (DevelopmentError, require_managed_host_binding,
                           require_normal_worker_exit)
+from .client_development import (INVENTORY_SCOPE, require_decline_receipt,
+                                 require_equipment_receipt, require_inventory_projection,
+                                 require_movement_receipt, require_party_receipt,
+                                 require_reconnect_receipt, require_shared_runner_metadata,
+                                 require_sprint_receipt, require_tell_receipt)
 from .development_host_result import inspect_owned_development_host
 from .development_lease import require_clear_terminal_account_leases
 
-SCOPE = "managed-development-run-and-terminal-owned-host-lifecycle-correlation"
+SCOPE = "managed-development-received-evidence-and-terminal-owned-host-correlation"
 
 
 def _read(path, label):
@@ -40,6 +46,93 @@ def _hex(value, length):
             and all(char in "0123456789abcdef" for char in value))
 
 
+def _validate_requested_checks(report):
+    require_shared_runner_metadata(report, catalog_required=True)
+    deadline = report.get("run_deadline")
+    if (not isinstance(deadline, dict)
+            or set(deadline) != {"enabled","limit_seconds","expired",
+                                 "session_work_completed_within_budget","scope",
+                                 "cleanup_may_exceed_deadline"}
+            or deadline.get("enabled") is not True
+            or type(deadline.get("limit_seconds")) is not int
+            or not 1 <= deadline["limit_seconds"] <= 900
+            or deadline.get("expired") is not False
+            or deadline.get("session_work_completed_within_budget") is not True
+            or deadline.get("scope") != "cooperative-success-deadline-not-hard-process-limit"
+            or deadline.get("cleanup_may_exceed_deadline") is not True):
+        raise DevelopmentError("managed development success deadline is missing or failed")
+    entities, territory, run_id = report.get("entities"), report.get("territory"), report.get("run_id")
+    if (not isinstance(entities, list) or len(entities) != 2
+            or any(type(value) is not int or value <= 0 for value in entities)
+            or len(set(entities)) != 2 or type(territory) is not int or territory != 130):
+        raise DevelopmentError("managed development entities or territory are invalid")
+    checks = {}
+    values = {name:report.get(f"{name}_verification") for name in
+              ("movement","party","tell","reconnect","inventory","sprint","equipment","decline")}
+    for name, value in values.items():
+        if not isinstance(value, dict) or type(value.get("requested")) is not bool:
+            raise DevelopmentError("managed development check request state is invalid")
+        if value["requested"] is False:
+            if value != {"requested":False,"verified":False}:
+                raise DevelopmentError("unrequested managed development check has evidence")
+        elif value.get("verified") is not True:
+            raise DevelopmentError("requested managed development check did not verify")
+    movement = None
+    if values["movement"]["requested"]:
+        movement = require_movement_receipt(values["movement"], entities, report.get("cycles"),
+                                            report.get("movement_waypoints_per_cycle"),
+                                            report.get("catalog_sha256"))
+        checks["movement"] = movement["scope"]
+    party = None
+    if values["party"]["requested"]:
+        party = require_party_receipt(values["party"], entities, run_id, territory)
+        checks["party"] = party["scope"]
+    if values["tell"]["requested"]:
+        checks["tell"] = require_tell_receipt(values["tell"], entities, run_id)["scope"]
+    normal_inventory = None
+    if values["inventory"]["requested"]:
+        value = values["inventory"]
+        if (set(value) != {"requested","verified","scope","before","after","changed_slots"}
+                or value.get("scope") != INVENTORY_SCOPE or value.get("changed_slots") != []):
+            raise DevelopmentError("managed reconnect inventory receipt is invalid")
+        before, after = require_inventory_projection(value.get("before")), require_inventory_projection(value.get("after"))
+        if before["inventory"] != after["inventory"]:
+            raise DevelopmentError("managed reconnect inventory projection changed")
+        normal_inventory = before
+        checks["inventory"] = INVENTORY_SCOPE
+    equipment = None
+    if values["equipment"]["requested"]:
+        if normal_inventory is None:
+            raise DevelopmentError("managed equipment check lacks inventory projection")
+        equipment = require_equipment_receipt(values["equipment"], entities, territory, normal_inventory)
+        checks["equipment"] = equipment["scope"]
+    reconnect = None
+    if values["reconnect"]["requested"]:
+        identity = equipment["identity"] if equipment is not None else values["reconnect"].get("identity_before")
+        if (not isinstance(identity, dict) or identity.get("entity_id") != entities[0]
+                or party is not None and identity != party["identities"][0]):
+            raise DevelopmentError("managed reconnect identity differs from the exact bot")
+        reconnect = require_reconnect_receipt(values["reconnect"], identity, territory)
+        if movement is not None and math.dist(
+                movement["authored_route"][0], reconnect["expected_position"]) > 0.15:
+            raise DevelopmentError("managed movement and reconnect origins disagree")
+        checks["reconnect"] = reconnect["scope"]
+    elif values["inventory"]["requested"] or values["equipment"]["requested"]:
+        raise DevelopmentError("managed persistence evidence lacks reconnect check")
+    if values["sprint"]["requested"]:
+        checks["sprint"] = require_sprint_receipt(values["sprint"], entities)["scope"]
+    if values["decline"]["requested"]:
+        if party is not None:
+            raise DevelopmentError("party and decline require separate fresh runs")
+        checks["decline"] = require_decline_receipt(values["decline"], entities)["scope"]
+    viewer = report.get("viewer_verification")
+    if viewer != {"requested":False,"verified":False,
+                  "scope":"two-endpoint-say-and-persistent-witness-presence-not-rendering",
+                  "viewer_login_or_control_performed":False}:
+        raise DevelopmentError("managed result requires a separate graphical viewer inspector")
+    return checks
+
+
 def inspect_managed_development_run(session_dir, summary_path):
     session_dir, summary_path = Path(session_dir).resolve(), Path(summary_path).resolve()
     host = inspect_owned_development_host(session_dir)
@@ -56,6 +149,7 @@ def inspect_managed_development_run(session_dir, summary_path):
             or report.get("account_reset_performed_by_runner") is not False
             or report.get("world_restart_performed") is not False
             or report.get("lease_retained") is not False
+            or report.get("worker_closed") is not True
             or report.get("lease_snapshot_matches_run_state") is not True):
         raise DevelopmentError("managed development run boundary is not passing or remains mutable")
     binding = require_managed_host_binding(report.get("managed_host_binding"), True)
@@ -77,12 +171,16 @@ def inspect_managed_development_run(session_dir, summary_path):
         raise DevelopmentError("managed development run worker/session differs from host evidence")
     require_normal_worker_exit(report)
     lease = require_clear_terminal_account_leases(report)
+    checks = _validate_requested_checks(report)
+    if not checks:
+        raise DevelopmentError("managed development run has no received scenario evidence")
     return {"version":1,"status":"accepted","scope":SCOPE,
             "run_id":run_id,"summary_sha256":_sha256(summary_path),
             "host_session_id":host["session_id"],
             "ready_status_sha256":receipt["status_sha256"],
             "worker_sha256":receipt["worker_sha256"],
-            "run_worker_exit":report["worker_exit"],
+            "run_deadline":report["run_deadline"],
+            "run_worker_exit":report["worker_exit"],"verified_checks":checks,
             "lease_snapshot":lease,"host_process_teardown":host["process_teardown"],
             "host_lifecycle_sha256":host["lifecycle_sha256"],
-            "note":"Lifecycle correlation only; gameplay, offline/reset authority and acceptance are out of scope."}
+            "note":"Strict retained received-state evidence plus lifecycle correlation; rendering, offline/reset authority and acceptance are out of scope."}

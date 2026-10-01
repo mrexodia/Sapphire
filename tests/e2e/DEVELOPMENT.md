@@ -105,9 +105,12 @@ python -m tests.e2e.inspect_managed_development_run `
   --summary .e2e-artifacts/watch-check-001/development-summary.json
 ```
 
-The composite inspector binds the run's exact start/end host identity, normal
-worker exit and clear leases to the same terminal session/service lifecycle. It is
-lifecycle correlation, not revalidation of gameplay details or offline/reset proof.
+The composite inspector binds the run's exact start/end host identity, bounded
+success deadline, normal worker exit and clear leases to the same terminal
+session/service lifecycle. It also strictly revalidates every requested structured
+movement/social/persistence receipt and requires every unrequested check to remain
+explicitly false. These retained received-state records are not rendering,
+server-side offline/reset authority, or acceptance proof.
 
 The host also shuts down on process loss, interruption, or expiry (60–14400 seconds **after readiness**).
 Expiry is a hard lifetime bound and may interrupt connected clients; it is not
