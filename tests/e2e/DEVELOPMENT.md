@@ -242,6 +242,36 @@ unit, and synthetic runner tests. Actual GM-triggered placement, client zoning a
 fresh-login persistence on a shared development world **remain unverified**. No
 server has been configured/deployed/modified by the agent to exercise it yet.
 
+### Optional scripted GM operator (administrative setup only)
+
+`support/development_operator.py::request_registered_placement` can dispatch one
+reviewed registry slot from an **already-authorized separate GM session**. It does
+not authenticate, create/promote an operator, adopt a viewer account, or discover
+targets. The caller supplies the reviewed registry, slot 0/1, a private artifact
+directory and explicit `approved=True` while the normal bots are waiting in
+`--await-placement` mode. A graphical GM can still use the documented commands
+instead; this helper is optional.
+
+The distinct worker method `development_place_registered` verifies the exact
+received operator character/entity/name, ready stationary public-130 state,
+nonzero GM rank, and absence of scene/party/invitation state immediately before
+publication on the client Asio thread. It formats only `!devbot place <32 lowercase
+hex approval ID> <0|1>`; arbitrary command text/extra arguments are rejected.
+Ordinary Say still rejects debug commands and non-GM bots cannot use this method.
+
+A native Bot accepts at most two slots from one approval, consuming each before
+transport publication. The Python helper flushes an exclusive intent file before
+dispatch; reusing that journal slot fails even after a timeout. These are local
+per-Bot/per-journal guards, not durable or cross-host exclusion. The server still
+independently validates its disabled-by-default configuration, registry, exact
+registered target, live state, and process-local one-shot ledger.
+
+The result is explicitly **local publication only**, with `placement_verified:
+false`. Keep intent files and do not retry uncertain requests. Only the normal
+runner's independently received positions, identities, gameplay and optional
+fresh-login checks can verify the corresponding outcomes. Administrative setup
+is never natural progression or normal movement evidence.
+
 ## Run a short check
 
 ```powershell

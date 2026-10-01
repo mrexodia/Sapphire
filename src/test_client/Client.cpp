@@ -1475,6 +1475,19 @@ namespace Sapphire::Testing
       sendChat(WC::FFXIVIpcChatTo::_ServerIpcType, payload);
       return Json::object();
     }
+    if(method == "development_place_registered")
+    {
+      // Separate administrative API; ordinary Say and non-GM gameplay remain
+      // unable to send debug commands. Validate/consume on this Asio thread.
+      const auto message = m_developmentPlacements.consume(m_state, m_moving, args);
+      WC::FFXIVIpcChatHandler p{};
+      p.clientTimeValue = timeSeconds(); p.position.originEntityId = m_entity;
+      std::copy(m_predicted.begin(), m_predicted.end(), p.position.pos);
+      p.chatType = Common::ChatType::Say; copyText(p.message, message);
+      sendZone(p._ServerIpcType, objectBytes(p));
+      return {{"scope", "administrative-preparation-not-gameplay"},
+              {"publication", "local-only"}, {"placement_verified", false}};
+    }
     if(method == "say")
     {
       const auto message = args.at("message").get<std::string>();

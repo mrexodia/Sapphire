@@ -5,6 +5,7 @@
 #include "TransitionActions.h"
 #include "PartyActions.h"
 #include "ChatActions.h"
+#include "DevelopmentPlacementActions.h"
 #include <Crypt/Random.h>
 #include <algorithm>
 #include <set>
@@ -36,6 +37,57 @@ int main()
       require(token.size() == 62 && token.find_first_not_of("0123456789abcdef") == std::string::npos,
         "session token wire format");
       require(tokens.insert(token).second, "independent session tokens");
+    }
+    {
+      using Json = nlohmann::json;
+      const Json identity{{"name", "Tester Operator"}, {"entity_id", 3}, {"character_id", 300}};
+      const Json state{{"phase", "ready"}, {"territory", 130}, {"gm_rank", 1}, {"entity_id", 3},
+        {"scene", nullptr}, {"event_id", nullptr}, {"between_areas", false},
+        {"party", {{"id", 0}, {"count", 0}}}, {"pending_party_invite", nullptr},
+        {"characters", Json::array({identity})}};
+      const Json args{{"administrative_setup", true}, {"approval_id", std::string(32, 'a')},
+                      {"slot", 0}, {"expected_operator", identity}};
+      DevelopmentPlacementActions guard;
+      require(guard.consume(state, false, args) == "!devbot place " + std::string(32, 'a') + " 0",
+              "exact administrative command, not general debug text");
+      rejects([&] { guard.consume(state, false, args); });
+      auto otherApproval = args; otherApproval["approval_id"] = std::string(32, 'b');
+      rejects([&] { guard.consume(state, false, otherApproval); });
+      auto second = args; second["slot"] = 1;
+      require(guard.consume(state, false, second).back() == '1', "one second registered slot");
+      rejects([&] { guard.consume(state, false, second); });
+      for(int index = 0; index < 22; ++index)
+      {
+        auto s = state, a = args; bool moving = false;
+        switch(index)
+        {
+          case 0: s["gm_rank"] = 0; break;
+          case 1: s["gm_rank"] = true; break;
+          case 2: s["gm_rank"] = 256; break;
+          case 3: s["phase"] = "loading"; break;
+          case 4: s["territory"] = 182; break;
+          case 5: moving = true; break;
+          case 6: s["scene"] = Json::object(); break;
+          case 7: s["event_id"] = 1; break;
+          case 8: s["between_areas"] = true; break;
+          case 9: s["party"]["count"] = 1; break;
+          case 10: s["pending_party_invite"] = Json::object(); break;
+          case 11: a["administrative_setup"] = false; break;
+          case 12: a["administrative_setup"] = 1; break;
+          case 13: a["approval_id"] = "a; !kill"; break;
+          case 14: a["slot"] = 2; break;
+          case 15: a["slot"] = true; break;
+          case 16: a["expected_operator"]["entity_id"] = 4; break;
+          case 17: a["expected_operator"]["character_id"] = -1; break;
+          case 18: s["characters"].push_back(identity); break;
+          case 19: s["characters"] = Json::array(); break;
+          case 20: a["message"] = "!arbitrary"; break;
+          case 21: a["expected_operator"]["name"] = "Other Operator"; break;
+        }
+        DevelopmentPlacementActions invalid;
+        rejects([&] { invalid.consume(s, moving, a); });
+        require(!invalid.consume(state, false, args).empty(), "pre-publication rejection does not consume approval");
+      }
     }
     // Explicit wire layout checks, in addition to roundtrips using shared definitions.
     using namespace Wire::WorldPackets;

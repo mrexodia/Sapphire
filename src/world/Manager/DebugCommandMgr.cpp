@@ -1611,8 +1611,8 @@ void DebugCommandMgr::hotReload( char* data, Sapphire::Entity::Player& player, s
 void DebugCommandMgr::developmentBot( char* data, Entity::Player& player, std::shared_ptr< DebugCommand > command )
 {
   // Invoked through the ordinary session input queue on the world update thread.
-  // The headless gameplay worker cannot send debug commands. The GM operator
-  // explicitly authorizes each fixture placement; no network/admin API is added.
+  // Normal headless gameplay APIs cannot send debug commands. A separate GM
+  // operator authorizes fixture placement; no server network/admin API is added.
   auto& config = Common::Service< Common::ConfigMgr >::ref();
   if( !config.getValue( "DevelopmentBots", "Enabled", false ) || !player.getGmRank() )
   {
