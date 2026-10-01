@@ -1987,6 +1987,22 @@ run. Build/test log SHA-256 values are respectively
 `1871ba2ee1561da0c2639a8c4e6171bd633335149c30a66cb10cd6ffbcffae29`.
 These are native semantic/unit contracts, not external gameplay or service evidence.
 
+The complete clean-built profile also passed the real fixture-v2 `Environment.stage()`
+path from the frozen clean repository without calling `start()`: all four binaries,
+seven script modules, eight catalogs, source data, private configs and navigation
+were copied into one disposable runtime; the staged manifest matched the independent
+preflight identities and exact revision. `close()` recorded zero starts/teardowns
+and both runtime and disposable parent were absent afterward. Manifest/lifecycle/
+artifact-tree SHA-256 values are respectively
+`08ce27b1055485068f608fc6ae29af1bec8daa254eb747d7f85612860f91625b`,
+`4f514a1337f622b936a1600e9b6ba1336fa520e51f6fb347a93a792f0018de46`, and
+`551db6e3e1ce61636ccf2ca9238e2569844739b4bbb5f075cad3888c7c10c552`.
+Sanitized stage receipt SHA-256:
+`57b8bfefccfe4db59be740a3af8870d99b62a267849328bb71055b54afa38848`.
+No executable, database, service, account or gameplay operation ran. This is actual
+staging/manifest/root-removal evidence, not process isolation, service cleanup,
+gameplay, compatibility or secure-erasure proof.
+
 Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
 to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
 inspection derives and requires each expected `(classname, name)` pair, including
