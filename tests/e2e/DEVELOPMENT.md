@@ -58,6 +58,13 @@ checkout). It contains:
 - `status.json`: identity, expiry, process IDs, lifecycle/timing and cleanup
   diagnostics, without account credentials.
 
+Live narrow evidence: one managed-host development check passed in **25.4s**,
+and separate normal provisioning completed in **12.0s**, with a third headless
+client receiving the bots' unique Say/reconnect messages. This is not graphical
+viewer evidence. The one-off diagnostic wrapper's later status-label error and
+unexecuted post-provision viewer assertions remain explicitly recorded in the
+audit; they are not relabelled as a passing aggregate run.
+
 The viewer is a new ephemeral fixture, **not your existing character**. No client
 is launched, no installed client/settings are changed, and graphical
 compatibility is not inferred from headless results. A matching client must be
@@ -141,7 +148,8 @@ directory with appropriate inherited ACLs. It contains generated passwords: do
 not commit, paste or publish it. The artifact directory must also be new.
 
 `provisioning-summary.json` records creation request/receipt, separate successful
-login, refreshed-lobby/world confirmation and logout stages. Errors preserve the
+login, refreshed-lobby/world confirmation and logout stages. Successful setup has
+status **`provisioned`** (CLI exit zero), not gameplay status `passed`. Errors preserve the
 credential file and local leases; inspect partial results instead of retrying
 creation or deleting characters automatically. No old character/account is
 modified, reset or removed. Account creation is sequential, not a claim of

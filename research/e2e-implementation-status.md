@@ -12,6 +12,85 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Bounded warm host and live dedicated provisioning (not acceptance)
+
+Feature `203bf98f7` adds `tests/e2e/serve_development.py`: one owned private
+runtime/database, three pre-connection non-GM fixtures (two bots and a separate
+viewer), private profile export, and operator-stop/expiry/process-loss shutdown.
+The 60–14400-second lifetime starts at readiness. The host never accesses the
+user's existing database, restarts between checks, or prepares live cached
+characters. Its own fixture preparation remains administrative, not normal
+lobby-creation evidence. It does not launch a graphical client or preserve the
+private database after shutdown.
+
+Managed profiles bind a local session ID, owner PID/creation time, deadline,
+API/lobby ports and worker hash. The runner/provisioner checks the binding before
+creating run artifacts or authenticating; HTTP operations recheck it. Explicit
+stop markers, stopped/failed states, stale identities, expired deadlines,
+changed workers, missing/oversized status files and dead/zombie owners fail
+closed. These checks are not atomic server-side leases or crash-consistent
+cleanup. Unchanged exported profiles are removed; changed/partial exports are
+retained and reported. Status-write failures do not skip owned-process cleanup.
+Known production lobby session-log fields are now redacted at export even when
+an independently authenticated viewer's session was not registered in the
+fixture API wrapper. Arbitrary plugin logs remain outside that sanitizer claim.
+
+Focused verification: **230 passed in 6.99s** in the working tree, then **230
+passed in 7.36s** from a committed `203bf98f7` source snapshot, excluding the
+uncommitted client/controller performance experiments. Timings are in
+`.e2e-artifacts/development-host-{focused,clean-focused}-timings-1.json`.
+The unchanged clean worker is the previously native-verified
+`64793b3034513ed9118baa8dba7aa484c7ca5ef57343c94862af981577e60fb2` binary;
+server/API/lobby/DB-manager hashes still match the historical `e34d695fd` gate.
+No newly linked GM-placement server or full acceptance gate was used.
+
+**Live evidence, including failed diagnostics:**
+
+- `.e2e-artifacts/development-host-live-001`: host startup/stop/cleanup and stale
+  profile rejection worked. The diagnostic driver passed a string instead of
+  `Path` to the viewer `Worker` constructor and failed before launching that
+  client. Its report and exact driver are retained. The private runtime was
+  removed; no gameplay check or normal provisioner call began.
+- `.e2e-artifacts/development-host-live-002`: corrected the known pre-client
+  driver error and used a new private environment, not a mutation retry.
+  Host readiness took **25.453s**. The ordinary development check passed in
+  **25.359s**, with observed movement, exact two-bot party/chat/disband and
+  fresh-login position verification. Both normal bot cleanup and leases passed.
+- The separate provisioner returned its documented success status
+  **`provisioned` in 11.968s**. Both new accounts independently authenticated;
+  encrypted lobby creation/refreshed-list/world entry bound exact character and
+  entity IDs. Both characters were non-GM in opening territory **182**, and both
+  normal logout/server closures completed. Its worker closed and leases released.
+  `ready_for_shared_checks` remains **false**: public placement/progression was
+  not demonstrated for these newly provisioned characters.
+- A third distinct non-GM headless client independently received both bots'
+  unique Say messages plus the fresh-login Say, and subsequently completed
+  normal logout/server closure. Its journal contains only login/logout/close/
+  remove commands. This supplies co-presence/liveness evidence, **not graphical
+  compatibility or an unchanged post-provision state snapshot**.
+- The second one-off driver incorrectly expected provisioner status `passed`
+  instead of `provisioned`. Its aggregate remains **failed**, and the planned
+  post-provision viewer snapshot assertions did not run. Do not relabel that
+  driver as passing. The underlying development/provisioning summaries and
+  journals were inspected separately; no successful mutation was repeated merely
+  to get a green diagnostic wrapper.
+- Host CLI exit was zero, final status `stopped`, private runtime/process cleanup
+  verified, unchanged host exports removed, and captured stopped-profile reuse
+  rejected. The private DB name/port were verified distinct from the existing
+  `sapphire` database/3306 service. Process inspection afterward found only the
+  pre-existing MySQL PID 7764. Ten known session-log field occurrences were
+  inspected and redacted in exported logs. Normal provisioner's separate private
+  credential output is retained, bound to the now-stopped host.
+
+The second directory contains `check/development-summary.json`,
+`provisioning/provisioning-summary.json`, their action/event journals,
+`viewer-worker/{actions,events}.jsonl`, `host-final-status.json`, and the failed
+`verification-summary.json`/`driver.py`. `inspected-evidence.json` records the
+narrow post-hoc artifact audit and SHA-256 hashes, explicitly **not** a passing
+aggregate-driver verdict. The graphical viewer, post-provision viewer state
+comparison, live GM placement, broader resets/reprovisioning, and original
+acceptance/platform/CI requirements remain open.
+
 ## Live warm-world development rehearsal (not acceptance coverage)
 
 After explicit broad local authorization, a committed-source client/controller
@@ -113,9 +192,9 @@ normal actions. Neither a registry nor a queued-warp response proves mutation;
 the runner does not attest administrative command execution. Fresh-login position
 verification is now optional (below), with the narrow owned-warm-world evidence
 above. General character reprovisioning and enemy/world-state resets remain
-**not implemented**. Normal provisioning and GM placement have not been live
-verified; those still need a feature-built server and an operator-approved
-registry/GM session, independently of the successful short warm checks.
+**not implemented**. Normal provisioning now has the narrow owned-warm-host live
+evidence above. GM placement still needs a feature-built server and an
+operator-approved registry/GM session, independently of the short warm checks.
 
 Placement verification: **161 focused Python tests passed in 5.86s** (the previous
 selection plus `test_development_placement.py`); timing evidence is
