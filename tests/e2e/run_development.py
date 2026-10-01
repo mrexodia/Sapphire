@@ -20,7 +20,8 @@ from .support.development_viewer import validate_viewer_name, viewer_checkpoint
 from .support.development_tell import require_visible_tell_worker, verify_visible_tells
 from .support.development_decline import require_decline_worker, verify_party_decline
 from .support.development_sprint import require_sprint_worker, verify_sprint as verify_self_sprint
-from .support.development_equipment import require_equipment_worker, begin_roundtrip, finish_roundtrip
+from .support.development_equipment import (require_equipment_worker, begin_roundtrip,
+                                            finish_roundtrip, observe_after_reconnect)
 
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
@@ -176,7 +177,13 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                     report["sprint_verification"] = verify_self_sprint(
                         profile, worker, mover, witness, states, timings)
                 if verify_equipment:
-                    begin_roundtrip(profile, worker, mover, states[0], report["equipment_verification"], timings)
+                    equipment = report["equipment_verification"]
+                    begin_roundtrip(profile, worker, mover, states[0], equipment, timings)
+                    mover, equipment["unequip_reconnect"] = verify_position_reconnect(
+                        profile, worker, mover, witness, states[0],
+                        route[0] if route else states[0]["observed_position"], run_id, timings, login,
+                        reconnected_name="mover-equipment-unequipped")
+                    observe_after_reconnect(profile, worker, mover, equipment, timings)
                 if verify_reconnect:
                     mover, report["reconnect_verification"] = verify_position_reconnect(
                         profile, worker, mover, witness, states[0],
@@ -184,7 +191,13 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                         inventory_report=report["inventory_verification"] if verify_inventory else None)
                     bots = [mover, witness]
                 if verify_equipment:
-                    finish_roundtrip(profile, worker, mover, report["equipment_verification"], timings)
+                    finish_roundtrip(profile, worker, mover, equipment, timings)
+                    mover, equipment["reequip_reconnect"] = verify_position_reconnect(
+                        profile, worker, mover, witness, states[0],
+                        route[0] if route else states[0]["observed_position"], run_id, timings, login,
+                        reconnected_name="mover-equipment-reequipped")
+                    observe_after_reconnect(profile, worker, mover, equipment, timings, reequipped=True)
+                    bots = [mover, witness]
                 if viewer_name is not None:
                     report["viewer_verification"]["finish"] = viewer_checkpoint(
                         worker, [mover, witness], [actor, observer], profile["territory"],
@@ -239,7 +252,7 @@ def main(argv=None):
     parser.add_argument("--verify-sprint", action="store_true",
                         help="One ordinary self-Sprint with fresh independent effect/zero-TP observations; no retry")
     parser.add_argument("--verify-starter-equipment", dest="verify_equipment", action="store_true",
-                        help="Ordinary starter-body round trip around explicit inventory reconnect; no failure restoration")
+                        help="Starter-body round trip with three normal reconnects; also requires both inventory/reconnect flags")
     parser.add_argument("--viewer-name", help="Exact separate visible player name; requires unique Say replies at start/finish")
     args = parser.parse_args(argv)
     try:

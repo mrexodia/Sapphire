@@ -507,20 +507,32 @@ Both native equipment methods must be advertised before authentication.
 This runs after the other short scenarios:
 
 1. Capture the complete selected bag/equipment/Currency projection, then publish
-   one ordinary unequip of that exact body to bag0:0. Require a newer received
-   projection with precisely that move; the operation acknowledgement is not proof.
-2. Perform the separately requested normal logout/server closure/despawn and
-   fresh login. Existing inventory comparison must now retain the **nonempty bag**;
-   the independent witness observes lifecycle/position/Say, not private inventory.
-3. Recheck the same class, identity and exact unequipped projection. Only then
-   publish one ordinary re-equip to equipment1000:3 and require a newer received
-   projection equal to the original selected slots/catalog IDs/counts.
+   one ordinary unequip of that exact body to bag0:0. Acknowledge once, without
+   synthesizing any local inventory change. The server's `moveItem` path writes
+   containers but does not send their contents to the current session.
+2. Perform a normal logout/server closure/independent despawn and fresh login as
+   `mover-equipment-unequipped`. Require complete received inventory with precisely
+   the expected move. Acknowledgement alone cannot satisfy this assertion.
+3. Perform the separately requested read-only inventory reconnect as
+   `mover-reconnected`. The existing equality comparison must retain the now
+   observed **nonempty bag**, without changing that comparison's semantics.
+4. Recheck the same class, identity and exact unequipped projection. Only then
+   publish one ordinary re-equip to equipment1000:3 and normally reconnect again,
+   as `mover-equipment-reequipped`. Require complete received inventory equal to
+   the original selected slots/catalog IDs/counts.
+
+This option explicitly adds two reconnects to the ordinary one: **three in total**.
+Each requires normal server closure, independent despawn/respawn, the same identity
+and position, and a distinct per-session Say message. Session-local counters may
+restart; they are not compared across connections. The independent witness proves
+lifecycle/position/liveness, not the private inventory or rendered appearance.
 
 `equipment_verification` retains the identity/class, before/expected/received
 projections, publication-attempt markers and acknowledgements (still explicitly
-not inventory-mutation proof). Each mutation has a ten-second success budget;
-normal bounded RPCs are not hard-interrupted. The four `equipment_*` observation/
-mutation phases are timed separately from reconnect. No gameplay retry, currency
+not inventory-mutation proof). Acknowledgements and each complete-inventory
+observation have ten-second success budgets; normal bounded RPCs are not
+hard-interrupted. The six `equipment_*` preparation/acknowledgement/observation
+phases are timed separately from the three reconnects. No gameplay retry, currency
 mutation, grant, DB edit, reset or new administrative authority is introduced.
 
 Re-equip is an explicit successful-scenario step, **never failure cleanup**. A

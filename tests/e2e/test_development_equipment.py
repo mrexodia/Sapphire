@@ -28,22 +28,35 @@ class EquipmentWorker(InventoryWorker):
         if failure == 'invite': s['pending_party_invite'] = {'character_id': 999}
         if failure == 'incomplete': s['rewards']['containers']['1000'] = False
         self.original = copy.deepcopy(s)
+        self.persisted = copy.deepcopy(s['rewards']['inventory'])
+        self.stale_caches = []
 
     def request(self, method, bot=None, **args):
         f = self.equipment_failure
         if method == 'capabilities':
             return {'methods': [] if f == 'old_worker' else sorted(equipment.METHODS)}
         if method not in equipment.METHODS:
-            if method == 'logout' and bot == 'mover':
-                self.original = copy.deepcopy(self.states['mover'])  # Model persistence only.
-            result = super().request(method, bot, **args)
-            if method == 'login' and bot == 'mover-reconnected':
+            if method == 'logout' and bot.startswith('mover'):
+                self.original = copy.deepcopy(self.states[bot])
+                self.original['rewards']['inventory'] = copy.deepcopy(self.persisted)  # Model server state, not client cache.
+                self.states[bot]['phase'] = 'logged_out'
+                self.states['witness']['actors'].pop('1', None)
+                self.commands.append(method)
+                return {}
+            if method == 'login' and bot.startswith('mover-'):
+                result = super().request(method, 'mover-reconnected', **args)
+                if bot != 'mover-reconnected': self.states[bot] = self.states.pop('mover-reconnected')
                 s = self.states[bot]; s['rewards']['operation_batches'] = []
                 if f == 'changed_on_login': s['rewards']['inventory']['0:0']['id'] = 999
                 if f == 'class_changed': s['rewards']['class_job'] = 2
-            return result
+                if f == 'identity_changed': s['characters'][0]['character_id'] = 999
+                return result
+            if method == 'say' and bot.startswith('mover-'):
+                return super().request(method, 'mover-reconnected', **args)
+            return super().request(method, bot, **args)
         self.operations.append(method)
-        s = self.states[bot]; inv = s['rewards']['inventory']
+        s = self.states[bot]; inv = self.persisted
+        self.stale_caches.append(copy.deepcopy(s['rewards']['inventory']))
         unequip = method == 'request_item_unequip'
         assert bot == ('mover' if unequip else 'mover-reconnected')
         assert args == ({'gear_slot': 3, 'destination_storage': 0, 'destination_slot': 0, 'expected_item': 2983}
@@ -56,18 +69,19 @@ class EquipmentWorker(InventoryWorker):
                 del inv['0:0']; inv['1000:3'] = dict(equipment.BODY)
         if f == 'changed_currency': inv['2000:0']['count'] += 1
         if f == 'wrong_destination' and unequip: inv['0:0']['slot'] = 1
-        if f != 'stale_sequence': s['seq'] += 1
+        s['seq'] += 1  # Ack only; inventory cache deliberately stays stale.
         if f != 'missing_ack':
             s['rewards']['operation_batches'].append({'context': context, 'operation': 8, 'error': 0})
         if f == 'late_publication': self.clock[0] += 11
         return {'context': context}
 
     def wait_state(self, bot, predicate, description, timeout=30):
+        if self.equipment_failure == 'missing_server_close' and description == 'server logout connection close':
+            raise DevelopmentError('synthetic missing server closure')
         result = super().wait_state(bot, predicate, description, timeout)
-        if self.equipment_failure == 'late_observation' and description == 'exact received equipment round-trip projection':
+        if (self.equipment_failure == 'late_observation' and bot == 'mover-equipment-unequipped'
+                and description == 'complete received bag/equipment/currency snapshots'):
             self.clock[0] += 11
-        if self.equipment_failure == 'changed_before_reequip' and bot == 'mover-reconnected' and description == 'exact say':
-            self.states[bot]['rewards']['inventory']['0:0']['id'] = 999
         return result
 
     def snapshot(self, bot):
@@ -90,28 +104,32 @@ def execute(profile, tmp_path, failure=None, enabled=True, worker=None):
 def test_normal_equipment_roundtrip_wraps_nonempty_bag_reconnect(profile, tmp_path):
     report, fake, logins = execute(profile, tmp_path)
     assert report['status'] == 'passed' and fake.closed and not report['lease_retained']
-    assert len(logins) == 3
+    assert len(logins) == 5  # Initial mover/witness plus three explicit mover reconnects.
     p = report['equipment_verification']; inventory = report['inventory_verification']
     assert p['verified'] and inventory['verified']
     assert p['before']['inventory'] == p['reequipped']['inventory']
     assert p['unequipped']['inventory'] == inventory['before']['inventory'] == inventory['after']['inventory']
     assert inventory['after']['inventory']['0:0'] == equipment.BAG
     assert '1000:3' not in inventory['after']['inventory']
-    assert p['before_reequip']['received_sequence'] < p['unequipped']['received_sequence']
-    assert p['reequipped']['received_sequence'] > p['before_reequip']['received_sequence']
+    assert p['before_reequip']['received_sequence'] == p['unequipped']['received_sequence'] == 80
+    assert p['reequipped']['received_sequence'] == 80  # Fresh counters are not compared across sessions.
+    assert fake.stale_caches == [p['before']['inventory'], p['unequipped']['inventory']]
+    assert p['unequip_reconnect']['verified'] and p['reequip_reconnect']['verified']
+    assert len({row['message'] for row in fake.states['witness']['chat'] if 'fresh login verified' in row['message']}) == 3
     assert fake.operations == ['request_item_unequip', 'request_item_reequip_starter']
     assert p['unequip_receipt']['inventory_change_verified'] is False
     assert p['reequip_receipt']['inventory_change_verified'] is False
-    fake.states['mover-reconnected']['rewards']['inventory']['1000:3']['count'] = 99
+    fake.states['mover-equipment-reequipped']['rewards']['inventory']['1000:3']['count'] = 99
     assert p['reequipped']['inventory']['1000:3']['count'] == 1
 
 
 @pytest.mark.parametrize('failure,count', [
     ('old_worker', 0), ('occupied_destination', 0), ('wrong_body', 0), ('wrong_count', 0),
     ('unsupported_class', 0), ('party', 0), ('invite', 0), ('incomplete', 0),
-    ('unequip_ack_only', 1), ('reequip_ack_only', 2), ('missing_ack', 1), ('stale_sequence', 1),
+    ('unequip_ack_only', 1), ('reequip_ack_only', 2), ('missing_ack', 1),
     ('changed_currency', 1), ('wrong_destination', 1), ('changed_on_login', 1),
-    ('class_changed', 1), ('changed_before_reequip', 1), ('invalid_context', 1)])
+    ('class_changed', 1), ('changed_before_reequip', 1), ('invalid_context', 1),
+    ('identity_changed', 1), ('missing_server_close', 1)])
 def test_failed_operation_never_retries_or_restores(profile, tmp_path, failure, count):
     report, fake, logins = execute(profile, tmp_path, failure)
     assert report['status'] == 'failed' and report['lease_retained'] and fake.closed
@@ -119,6 +137,7 @@ def test_failed_operation_never_retries_or_restores(profile, tmp_path, failure, 
     assert len(fake.operations) == count and len(set(fake.operations)) == count
     assert report['error_type'] == 'DevelopmentError'
     if failure == 'old_worker': assert not logins
+    if failure == 'missing_server_close': assert len(logins) == 2
     assert len(list((tmp_path / 'leases').glob('*.lock'))) == 2
     if count:
         assert report['equipment_verification']['unequip_publication_attempted'] is True
@@ -144,3 +163,16 @@ def test_late_mutation_is_failure_without_recovery(profile, tmp_path, monkeypatc
     report, fake, _ = execute(profile, tmp_path, worker=fake)
     assert report['status'] == 'failed' and len(fake.operations) == 1
     assert report['lease_retained'] and not report['equipment_verification']['verified']
+
+
+@pytest.mark.parametrize('label', ['mover', 'witness', 'unregistered-session', [], 'mover-reconnected'])
+def test_reconnect_labels_reject_aliases_and_unknowns_before_logout(profile, label):
+    from .support.development import Timings
+    from .support.development_reconnect import verify_position_reconnect
+    from .support.worker import Bot
+    fake = EquipmentWorker()
+    mover = Bot(fake, 'mover-reconnected' if label == 'mover-reconnected' else 'mover')
+    with pytest.raises(DevelopmentError):
+        verify_position_reconnect(profile, fake, mover, Bot(fake, 'witness'), fake.original,
+                                  [0, 0, 0], 'synthetic', Timings(), reconnected_name=label)
+    assert fake.commands == [] and fake.operations == []

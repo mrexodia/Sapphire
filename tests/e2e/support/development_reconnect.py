@@ -8,7 +8,12 @@ from .development_inventory import SCOPE, capture_inventory, compare_inventory
 
 
 def verify_position_reconnect(profile, worker, mover, witness, baseline_state,
-                              expected_position, run_id, timings, login=authenticate, *, inventory_report=None):
+                              expected_position, run_id, timings, login=authenticate, *, inventory_report=None,
+                              reconnected_name="mover-reconnected"):
+    if (type(reconnected_name) is not str
+            or reconnected_name not in {"mover-reconnected", "mover-equipment-unequipped", "mover-equipment-reequipped"}
+            or reconnected_name in {mover.name, witness.name}):
+        raise DevelopmentError("reconnect requires a distinct supported native session label")
     account = profile["accounts"][0]
     identity = received_character_identity(baseline_state, account["character"])
     actor, name = identity["entity_id"], identity["name"]
@@ -32,7 +37,7 @@ def verify_position_reconnect(profile, worker, mover, witness, baseline_state,
         mover.close()
     with timings.phase("reconnect_fresh_http_login"):
         auth = login(profile, account)
-    reloaded = Bot(worker, "mover-reconnected")
+    reloaded = Bot(worker, reconnected_name)
     with timings.phase("reconnect_lobby_world_identity_position"):
         state = reloaded.login_via_lobby(auth, name)
         after_identity = received_character_identity(state, name)
@@ -53,7 +58,7 @@ def verify_position_reconnect(profile, worker, mover, witness, baseline_state,
             "same mover independently respawned at the saved endpoint", timeout=10)
         # A unique post-login message supplies fresh semantic liveness rather
         # than treating a previously cached actor row as successful reconnect.
-        message = f"Sapphire dev {run_id[:8]} fresh login verified"
+        message = f"Sapphire dev {run_id[:8]} fresh login verified {reconnected_name}"
         reloaded.say(message)
         witness.expect_say(actor, message)
     evidence = {"requested": True, "verified": True,

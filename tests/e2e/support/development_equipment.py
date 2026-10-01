@@ -1,4 +1,4 @@
-"""Explicit starter-body round trip, using normal client inventory operations only."""
+"""Ordinary starter-body operations; mutations require fresh-login observations."""
 import copy
 import time
 
@@ -23,34 +23,21 @@ def participant(state, identity, territory, expected_job=None):
     result = inventory_projection(state, identity, territory)
     job = state.get("rewards", {}).get("class_job")
     if type(job) is not int or job not in {1, 2, 7} or (expected_job is not None and job != expected_job):
-        raise DevelopmentError("equipment round trip requires an Ul'dah starter class")
+        raise DevelopmentError("equipment round trip requires the same Ul'dah starter class")
     return result
 
 
-def check_receipt(receipt):
+def check_receipt(receipt, deadline):
     context = receipt.get("context")
-    if type(context) is not int or not 1 <= context <= 0xffffffff:
-        raise DevelopmentError("invalid equipment request context; no retry")
-
-
-def observe(worker, bot, identity, territory, expected, baseline_seq, deadline, job):
-    def matches(state):
-        value = participant(state, identity, territory, job)
-        return (value is not None and value["received_sequence"] > baseline_seq
-                and value["inventory"] == expected)
-    remaining = deadline - time.monotonic()
-    if remaining <= 0:
-        raise DevelopmentError("equipment observation deadline exceeded after publication; no retry")
-    state = worker.wait_state(bot.name, matches, "exact received equipment round-trip projection", timeout=remaining)
-    if time.monotonic() >= deadline or not matches(state):
-        raise DevelopmentError("late or changed equipment observation; no retry")
-    return participant(state, identity, territory, job)
+    if type(context) is not int or not 1 <= context <= 0xffffffff or time.monotonic() >= deadline:
+        raise DevelopmentError("invalid or late equipment acknowledgement; no retry")
 
 
 def begin_roundtrip(profile, worker, mover, initial, report, timings):
     identity = received_character_identity(initial, profile["accounts"][0]["character"])
     territory = profile["territory"]
-    report.update(identity=identity, scope="starter-body-slot-count-roundtrip-not-item-instances-or-world-restart")
+    report.update(identity=identity, scope="starter-body-slot-count-roundtrip-not-item-instances-or-world-restart",
+                  reconnects_required=3, mutation_observation="fresh-login-not-current-session-acknowledgement")
     with timings.phase("equipment_before_unequip"):
         capture_inventory(worker, mover, identity, territory)
         state = worker.snapshot(mover.name)
@@ -63,14 +50,26 @@ def begin_roundtrip(profile, worker, mover, initial, report, timings):
         del expected["1000:3"]
         expected["0:0"] = dict(BAG)
         report["unequip_expected"] = expected
-    with timings.phase("equipment_unequip_received_mutation"):
+    with timings.phase("equipment_unequip_ack_not_mutation"):
         deadline = time.monotonic() + 10
-        # Intent precedes publication. On any failure, do not re-equip in cleanup.
         report["unequip_publication_attempted"] = True
         report["unequip_receipt"] = mover.request_item_unequip(3, 0, 0, 2983)
-        check_receipt(report["unequip_receipt"])
-        report["unequipped"] = observe(worker, mover, identity, territory, expected,
-                                      before["received_sequence"], deadline, report["class_job"])
+        check_receipt(report["unequip_receipt"], deadline)
+        # moveItem persists containers without sending current-session inventory
+        # contents. Never synthesize that cache mutation from acknowledgement.
+
+
+def observe_after_reconnect(profile, worker, mover, report, timings, *, reequipped=False):
+    key = "reequipped" if reequipped else "unequipped"
+    expected = report["before"]["inventory"] if reequipped else report["unequip_expected"]
+    with timings.phase(f"equipment_{key}_fresh_login_projection"):
+        report[key] = capture_inventory(worker, mover, report["identity"], profile["territory"])
+        current = participant(worker.snapshot(mover.name), report["identity"], profile["territory"], report["class_job"])
+        if (current is None or current["inventory"] != expected
+                or report[key]["inventory"] != expected):
+            raise DevelopmentError("fresh-login equipment mutation not observed; no restoration/retry")
+    if reequipped:
+        report["verified"] = True
 
 
 def finish_roundtrip(profile, worker, mover, report, timings):
@@ -81,11 +80,8 @@ def finish_roundtrip(profile, worker, mover, report, timings):
         if before is None or before["inventory"] != report["unequip_expected"]:
             raise DevelopmentError("received inventory changed before re-equip; no restoration attempted")
         report["before_reequip"] = before
-    with timings.phase("equipment_reequip_received_mutation"):
+    with timings.phase("equipment_reequip_ack_not_mutation"):
         deadline = time.monotonic() + 10
         report["reequip_publication_attempted"] = True
         report["reequip_receipt"] = mover.request_item_reequip_starter(0, 0, 2983, gear_slot=3)
-        check_receipt(report["reequip_receipt"])
-        report["reequipped"] = observe(worker, mover, identity, territory, report["before"]["inventory"],
-                                      before["received_sequence"], deadline, report["class_job"])
-    report["verified"] = True
+        check_receipt(report["reequip_receipt"], deadline)
