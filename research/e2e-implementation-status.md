@@ -35,10 +35,37 @@ preserve credentials and account leases without retries, adoption or deletion.
 It uses no DB access or server secret. `provisioning-summary.json` distinguishes
 request/receipt, fresh login and received character/world evidence and explicitly
 sets `ready_for_shared_checks: false`: opening/public-world preparation is still
-required. Targeted placement, reprovisioning and development-world reset commands
-are **not yet implemented**. No live shared-server/provisioning run has been
-attempted: approved endpoint configuration and public-world fixture preparation
-are still needed. New contracts are synthetic, not account-creation live evidence.
+required. At `620438063`, provisioning also records the exact received lobby
+character ID and verifies its world-entity binding. The new
+`tests/e2e/prepare_development.py` produces a private operator-reviewed registry
+from a completed provisioning report and the validated 65686 route start.
+`!devbot place <approval_id> <slot>` is a disabled-by-default GM-only server command:
+it checks exact registered generated bot name/entity/character identity, connected
+idle/alive/non-GM/no-party state and territory 182/130; it queues only that bot's
+opening bypass/placement into public 130 using the existing world-thread warp
+path. BetweenAreas guards overlapping requests; approval/slot consumption is
+bounded and process-local, not crash-consistent. No unrelated player, enemy,
+EXP, item or quest-completion reset is performed.
+
+The shared runner's explicit `--await-placement` mode writes
+`placement-ready.json`, allows 120 seconds total for separate GM preparation,
+then requires received ready/position state followed by independent identities
+and position observations. Administrative wait timings remain separate from
+normal actions. Neither a registry nor a queued-warp response proves mutation;
+the runner does not attest administrative command execution or fresh-login
+placement persistence. General character reprovisioning and enemy/world-state
+resets remain **not implemented**. No live shared-server/provisioning/placement
+run has been attempted: approved endpoint configuration, a feature-built dev
+server and an operator-approved registry/GM session are still needed.
+
+Placement verification: **161 focused Python tests passed in 5.86s** (the previous
+selection plus `test_development_placement.py`); timing evidence is
+`.e2e-artifacts/development-placement-focused-timings-2.json`. Native
+`sapphire_dev_placement` passed **1/1**; the changed server command translation
+unit compiled with Clang, recorded in
+`.e2e-artifacts/development-placement-{object-build,native-build,native-tests}.log`.
+This is policy/control-flow plus translation-unit evidence, not a linked/deployed
+server or live command/zoning/persistence claim. No full acceptance suite ran.
 
 Focused verification: **127 passed in 5.59s**, running `test_development.py`,
 `test_policy.py`, `test_ci.py`, and `test_worker.py` with the existing MSVC worker.
