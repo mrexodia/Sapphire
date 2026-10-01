@@ -477,6 +477,46 @@ is never retried/restored automatically. A fresh manually attended current
 graphical run and explicit guest disposal remain pending; no full gate, soak or
 platform sweep ran.
 
+## Graphical bridge requires exact reciprocal received Tell evidence
+
+Feature **`dbca3e6ba`** closes an evidence-consumer gap without adding another
+action. The fixed graphical companion scenario already requested two ordinary
+visible-only Tell publications, but `require_graphical_check()` previously accepted
+only `requested:true` and `verified:true`. It now requires the exact four-field
+Tell report and narrow scope, exactly two ordered directions, strict three-field
+sender/recipient identities bound to the runner entities, reciprocal distinct
+character/name identities, strict advancing uint64 baseline/state/message tokens,
+nonparty context, and exact run-bound direction/nonces. Boolean-as-integer values,
+stale/wrong-run text, foreign/reordered peers, one-sided rows and extra/malformed
+fields fail closed. Publication acknowledgements remain insufficient; only the
+received recipient rows qualify. The bridge proof now names the Tell scope.
+
+Frozen, remote-free source **`dbca3e6ba550e40fe8697bdd0b390203cb1879df`**
+passed **375 tests in 3.19s** across graphical policy, Tell, equipment, Sprint,
+viewer, movement, reconnect, inventory, party, deadlines, worker exit, smoke and
+lifecycle. Consumer negatives cover wrong scope/count/identity, nonreciprocal
+peers, stale/boolean sequences, wrong actor/nonparty context/token/message,
+extra fields and malformed run IDs in addition to the existing native/controller
+Tell failure set. Test-log SHA-256:
+`69007329ca1a769dfacae0e0636c32cbd0de19cb4c617ec7745e5ab562cfa934`.
+Artifacts: `client-graphical-tell-clean-{source.json,python.log}`.
+
+The current strict consumer accepted both genuine reciprocal rows from retained
+`development-tell-live-001` read-only. Run
+`1db515bb9ff34f08bd445b4555d4b014` bound entities2097153/2097154; recipient
+windows advanced 120→token122/state122 and 122→token124/state124, with party ID0.
+The compatibility artifact is `client-graphical-tell-live-artifact-check.json`
+(SHA-256
+`6c193f5599144299bd073dbc2cf9b92fcecabf228685462f5c98a5c5b8f390b9`).
+It neither republishes a Tell nor upgrades the separate headless-observer run into
+graphical evidence.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. Visible-peer Tell does not prove remote/offline
+messaging, privacy, delivery under disconnect, general channels or rendering. A
+fresh manually attended current graphical run and explicit guest disposal remain
+pending; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1283,7 +1323,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current Sprint/equipment/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict independently received Sprint and fresh-login equipment round-trip evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current Tell/Sprint/equipment/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict reciprocal received Tell, independently received Sprint and fresh-login equipment round-trip evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/Sprint/equipment/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage; current graphical policy requires Sprint, starter-body round trip and read-only inventory but awaits current graphical execution |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
@@ -1863,8 +1903,10 @@ backend hashes remain those of the clean linked `e665c041f` placement build.
 `inspected-evidence.json` hashes the exact driver, summaries and bot/observer
 journals and records the two token proofs. Aggregate summary SHA-256:
 `fc2744853744b56ed488df2fd20590d5b938d55b04fb8c5092268de094b978a5`.
-No placement/reset, movement, party, reconnect, graphical launch, full gate,
-expensive soak or platform sweep was run for this live increment. The original
+No placement/reset, movement, party, reconnect or graphical launch was run for
+that live increment. Current policy at `dbca3e6ba` now requires both exact Tell
+receipts inside a future graphical companion run, but current graphical execution
+remains pending. No full gate, expensive soak or platform sweep was run. The original
 requirements and broader reprovisioning/reset/deployment gaps remain pending.
 
 ## Registered-bot placement: narrow owned-runtime live verification
