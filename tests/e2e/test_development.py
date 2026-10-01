@@ -152,7 +152,7 @@ def test_external_shared_result_inspector_is_strict_sanitized_and_read_only(
     assert proof["scope"] == DEVELOPMENT_RESULT_SCOPE
     assert proof["managed_host"] is False
     assert proof["worker_artifacts"]["sha256"] == report["worker_artifact_tree_sha256"]
-    assert "movement" in proof["verified_checks"]
+    assert set(proof["verified_checks"]) == {"say","movement"}
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
     rendered = json.dumps(proof)
     assert "private-one" not in rendered and str(tmp_path) not in rendered
@@ -160,7 +160,16 @@ def test_external_shared_result_inspector_is_strict_sanitized_and_read_only(
     assert json.loads(capsys.readouterr().out) == proof
 
 
-@pytest.mark.parametrize("mutation", ["status","managed","deadline","worker-tree","duplicate"])
+def test_external_shared_result_inspector_accepts_base_received_say(
+        profile, tmp_path):
+    report, _ = execute(profile, tmp_path, cycles=1, max_seconds=60)
+    proof = inspect_development_result(tmp_path / "run/development-summary.json")
+    assert proof["verified_checks"] == {
+        "say":"bidirectional-received-say-not-rendering-or-server-authority"}
+    assert len(report["say_verification"]["observations"]) == 2
+
+
+@pytest.mark.parametrize("mutation", ["status","managed","deadline","say","worker-tree","duplicate"])
 def test_external_shared_result_inspector_rejects_foreign_or_incomplete_evidence(
         profile, tmp_path, mutation, monkeypatch):
     catalog = tmp_path / "catalog.json"; catalog.write_text("synthetic catalog")
@@ -173,6 +182,9 @@ def test_external_shared_result_inspector_rejects_foreign_or_incomplete_evidence
     if mutation == "status": report["status"] = "failed"
     elif mutation == "managed": report["managed_host_binding"]["requested"] = True
     elif mutation == "deadline": report["run_deadline"]["expired"] = True
+    elif mutation == "say":
+        row = report["say_verification"]["observations"][0]
+        row["received_sequence"] = row["baseline_receiver_sequence"]
     elif mutation == "worker-tree": (tmp_path / "run/worker/foreign.json").write_text("{}")
     else:
         summary.write_text(summary.read_text().replace(

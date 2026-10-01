@@ -177,9 +177,20 @@ def managed_summary(path, receipt, worker_sha256):
         "speed":2.0,"baseline_witness_sequence":1,
         "observations":[{"cycle":0,"step":0,"target":route[1],"received_position":route[1],"witness_sequence":2},
                         {"cycle":0,"step":1,"target":route[0],"received_position":route[0],"witness_sequence":3}]}
+    say = {"requested":True,"verified":True,
+        "scope":"bidirectional-received-say-not-rendering-or-server-authority",
+        "observations":[
+            {"cycle":0,"sender_role":sender,"sender_entity_id":sender_id,
+             "receiver_role":receiver,"receiver_entity_id":receiver_id,
+             "received_actor":sender_id,"received_message_sha256":hashlib.sha256(
+                 f"Sapphire dev {'b' * 8} 0 {sender}".encode()).hexdigest(),
+             "baseline_receiver_sequence":0,"received_sequence":1}
+            for sender,sender_id,receiver,receiver_id in
+            (("mover",1,"witness",2),("witness",2,"mover",1))]}
     report = {"version":1,"run_id":"b" * 32,"status":"passed",
         "scope":"shared-development-not-acceptance","protocol":"sapphire-3.3",
         "cycles":1,"entities":[1,2],"territory":130,"catalog_sha256":"d" * 64,
+        "say_verification":say,
         "movement_waypoints_per_cycle":2,"movement_verification":movement,
         "party_verification":{"requested":False,"verified":False},
         "tell_verification":{"requested":False,"verified":False},

@@ -1,8 +1,9 @@
 """Bridge the owned manual graphical fixture to the separate normal-bot lane."""
+import hashlib
 import math
 import time
 
-from .development import (DevelopmentError, MOVEMENT_SCOPE, validate_profile, movement_route,
+from .development import (DevelopmentError, MOVEMENT_SCOPE, SAY_SCOPE, validate_profile, movement_route,
                           idle_state, position, received_character_identity,
                           require_normal_worker_exit)
 from .worker import Worker, WorkerError
@@ -241,6 +242,52 @@ def require_viewer_checkpoint(value, stage, expected_identity, run_id, observers
         messages.append(message)
     if messages[0] != messages[1]:
         raise DevelopmentError('graphical viewer reply was not received by both bots')
+    return value
+
+
+def require_say_receipt(value, entities, cycles, run_id):
+    if (not isinstance(value, dict)
+            or set(value) != {'requested','verified','scope','observations'}
+            or value.get('requested') is not True or value.get('verified') is not True
+            or value.get('scope') != SAY_SCOPE
+            or type(cycles) is not int or cycles != 1
+            or not isinstance(run_id, str) or len(run_id) != 32
+            or any(char not in '0123456789abcdef' for char in run_id)
+            or not isinstance(entities, list) or len(entities) != 2
+            or len(set(entities)) != 2
+            or any(type(entity) is not int or entity <= 0 for entity in entities)):
+        raise DevelopmentError('shared Say receipt is missing or malformed')
+    observations = value.get('observations')
+    expected = []
+    last_received = {'mover':0, 'witness':0}
+    for cycle in range(cycles):
+        expected.extend((('mover', entities[0], 'witness', entities[1]),
+                         ('witness', entities[1], 'mover', entities[0])))
+    if not isinstance(observations, list) or len(observations) != len(expected):
+        raise DevelopmentError('shared Say receipt has incomplete observations')
+    fields = {'cycle','sender_role','sender_entity_id','receiver_role','receiver_entity_id',
+              'received_actor','received_message_sha256',
+              'baseline_receiver_sequence','received_sequence'}
+    for index, (row, identity) in enumerate(zip(observations, expected)):
+        sender, sender_entity, receiver, receiver_entity = identity
+        message = f'Sapphire dev {run_id[:8]} {index // 2} {sender}'
+        digest = hashlib.sha256(message.encode('utf-8')).hexdigest()
+        if (not isinstance(row, dict) or set(row) != fields
+                or type(row.get('cycle')) is not int or row['cycle'] != index // 2
+                or row.get('sender_role') != sender
+                or type(row.get('sender_entity_id')) is not int
+                or row['sender_entity_id'] != sender_entity
+                or row.get('receiver_role') != receiver
+                or type(row.get('receiver_entity_id')) is not int
+                or row['receiver_entity_id'] != receiver_entity
+                or type(row.get('received_actor')) is not int
+                or row['received_actor'] != sender_entity
+                or row.get('received_message_sha256') != digest
+                or type(row.get('baseline_receiver_sequence')) is not int
+                or type(row.get('received_sequence')) is not int
+                or not last_received[receiver] <= row['baseline_receiver_sequence'] < row['received_sequence'] < 2**64):
+            raise DevelopmentError('shared Say received observation is foreign, stale or malformed')
+        last_received[receiver] = row['received_sequence']
     return value
 
 
@@ -731,6 +778,8 @@ def require_graphical_decline_check(result, viewer_name, entity):
             or not isinstance(run_id, str) or len(run_id) != 32
             or any(char not in '0123456789abcdef' for char in run_id)):
         raise DevelopmentError('graphical decline entities/territory missing or invalid')
+    say = require_say_receipt(result.get('say_verification'), entities,
+                              result.get('cycles'), run_id)
     for key in ('reconnect_verification', 'inventory_verification', 'party_verification',
                 'tell_verification', 'sprint_verification', 'equipment_verification'):
         if result.get(key) != {'requested': False, 'verified': False}:
@@ -739,7 +788,8 @@ def require_graphical_decline_check(result, viewer_name, entity):
     expected, continuity = require_graphical_viewer_receipt(
         result.get('viewer_verification'), viewer_name, entity, entities, run_id, 'mover')
     return {'status':'passed', 'scope':'graphical-fixture-with-separate-fresh-party-decline',
-            'viewer':expected, 'run_deadline':deadline, 'decline_scope':decline['scope'],
+            'viewer':expected, 'run_deadline':deadline, 'say_scope':say['scope'],
+            'decline_scope':decline['scope'],
             'continuous_presence':continuity, 'rendered_bot_actions_verified':False,
             'note':'Received decline/viewer evidence is not general social or rendered-action proof.'}
 
@@ -775,6 +825,8 @@ def require_graphical_check(result, viewer_name, entity):
             or not isinstance(run_id, str) or len(run_id) != 32
             or any(char not in '0123456789abcdef' for char in run_id)):
         raise DevelopmentError('normal development entities/territory missing or invalid')
+    say = require_say_receipt(result.get('say_verification'), entities,
+                              result.get('cycles'), run_id)
     for key in ('movement_verification', 'party_verification', 'tell_verification',
                 'reconnect_verification', 'inventory_verification', 'sprint_verification',
                 'equipment_verification', 'viewer_verification'):
@@ -808,7 +860,7 @@ def require_graphical_check(result, viewer_name, entity):
         result['viewer_verification'], viewer_name, entity, entities, run_id,
         'mover-equipment-reequipped')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
-            'viewer':expected, 'run_deadline':deadline,
+            'viewer':expected, 'run_deadline':deadline, 'say_scope':say['scope'],
             'movement_scope':movement['scope'], 'inventory_scope':INVENTORY_SCOPE,
             'reconnect_scope':reconnect['scope'],
             'party_scope':party['scope'], 'tell_scope':tell['scope'],

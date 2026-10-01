@@ -16,7 +16,8 @@ from .development import (DevelopmentError, require_managed_host_binding,
 from .client_development import (INVENTORY_SCOPE, require_decline_receipt,
                                  require_equipment_receipt, require_inventory_projection,
                                  require_movement_receipt, require_party_receipt,
-                                 require_reconnect_receipt, require_shared_runner_metadata,
+                                 require_reconnect_receipt, require_say_receipt,
+                                 require_shared_runner_metadata,
                                  require_sprint_receipt, require_tell_receipt)
 from .development_host_result import inspect_owned_development_host
 from .development_artifact import RUN_SCOPE, require_worker_artifacts
@@ -70,7 +71,9 @@ def validate_requested_checks(report):
             or any(type(value) is not int or value <= 0 for value in entities)
             or len(set(entities)) != 2 or type(territory) is not int or territory != 130):
         raise DevelopmentError("managed development entities or territory are invalid")
-    checks = {}
+    say = require_say_receipt(report.get("say_verification"), entities,
+                              report.get("cycles"), run_id)
+    checks = {"say":say["scope"]}
     values = {name:report.get(f"{name}_verification") for name in
               ("movement","party","tell","reconnect","inventory","sprint","equipment","decline")}
     for name, value in values.items():

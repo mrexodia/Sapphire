@@ -1,5 +1,6 @@
 """Graphical/development bridge contracts, not client execution evidence."""
 import copy
+import hashlib
 from types import SimpleNamespace
 
 import pytest
@@ -132,6 +133,15 @@ def completed():
         return result
     viewer_start=viewer_checkpoint('start','mover',104,105)
     viewer_finish=viewer_checkpoint('finish','mover-equipment-reequipped',7,105,continuity)
+    say={'requested':True,'verified':True,
+         'scope':'bidirectional-received-say-not-rendering-or-server-authority',
+         'observations':[{'cycle':0,'sender_role':sender,'sender_entity_id':sender_id,
+             'receiver_role':receiver,'receiver_entity_id':receiver_id,
+             'received_actor':sender_id,'received_message_sha256':hashlib.sha256(
+                 f'Sapphire dev {run_id[:8]} 0 {sender}'.encode()).hexdigest(),
+             'baseline_receiver_sequence':0,'received_sequence':1}
+             for sender,sender_id,receiver,receiver_id in
+             (('mover',1,'witness',2),('witness',2,'mover',1))]}
     return {'version':1,'status':'passed','scope':'shared-development-not-acceptance',
             'server_identity_verified':False,'server_processes_owned':False,
             'database_access':False,'account_reset_performed_by_runner':False,
@@ -160,6 +170,7 @@ def completed():
                 'cleanup_may_exceed_deadline':True},
             'administrative_preparation_wait_enabled':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
+            'say_verification':say,
             'movement_verification':movement,'party_verification':party,
             'decline_verification':{'requested':False,'verified':False},
             'reconnect_verification':copy.deepcopy(reconnect),
@@ -177,6 +188,13 @@ def completed():
 
 def declined():
     report=completed()
+    report['run_id']='b'*32
+    for row in report['say_verification']['observations']:
+        message=f"Sapphire dev {'b' * 8} {row['cycle']} {row['sender_role']}"
+        row['received_message_sha256']=hashlib.sha256(message.encode()).hexdigest()
+    for stage in ('start','finish'):
+        for reply in report['viewer_verification'][stage]['received_replies']:
+            reply['message']=reply['message'].replace('viewer aaaaaaaa','viewer bbbbbbbb')
     report['catalog_sha256']=None
     report['movement_waypoints_per_cycle']=0
     report['movement_verification']={'requested':False,'verified':False}
@@ -208,7 +226,8 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     assert proof['tell_scope']==report['tell_verification']['scope']
     assert proof['sprint_scope']==report['sprint_verification']['scope']
     assert proof['equipment_scope']==report['equipment_verification']['scope']
-    for key in ('party_verification','tell_verification','reconnect_verification','inventory_verification',
+    for key in ('say_verification','party_verification','tell_verification',
+                'reconnect_verification','inventory_verification',
                 'sprint_verification','equipment_verification','viewer_verification'):
         wrong=copy.deepcopy(report); wrong[key]['verified']=False
         with pytest.raises(DevelopmentError): bridge.require_graphical_check(wrong,'Tester Viewer',3)
@@ -433,6 +452,8 @@ def test_graphical_decline_rejects_malformed_or_mixed_receipts():
         lambda report: report['decline_verification']['baseline_sequences'].__setitem__(0,True),
         lambda report: report['decline_verification']['received_sequences'].__setitem__(1,11),
         lambda report: report['decline_verification'].update(extra=True),
+        lambda report: report['say_verification']['observations'][0].update(received_sequence=0),
+        lambda report: report['say_verification']['observations'][0].update(received_actor=True),
         lambda report: report['viewer_verification']['finish']['received_replies'][0].update(
             observer='mover-equipment-reequipped'),
     )

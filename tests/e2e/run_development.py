@@ -11,7 +11,7 @@ from pathlib import Path
 import time
 import uuid
 
-from .support.development import (AccountLease, DevelopmentError, MOVEMENT_SCOPE, Timings,
+from .support.development import (AccountLease, DevelopmentError, MOVEMENT_SCOPE, SAY_SCOPE, Timings,
                                   authenticate, check_managed_host, idle_state, movement_route,
                                   require_managed_host_binding, validate_profile, witnessed)
 from .support.worker import Bot, Worker
@@ -75,6 +75,8 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "account_reset_performed_by_runner": False, "cycles": cycles,
               "administrative_preparation_wait_enabled": await_placement,
               "administrative_command_execution_attested": False,
+              "say_verification": {"requested": True, "verified": False,
+                                   "scope": SAY_SCOPE, "observations": []},
               "movement_verification": {"requested": bool(route), "verified": False},
               "reconnect_verification": {"requested": verify_reconnect, "verified": False},
               "inventory_verification": {"requested": verify_inventory, "verified": False},
@@ -198,10 +200,34 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                     }
                 for cycle in range(cycles):
                     with timings.phase(f"say_round_trip_{cycle}"):
-                        for sender, receiver, identity in ((mover, witness, actor), (witness, mover, observer)):
+                        for sender, receiver, identity, receiver_identity in (
+                                (mover, witness, actor, observer),
+                                (witness, mover, observer, actor)):
+                            baseline = worker.snapshot(receiver.name)
+                            if type(baseline.get("seq")) is not int or baseline["seq"] < 0:
+                                raise DevelopmentError("Say witness requires a received baseline sequence")
+                            baseline_sequence = baseline["seq"]
                             message = f"Sapphire dev {run_id[:8]} {cycle} {sender.name}"
                             sender.say(message)
-                            receiver.expect_say(identity, message)
+                            received = receiver.expect_say(identity, message)
+                            matches = [row for row in received.get("chat", [])
+                                       if row.get("actor") == identity
+                                       and row.get("message") == message]
+                            if (type(received.get("seq")) is not int
+                                    or received["seq"] <= baseline_sequence
+                                    or not matches):
+                                raise DevelopmentError("Say witness did not advance received state")
+                            received_message = matches[-1]
+                            report["say_verification"]["observations"].append({
+                                "cycle": cycle, "sender_role": sender.name,
+                                "sender_entity_id": identity, "receiver_role": receiver.name,
+                                "receiver_entity_id": receiver_identity,
+                                "received_actor": received_message["actor"],
+                                "received_message_sha256": hashlib.sha256(
+                                    received_message["message"].encode("utf-8")).hexdigest(),
+                                "baseline_receiver_sequence": baseline_sequence,
+                                "received_sequence": received["seq"],
+                            })
                     if route:
                         with timings.phase(f"observed_out_and_back_{cycle}"):
                             # No fabricated connecting segment, teleport or replan. A human
@@ -228,6 +254,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                                     "received_position": list(row["position"]),
                                     "witness_sequence": observed["seq"],
                                 })
+                report["say_verification"]["verified"] = True
                 if route:
                     report["movement_verification"]["verified"] = True
                 if verify_decline:
