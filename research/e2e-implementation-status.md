@@ -5066,6 +5066,48 @@ No service, account or gameplay operation ran. The producer has not yet executed
 live case at this revision, generic scenario semantics remain non-independent, and
 one standalone result cannot replace the current combined sixteen-case gate.
 
+### Independent publication consumer and protected dispatch (`b40558b88` checkpoint)
+
+Commit `beceedd41` adds `python -m tests.e2e.inspect_isolated_case_run`. Before
+emitting a fixed sanitized receipt it requires the exact safe private-root layout,
+rejects linked/reparse/hard-linked/duplicate-key/foreign/failed/changed or
+schema-expanded evidence, revalidates the exact clean source, reruns private-profile
+preflight, rebinds those identities to the retained manifest, and reproduces the
+applicable generic or specialized fault inspection byte-for-byte. It exposes no
+private path, port, credential, database or PID and continues to report generic
+scenario semantics as non-independent and combined-gate verification as false.
+
+Commit `b40558b88` integrates a protected short-feedback branch into the private
+workflow. Dispatch now requires separate false-by-default acknowledgements for
+reviewed source/provisioning and the selected disposable execution. Its exact choice
+list is the same sixteen node IDs plus an explicit `combined` sentinel; the default
+is rejected credentials, not the full gate. Every branch still performs exact
+checkout/build/contracts and service-free profile staging. A standalone branch runs
+one case once, invokes the independent private-root consumer, and uploads only its
+fixed `.e2e-isolated-case-summary.json`; the combined branch preserves its existing
+passing-private and fail-only inspection paths. Failed standalone execution sets no
+upload output. The selected upload path can only be one of the two fixed fresh
+summary destinations. This is authored static policy, not proof of GitHub execution
+or environment/runner enforcement.
+
+A detached clean worktree at `b40558b88bbde3d1952ae450b2357cf4a3e9055a`
+reported zero status entries and **239 passed in 15.94s** across standalone producer,
+publication consumer, CI and workflow-policy contracts. The static policy inspector,
+PyYAML 6.0 syntax parse and PowerShell 7.6.6 AST parse accepted the final workflow.
+Two earlier verification commands remain failed evidence: one translated a Git-Bash
+`/c` path to `C:\\c` for PowerShell, and one omitted its `POLICY` environment
+variable; neither is relabeled success.
+
+Verification receipt:
+`.e2e-artifacts/standalone-case-publication-clean-source/receipt.json` (SHA-256
+`75eb61175d792912b1958b966bfe79929f4242d53cd219100f847145386dc54d`);
+clean focused log SHA-256
+`07a76b6d251c7473a8c8e42f1c2069985b1ee51db89a606c5e45c8773ed624e3`.
+No workflow, service, account or gameplay operation ran. `actionlint` was not
+available for this increment; PyYAML is not GitHub schema validation. Hosted
+execution, runner-group/environment enforcement, VM destruction and a current live
+standalone result all remain unverified.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
@@ -5091,7 +5133,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | --- | --- | --- |
 | External C++ worker, Python coordinator and normal public behavior | `src/test_client`, `tests/e2e/support/{worker,environment}.py`, native/protocol and Python contracts; detailed plan rows below | **Implemented for the supported subset.** The seven dirty experiments were not staged or treated as evidence. |
 | Genuine HTTP, encrypted lobby, world-ready/keepalive/logout sessions | Historical clean full-session gates plus current retained rejected-login receipt | **Partial/currently stale as a combined run.** Current read-only `inspect_isolated_case` accepted the exact `6dbd1380e` rejected-login fixture; receipt SHA-256 `f83c2a8919ec1dcee149889281f217ea23a6da5b151a22ee68e8f97c86258681`. It is one no-account case, not current full-session acceptance. |
-| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, strict `run_isolated_case.py` short-feedback producer, `support/ci_{result,private_result}.py`, and public/private/standalone inspectors; exact 16-case contracts | **Pending live gate.** The strict one-case producer is clean-source contract-verified but has no current live result. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
+| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, strict `run_isolated_case.py` short-feedback producer, independent `inspect_isolated_case_run.py` publication consumer, protected exact-choice dispatch, combined public/private inspectors and exact 16-case contracts | **Pending live gate.** The strict one-case producer/consumer and dispatch policy are clean-source contract-verified but have no current live or hosted result. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
 | Intentional owned-process fault and cleanup diagnostics | Retained exact world-fault fixture, JUnit, pytest log, lifecycle and artifact tree | **Verified standalone only.** Current `inspect_isolated_fault` reinspection accepted it with SHA-256 `8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`; it is not gameplay, organic crash, dump, hosted cancellation or the combined sixteenth-case gate. |
 | Shared dedicated account/character provisioning and ordinary non-GM checks | `provision_development.py`, `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
 | Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |

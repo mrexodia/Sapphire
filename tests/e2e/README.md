@@ -195,8 +195,8 @@ For a single-config generator:
 
 ```sh
 python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
-  tests/e2e/test_isolated_case_runner.py tests/e2e/test_soak.py \
-  tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
+  tests/e2e/test_isolated_case_runner.py tests/e2e/test_isolated_case_run_result.py \
+  tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
   tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py \
   --e2e-worker build-e2e/sapphire_test_client --junitxml=build-e2e/contracts.xml
 ```
@@ -279,8 +279,23 @@ reviewed profile inputs, and runs the existing generic inspector (or the stronge
 owned-world-fault inspector). It retains private JUnit, pytest output, inspection
 and failure diagnostics. A successful `runner-result.json` explicitly reports
 `short_feedback_only: true` and `combined_gate_verified: false`; generic scenario
-semantics remain non-independent. Never publish the private root. This command is
-not a replacement for the combined sixteen-case gate.
+semantics remain non-independent. Reinspect the complete private root while its
+profile inputs still exist and emit a fixed sanitized publication receipt with:
+
+```sh
+python -m tests.e2e.inspect_isolated_case_run \
+  --private-root <the-private-root-above> \
+  --expected-case tests/e2e/test_live.py::test_rejected_credentials \
+  --expected-revision <exact-40-hex-reviewed-HEAD> \
+  > <new-public-summary.json>
+```
+
+The consumer independently rebinds the local profile to the manifest, reruns the
+applicable generic/fault inspector, and rejects failed, changed, linked,
+duplicate-key, ambiguous or overclaimed evidence. Only its stdout receipt is
+allowlisted for publication. Never publish the private root, JUnit, pytest log,
+profile, fixture artifacts or entry diagnostics. Neither command replaces the
+combined sixteen-case gate.
 
 Select only `test_live.py` for an ad-hoc smaller login/movement/social smoke slice;
 such selection is not strict standalone evidence.

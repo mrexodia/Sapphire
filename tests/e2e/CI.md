@@ -46,9 +46,14 @@ self-hosted runners (checked through the read-only Actions runners API).
    in access-controlled storage before destroying the VM. This infrastructure is
    the maintainer's responsibility, not implemented by the Python entry point.
 6. Only then set repository variable `SAPPHIRE_PRIVATE_E2E_ENABLED=true`. Dispatch
-   from the default branch with the explicit review acknowledgement. The hosted
-   authorization job fails before allocating a private runner if these gates are
-   absent. There is no PR, push, schedule, arbitrary-ref or reusable-workflow entry.
+   from the default branch with both false-by-default acknowledgements: reviewed
+   source/provisioning and authorization for the selected disposable execution.
+   Choose one exact allowlisted case or explicitly choose `combined`; the default is
+   the no-account rejected-credentials case, not the expensive combined gate. Most
+   other standalone choices create disposable accounts and perform gameplay
+   mutations. The hosted authorization job fails before allocating a private runner
+   if these gates are absent. There is no PR, push, schedule, arbitrary-ref or
+   reusable-workflow entry.
 
 Both E2E workflows pin external actions to exact 40-hex revisions, use a read-only
 token, disable checkout credential persistence, apply bounded whole-job and every-
@@ -70,7 +75,13 @@ package Python 3.11 closure using `--require-hashes --only-binary=:all:
 --no-deps`; every transitive package is therefore an explicit lock row rather than
 pip-selected ambient input. Both pytest-executing jobs set
 `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`, including controller contracts outside the
-gate's own environment scrubbing. The independent policy allowlist requires exact
+gate's own environment scrubbing. The private workflow's exact choice list is tied
+to the same sixteen node IDs as the gate plus one explicit `combined` sentinel.
+A standalone choice uses the strict one-case producer and independent private-root
+consumer; only that consumer's sanitized receipt is uploaded. The combined branch
+retains its public/private/failure inspectors. Static policy rejects missing or
+foreign choices, authorization, producer/consumer calls, summary destinations or
+output-selected upload paths. The independent policy allowlist requires exact
 versions and reviewed wheel SHA-256
 values for x86-64 Windows/Linux; ranges, source distributions, index options,
 changed hashes, unreviewed packages, dependency resolution and ambient plugin
@@ -100,6 +111,7 @@ cmake -S . -B build-e2e-ci -G Ninja -DCMAKE_BUILD_TYPE=Debug \
 cmake --build build-e2e-ci --target sapphire_gameplay_ci
 ctest --test-dir build-e2e-ci --output-on-failure --timeout 60 --no-tests=error -R '^sapphire_'
 python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
+  tests/e2e/test_isolated_case_runner.py tests/e2e/test_isolated_case_run_result.py \
   tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
   tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py \
   tests/e2e/test_workflow_policy.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
@@ -117,6 +129,16 @@ python -m tests.e2e.inspect_ci_result --summary build-e2e/ci-summary.json \
 python -m tests.e2e.inspect_ci_private_evidence --summary build-e2e/ci-summary.json \
   --private-run-dir .e2e-artifacts/ci/gameplay-ci-<private-id> \
   --expected-revision <exact-40-hex-checked-out-revision>
+python -m tests.e2e.run_isolated_case --profile .e2e-local.json \
+  --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe \
+  --private-root <new-absolute-private-root-outside-checkout> \
+  --expected-case tests/e2e/test_live.py::test_rejected_credentials \
+  --expected-revision <exact-40-hex-checked-out-revision>
+python -m tests.e2e.inspect_isolated_case_run \
+  --private-root <same-private-root> \
+  --expected-case tests/e2e/test_live.py::test_rejected_credentials \
+  --expected-revision <exact-40-hex-checked-out-revision> \
+  > <new-sanitized-standalone-summary.json>
 ```
 
 The profile inspector performs the same static availability/catalog/mesh/hash
@@ -192,9 +214,16 @@ separate evidence that its binaries came from the checkout.
   modules; changing source metadata, a binary, catalog or mesh between those checks
   fails verification. Exact hashes and metadata correlation are not native-build
   provenance or signatures.
-- Only `.e2e-ci-summary.json` is uploaded: fixed schema, allowlisted case identities
-  and booleans, checkout identity, component hashes and cleanup/collection results.
-  It also carries exactly 16 ordered
+- The selected branch uploads exactly one output path. Combined execution uploads
+  only `.e2e-ci-summary.json`: fixed schema, allowlisted case identities and
+  booleans, checkout identity, component hashes and cleanup/collection results.
+  Standalone execution uploads only `.e2e-isolated-case-summary.json`, produced by
+  the independent private-root consumer after reproducing the retained inspection
+  and profile/manifest binding. Its fixed receipt states one exact case,
+  `short_feedback_only: true`, generic semantic non-independence and
+  `combined_gate_verified: false`; it contains no private path, port, credential,
+  database or PID.
+  The combined summary also carries exactly 16 ordered
   `{case, manifest_sha256, lifecycle_sha256, artifact_tree_sha256}` rows plus
   SHA-256 values for private `profile.json`, `gate-diagnostics.json`, `pytest.log`
   and `live.xml`. These bind the exact private invocation profile and each public case to exact private staged-manifest/process-
@@ -203,10 +232,12 @@ separate evidence that its binaries came from the checkout.
   database names, PIDs, return codes, captured output or credentials;
   hashes are correlation, not independent content proof.
   The upload step requires the current gameplay step to create the report. It
-  does not reuse a stale report after an earlier step fails. A nonzero gate can
-  publish only base/source/allowlisted gate diagnostic fields accepted by the
-  fail-only inspector; unknown fields, private paths, partial field groups, a
-  mismatched revision or a relabeled successful outcome are rejected.
+  does not reuse a stale report after an earlier step fails. A nonzero combined
+  gate can publish only base/source/allowlisted gate diagnostic fields accepted by
+  the fail-only inspector; unknown fields, private paths, partial field groups, a
+  mismatched revision or a relabeled successful outcome are rejected. A failed
+  standalone execution sets no upload output and retains diagnostics only in its
+  private root for infrastructure-controlled handling.
 - Private run directories contain `profile.json`, `entry-error.log` on entry
   failure, `pytest.log`, `live.xml`, `gate-diagnostics.json`, and the normal
   per-case server/worker artifacts. Complete-tree hashing enumerates without
@@ -253,8 +284,13 @@ separate evidence that its binaries came from the checkout.
   the generated manifest to the reviewed profile inputs, and invokes the generic
   inspector or the specialized fault inspector before writing an accepted private
   result. A failure retains private pytest/entry diagnostics and cannot create an
-  accepted inspection. Both workflows run its service-free orchestration contracts,
-  but neither currently dispatches a standalone live case automatically.
+  accepted inspection. Both workflows run its service-free orchestration contracts.
+  The protected private workflow can execute it only through an explicit exact-case
+  manual choice and separate execution authorization; no hosted dispatch has been
+  performed or inferred from that authored branch. Reinspect a completed private
+  root with `python -m tests.e2e.inspect_isolated_case_run --private-root <root>
+  --expected-case <exact-node-id> --expected-revision <40-hex>` and publish only
+  that command's fixed stdout receipt.
 - Existing retained single-case evidence can still be checked read-only with
   `python -m tests.e2e.inspect_isolated_case --artifact-dir
   <private-artifact-dir> --junit <private-junit> --pytest-log <private-log>
