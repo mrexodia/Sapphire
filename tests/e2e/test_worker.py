@@ -1,5 +1,6 @@
 """Asset-independent worker contract tests. These do NOT establish game E2E coverage."""
 import json
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -8,7 +9,7 @@ import pytest
 
 from .support import environment as environment_support
 from .support.environment import (Environment, SetupError, allocate_ports,
-                                  require_process_teardowns)
+                                  artifact_tree_sha256, require_process_teardowns)
 from .support.worker import Bot, UnsupportedScene, Worker, WorkerError
 
 
@@ -344,6 +345,34 @@ def test_environment_constructor_collision_preserves_foreign_artifact(
     with pytest.raises(FileExistsError):
         Environment(profile)
     assert not disposable.exists() and marker.read_text() == "foreign"
+
+
+def test_private_artifact_tree_is_deterministic_and_rejects_hardlinks(tmp_path):
+    root = tmp_path / "artifacts"; root.mkdir()
+    nested = root / "nested"; nested.mkdir()
+    (root / "b.log").write_bytes(b"second")
+    (nested / "a.json").write_bytes(b"first")
+    first = artifact_tree_sha256(root)
+    assert first == artifact_tree_sha256(root)
+    outside = tmp_path / "outside"; outside.write_bytes(b"foreign inode")
+    try:
+        os.link(outside, root / "linked.log")
+    except OSError:
+        pytest.skip("hard links are unavailable on this filesystem")
+    with pytest.raises(SetupError, match="hard-linked"):
+        artifact_tree_sha256(root)
+
+
+def test_private_artifact_tree_rejects_directory_aliases(tmp_path):
+    root = tmp_path / "artifacts"; root.mkdir()
+    outside = tmp_path / "outside"; outside.mkdir()
+    (outside / "private.log").write_text("foreign")
+    try:
+        (root / "linked").symlink_to(outside, target_is_directory=True)
+    except OSError:
+        pytest.skip("directory symlinks are unavailable on this host")
+    with pytest.raises(SetupError, match="link or reparse"):
+        artifact_tree_sha256(root)
 
 
 def test_artifacts_are_redacted_and_runtime_removed(tmp_path):

@@ -85,24 +85,53 @@ def sha256(path):
 
 
 def artifact_tree_sha256(root):
-    """Hash exact private artifact names/sizes/bytes without disclosing names."""
+    """Hash exact privately owned names/sizes/bytes without traversing aliases."""
     root = Path(root)
-    if root.is_symlink() or not root.is_dir():
-        raise SetupError("private artifact tree is missing or unsafe")
-    paths = sorted(root.rglob("*"), key=lambda path:path.relative_to(root).as_posix())
-    if len(paths) > 16384:
-        raise SetupError("private artifact tree contains too many entries")
+    try:
+        root_stat = root.lstat()
+        reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        if (root.is_symlink() or not stat.S_ISDIR(root_stat.st_mode)
+                or getattr(root_stat, "st_file_attributes", 0) & reparse_flag):
+            raise SetupError("private artifact tree is missing or unsafe")
+        canonical_root = root.resolve(strict=True)
+        paths = []
+        def collect(directory):
+            with os.scandir(directory) as entries:
+                for entry in entries:
+                    path = Path(entry.path)
+                    # DirEntry.stat() returns zeroed inode/device/link metadata on
+                    # supported Windows Python 3.11 builds; Path.lstat() does not.
+                    metadata = path.lstat()
+                    if (stat.S_ISLNK(metadata.st_mode)
+                            or getattr(metadata, "st_file_attributes", 0) & reparse_flag):
+                        raise SetupError("private artifact tree contains a link or reparse point")
+                    resolved = path.resolve(strict=True)
+                    if resolved != canonical_root and canonical_root not in resolved.parents:
+                        raise SetupError("private artifact tree entry resolves outside its root")
+                    paths.append((path, metadata))
+                    if len(paths) > 16384:
+                        raise SetupError("private artifact tree contains too many entries")
+                    if stat.S_ISDIR(metadata.st_mode):
+                        if metadata.st_dev != root_stat.st_dev:
+                            raise SetupError("private artifact tree crosses a filesystem boundary")
+                        collect(path)
+                    elif not stat.S_ISREG(metadata.st_mode):
+                        raise SetupError("private artifact tree contains a non-file entry")
+                    elif metadata.st_nlink != 1:
+                        raise SetupError("private artifact tree contains a hard-linked file")
+        collect(root)
+    except SetupError:
+        raise
+    except (OSError, RuntimeError) as error:
+        raise SetupError("private artifact tree cannot be enumerated safely") from error
+    paths.sort(key=lambda row:row[0].relative_to(root).as_posix())
     digest, file_count, total = hashlib.sha256(), 0, 0
-    for path in paths:
-        if path.is_symlink():
-            raise SetupError("private artifact tree contains a symlink")
+    for path, metadata in paths:
         relative = path.relative_to(root).as_posix().encode("utf-8")
-        if path.is_dir():
+        if stat.S_ISDIR(metadata.st_mode):
             digest.update(b"D"); digest.update(len(relative).to_bytes(4, "big")); digest.update(relative)
             continue
-        if not path.is_file():
-            raise SetupError("private artifact tree contains a non-file entry")
-        size = path.stat().st_size
+        size = metadata.st_size
         if size > 512 * 1024 * 1024:
             raise SetupError("private artifact file exceeds evidence bound")
         total += size
