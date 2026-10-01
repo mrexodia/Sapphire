@@ -116,6 +116,7 @@ def run_isolated_case(profile_path, private_root, expected_case, expected_revisi
         "version": 1, "status": "failed", "stage": "preflight", "scope": SCOPE,
         "case": expected_case, "source_revision": revision, "source_dirty": False,
     }
+    gate = None
 
     try:
         profile["artifacts"] = str(artifacts_root)
@@ -190,6 +191,18 @@ def run_isolated_case(profile_path, private_root, expected_case, expected_revisi
         report["status"] = "failed"
         with (root / "entry-error.log").open("w", encoding="utf-8") as log:
             traceback.print_exc(file=log)
+        environment = gate.environment if gate is not None else None
+        if environment is not None and not getattr(environment, "_closed", False):
+            report["captured_environment_cleanup_attempted"] = True
+            try:
+                environment.close()
+                if not getattr(environment, "_closed", False):
+                    raise SetupError("captured standalone environment cleanup remained incomplete")
+                report["captured_environment_cleanup_failed"] = False
+            except BaseException:
+                report["captured_environment_cleanup_failed"] = True
+                with (root / "cleanup-error.log").open("w", encoding="utf-8") as log:
+                    traceback.print_exc(file=log)
     finally:
         try:
             with result_path.open("x", encoding="utf-8") as stream:

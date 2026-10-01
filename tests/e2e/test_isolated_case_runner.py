@@ -163,6 +163,63 @@ def test_runner_preserves_private_failure_without_inspection(tmp_path, monkeypat
     assert not (private / "inspection.json").exists() and calls == []
 
 
+@pytest.mark.parametrize("cleanup_fails", [False, True])
+def test_runner_attempts_captured_owned_cleanup_once_after_propagated_failure(
+        tmp_path, monkeypatch, cleanup_fails):
+    case = CASES[0]
+    profile, _ = configure_success(monkeypatch, tmp_path, case)
+
+    class CapturedEnvironment:
+        _closed = False
+        calls = 0
+        def close(self):
+            self.calls += 1
+            if cleanup_fails:
+                raise KeyboardInterrupt("PRIVATE_CLEANUP_MARKER")
+            self._closed = True
+
+    environment = CapturedEnvironment()
+    def interrupt(args, plugins):
+        plugins[0].environment = environment
+        raise KeyboardInterrupt("PRIVATE_RUNNER_INTERRUPT")
+
+    monkeypatch.setattr(pytest, "main", interrupt)
+    private = tmp_path / "private"
+    assert runner.run_isolated_case(profile, private, case, REVISION) == 1
+    result = json.loads((private / "runner-result.json").read_text())
+    assert environment.calls == 1
+    assert result["captured_environment_cleanup_attempted"] is True
+    assert result["captured_environment_cleanup_failed"] is cleanup_fails
+    assert "PRIVATE_RUNNER_INTERRUPT" in (private / "entry-error.log").read_text()
+    if cleanup_fails:
+        assert "PRIVATE_CLEANUP_MARKER" in (private / "cleanup-error.log").read_text()
+    else:
+        assert not (private / "cleanup-error.log").exists()
+
+
+def test_runner_rejects_captured_cleanup_that_returns_without_closure(tmp_path, monkeypatch):
+    case = CASES[0]
+    profile, _ = configure_success(monkeypatch, tmp_path, case)
+
+    class IncompleteEnvironment:
+        _closed = False
+        calls = 0
+        def close(self):
+            self.calls += 1
+
+    environment = IncompleteEnvironment()
+    def interrupt(args, plugins):
+        plugins[0].environment = environment
+        raise RuntimeError("runner interruption")
+
+    monkeypatch.setattr(pytest, "main", interrupt)
+    private = tmp_path / "private"
+    assert runner.run_isolated_case(profile, private, case, REVISION) == 1
+    result = json.loads((private / "runner-result.json").read_text())
+    assert environment.calls == 1 and result["captured_environment_cleanup_failed"] is True
+    assert "cleanup remained incomplete" in (private / "cleanup-error.log").read_text()
+
+
 def test_runner_requires_exact_clean_reviewed_revision_before_root(tmp_path, monkeypatch):
     repository = tmp_path / "repo"
     repository.mkdir()
