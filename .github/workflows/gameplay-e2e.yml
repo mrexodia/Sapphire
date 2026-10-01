@@ -20,8 +20,10 @@ concurrency:
 jobs:
   authorize:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Require explicit opt-in and the trusted default branch
+        timeout-minutes: 2
         env:
           ACK: ${{ inputs.reviewed_default_branch }}
           ENABLED: ${{ vars.SAPPHIRE_PRIVATE_E2E_ENABLED }}
@@ -44,13 +46,16 @@ jobs:
         shell: pwsh
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 5
         with:
           submodules: recursive
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        timeout-minutes: 5
         with:
           python-version: '3.11'
       - name: Load the provisioned C++ toolchain
+        timeout-minutes: 5
         run: |
           $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
           $installation = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
@@ -68,6 +73,7 @@ jobs:
             }
           }
       - name: Build the checked-out server, scripts and client
+        timeout-minutes: 20
         run: |
           cmake -S . -B build-e2e-ci -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DSAPPHIRE_BUILD_TEST_CLIENT=ON -DSAPPHIRE_BUILD_TOOLKIT=OFF -DSAPPHIRE_BUILD_IN_TREE=OFF -DRECASTNAVIGATION_TESTS=OFF -DRECASTNAVIGATION_DEMO=OFF -DRECASTNAVIGATION_EXAMPLES=OFF
           if ($LASTEXITCODE -ne 0) { throw 'Configure failed' }
@@ -78,11 +84,13 @@ jobs:
           python -m pip install -r tests/e2e/requirements.txt
           if ($LASTEXITCODE -ne 0) { throw 'Python dependencies failed' }
       - name: Controller and CI gate contracts
+        timeout-minutes: 10
         run: |
-          python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
+          python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py tests/e2e/test_workflow_policy.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
           if ($LASTEXITCODE -ne 0) { throw 'Controller contracts failed' }
       - name: Isolated gameplay and evidence gate
         id: gameplay
+        timeout-minutes: 35
         env:
           SAPPHIRE_E2E_PROFILE: ${{ secrets.SAPPHIRE_E2E_PROFILE }}
         run: |
@@ -96,6 +104,7 @@ jobs:
           if ($gateExit -ne 0) { throw 'Gameplay evidence gate failed; inspect private runner diagnostics' }
       - name: Publish allowlisted evidence only
         if: always() && steps.gameplay.outputs.summary_created == 'true'
+        timeout-minutes: 5
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: gameplay-summary-${{ github.run_id }}

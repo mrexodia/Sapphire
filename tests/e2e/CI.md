@@ -50,9 +50,14 @@ self-hosted runners (checked through the read-only Actions runners API).
    authorization job fails before allocating a private runner if these gates are
    absent. There is no PR, push, schedule, arbitrary-ref or reusable-workflow entry.
 
-The workflow pins its external actions, uses a read-only token, disables checkout
-credential persistence, serializes gameplay jobs without cancelling an active run,
-and limits the job to 45 minutes. It rebuilds the checked-out server, all discovered
+Both E2E workflows pin external actions to exact 40-hex revisions, use a read-only
+token, disable checkout credential persistence, apply bounded whole-job and every-
+step timeouts, and bound artifact retention. The private workflow additionally
+serializes gameplay jobs without cancelling an active run and limits the gameplay
+job to 45 minutes. These repository controls can be checked read-only with
+`python -m tests.e2e.inspect_workflow_policy`; its receipt explicitly leaves hosted
+execution, runner-group restrictions and ephemeral VM destruction unverified. The
+private workflow rebuilds the checked-out server, all discovered
 native script modules, worker and all six framework native tests using the
 `sapphire_gameplay_ci` CMake target. GUI tools and Recast's separate test suite are
 not part of that target. Framework CTest execution has a 60-second per-test timeout.
@@ -77,7 +82,7 @@ ctest --test-dir build-e2e-ci --output-on-failure --timeout 60 --no-tests=error 
 python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py \
   tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py \
   tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py \
-  --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
+  tests/e2e/test_workflow_policy.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
 python -m tests.e2e.run_ci --profile .e2e-local.json \
   --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe \
   --private-root .e2e-artifacts/ci --summary build-e2e/ci-summary.json --require-clean
