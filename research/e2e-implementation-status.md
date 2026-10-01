@@ -1947,6 +1947,45 @@ reset authority, external-server cleanliness or acceptance breadth. No service,
 account, gameplay or process operation was repeated. No full gate, soak or platform
 sweep ran.
 
+## Managed provisioning has strict terminal-host correlation
+
+Feature **`86d5fbf92`** adds read-only command
+`python -m tests.e2e.inspect_managed_development_provisioning --session-dir <session> --summary <provisioning-summary.json> --profile <private-profile>`.
+It consumes but never emits the private account profile, rejects symlink/non-file/
+oversized inputs, and requires an exact current successful summary schema with 14
+ordered successful phases. It validates the bounded cooperative deadline, exact
+managed-host start/end receipt against terminal owner/session/endpoints/worker/
+preflight identity, two distinct GM0 received character identities, fresh HTTP
+login plus refreshed lobby/world outcomes, both server-close observations, the
+profile-bound provisioning association, exact normal worker exit, clear terminal
+leases and all four terminal owned service generations. The output contains
+character/entity IDs but no usernames, passwords or profile paths.
+
+This proves retained setup/lifecycle correlation only. Creation requests remain
+non-idempotent and are never retried; neither normal logout, leases, terminal
+process cleanup nor the association proves server-side offline exclusion, account
+reuse/reset authority, public-world readiness, natural progression or gameplay.
+
+Frozen, remote-free source **`86d5fbf92b28d5a88e09f352711bab147e497825`**
+passed **381 focused development tests in 5.45s**. Positives verify read-only CLI
+output and secret redaction. Negatives cover failed/ready boundaries, boolean GM
+rank, duplicate character identity, changed association, foreign host session,
+expired deadline, type-confused endpoint, forbidden recovery state and reordered
+phases. Test-log SHA-256:
+`0f7a7fc46f5e7bfc85dfc80b68a819c8dbab282263bf75405cc2134c9c5d0c1d`.
+Artifacts: `development-managed-provisioning-clean-{source.json,python.log}`.
+
+No current live managed provisioning artifact exists: all retained successful
+provisioning runs predate managed-host receipts. The current inspector rejected
+`development-provisioning-deadline-live-002` rather than combining it with an
+unrelated later host. Historical summary SHA-256:
+`bbb0885709cf49b9a8f8cc93e084f8bc0991829e5d79a9330da891e3945b1c3a`;
+rejection evidence SHA-256:
+`68241cdcb0f4178dc86b7c597383950078762429d884808c7b6d19a42fe691c7`.
+No account, endpoint, server or gameplay operation ran. A fresh managed
+provisioning execution would create new accounts and therefore requires explicit
+renewed authorization; it remains pending.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -2749,7 +2788,7 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts, strict producer/consumer terminal exact-lease snapshots, exact managed-host start/end bindings, and a composite received-evidence/terminal-host inspector; bounded planner-only and placement-chain live audits | Current v2 producer→planner→registered-placement path is live-verified on a fresh owned runtime; one managed runner's structured movement/party/inventory/reconnect receipts and start/end host binding are revalidated against terminal owned-host teardown; expiry/no-retry paths remain synthetic; worker exit, host status, server closure and local lease state grant no adoption/reset authority |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts, strict producer/consumer terminal exact-lease snapshots, exact managed-host start/end bindings, and separate strict provisioning/run terminal-host composite inspectors; bounded planner-only and placement-chain live audits | Current v2 producer→planner→registered-placement path is live-verified on a fresh owned runtime; one managed runner's structured movement/party/inventory/reconnect receipts and terminal host are current, while managed provisioning correlation is contract-only because live provisioning predates host binding; expiry/no-retry paths remain synthetic; worker exit, host status, server closure and local lease state grant no adoption/reset authority |
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
