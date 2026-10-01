@@ -7,6 +7,7 @@ from .development import (DevelopmentError, validate_profile, movement_route,
 from .worker import Worker, WorkerError
 from .development_lease import require_clear_terminal_account_leases
 from .development_inventory import CONTAINERS, SCOPE as INVENTORY_SCOPE
+from .development_viewer import CONTINUITY_SCOPE
 
 
 def development_run_budget(activity_deadline):
@@ -135,7 +136,24 @@ def require_graphical_check(result, viewer_name, entity):
     expected = {'entity_id':entity, 'name':viewer_name, 'gm_rank':0}
     if any(viewer.get(stage, {}).get('identity') != expected for stage in ('start','finish')):
         raise DevelopmentError('development checkpoints do not bind the same graphical fixture')
+    entities = result.get('entities')
+    continuity = viewer.get('continuous_presence')
+    if (not isinstance(entities, list) or len(entities) != 2
+            or any(type(value) is not int or value <= 0 for value in entities)
+            or len(set(entities)) != 2 or not isinstance(continuity, dict)
+            or set(continuity) != {'verified', 'scope', 'observer', 'observer_entity_id',
+                                   'viewer_entity_id', 'presence_token'}
+            or continuity.get('verified') is not True
+            or continuity.get('scope') != CONTINUITY_SCOPE
+            or continuity.get('observer') != 'witness'
+            or continuity.get('observer_entity_id') != entities[1]
+            or continuity.get('viewer_entity_id') != entity
+            or type(continuity.get('presence_token')) is not int
+            or continuity['presence_token'] < 0
+            or viewer.get('finish', {}).get('continuous_presence') != continuity):
+        raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
-            'inventory_scope':INVENTORY_SCOPE, 'rendered_bot_actions_verified':False,
+            'inventory_scope':INVENTORY_SCOPE, 'continuous_presence':continuity,
+            'rendered_bot_actions_verified':False,
             'note':'Endpoint replies are received-state evidence, not continuous presence or rendered-action agreement.'}

@@ -162,10 +162,18 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                     worker.wait_state(mover.name,
                         lambda s: idle_state(s, profile["territory"]) and witnessed(s, observer, names[1],
                             states[1]["observed_position"]), "exact witness identity", timeout=10)
+                viewer_continuity = None
                 if viewer_name is not None:
                     report["viewer_verification"]["start"] = viewer_checkpoint(
                         worker, [mover, witness], [actor, observer], profile["territory"],
                         viewer_name, run_id, "start", artifacts, timings)
+                    start_viewer = report["viewer_verification"]["start"]
+                    viewer_continuity = {
+                        "observer": witness.name,
+                        "observer_entity_id": observer,
+                        "viewer_entity_id": start_viewer["identity"]["entity_id"],
+                        "presence_token": start_viewer["presence_tokens"][witness.name],
+                    }
                 for cycle in range(cycles):
                     with timings.phase(f"say_round_trip_{cycle}"):
                         for sender, receiver, identity in ((mover, witness, actor), (witness, mover, observer)):
@@ -222,7 +230,10 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                     report["viewer_verification"]["finish"] = viewer_checkpoint(
                         worker, [mover, witness], [actor, observer], profile["territory"],
                         viewer_name, run_id, "finish", artifacts, timings,
-                        expected=report["viewer_verification"]["start"]["identity"])
+                        expected=report["viewer_verification"]["start"]["identity"],
+                        continuity=viewer_continuity)
+                    report["viewer_verification"]["continuous_presence"] = (
+                        report["viewer_verification"]["finish"]["continuous_presence"])
                     report["viewer_verification"]["verified"] = True
                 with timings.phase("logout_and_independent_despawn"):
                     mover.logout(wait_server_close=True)

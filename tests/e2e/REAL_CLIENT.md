@@ -100,7 +100,11 @@ summary and requires every requested subcheck, including an exact unchanged
 read-only reconnect-inventory receipt, released leases, the exact versioned
 `clear` terminal lease snapshot, a strict normal exit receipt for the exact owned
 native worker, and the same non-GM graphical fixture identity at both checkpoints.
-Legacy summaries without the terminal snapshot or with only `worker_closed:true`,
+The original continuously connected witness must retain the same received viewer
+spawn-generation token from start through finish; any viewer despawn/zone loss/
+respawn observed by that witness fails before the finish challenge. Legacy
+summaries without this continuity evidence, without the terminal snapshot, or with
+only `worker_closed:true`,
 malformed/nonzero receipts and local process exit without the separate server-
 lifecycle observations fail closed. The nested normal-bot scenario also receives
 an integer cooperative deadline strictly inside the remaining graphical activity
@@ -120,9 +124,10 @@ original catalog, both catalog hashes and mesh hash are retained. No corridor,
 actor, quest or route-length fields are regenerated or weakened.
 
 The prior screenshot review does **not** certify rendering of these added bot
-actions. Even a successful bridge is endpoint co-presence, not continuous presence,
-visual quest/combat agreement, normal opening progression, shared-database
-cleanliness or full acceptance. One owned-guest bridge has actual graphical
+actions. A current successful bridge would add absence of received viewer despawn/
+respawn on one persistent witness between endpoint replies, but not a server-side
+continuous-session oracle, continuous rendering, visual quest/combat agreement,
+normal opening progression, shared-database cleanliness or full acceptance. One owned-guest bridge has actual graphical
 execution and disposal evidence (see below); preparation/contracts alone do not
 satisfy those requirements for another deployment or build.
 

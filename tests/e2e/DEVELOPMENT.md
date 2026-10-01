@@ -720,7 +720,7 @@ that run's `run_id`. There is deliberately no timed lease stealing or automatic
 reset. These locks coordinate **cooperating local runners only**: they do not
 exclude manual logins, other machines/users, or aliases for the same server.
 
-## Confirm a separate viewer at the scenario endpoints
+## Confirm a separate viewer at both endpoints without received despawn
 
 Add `--viewer-name "Exact Playername"` to require a separate, already-online
 player in view of **both** bots. The name must be exact printable ASCII (1–31
@@ -737,22 +737,32 @@ the two test bots must remain non-GM.
 
 Each checkpoint allows 10 seconds total to bind the same unambiguous player
 spawn on both bot clients, then 60 seconds total for both to receive the reply.
-A fresh random nonce is generated only after the baseline observations; received
-chat tokens must advance beyond each observer's baseline. Old messages, another
-speaker, another chat channel, a reply seen by only one bot, changed viewer
-identity/GM rank, NPC lookalikes and ambiguous identities fail closed. Late
-successful waits are also rejected. Failure retains bot leases for manual
-recovery; there is no automatic retry or forced viewer cleanup.
+The start also records the native worker's existing `known_players` spawn-generation
+token on the persistent witness (the witness never reconnects). At finish that
+same witness must still report the same viewer entity/name as spawned with the
+unchanged token. Any received viewer despawn, zone loss or respawn changes the
+token and fails before the finish challenge. A fresh random nonce is generated
+only after the baseline observations; received chat tokens must advance beyond
+each observer's baseline. Old messages, another speaker/channel, a reply seen by
+only one bot, changed viewer identity/GM rank, NPC lookalikes, malformed presence
+metadata and ambiguous identities fail closed. Late successful waits are also
+rejected. Failure retains bot leases for manual recovery; there is no automatic
+retry or forced viewer cleanup.
 
 Viewer movement is allowed while both bots can still observe that player.
-Positions are recorded, not held fixed or restored. With `--verify-reconnect`,
-the finish reply must reach the newly authenticated mover as well as the
-original witness. The summary records both checkpoints under
+Positions are recorded, not held fixed or restored. If ordinary visibility culling
+causes the persistent witness to receive a despawn/respawn, the continuity check
+fails even if the viewer remained logged in; this is deliberately received
+visibility evidence, not a server-side session oracle. With `--verify-reconnect`,
+the finish reply must reach the newly authenticated mover as well as the original
+witness. The summary records both checkpoints and the unchanged witness token under
 `viewer_verification`.
 
-**Scope:** this proves received presence/liveness at two endpoints, not continuous
-presence, unchanged viewer gameplay state, a particular client executable,
-rendered appearance, screenshots, or graphical compatibility. A third headless
+**Scope:** this proves endpoint liveness plus absence of any received viewer
+despawn/respawn on one continuously connected witness between them. It does not
+prove server-side online exclusion, packet-loss-free observation, unchanged viewer
+gameplay state, a particular client executable, rendered appearance, screenshots,
+or graphical compatibility. A third headless
 client can exercise this contract but cannot substitute for the independent
 real-client lane. Allow enough managed-host lifetime for operator replies.
 

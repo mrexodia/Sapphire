@@ -35,7 +35,11 @@ def test_viewer_cannot_be_either_bot(fixture,key,index):
 
 def completed():
     identity={'name':'Tester Viewer','entity_id':3,'gm_rank':0}
+    continuity={'verified':True,
+        'scope':'unchanged-received-spawn-token-on-persistent-observer-not-server-session-proof',
+        'observer':'witness','observer_entity_id':2,'viewer_entity_id':3,'presence_token':105}
     return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
+            'entities':[1,2],
             'worker_closed':True,
             'worker_exit':{'scope':'owned-native-worker-exit-not-server-session-closure',
                            'context_entered':True,'context_exit_attempted':True,
@@ -68,12 +72,16 @@ def completed():
                          'received_sequence':118},
                 'changed_slots':[]},
             'viewer_verification':{'requested':True,'verified':True,'viewer_login_or_control_performed':False,
-                                   'start':{'identity':copy.deepcopy(identity)},'finish':{'identity':copy.deepcopy(identity)}}}
+                'continuous_presence':copy.deepcopy(continuity),
+                'start':{'identity':copy.deepcopy(identity)},
+                'finish':{'identity':copy.deepcopy(identity),
+                          'continuous_presence':copy.deepcopy(continuity)}}}
 
 
 def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     report=completed(); proof=bridge.require_graphical_check(report,'Tester Viewer',3)
     assert proof['status']=='passed' and proof['rendered_bot_actions_verified'] is False
+    assert proof['continuous_presence']==report['viewer_verification']['continuous_presence']
     for key in ('party_verification','tell_verification','reconnect_verification','inventory_verification','viewer_verification'):
         wrong=copy.deepcopy(report); wrong[key]['verified']=False
         with pytest.raises(DevelopmentError): bridge.require_graphical_check(wrong,'Tester Viewer',3)
@@ -127,6 +135,25 @@ def test_graphical_bridge_rejects_malformed_inventory_receipt():
     )
     for mutate in mutations:
         report=completed();mutate(report['inventory_verification'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_missing_or_changed_continuity():
+    mutations=(
+        lambda report: report['viewer_verification'].pop('continuous_presence'),
+        lambda report: report['viewer_verification']['continuous_presence'].update(verified=False),
+        lambda report: report['viewer_verification']['continuous_presence'].update(scope='server-session-proof'),
+        lambda report: report['viewer_verification']['continuous_presence'].update(observer='mover'),
+        lambda report: report['viewer_verification']['continuous_presence'].update(observer_entity_id=1),
+        lambda report: report['viewer_verification']['continuous_presence'].update(viewer_entity_id=4),
+        lambda report: report['viewer_verification']['continuous_presence'].update(presence_token=True),
+        lambda report: report['viewer_verification']['continuous_presence'].update(extra=True),
+        lambda report: report.update(entities=[1,1]),
+        lambda report: report['viewer_verification']['finish'].update(continuous_presence={}),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report)
         with pytest.raises(DevelopmentError):
             bridge.require_graphical_check(report,'Tester Viewer',3)
 
