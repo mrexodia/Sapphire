@@ -10,7 +10,9 @@ from .support.client_development import (require_graphical_check,
                                          require_graphical_decline_check,
                                          require_graphical_run_pair)
 from .support.client_result import inspect_client_development_result, RESULT_SCOPE
-from .support.client_smoke import CLIENT_SHA256, REVIEW_CHECKS, witness_say_challenge
+from .support.client_smoke import (CLIENT_SHA256, LOGOUT_CAPTURE_SCOPE,
+                                   LOGOUT_REVIEW_CHECKS, REVIEW_CHECKS,
+                                   witness_say_challenge)
 from .support.client_snapshot import git
 from .support.development import DevelopmentError
 from .support.environment import REPO
@@ -59,6 +61,11 @@ def build_output(root, source_revision="1" * 40):
     write_json(root / "review-ticket.json", ticket)
     write_json(root / "review.json", review)
     (root / "logout.png").write_bytes(b"synthetic nonempty logout frame")
+    logout_hash = hashlib.sha256((root / "logout.png").read_bytes()).hexdigest()
+    logout_ticket = {"run":run_id,"frame_sha256":logout_hash,"scope":LOGOUT_CAPTURE_SCOPE}
+    write_json(root / "logout-ticket.json", logout_ticket)
+    write_json(root / "logout-review.json", {"version":1, **logout_ticket,
+        "checks":LOGOUT_REVIEW_CHECKS,"manual_review":True})
     retire = {"server_close_observed": True, "native_bot_removed": True,
               "scope": "normal-witness-session-retirement-not-offline-exclusion"}
     phases = ["setup", "spawn", "movement", "say", "review", "development",
@@ -138,6 +145,7 @@ def build_output(root, source_revision="1" * 40):
             "baseline_sequence":13,"received_sequence":14},
         "manual_review": review,
         "logout_request": "[3] Zone IPC : StartLogoutCountdown",
+        "logout_frame_sha256": logout_hash,
     }
     write_json(root / "result.json", report)
     write_json(root / "status.json", {"run": run_id, "phase": "finished",
@@ -155,6 +163,9 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
     assert before == after
     assert proof["status"] == "accepted" and proof["scope"] == RESULT_SCOPE
     assert proof["sandbox_disposal_verified"] is False
+    assert proof["title_screen_review"] == {"verified":True,
+        "frame_sha256":hashlib.sha256((root / "logout.png").read_bytes()).hexdigest(),
+        "scope":LOGOUT_CAPTURE_SCOPE}
     assert proof["activity_deadline"]["activity_and_worker_exit_completed_within_budget"] is True
 
 
@@ -212,6 +223,11 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
               "hp":94,"position":[1,0,0]}}),
     lambda root, report: report["manual_review"].update(manual_review=False),
     lambda root, report: report.update(logout_request="foreign"),
+    lambda root, report: report.update(logout_frame_sha256="0" * 64),
+    lambda root, report: write_json(root / "logout-review.json",
+        {"version":1,"run":"f"*32,"frame_sha256":report["logout_frame_sha256"],
+         "scope":LOGOUT_CAPTURE_SCOPE,"checks":[],"manual_review":True}),
+    lambda root, report: (root / "logout.png").write_bytes(b"changed logout frame"),
     lambda root, report: write_json(root / "status.json",
         {"run": "0" * 32, "phase": "finished", "status": "passed"}),
 ])

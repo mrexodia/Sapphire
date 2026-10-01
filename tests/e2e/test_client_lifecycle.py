@@ -256,6 +256,10 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
             "actor":2,"message":guest.REAL_SAY,"kind":10,
             "baseline_sequence":10,"message_token":11,"received_sequence":11}
     if failure != "stale_real_say":
+        assert report["logout_frame_sha256"] == guest.CLIENT_SHA256
+        assert json.loads((output / "logout-ticket.json").read_text()) == {
+            "run":report["run"],"frame_sha256":guest.CLIENT_SHA256,
+            "scope":guest.LOGOUT_CAPTURE_SCOPE}
         assert report["logout_baseline"]["seq"] == 12
         assert report["real_logout_receipt"] == {
             "verified":True,

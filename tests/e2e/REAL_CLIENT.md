@@ -241,15 +241,27 @@ are absent, not passing. On completion or failure, `status.json` changes to
    still present and records its sequence/position. Absence must then arrive at a
    strictly newer sequence; a pre-phase disappearance or cached absence cannot
    pass. Separately, the server must have logged that entity's ordinary
-   StartLogoutCountdown request and the graphical process must still be alive. Inspect `logout.png` for the title
-   screen separately; the automated conditions do not recognize that image.
-   At `witness_retirement`, leave the title screen alone. The coordinator waits
+   StartLogoutCountdown request and the graphical process must still be alive. At
+   `witness_retirement`, leave the title screen alone. The coordinator waits
    for the headless witness's normal server connection closure, not only its
    logout acknowledgement, before local close/removal. Failure is not retried;
    late completion cannot pass the twenty-minute activity deadline. In-flight
    bounded calls and final environment cleanup are not forcibly interrupted.
+   After terminal `status=passed`, manually inspect `logout.png` and require the
+   matching client title screen. The automated conditions do not recognize that
+   image. If it is clearly correct, bind the explicit attestation to the exact run
+   and frame hash before inspection/disposal:
+
+   ```sh
+   python -m tests.e2e.prepare_client_smoke approve-logout \
+     --output .e2e-artifacts/<fresh-private-run>/output --reviewed-title-screen
+   ```
+
+   Missing, changed, malformed or failed-run frames cannot receive this receipt.
+   Do not approve a loading/error/disconnect view as the title screen.
 6. Inspect `result.json`: require `status=passed`, all received snapshots,
-   manual-review receipt, logout marker, `witness_retirements`, a normal
+   manual-review receipt, logout marker, exact `logout_frame_sha256` plus the
+   separate title-screen review receipt, `witness_retirements`, a normal
    `observer_worker_exit` receipt for the exact outer native witness process, exact
    `activity_deadline` with `expired=false` and
    `activity_and_worker_exit_completed_within_budget=true`, and
@@ -276,8 +288,8 @@ are absent, not passing. On completion or failure, `status.json` changes to
    fresh sequence-bound bounded displacement, fresh sequence-bound Say, review
    presence and fresh post-phase logout absence;
    both nested summaries/hashes and
-   strict consumers; pair/handoff/restoration receipts; run-bound Say challenge
-   and review-frame binding,
+   strict consumers; pair/handoff/restoration receipts; run-bound Say challenge,
+   review-frame binding and the separately approved exact title-screen frame,
    retirements, outer deadline/worker exit, terminal status and reported runtime
    removal. `accepted` explicitly leaves
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the

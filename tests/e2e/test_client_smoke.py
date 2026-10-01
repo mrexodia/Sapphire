@@ -5,12 +5,14 @@ import xml.etree.ElementTree as ET
 
 import pytest
 
-from .prepare_client_smoke import approve, sandbox_xml
-from .support.client_smoke import (REAL_SAY, REVIEW_CHECKS, moved, other_player, position,
+from .prepare_client_smoke import approve, approve_logout, sandbox_xml
+from .support.client_smoke import (LOGOUT_CAPTURE_SCOPE, LOGOUT_REVIEW_CHECKS,
+                                   REAL_SAY, REVIEW_CHECKS, moved, other_player, position,
                                    real_logout_baseline, real_movement_baseline,
                                    real_say_baseline, real_spawn_baseline,
                                    received_real_logout, received_real_movement,
-                                   received_real_say, received_real_spawn, validate_review,
+                                   received_real_say, received_real_spawn,
+                                   validate_logout_review, validate_review,
                                    witness_say_challenge)
 from .support.environment import sha256
 
@@ -227,6 +229,27 @@ def test_review_rejects_foreign_run_bound_witness_challenge(tmp_path):
     for value in (True, "g" * 32, "a" * 31, "A" * 32):
         with pytest.raises(ValueError):
             witness_say_challenge(value)
+
+
+def test_explicit_logout_review_is_bound_to_finished_run_and_exact_frame(tmp_path):
+    run_id = "c" * 32
+    (tmp_path / "logout.png").write_bytes(b"synthetic title frame, not reviewed pixels")
+    ticket = {"run":run_id,"frame_sha256":sha256(tmp_path / "logout.png"),
+              "scope":LOGOUT_CAPTURE_SCOPE}
+    (tmp_path / "logout-ticket.json").write_text(json.dumps(ticket))
+    (tmp_path / "status.json").write_text(json.dumps(
+        {"run":run_id,"phase":"finished","status":"passed"}))
+    approve_logout(tmp_path)
+    receipt = json.loads((tmp_path / "logout-review.json").read_text())
+    assert validate_logout_review(receipt, ticket)["checks"] == LOGOUT_REVIEW_CHECKS
+    for key, value in (("run", "d" * 32), ("frame_sha256", "0" * 64),
+                       ("scope", "foreign"), ("manual_review", False),
+                       ("version", True), ("checks", []), ("extra", True)):
+        with pytest.raises(ValueError):
+            validate_logout_review({**receipt, key:value}, ticket)
+    (tmp_path / "logout.png").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="frame changed"):
+        approve_logout(tmp_path)
 
 
 @pytest.mark.parametrize("status", [{"run": "b" * 32, "phase": "review"},

@@ -13,11 +13,12 @@ from pathlib import Path
 
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
-from .client_smoke import (CLIENT_SHA256, other_player,
+from .client_smoke import (CLIENT_SHA256, LOGOUT_CAPTURE_SCOPE, other_player,
                            real_logout_baseline, real_movement_baseline,
                            real_say_baseline, real_spawn_baseline,
                            received_real_logout, received_real_movement,
-                           received_real_say, received_real_spawn, validate_review,
+                           received_real_say, received_real_spawn,
+                           validate_logout_review, validate_review,
                            witness_say_challenge)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
@@ -311,8 +312,19 @@ def inspect_client_development_result(output, expected_source_revision):
     except ValueError as error:
         raise DevelopmentError("graphical manual-review receipt is invalid") from error
     logout = output / "logout.png"
-    if not logout.is_file() or logout.stat().st_size <= 0:
-        raise DevelopmentError("graphical logout screenshot is missing")
+    logout_ticket = _read_json(output / "logout-ticket.json")
+    logout_review = _read_json(output / "logout-review.json")
+    logout_hash = _sha256(logout)
+    if (not logout.is_file() or logout.stat().st_size <= 0
+            or report.get("logout_frame_sha256") != logout_hash
+            or logout_ticket.get("run") != run_id
+            or logout_ticket.get("frame_sha256") != logout_hash
+            or logout_ticket.get("scope") != LOGOUT_CAPTURE_SCOPE):
+        raise DevelopmentError("graphical logout screenshot binding is invalid")
+    try:
+        validate_logout_review(logout_review, logout_ticket)
+    except ValueError as error:
+        raise DevelopmentError("graphical title-screen review receipt is invalid") from error
     expected_logout = f"[{viewer_entity}] Zone IPC : StartLogoutCountdown"
     if report.get("logout_request") != expected_logout:
         raise DevelopmentError("graphical ordinary logout marker is missing or foreign")
@@ -328,6 +340,8 @@ def inspect_client_development_result(output, expected_source_revision):
             "decline_summary_sha256": decline_hash,
             "worker_sha256": pair["worker_sha256"],
             "outer_journey": outer_journey,
+            "title_screen_review": {"verified": True, "frame_sha256": logout_hash,
+                                    "scope": LOGOUT_CAPTURE_SCOPE},
             "activity_deadline": deadline, "timing": timing,
             "runtime_removed": True, "sandbox_disposal_verified": False,
             "note": "Structured current guest evidence only; inspect rendering and dispose the owned Sandbox separately."}

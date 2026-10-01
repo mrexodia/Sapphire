@@ -12,7 +12,8 @@ import sys
 import xml.etree.ElementTree as ET
 
 from .support.catalog import load_quest_catalog
-from .support.client_smoke import CLIENT_SHA256, CLIENT_VERSION, REVIEW_CHECKS, validate_review
+from .support.client_smoke import (CLIENT_SHA256, CLIENT_VERSION, LOGOUT_REVIEW_CHECKS,
+                                   REVIEW_CHECKS, validate_logout_review, validate_review)
 from .support.environment import REPO, sha256
 from .support.client_snapshot import freeze_source
 
@@ -55,6 +56,24 @@ def approve(output):
     temporary = output / "review.tmp"
     temporary.write_text(json.dumps(review, indent=2), encoding="utf-8")
     temporary.replace(output / "review.json")
+
+
+def approve_logout(output):
+    """Record explicit human review of the exact post-logout title-screen frame."""
+    output = Path(output)
+    ticket = json.loads((output / "logout-ticket.json").read_text(encoding="utf-8"))
+    status = json.loads((output / "status.json").read_text(encoding="utf-8"))
+    if (status.get("phase") != "finished" or status.get("status") != "passed"
+            or status.get("run") != ticket.get("run")):
+        raise ValueError("no completed passing logout frame for this run")
+    if sha256(output / "logout.png") != ticket.get("frame_sha256"):
+        raise ValueError("logout review frame changed")
+    review = {"version": 1, **ticket, "checks": LOGOUT_REVIEW_CHECKS,
+              "manual_review": True}
+    validate_logout_review(review, ticket)
+    temporary = output / "logout-review.tmp"
+    temporary.write_text(json.dumps(review, indent=2), encoding="utf-8")
+    temporary.replace(output / "logout-review.json")
 
 
 def stage_guest_catalog(catalog_path, inputs):
@@ -218,11 +237,19 @@ def main():
     review = modes.add_parser("approve-rendering", help="ONLY after manually examining the requested evidence")
     review.add_argument("--output", required=True)
     review.add_argument("--reviewed-all-checks", action="store_true", required=True)
+    logout_review = modes.add_parser(
+        "approve-logout", help="ONLY after manually confirming the exact logout frame is the client title screen")
+    logout_review.add_argument("--output", required=True)
+    logout_review.add_argument("--reviewed-title-screen", action="store_true", required=True)
     args = parser.parse_args()
     if args.mode == "prepare":
-        print(prepare(args.profile, args.client, args.output, args.crt_dir, development_check=args.development_check, release_crt_dirs=args.release_crt_dir))
-    else:
+        print(prepare(args.profile, args.client, args.output, args.crt_dir,
+                      development_check=args.development_check,
+                      release_crt_dirs=args.release_crt_dir))
+    elif args.mode == "approve-rendering":
         approve(args.output)
+    else:
+        approve_logout(args.output)
 
 
 if __name__ == "__main__":

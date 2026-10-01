@@ -534,8 +534,9 @@ contracts but still has no current graphical live attestation. After a current
 run, `python -m tests.e2e.inspect_client_development_result --output <output>`
 revalidates the outer empty baseline/fresh exact-name spawn/fresh movement/fresh
 Say/review/fresh logout snapshots, binds the rendered witness Say challenge to the
-exact outer run and review frame, and revalidates all nested host-visible evidence
-read-only before the separately evidenced
+exact outer run and review frame, requires a separate exact-frame manual title-
+screen review receipt, and revalidates all nested host-visible evidence read-only
+before the separately evidenced
 Sandbox disposal. Exact artifacts and limitations are in the implementation audit.
 
 ### Optional owned two-bot party check

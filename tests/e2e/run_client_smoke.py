@@ -10,7 +10,8 @@ import subprocess
 import time
 import uuid
 
-from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, other_player,
+from .support.client_smoke import (CLIENT_SHA256, LOGOUT_CAPTURE_SCOPE, REAL_SAY,
+                                   other_player,
                                    real_logout_baseline, real_movement_baseline,
                                    real_say_baseline, real_spawn_baseline,
                                    received_real_logout, received_real_movement,
@@ -272,7 +273,12 @@ def run():
             if marker not in (env.runtime / "world.log").read_text(encoding="utf-8", errors="replace"):
                 raise ValueError("despawn without ordinary logout request")
             report["logout_request"] = marker
-            ImageGrab.grab(all_screens=True).save(OUTPUT / "logout.png")
+            logout_frame = OUTPUT / "logout.png"
+            ImageGrab.grab(all_screens=True).save(logout_frame)
+            report["logout_frame_sha256"] = sha256(logout_frame)
+            publish("logout-ticket", {"run": report["run"],
+                    "frame_sha256": report["logout_frame_sha256"],
+                    "scope": LOGOUT_CAPTURE_SCOPE})
             if client.poll() is not None:
                 raise RuntimeError("client exited during logout verification")
             phase("witness_retirement", "Leave the client at its title screen; waiting for normal headless witness closure.")
@@ -320,7 +326,7 @@ def run():
         report["timing"] = timing.finish()
         publish("result", report)
         publish("status", {"run": report["run"], "phase": "finished", "status": report["status"],
-                           "instruction": "Read result.json and discard the owned Sandbox. Do not send game input."})
+                           "instruction": "If passed, review logout.png and record approve-logout per REAL_CLIENT.md, then run the current-result inspector before discarding the owned Sandbox. Do not send game input."})
     return 0 if report["status"] == "passed" else 1
 
 

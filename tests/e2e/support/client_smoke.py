@@ -10,6 +10,8 @@ CLIENT_SHA256 = "d818584c782bbe3cacbc2b306391e6f3246bc3065c517a3324784e49d572ba1
 CLIENT_VERSION = "2016.07.05.0000.0001"
 REAL_SAY = "E2E real client verified"
 REVIEW_CHECKS = ["fixture_character_in_world", "run_bound_witness_say_rendered"]
+LOGOUT_REVIEW_CHECKS = ["client_title_screen_rendered"]
+LOGOUT_CAPTURE_SCOPE = "post-ordinary-logout-title-screen-frame"
 
 
 def witness_say_challenge(run_id):
@@ -194,6 +196,24 @@ def received_real_logout(state, expected_entity, baseline):
             "scope": "fresh-real-client-absence-after-logout-phase-not-server-logout-proof",
             "entity_id": expected_entity, "baseline_position": list(baseline["position"]),
             "baseline_sequence": baseline["sequence"], "received_sequence": sequence}
+
+
+def validate_logout_review(review, ticket):
+    if (not isinstance(ticket, dict)
+            or set(ticket) != {"run", "frame_sha256", "scope"}
+            or ticket.get("scope") != LOGOUT_CAPTURE_SCOPE):
+        raise ValueError("manual logout review ticket is malformed")
+    witness_say_challenge(ticket.get("run"))  # Strict run-ID shape, shared with outer lane.
+    digest = ticket.get("frame_sha256")
+    if (not isinstance(digest, str) or len(digest) != 64
+            or any(char not in "0123456789abcdef" for char in digest)):
+        raise ValueError("manual logout review frame digest is malformed")
+    expected = {"version": 1, **ticket, "checks": LOGOUT_REVIEW_CHECKS,
+                "manual_review": True}
+    if (review != expected or type(review.get("version")) is not int
+            or review.get("manual_review") is not True):
+        raise ValueError("explicit manual review of this run's logout frame is required")
+    return review
 
 
 def validate_review(review, ticket):
