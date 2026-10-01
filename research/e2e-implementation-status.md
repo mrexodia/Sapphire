@@ -359,12 +359,48 @@ That report predates `lease_snapshot`; the current planner rejected it with
 historical product result remains unchanged at its original version. Artifact-check
 SHA-256: `bfe9dd2ac6a098931a5e706da52a2d3cd816f06eca317b3a3f63aad33396972f`.
 
-No current producer→consumer live placement or graphical run was performed, so
-current end-to-end placement and graphical evidence remain pending. This policy
-increment proves strict local receipt consumption only—not account offline state,
-lease atomicity, reset/reprovisioning authority, graphical compatibility or
-shared-world cleanliness. No full gate, soak or platform sweep ran; overall goal
-remains incomplete.
+### Current producer→strict-planner chain live on a fresh owned runtime
+
+Bounded **`development-lease-consumers-live-001` passed** from a clean, remote-free
+snapshot of controller `c198af1c3dd26f8bd520c2acda2ca4bd8cef5f4f`
+(source-manifest SHA-256
+`ee1a29f626c3ead12327a82907c5de90fd573c21f7f3bc811a0adb11d169246a`), unchanged
+worker `899cfa747` / SHA-256
+`b0400f61813c3ee9c7ae1f1b8bdd945b296d1410628e0bf301d937cc11cd0099`, and the
+previously attested clean `e665c041f` backend hashes. It used a new private database,
+new credentials and new artifact paths.
+
+Normal HTTP creation, separate login and encrypted lobby/world entry produced GM0
+Gladiators **Tester RRWLQJNWESMJ / 2097153 / 18014398526259201** and
+**Tester GGPGLLFWVTVL / 2097154 / 18014398526259202** in private182. The exact
+eight actions are login/logout/close/remove for each bot, with one normal
+`server_logout_complete` each at sequence131. Provisioning completed in **11.453s**
+under the 30-second cooperative budget. Exact worker PID174476 exited0, both lease
+paths were absent, and the emitted strict version-1 terminal snapshot was `clear`
+with producer-state agreement.
+
+The current offline planner accepted that exact current report and wrote a private
+registry bound to both character/entity identities. Registry SHA-256 is
+`e6f00c48704633cc16d33b62e1b944d08949fd7e3b70bf6275b3dc3c64450adf`.
+**No placement command was executed.** Startup took **17.484s** and the whole driver
+**30.953s** including environment cleanup. Source re-verification, empty worker
+stderr, password scan, exact lease absence and runtime/process cleanup passed; only
+pre-existing MySQL PID7764 remained.
+
+Private `inspect-evidence.py` independently re-ran the pure planner validator,
+checked identities/actions/events/receipts and hashes all retained diagnostics.
+`inspected-evidence.json` SHA-256 is
+`760020fd8f2474fb2c1dbed2a94c57aa95ebd4e562a5ad86809e2d4dd0e58f4f`;
+provisioning-summary SHA-256 is
+`a5ab96b117c9b8db99e46331f68d423f672b1e1780fe8d579598a1c6e6ae1ce9`.
+
+This closes positive current producer→strict-planner integration only. Actual
+placement execution and current graphical execution remain pending. The registry,
+worker exit, normal server closures and local clear snapshot still do not prove
+server-side offline exclusion, account reuse authority, lease atomicity,
+reset/reprovisioning authority, gameplay, graphical compatibility or shared-world
+cleanliness. No full gate, soak or platform sweep ran; overall goal remains
+incomplete.
 
 ## Dedicated provisioning has one cooperative success deadline
 
@@ -840,7 +876,7 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; current bounded provisioning and earlier binding live audits | Implemented and positive-path live-verified on owned runtimes; strict terminal lease producer/consumer chain postdates live evidence and expiry/no-retry paths are synthetic; worker exit, server closure and local lease state remain distinct and grant no adoption/reset authority |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; current bounded producer→planner live audit | Implemented and positive producer→strict-planner path live-verified on an owned runtime; expiry/no-retry paths are synthetic and no placement executed; worker exit, server closure and local lease state remain distinct and grant no adoption/reset authority |
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |

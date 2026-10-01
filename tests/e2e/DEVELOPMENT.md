@@ -174,9 +174,11 @@ release and summary publication are cleanup outside the success budget. The summ
 overall status.
 
 A current-code positive check on a fresh owned disposable runtime completed both
-normal GM0 account/character journeys in **11.390s** under `--max-seconds 30`,
-including both server logout observations and exact worker exit before lease
-release. This is bounded provisioning/lifecycle evidence, not gameplay, existing-
+normal GM0 account/character journeys in **11.453s** under `--max-seconds 30`,
+including both server logout observations, exact worker exit, lease release and the
+strict `clear` snapshot. The current offline planner accepted that exact receipt and
+wrote a reviewed private registry; **no placement command executed**. This is
+bounded provisioning/lifecycle/receipt-consumer evidence, not gameplay, existing-
 database safety or reset authority. Live expiry was deliberately not induced;
 uncertain creation recovery remains covered by synthetic fail-closed contracts.
 
