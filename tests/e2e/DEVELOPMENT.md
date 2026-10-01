@@ -336,6 +336,34 @@ to 1..10; they repeat successful actions, not failed attempts. Your character ma
 watch without becoming an assertion dependency. Other players need not disappear
 from the world for this lane to pass.
 
+### Cooperative session deadline
+
+The CLI defaults to `--max-seconds 300`; explicitly select an integer1..900 for
+longer scenarios or tighter feedback. The budget starts after profile/route
+preflight and artifact-directory creation, and covers lease acquisition, worker
+startup, HTTP logins, scenarios, reconnects, normal logout and worker closure.
+It does not reset between phases or reconnects. It caps new native RPC/wait
+budgets (accounting for `deadline_scale`), rejects calls started after expiry and
+rejects late returns/predicate success. Budget expiry is failure, never a retry.
+
+This is **cooperative**, not a hard process-wall-clock limit or a server-side
+cancellation transaction. Already-started bounded HTTP/startup/snapshot calls and
+worker cleanup can overrun; an already-published mutation may have taken effect.
+Do not interpret expiry as rollback or proof that bots are offline. Cleanup is
+not forcibly interrupted; failure retains local leases for explicit offline
+review. The runner does not terminate the shared server or control the viewer.
+
+`run_deadline` records the limit, expiry and whether session work completed within
+the budget. Final lease release and report writing are cleanup outside that
+accepted-session budget; their success remains required for an overall pass.
+A completed-budget receipt alone is not gameplay/cleanup success. Timings remain
+actual wall times, including overrun/unwinding rather than truncating at the limit.
+
+For compatibility, direct Python `run(..., max_seconds=None)` callers retain
+per-step bounds without this aggregate budget; pass an explicit integer to enable
+it. The graphical bridge independently retains its existing twenty-minute
+activity cap. Neither boundary establishes hard-kill/crash-consistent cleanup.
+
 ### Optional observed movement
 
 Add `"quest_catalog": "C:/private/motivational-speaking.json"` to the profile.

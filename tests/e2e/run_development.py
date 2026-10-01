@@ -14,6 +14,7 @@ import uuid
 from .support.development import (AccountLease, DevelopmentError, Timings, authenticate, check_managed_host,
                                   idle_state, movement_route, validate_profile, witnessed)
 from .support.worker import Bot, Worker
+from .support.development_deadline import RunDeadline, DeadlineWorker
 from .support.development_reconnect import verify_position_reconnect
 from .support.development_party import require_bound_party_worker, verify_two_bot_party
 from .support.development_viewer import validate_viewer_name, viewer_checkpoint
@@ -26,13 +27,15 @@ from .support.development_equipment import (require_equipment_worker, begin_roun
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False,
-        verify_inventory=False, verify_sprint=False, verify_equipment=False, viewer_name=None,
+        verify_inventory=False, verify_sprint=False, verify_equipment=False, viewer_name=None, max_seconds=None,
         worker_factory=Worker, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
     validate_profile(profile)
     check_managed_host(profile)
     validate_viewer_name(viewer_name, profile["accounts"])
+    if max_seconds is not None and (type(max_seconds) is not int or not 1 <= max_seconds <= 900):
+        raise DevelopmentError("max_seconds must be an integer in 1..900")
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
     if any(type(flag) is not bool for flag in
@@ -51,6 +54,11 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     artifacts.mkdir(parents=True, exist_ok=False)
     run_id = uuid.uuid4().hex
     timings, start = Timings(), time.monotonic()
+    deadline = RunDeadline(max_seconds, started=start) if max_seconds is not None else None
+    if deadline is not None:
+        original_login = login
+        def login(config, account):
+            return deadline.call(original_login, config, account)
     lease = AccountLease(profile, run_id, lease_root)
     report = {"version": 1, "run_id": run_id, "status": "failed",
               "scope": "shared-development-not-acceptance", "server_identity_verified": False,
@@ -76,12 +84,19 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     acquired = False
     try:
         with timings.phase("account_lease"):
+            if deadline is not None:
+                deadline.check()
             lease.acquire()
             acquired = True
             report["lease_retained"] = True
         # Scope of this context includes worker cleanup; passing requires clean exit.
         with timings.phase("worker_session_including_close"):
-            with worker_factory(Path(profile["worker"]), artifacts / "worker") as worker:
+            if deadline is not None:
+                deadline.check()
+            with worker_factory(Path(profile["worker"]), artifacts / "worker") as raw_worker:
+                if deadline is not None:
+                    deadline.check()
+                worker = DeadlineWorker(raw_worker, deadline) if deadline is not None else raw_worker
                 if verify_party:
                     with timings.phase("party_worker_capability"):
                         require_bound_party_worker(worker)
@@ -212,6 +227,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                     for bot in bots:
                         bot.close()
             report["worker_closed"] = True
+        if deadline is not None:
+            with timings.phase("run_deadline_completion"):
+                deadline.complete()
         with timings.phase("release_accounts"):
             lease.release()
             report["lease_retained"] = False
@@ -225,6 +243,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         if acquired:
             report["recovery"] = "Verify both bots offline, then manually remove this run's local account leases. No automatic retry/reset."
     finally:
+        report["run_deadline"] = deadline.report() if deadline is not None else {"enabled": False}
         report["elapsed_seconds"] = time.monotonic() - start
         report["timings"] = timings.rows
         (artifacts / "development-summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -237,6 +256,8 @@ def main(argv=None):
     parser.add_argument("--artifacts", required=True, help="New private artifact directory (must not exist)")
     parser.add_argument("--allow-shared-development", action="store_true")
     parser.add_argument("--cycles", type=int, default=1)
+    parser.add_argument("--max-seconds", type=int, default=300,
+                        help="Cooperative session budget 1..900 seconds (default 300); final lease/report cleanup excluded")
     parser.add_argument("--await-placement", action="store_true",
                         help="Allow up to 120s for separate GM-approved placement; requires quest_catalog")
     parser.add_argument("--verify-reconnect", action="store_true",
@@ -262,7 +283,7 @@ def main(argv=None):
                      verify_party=args.verify_party, verify_tell=args.verify_tell,
                      verify_decline=args.verify_decline, verify_inventory=args.verify_inventory,
                      verify_sprint=args.verify_sprint, verify_equipment=args.verify_equipment,
-                     viewer_name=args.viewer_name)
+                     viewer_name=args.viewer_name, max_seconds=args.max_seconds)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.
         print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))
