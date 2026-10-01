@@ -211,6 +211,8 @@ class Environment:
         self.process_teardowns = []
         self.streams = []
         self._closed = False
+        self._cleanup_evidence_failed = False
+        self._cleanup_failure_services = set()
         self.last_api_receipt = None
         self._http = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         self.root = Path(tempfile.mkdtemp(prefix="sapphire-e2e-"))
@@ -553,18 +555,36 @@ class Environment:
                 self._stop(name)
             except BaseException:
                 failures.append(name)
-        self._write_lifecycle()
         if failures:
-            # Keep a terminal marker even if a later poll observes exit. Evidence
-            # with any uncertain cleanup must never be upgraded to a clean run.
-            (self.artifacts / "cleanup-failure.json").write_text(json.dumps({
-                "version":1,"classification":"owned_process_cleanup_incomplete",
-                "services":sorted(failures),"runtime_retained":True,
-                "retry_policy":"exact-process-poll-only-no-second-termination",
-            }, indent=2), encoding="utf-8")
+            self._cleanup_evidence_failed = True
+            services = getattr(self, "_cleanup_failure_services", set())
+            services.update(failures)
+            self._cleanup_failure_services = services
+        publication_failed = False
+        try:
+            self._write_lifecycle()
+        except BaseException:
+            # A missing lifecycle is itself terminal evidence uncertainty, even
+            # when every exact exit was observed.
+            self._cleanup_evidence_failed = True
+            publication_failed = True
+        if getattr(self, "_cleanup_evidence_failed", False):
+            services = sorted(getattr(self, "_cleanup_failure_services", set()))
+            classification = ("owned_process_cleanup_incomplete" if services else
+                              "owned_process_cleanup_evidence_incomplete")
+            try:
+                # Retry publication, never process termination, on a later close.
+                (self.artifacts / "cleanup-failure.json").write_text(json.dumps({
+                    "version":1,"classification":classification,
+                    "services":services,"runtime_retained":True,
+                    "retry_policy":"exact-process-poll-only-no-second-termination",
+                }, indent=2), encoding="utf-8")
+            except BaseException:
+                publication_failed = True
+        if failures or publication_failed:
             # Keep streams, logs and runtime for exact retained-process diagnosis.
-            raise SetupError("owned process cleanup incomplete; inspect private lifecycle: "
-                             + ", ".join(failures))
+            names = ", ".join(failures) if failures else "evidence publication"
+            raise SetupError("owned process cleanup incomplete; inspect private lifecycle: " + names)
         for stream in self.streams:
             stream.close()
         # Only publish redacted text logs, never DB files, game assets or credentials/configs.

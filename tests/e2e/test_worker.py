@@ -391,8 +391,13 @@ def test_exact_owned_process_stop_records_terminate_and_kill_fallback():
         "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}]
 
 
-@pytest.mark.parametrize("failure", [OSError("synthetic uncertain termination"), KeyboardInterrupt()])
-def test_close_attempts_all_owned_processes_and_only_observes_uncertain_retry(tmp_path, failure):
+@pytest.mark.parametrize("failure,marker_write_fails", [
+    (OSError("synthetic uncertain termination"), False),
+    (KeyboardInterrupt(), False),
+    (OSError("synthetic uncertain termination"), True),
+])
+def test_close_attempts_all_owned_processes_and_only_observes_uncertain_retry(
+        tmp_path, monkeypatch, failure, marker_write_fails):
     class Process:
         def __init__(self, pid, fail=False):
             self.pid, self.fail, self.returncode, self.calls = pid, fail, None, []
@@ -418,21 +423,57 @@ def test_close_attempts_all_owned_processes_and_only_observes_uncertain_retry(tm
         "world":{"process":"world","generation":1,"pid":45}}
     env.process_starts = list(env._process_metadata.values())
     env.process_teardowns = []
+    if marker_write_fails:
+        original_write_text = Path.write_text
+        remaining_failures = [1]
+        def write_text(path, *args, **kwargs):
+            if path.name == "cleanup-failure.json" and remaining_failures:
+                remaining_failures.pop()
+                raise OSError("synthetic marker publication failure")
+            return original_write_text(path, *args, **kwargs)
+        monkeypatch.setattr(Path, "write_text", write_text)
     with pytest.raises(SetupError, match="cleanup incomplete.*world"):
         env.close()
     assert all(process.calls == ["terminate",("wait",10)]
                for process in (database, api, lobby)) and world.calls == ["terminate"]
     assert set(env.processes) == {"world"} and env.root.exists() and env._closed is False
     failure_path = env.artifacts / "cleanup-failure.json"
-    assert json.loads(failure_path.read_text()) == {
-        "version":1,"classification":"owned_process_cleanup_incomplete",
-        "services":["world"],"runtime_retained":True,
-        "retry_policy":"exact-process-poll-only-no-second-termination"}
+    if marker_write_fails:
+        assert not failure_path.exists()
+    else:
+        assert json.loads(failure_path.read_text()) == {
+            "version":1,"classification":"owned_process_cleanup_incomplete",
+            "services":["world"],"runtime_retained":True,
+            "retry_policy":"exact-process-poll-only-no-second-termination"}
     world.returncode = -1
     env.close()
     assert world.calls == ["terminate"] and env.processes == {} and not env.root.exists()
     assert failure_path.exists()
     assert require_process_teardowns(env.process_starts, env.process_teardowns)["process_count"] == 4
+
+
+def test_close_retains_terminal_marker_when_lifecycle_publication_fails(tmp_path):
+    env = object.__new__(Environment)
+    env.root = tmp_path / "root"; env.runtime = env.root / "runtime"
+    env.runtime.mkdir(parents=True)
+    env.artifacts = tmp_path / "artifacts"; env.artifacts.mkdir()
+    env.redactions, env.streams, env._closed = set(), [], False
+    env.processes, env.process_starts, env.process_teardowns = {}, [], []
+    env._cleanup_evidence_failed, env._cleanup_failure_services = False, set()
+    actual_write_lifecycle = Environment._write_lifecycle.__get__(env)
+    env._write_lifecycle = lambda: (_ for _ in ()).throw(
+        OSError("synthetic lifecycle publication failure"))
+    with pytest.raises(SetupError, match="cleanup incomplete.*evidence publication"):
+        env.close()
+    marker = env.artifacts / "cleanup-failure.json"
+    assert env.root.exists() and env._closed is False
+    assert json.loads(marker.read_text()) == {
+        "version":1,"classification":"owned_process_cleanup_evidence_incomplete",
+        "services":[],"runtime_retained":True,
+        "retry_policy":"exact-process-poll-only-no-second-termination"}
+    env._write_lifecycle = actual_write_lifecycle
+    env.close()
+    assert marker.exists() and not env.root.exists() and env._closed is True
 
 
 def test_owned_world_fault_is_exact_bounded_and_not_repeatable(tmp_path):
