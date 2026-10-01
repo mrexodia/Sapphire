@@ -6,11 +6,12 @@ import pytest
 from .inspect_workflow_policy import main as inspect_main
 from .support.development import DevelopmentError
 from .support.environment import REPO
-from .support.workflow_policy import inspect_workflow
+from .support.workflow_policy import inspect_dependency_lock, inspect_workflow
 
 
 PUBLIC = REPO / ".github/workflows/test-client.yml"
 PRIVATE = REPO / ".github/workflows/gameplay-e2e.yml"
+DEPENDENCIES = REPO / "tests/e2e/requirements.txt"
 
 
 def test_e2e_workflow_inspector_emits_narrow_structured_receipt(capsys):
@@ -21,6 +22,9 @@ def test_e2e_workflow_inspector_emits_narrow_structured_receipt(capsys):
     assert receipt["hosted_execution_verified"] is False
     assert receipt["runner_group_policy_verified"] is False
     assert receipt["ephemeral_vm_destruction_verified"] is False
+    assert receipt["dependency_lock"]["verified"] is True
+    assert receipt["dependency_lock"]["package_count"] == 7
+    assert receipt["dependency_lock"]["source_distributions_allowed"] is False
 
 
 def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
@@ -34,6 +38,9 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     assert private["service_free_staging_required"] is True
     assert private["exact_clean_checkout_required"] is True
     assert private["failed_summary_inspection_required"] is True
+    assert public["hash_locked_dependencies_required"] is True
+    assert private["hash_locked_dependencies_required"] is True
+    assert inspect_dependency_lock(DEPENDENCIES)["package_count"] == 7
     assert [len(public["pinned_actions"]), len(private["pinned_actions"])] == [3, 3]
     assert all("@" in action and len(action.rsplit("@", 1)[1]) == 40
                for proof in (public, private) for action in proof["pinned_actions"])
@@ -49,8 +56,12 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     (PUBLIC, "        timeout-minutes: 5", "        timeout-minutes: 0"),
     (PUBLIC, "          persist-credentials: false", "          persist-credentials: true"),
     (PUBLIC, "          retention-days: 7", "          retention-days: 31"),
+    (PUBLIC, "pip install --require-hashes --only-binary=:all:",
+             "pip install --only-binary=:all:"),
     (PUBLIC, "          if-no-files-found: warn", "          if-no-files-found: ignore"),
     (PRIVATE, "  cancel-in-progress: false", "  cancel-in-progress: true"),
+    (PRIVATE, "pip install --require-hashes --only-binary=:all:",
+              "pip install --require-hashes"),
     (PRIVATE, "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
               "    runs-on: ubuntu-latest"),
     (PRIVATE, "  workflow_dispatch:", "  pull_request:\n  workflow_dispatch:"),
@@ -83,6 +94,24 @@ def test_workflow_policy_rejects_mutable_unbounded_or_untrusted_controls(
     path.write_text(text.replace(old, new, 1), encoding="utf-8")
     with pytest.raises(DevelopmentError):
         inspect_workflow(path, private=source == PRIVATE)
+
+
+@pytest.mark.parametrize("old,new", [
+    ("pytest==8.4.1", "pytest>=8"),
+    ("539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7",
+     "0" * 64),
+    ("psutil==6.1.1", "psutil==7.0.0"),
+    ("pygments==2.19.2", "--index-url=https://example.invalid\npygments==2.19.2"),
+    ("colorama==0.4.6", "pytest==8.4.1"),
+])
+def test_dependency_lock_rejects_ranges_changed_hashes_or_unreviewed_inputs(
+        tmp_path, old, new):
+    text = DEPENDENCIES.read_text(encoding="utf-8")
+    assert text.count(old) == 1
+    path = tmp_path / "requirements.txt"
+    path.write_text(text.replace(old, new, 1), encoding="utf-8")
+    with pytest.raises(DevelopmentError):
+        inspect_dependency_lock(path)
 
 
 def test_private_workflow_requires_service_free_staging_before_gate(tmp_path):

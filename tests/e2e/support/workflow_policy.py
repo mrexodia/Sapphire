@@ -14,6 +14,51 @@ from .development import DevelopmentError
 PINNED_ACTION = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
 JOB = re.compile(r"^  ([A-Za-z0-9_-]+):\s*$")
 STEP = re.compile(r"^      - (?:name|uses|run):")
+DEPENDENCIES = {
+    "pytest": ("8.4.1", {"539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7"}),
+    "psutil": ("6.1.1", {"97f7cb9921fbec4904f522d972f0c0e1f4fabbdd4e0287813b21215074a0f160",
+                           "f35cfccb065fff93529d2afb4a2e89e363fe63ca1e4a5da22b603a85833c2649"}),
+    "colorama": ("0.4.6", {"4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"}),
+    "iniconfig": ("2.1.0", {"9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760"}),
+    "packaging": ("25.0", {"29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"}),
+    "pluggy": ("1.6.0", {"e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746"}),
+    "pygments": ("2.19.2", {"86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b"}),
+}
+
+
+def inspect_dependency_lock(path):
+    path = Path(path)
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as error:
+        raise DevelopmentError("cannot read E2E dependency lock") from error
+    lines = raw.splitlines()
+    if not lines or any("\t" in line or line.rstrip() != line for line in lines):
+        raise DevelopmentError("dependency lock contains ambiguous whitespace")
+    logical, current = [], ""
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        current += (" " if current else "") + stripped.removesuffix("\\").rstrip()
+        if not stripped.endswith("\\"):
+            logical.append(current); current = ""
+    if current:
+        raise DevelopmentError("dependency lock has an incomplete continuation")
+    observed = {}
+    pattern = re.compile(r"^([a-z0-9_-]+)==([0-9]+(?:\.[0-9]+)*)"
+                         r"((?:\s+--hash=sha256:[0-9a-f]{64})+)$")
+    for line in logical:
+        match = pattern.fullmatch(line)
+        if not match or match.group(1) in observed:
+            raise DevelopmentError("dependency lock is not exact version/hash-only input")
+        hashes = set(re.findall(r"--hash=sha256:([0-9a-f]{64})", match.group(3)))
+        observed[match.group(1)] = (match.group(2), hashes)
+    if observed != DEPENDENCIES:
+        raise DevelopmentError("dependency lock differs from reviewed Python 3.11 closure")
+    return {"verified":True,"scope":"exact-python311-wheel-lock-not-index-or-runner-attestation",
+            "sha256":hashlib.sha256(raw.encode("utf-8")).hexdigest(),
+            "package_count":len(observed),"source_distributions_allowed":False}
 
 
 def _block(lines, start, end_indent):
@@ -189,6 +234,10 @@ def inspect_workflow(path, *, private):
                     < lines.index(failed_publication)
                 or lines.index(upload_guard) < lines.index(private_failure)):
             raise DevelopmentError("private workflow does not inspect passing/private or failed evidence before publication")
+    locked_install = ("          python -m pip install --require-hashes "
+                      "--only-binary=:all: -r tests/e2e/requirements.txt")
+    if lines.count(locked_install) != 1:
+        raise DevelopmentError("workflow must install the exact hash-locked wheel closure")
     normalized = path.as_posix()
     marker = ".github/workflows/"
     display = normalized[normalized.index(marker):] if marker in normalized else path.name
@@ -198,6 +247,7 @@ def inspect_workflow(path, *, private):
             "sha256": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
             "private_asset_workflow": private,
             "private_evidence_inspection_required":private,
+            "hash_locked_dependencies_required":True,
             "service_free_staging_required":private,
             "exact_clean_checkout_required":private,
             "failed_summary_inspection_required":private,

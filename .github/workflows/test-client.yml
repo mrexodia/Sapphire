@@ -35,7 +35,7 @@ jobs:
       - name: Wire and controller tests (not live gameplay coverage)
         timeout-minutes: 12
         run: |
-          python -m pip install -r tests/e2e/requirements.txt
+          python -m pip install --require-hashes --only-binary=:all: -r tests/e2e/requirements.txt
           ctest --test-dir build-e2e -C Debug --output-on-failure --timeout 60 --no-tests=error
           python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py tests/e2e/test_workflow_policy.py --e2e-worker ${{ matrix.worker }} --junitxml=build-e2e/contracts.xml
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
