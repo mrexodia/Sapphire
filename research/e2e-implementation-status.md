@@ -12,6 +12,53 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Owned native worker exit: required and independently reported
+
+Feature **`933a9eff6`**, with test correction **`90b4f527c`**, wraps the shared
+runner's owned worker context in `support/development_worker_exit.py::ObservedWorker`.
+Every report starts with an unknown exit record. After context teardown the wrapper
+polls that exact owned `Popen` handle and records only context-attempt/completion,
+numeric PID/return code and sanitized error types. A nominally successful scenario
+cannot release its account leases or pass unless context exit completed and the
+owned process has a positive integer PID and observed return code zero. Unknown,
+unbound or nonzero exits fail closed.
+
+An earlier gameplay/deadline exception remains primary even if a test adapter would
+suppress it or worker cleanup itself fails. Failed-run leases stay retained even
+when the native process exits zero; cleanup failure metadata contains no exception
+message, command line, stderr or credentials. A constructor failure remains
+explicitly unobserved. Legacy `worker_closed` is still normal-path-only, so it is
+not conflated with this process receipt. `DEVELOPMENT.md` documents that local
+worker exit is **not** server logout, actor disappearance, offline exclusion,
+world-cache quiescence, complete handle/thread reclamation or reset authority.
+
+Initial focused contracts **124 passed, 0.99s**. The first frozen-source selection
+at `933a9eff6` retained **143 passed / 1 failed**: an older graphical-viewer test
+double did not accept the reconnect helper's existing `inventory_report` keyword,
+so the runner correctly reported failure. `90b4f527c` fixes only that test contract
+and asserts the exact keyword instead of weakening production behavior. The final
+focused selection is **144 passed, 0.95s**; the final frozen committed selection at
+`90b4f527c` is **60 passed, 0.47s**. Artifacts:
+`development-worker-exit-contracts-{001,002}.json`, both frozen-source manifests
+and timing files. The failed first clean result remains preserved.
+
+A separate control-only native diagnostic used worker revision `899cfa747`
+(SHA-256 `b0400f61813c3ee9f6f978014eb40b8dd23f0742b1ab84d5bfc0b2861ab138817`)
+and controller `90b4f527c`. It started no server and used no account, endpoint or
+gameplay action. One fresh worker completed a capabilities request and normal
+context teardown with return code0 in **0.015s**. A second fresh owned worker was
+terminated through its exact `Popen` handle; return code1 was observed and rejected
+with `DevelopmentError` in **0.016s**. Both action/event/stderr journals are empty.
+Post-check inspection found no owned processes and only pre-existing MySQL7764.
+`development-worker-exit-native-001/inspected-evidence.json` binds the raw files;
+verification-summary SHA-256 is
+`1958721c559140ac33f884c082be4223ceaf38f9f9a457ad35b2877a0ef6f625`.
+
+No live HTTP/lobby/world session was rerun for this lifecycle-only increment, and
+the earlier deadline live evidence predates it. Therefore there is no new gameplay,
+server-session closure, character-reuse, hard-kill recovery or leak-freedom claim.
+No full gate, soak or platform sweep ran; overall goal remains incomplete.
+
 ## Shared CLI cooperative deadline: session success budget
 
 Feature **`5ffe7ad43`** adds `support/development_deadline.py`, focused contracts
@@ -1426,7 +1473,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Bounded soak / ramp / metrics | 2..32-bot controller, <=1000 actions, explicit budget/minimum span/pacing; continuous received liveness; process RSS/private-commit/CPU and action timings | Eight bots / 488 actions over 1805s and full replay verified; observed autosave allocation retention fixed; not capacity, universal leak-freedom or overnight evidence |
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
-| Deadlines / cancellation / cleanup | Timers, owned-process teardown, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; broader stress/signal testing remains |
+| Deadlines / cancellation / cleanup | Timers, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; worker exit is not server-offline proof and broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored; current isolated fifteen-case Windows gate passes, older nine-case Linux gate passes, but the current expanded Linux gate remains red under observed delayed scene/action/logout/zoning delivery; hosted execution/runner controls unverified, no registered runners |
