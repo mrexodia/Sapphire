@@ -598,6 +598,60 @@ persistence, server-side offline exclusion, cache quiescence nor reset authority
 A fresh manually attended current graphical run and explicit guest disposal remain
 pending; no full gate, soak or platform sweep ran.
 
+## Movement now has strict independent per-waypoint receipts
+
+Feature **`d92ab936c`** upgrades the shared runner and graphical consumer from an
+aggregate waypoint count to structured received evidence. For a catalogued route,
+the runner binds the original mover and continuously connected witness, records
+the witness's initial received sequence, the exact <=16-point/<=5m one-way authored
+prefix and speed2.0, then appends one receipt for every out-and-back target in every
+cycle. Each receipt contains cycle/step, exact target, the mover position received
+by the independent witness and a strictly advancing witness sequence. The witness
+must retain its exact entity, and each received position remains within 0.15m.
+Stale sequence/cache state now fails the runner; partial receipts remain in the
+failed summary and no movement is retried.
+
+The graphical bridge requires the exact ten-field movement result and narrow
+`independent-witness-waypoints-not-server-authority-or-rendering` scope. It
+independently derives the out-and-back plan, checks one graphical scenario cycle,
+route point/length bounds, catalog hash shape, exact mover/witness entities,
+strict float speed, complete ordered observation count, finite targets/positions,
+0.15m agreement and globally advancing uint64 sequences. It also binds the route
+origin to the strict main reconnect expected position. Missing, malformed,
+type-confused, stale, reordered, shortened, foreign, distant, extra or
+origin-inconsistent evidence fails closed. Historical summaries containing only
+`movement_waypoints_per_cycle` no longer satisfy current policy.
+
+Frozen, remote-free source **`d92ab936c961284b6fa10815278dc9967048ecae`**
+passed **418 tests in 3.50s** across graphical policy, movement, placement,
+reconnect, party, Tell, equipment, Sprint, viewer, inventory, deadlines, worker
+exit, smoke and lifecycle. Negatives include stale producer sequences and consumer
+mutations of scope/cycles/entities/speed/baseline/route/completeness/order/target/
+received position/sequence/catalog/origin. The synthetic inventory fixture's
+initial sequence expectation was corrected from100 to101 because its now-realistic
+reciprocal Say advances the mover before capture; production policy was not
+weakened. Test-log SHA-256:
+`c79bb744a18903af067b86b0f2a461adba5e4fb79478b0c2aac1ad654aba49a2`.
+Artifacts: `development-movement-receipts-clean-{source.json,python.log}`.
+
+A read-only reconstruction from genuine retained
+`development-placement-v2-live-001` journals exercised the current strict consumer.
+Its 13-point catalog prefix produced exactly 24 walk publications; witness baseline
+sequence212 advanced strictly through 24 selected mover movement events to336,
+with every first qualifying position within0.15m of its action target. Summary,
+action and event hashes are bound in
+`development-movement-receipts-live-artifact-check.json` (SHA-256
+`2269b8f007f94fe62f10ff9414be5cda8621fa080ee950fcc7e09275c1e91784`).
+The old run predates the new report field, so this is raw-journal consumer
+compatibility only, not a retroactive current report or graphical evidence.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. Independent received positions do not establish
+server authority, collision/general navigation correctness, natural progression,
+rendering or real-client movement-trace equivalence. A fresh manually attended
+current graphical run and explicit guest disposal remain pending; no full gate,
+soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1405,9 +1459,9 @@ or completion audit. The original plan checklist below still applies.
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
 | Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/Tell/Sprint/equipment/reconnect/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict owned-party/chat/disband, reciprocal received Tell, independently received Sprint, fresh-login equipment round trip and exact main reconnect lifecycle evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
-| Short meaningful scenarios and timing | Movement/party/Tell/Sprint/equipment/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage; current graphical policy requires Sprint, starter-body round trip and read-only inventory but awaits current graphical execution |
+| Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage; current graphical policy requires exact movement, Sprint, starter-body round trip and read-only inventory but awaits current graphical execution |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
-| Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
+| Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
 | Preserve viewer, private inputs, historical failures and unrelated experiments | Separate viewer profiles; private artifact hashes; failed graphical 001–003 retained; seven experimental paths remain separate | No all-state viewer invariance, shared-world cleanliness or crash-consistency claim |
 | Separate shared development from isolated acceptance | `DEVELOPMENT.md`, `REAL_CLIENT.md`, summaries with explicit scope; original requirement checklist below | Full gate/soak/platform sweeps remain unauthorized for this iteration; Linux/hosted/broader gameplay gaps remain open |
 
