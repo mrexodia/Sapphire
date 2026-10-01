@@ -2020,6 +2020,27 @@ No executable, database, service, account or gameplay operation ran. This is act
 staging/manifest/root-removal evidence, not process isolation, service cleanup,
 gameplay, compatibility or secure-erasure proof.
 
+Feature **`690bc508a`** replaces that one-off procedure with
+`python -m tests.e2e.stage_ci_profile`. It requires an exact expected revision and
+a new absolute private evidence root, applies the same strict profile parser and
+optional worker/binary overrides, stages the real fixture-v2 copy/config/manifest
+path, independently matches all staged identities, requires zero process starts,
+closes the fixture, and rejects a retained runtime/root. It retains private manifest/
+lifecycle diagnostics while emitting only sanitized counts and hashes. A dirty
+source negative proves rejection still removes the disposable runtime.
+
+Frozen, remote-free source **`690bc508a10b9ff69b3901c13d67105fff5d3cfd`**
+passed **158 CI/workflow-policy/staging tests in 11.11s**. Test-log SHA-256:
+`3fceb4f1a954ddc855b174cbd293197c4abccc46728e0478c3fc593bc095efc7`.
+The committed command then accepted the clean-built private profile with receipt
+SHA-256 `cfb9b6d73bdd1b163761dcc2611cdfa6b39698f44fe24fad793d8fd4aa3f7d36`;
+manifest/lifecycle/tree hashes are respectively
+`2e4e4533e62f096f8d41080dcccc1668a4057a9f3282df326484d505b0de6c55`,
+`4f514a1337f622b936a1600e9b6ba1336fa520e51f6fb347a93a792f0018de46`,
+and `39cd7374a3935d811dab69357f477175e5f647900bf3a53fa0644cbb3f4adb5f`.
+No executable/service/database/account/gameplay operation ran. This reusable short
+feedback lane remains staging evidence only, not a service or database rehearsal.
+
 The smallest non-account current-profile live check then ran only
 `test_rejected_credentials` from the same frozen source: **1 passed in 24.78s**.
 The committed standalone inspector accepted the exact single JUnit identity, clean
