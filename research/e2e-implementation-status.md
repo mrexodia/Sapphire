@@ -208,6 +208,40 @@ this policy increment. Current-code graphical execution, user's existing shared
 deployment, server-side exclusion and hard-kill behavior remain pending. No full
 gate, soak or platform sweep ran; overall goal remains incomplete.
 
+## Graphical coordinator requires its outer observer-worker exit
+
+Feature **`cb3ac558c`** wraps `run_client_smoke.py`'s outer native witness worker
+with `ObservedWorker` and initializes `observer_worker_exit` before setup. The
+coordinator still requires the final witness's normal server closure and native
+bot removal first. Only then does it enter the explicit `observer_worker_exit`
+stage; context teardown must observe the exact owned process with a positive
+integer PID and return code zero. Nonzero or unknown exit changes an otherwise
+successful manual scenario to failed. The original failure remains primary when
+logout, server closure, removal, activity deadline or another scenario step fails.
+Graphical-process/environment cleanup and terminal artifact publication still run.
+
+This is distinct from the optional development runner's nested `worker_exit`:
+current development-mode graphical success now requires both the normal runner's
+receipt and the outer manual observer's receipt, plus separate witness-retirement
+server lifecycle observations. Neither process receipt proves actor absence,
+offline reuse authority, Sandbox disposal or crash consistency. `REAL_CLIENT.md`
+adds the receipt to the explicit result-inspection checklist.
+
+Focused lifecycle contracts passed **13 tests, 0.21s**. The combined graphical
+policy/snapshot/timing/viewer/worker selection passed **141 tests, 16.28s** in the
+feature worktree and **141 tests, 16.28s** from frozen clean `cb3ac558c`. Synthetic
+coordinator paths cover normal zero exit, return code1, unknown return code, final
+server-closure/removal failures and deadline expiry while preserving operation
+ordering, retained retirement evidence, cleanup and terminal failure stages.
+Artifacts: `client-observer-worker-exit-{contracts-001,clean-timings,source}.json`
+and its frozen source.
+
+No Windows Sandbox, graphical client, server, account or gameplay operation was
+run. Bridge004 predates both new process receipts and remains historical evidence
+only at its original coordinator version; current-code graphical execution and
+operator disposal evidence are pending. No full gate, soak or platform sweep ran;
+overall goal remains incomplete.
+
 ## Shared CLI cooperative deadline: session success budget
 
 Feature **`5ffe7ad43`** adds `support/development_deadline.py`, focused contracts
@@ -606,7 +640,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `support/client_development.py`; client-development-live-004 plus current strict exit-receipt policy | Historical narrow owned-guest bridge verified at its version; current validator rejects that legacy summary pending fresh graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit-receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh nested and outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; new decline/inventory flags have headless, not graphical, live coverage |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results | Verified for implemented operations; not a substitute for the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
