@@ -1231,6 +1231,59 @@ disposal operation ran. Current manually attended execution, both manual renderi
 reviews and separate disposal remain pending; no full gate, soak or platform sweep
 ran.
 
+## Owned Sandbox disposal has exact launch and composite evidence policy
+
+Feature **`7b1e881e5`** adds an opt-in host lifecycle wrapper and read-only composite
+verifier without launching a Sandbox during development. Current runs are launched
+with:
+
+```
+python -m tests.e2e.run_client_sandbox launch \
+  --prepared <prepared> --timeout-seconds 1800
+```
+
+The wrapper validates the prepared manifest/config, rejects any pre-existing
+Windows Sandbox UI process before launch, records the exact new launcher PID,
+session/config/input hashes and every canonical observed Sandbox UI process
+identity, and waits within an explicit 60–7200 second bound for all such UI
+processes to disappear. It never kills or retries the Sandbox. Unknown PID,
+inspection denial, timeout, reappearance or unobserved launcher exit retains a
+failed receipt with `automatic_kill_attempted:false` and
+`retry_attempted:false`; absence is not inferred from a timeout.
+
+After the operator has actually inspected and confirmed the owned discard dialog,
+`approve-disposal --confirmed-owned-discard` binds that manual attestation to the
+exact disposal-file hash. Then
+`python -m tests.e2e.inspect_client_sandbox_disposal --prepared <prepared>` reruns
+the strict current graphical-result inspector and requires the same passing run
+and result hash in the versioned launch, process-absence and manual-confirmation
+chain. Only this composite emits `sandbox_disposal_verified:true`, under scope
+`current-graphical-result-and-explicit-owned-sandbox-disposal`. This is exact host
+UI-process disposal evidence under a no-preexisting-process admission rule, not
+pixel recognition, server-side offline exclusion, cache quiescence, account reuse
+or reset authority. The launcher return code is retained but not interpreted as
+gameplay or graphical success.
+
+Frozen, remote-free source **`7b1e881e5edd0631a9fbfb202531818940056e1c`**
+passed **526 tests in 5.05s**. Synthetic negatives cover pre-existing Sandbox UI,
+unobserved launcher timeout with no kill/retry, changed session PID, foreign or
+malformed process rows, boolean manual confirmation, changed result bytes and a
+foreign run at composite inspection. Test-log SHA-256:
+`f68bb17a96069323198afe142535693eddbb1ad95417fe4de7d0ed5597bddf05`.
+Artifacts: `client-sandbox-disposal-clean-{source.json,python.log}`.
+
+The historical `client-development-live-004` disposal remains valid only at its
+recorded historical scope. Current read-only policy rejects it because it did not
+use the no-preexisting-process launch wrapper and lacks versioned session,
+result-bound disposal and manual confirmation files. Rejection artifact
+`client-sandbox-disposal-historical-rejection.json` has SHA-256
+`a53bf41209e49c44720264e06c7510b1fc7e306a2de9aae8bcd344d7b082ff8a`.
+
+No Windows Sandbox, server, account, worker, matching client, endpoint, gameplay
+or disposal operation ran. Real Windows process-name/launcher behavior, current
+manual execution, both rendering reviews and composite disposal remain pending;
+no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -2037,7 +2090,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, an empty pre-launch baseline plus fresh exact-name graphical spawn, sequence-bound ordinary movement and Say receipts, a run-bound rendered-witness Say challenge, strict outer review plus fresh post-phase logout consumers, and a separate exact-frame manual title-screen review receipt, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, clear leases and exact worker exits, followed by a committed read-only current-result inspector before separate disposal; current graphical execution remains pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, an empty pre-launch baseline plus fresh exact-name graphical spawn, sequence-bound ordinary movement and Say receipts, a run-bound rendered-witness Say challenge, strict outer review plus fresh post-phase logout consumers, and a separate exact-frame manual title-screen review receipt, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, clear leases and exact worker exits, followed by a committed read-only current-result inspector and an exact no-preexisting-Sandbox launch/process-absence/manual-confirmation composite disposal verifier; current graphical execution and disposal remain pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; separate exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage but is now required as a separate fresh current graphical-policy run; all current graphical execution awaits manual approval/assets |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
