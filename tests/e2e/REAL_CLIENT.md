@@ -169,8 +169,10 @@ session claim. The two normal handoff/restoration receipts still do not authoriz
 character reset or prove server-side exclusion. Each nested runner
 receives an integer cooperative deadline strictly inside the remaining graphical
 activity budget (maximum 900 seconds); bridge success requires both exact enabled,
-unexpired, completed deadline receipts. Older graphical evidence without these
-receipts is not retroactively upgraded. The original witness then authenticates
+unexpired, completed deadline receipts. Each nested run also retains and revalidates
+the ordinary sequence-advancing Say received by each dedicated peer; that receipt
+is network state evidence, not rendered chat. Older graphical evidence without
+these receipts is not retroactively upgraded. The original witness then authenticates
 afresh to verify the graphical client's ordinary logout. The existing twenty-minute
 activity budget remains in use: native RPC and observation waits are capped by its
 remainder; late successes fail. Exact normal final-witness retirement **and the

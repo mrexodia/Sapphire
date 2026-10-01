@@ -2297,7 +2297,8 @@ passed **921 focused contracts with no skips in 37.51s**. Test-log SHA-256:
 `a6472508f37fb6e95881855118cf07af967d3dc4f302ab2197b0006686e6383a`.
 The inspector is read-only and sanitized but no current external shared-server run
 has passed it. It does not establish server identity, process ownership, isolation,
-offline exclusion, reset authority, rendering, shared-world cleanliness or acceptance.
+offline exclusion, reset authority, rendering, shared-world cleanliness or acceptance. Its optional-subcheck minimum was the
+policy at that revision and is superseded by the mandatory Say receipt below.
 
 Feature **`b3eba3436`** adds the corresponding external-server provisioning
 consumer, `python -m tests.e2e.inspect_development_provisioning --summary
@@ -2316,6 +2317,24 @@ No account was created for this increment and historical provisioning artifacts 
 not upgraded. The sanitized result is retained provisioning correlation only—not
 server identity, active-session/offline exclusion, opening/placement readiness,
 gameplay, reset authority, retry permission or managed-host teardown.
+
+Feature **`6ed275991`** makes the shared runner retain its always-executed
+bidirectional Say as exact received-state evidence. For each direction it records
+ordered roles/entities, the received actor, SHA-256 of the run/cycle/role-bound
+message, and pre/post receiver sequences; success requires the matching received
+chat and strictly advancing sequence. External, managed-host and graphical nested
+consumers reconstruct and validate every field. A one-cycle base run can now pass
+the external inspector as narrow login/Say/logout evidence, while every requested
+optional scenario remains independently mandatory. Missing, stale, reordered,
+type-confused or foreign Say receipts fail closed.
+
+Frozen, remote-free source **`6ed275991577508fd3a8b41fbc6da83a7e2d69ed`**
+passed **1004 focused contracts with no skips in 38.77s**. Test-log SHA-256:
+`4d19fd76776fadc502244e01fbdb2be9f3f4b95d776a335d98b198c0bc51a1a3`.
+No server/account/gameplay/client operation ran; this is synthetic producer/consumer
+control evidence. Earlier retained shared and graphical summaries lack the mandatory
+Say receipt and remain historical. Received Say is not rendering, server authority,
+viewer control, isolation, offline exclusion, reset authority or acceptance breadth.
 
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
