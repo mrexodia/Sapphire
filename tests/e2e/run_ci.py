@@ -19,7 +19,7 @@ import traceback
 from .support.catalog import (load_combat_catalog, load_opening_quest_catalog,
                               load_pursuit_catalog, load_quest_catalog, load_respawn_catalog,
                               load_shop_catalog, load_transition_catalog)
-from .support.environment import REPO, sha256
+from .support.environment import REPO, SetupError, require_process_teardowns, sha256
 
 VERSION = "2016.07.05.0000.0001"
 CASES = (
@@ -151,13 +151,29 @@ class EvidenceGate:
                  for case, phases in self.reports.items()}
         collection_ok = len(self.collected) == len(CASES) and set(self.collected) == set(CASES)
         environments = self.environments or ([self.environment] if self.environment is not None else [])
-        cleanup_ok = bool(environments and all(
+        process_cleanup_ok = bool(environments)
+        for environment in environments:
+            try:
+                require_process_teardowns(environment.process_starts,
+                                          environment.process_teardowns)
+                lifecycle = json.loads((environment.artifacts / "process-lifecycle.json").read_text(
+                    encoding="utf-8"))
+                process_cleanup_ok &= (lifecycle == {
+                    "version": 1,
+                    "scope": "exact-owned-isolated-process-teardown-not-graceful-server-exit",
+                    "starts": environment.process_starts,
+                    "teardowns": environment.process_teardowns})
+            except (AttributeError, OSError, UnicodeError, json.JSONDecodeError, SetupError):
+                process_cleanup_ok = False
+        cleanup_ok = bool(environments and process_cleanup_ok and all(
             env._closed and not env.root.exists()
             and all(p.poll() is not None for p in env.processes.values())
             for env in environments))
         passed = exit_code == 0 and collection_ok and not self.unexpected and all(cases.values()) and cleanup_ok
         return {"status": "passed" if passed else "failed", "collection_verified": collection_ok,
-                "cleanup_verified": cleanup_ok, "cases": cases, "pytest_exit_code": int(exit_code)}
+                "cleanup_verified": cleanup_ok,
+                "process_cleanup_verified": process_cleanup_ok,
+                "cases": cases, "pytest_exit_code": int(exit_code)}
 
 
 def run(profile_path, private_root, summary_path, *, worker=None, binaries=None, require_clean=False):

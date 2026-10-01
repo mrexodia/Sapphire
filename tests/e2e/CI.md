@@ -109,8 +109,12 @@ separate evidence that its binaries came from the checkout.
   database/API/lobby/world environment, preventing an earlier case's sessions,
   roaming actors, or teardown backlog from becoming a later case's fixture. No
   tests, skipped cases, missing/duplicate phase reports, unexpected tests, failing
-  setup/call/teardown, nonzero pytest exit, live child processes, or a retained
-  private runtime prevent a passing summary. Preflight identities must match every
+  setup/call/teardown, nonzero pytest exit, live child processes, missing/foreign/
+  type-confused process generations or teardown receipts, or a retained private
+  runtime prevent a passing summary. `process_cleanup_verified` requires every
+  exact database/API/lobby/world PID generation—including restarted worlds—to
+  have been running before one terminate request and to yield an observed integer
+  return code; a bounded kill fallback is retained explicitly. Preflight identities must match every
   staged environment manifest, including script modules; changing a binary,
   catalog or mesh between those checks fails verification.
 - Only `.e2e-ci-summary.json` is uploaded: fixed schema, allowlisted case identities
@@ -123,7 +127,10 @@ separate evidence that its binaries came from the checkout.
   JUnit nor pytest failures are safe public artifacts: they can contain received
   positions, paths, scene parameters and exception details. Do not broaden the
   upload glob to include these directories, catalogs, assets or runtime trees.
-- Successful normal fixture teardown is verified. Hard-kill/cancellation cleanup
+- Successful normal fixture teardown includes private `process-lifecycle.json`
+  with exact generation/PID/request/exit receipts and the public boolean only; PID
+  details are never uploaded. This is forced owned-process cleanup, not graceful
+  server shutdown or server-session exclusion. Hard-kill/cancellation cleanup
   relies on the disposable runner infrastructure; it is not proven by a normal
   local run. A passed summary covers this fifteen-scenario headless suite only.
   `test_live_fault_diagnostics.py` is a separate opt-in lane that intentionally

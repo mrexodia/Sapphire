@@ -5,7 +5,8 @@ import subprocess
 
 import pytest
 
-from .support.environment import Environment, SetupError, allocate_ports
+from .support.environment import (Environment, SetupError, allocate_ports,
+                                  require_process_teardowns)
 from .support.worker import Bot, UnsupportedScene, Worker, WorkerError
 
 
@@ -275,7 +276,87 @@ def test_artifacts_are_redacted_and_runtime_removed(tmp_path):
     env.close()
     assert not env.root.exists()
     assert (env.artifacts / "server.log").read_text() == "<redacted> <redacted> diagnostic"
+    assert json.loads((env.artifacts / "process-lifecycle.json").read_text()) == {
+        "version":1,
+        "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
+        "starts":[],"teardowns":[]}
     env.close()  # Cleanup is idempotent.
+
+
+def test_exact_owned_process_stop_records_terminate_and_kill_fallback():
+    class Process:
+        pid = 44
+        def __init__(self): self.calls = []
+        def poll(self): return None
+        def terminate(self): self.calls.append("terminate")
+        def kill(self): self.calls.append("kill")
+        def wait(self, timeout):
+            self.calls.append(("wait", timeout))
+            if timeout == 10:
+                raise subprocess.TimeoutExpired("owned", timeout)
+            return -9
+    process = Process()
+    env = object.__new__(Environment)
+    env.processes = {"world":process}
+    env._process_metadata = {"world":{"process":"world","generation":2,"pid":44}}
+    env.process_teardowns = []
+    env._stop("world")
+    assert process.calls == ["terminate", ("wait",10), "kill", ("wait",5)]
+    assert env.process_teardowns == [{"process":"world","generation":2,"pid":44,
+        "was_running_before_cleanup":True,"terminate_requested":True,
+        "kill_requested":True,"exit_observed":True,"returncode":-9,
+        "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}]
+
+
+def test_process_start_generations_bind_restarted_world(tmp_path, monkeypatch):
+    from .support import environment
+    pids = iter(range(100, 105))
+    class Process:
+        def __init__(self): self.pid = next(pids)
+        def poll(self): return None
+        def terminate(self): pass
+        def wait(self, timeout): return -15
+    monkeypatch.setattr(environment.subprocess, "Popen", lambda *args, **kwargs: Process())
+    env = object.__new__(Environment)
+    env.runtime = tmp_path
+    env.processes, env._process_generations, env._process_metadata = {}, {}, {}
+    env.process_starts, env.process_teardowns, env.streams = [], [], []
+    for name in ("database","api","lobby","world"):
+        env._start(name, ["synthetic"])
+    env._stop("world")
+    env._start("world", ["synthetic"])
+    for name in reversed(list(env.processes)):
+        env._stop(name)
+    proof = require_process_teardowns(env.process_starts, env.process_teardowns)
+    assert proof["process_count"] == 5
+    assert proof["generations"] == {"api":1,"database":1,"lobby":1,"world":2}
+    for stream in env.streams:
+        stream.close()
+
+
+def test_process_lifecycle_requires_every_running_generation_exactly_once():
+    starts = [{"process":name,"generation":1,"pid":index + 20}
+              for index, name in enumerate(("database","api","lobby","world"))]
+    teardowns = [{**row,"was_running_before_cleanup":True,
+        "terminate_requested":True,"kill_requested":False,"exit_observed":True,
+        "returncode":-15,
+        "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit"}
+        for row in reversed(starts)]
+    proof = require_process_teardowns(starts, teardowns)
+    assert proof["process_count"] == 4 and proof["generations"]["world"] == 1
+    mutations = [
+        lambda rows: rows.pop(),
+        lambda rows: rows[0].update(pid=True),
+        lambda rows: rows[0].update(was_running_before_cleanup=False),
+        lambda rows: rows[0].update(terminate_requested=1),
+        lambda rows: rows[0].update(exit_observed=False),
+        lambda rows: rows[0].update(returncode=True),
+    ]
+    import copy
+    for mutate in mutations:
+        changed = copy.deepcopy(teardowns); mutate(changed)
+        with pytest.raises(SetupError):
+            require_process_teardowns(starts, changed)
 
 
 def test_subprocess_timeout_does_not_render_credentials(tmp_path, monkeypatch):

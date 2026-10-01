@@ -87,6 +87,56 @@ def redact_runtime_log(text, secrets=()):
                   r"\1<redacted>", text)
 
 
+def require_process_teardowns(starts, teardowns):
+    """Require one exact observed teardown for every isolated process generation."""
+    if not isinstance(starts, list) or not isinstance(teardowns, list) or not starts:
+        raise SetupError("isolated process lifecycle evidence is missing")
+    start_keys, generations = [], {}
+    for row in starts:
+        if (not isinstance(row, dict) or set(row) != {"process", "generation", "pid"}
+                or row.get("process") not in {"database", "api", "lobby", "world"}
+                or type(row.get("generation")) is not int or row["generation"] <= 0
+                or type(row.get("pid")) is not int or row["pid"] <= 0):
+            raise SetupError("invalid isolated process start identity")
+        key = (row["process"], row["generation"], row["pid"])
+        if key in start_keys:
+            raise SetupError("duplicate isolated process start identity")
+        start_keys.append(key)
+        generations.setdefault(row["process"], []).append(row["generation"])
+    if set(generations) != {"database", "api", "lobby", "world"}:
+        raise SetupError("isolated process lifecycle lacks a required service")
+    if any(values != list(range(1, len(values) + 1)) for values in generations.values()):
+        raise SetupError("isolated process generations are not contiguous")
+
+    teardown_keys = []
+    for row in teardowns:
+        if (not isinstance(row, dict)
+                or set(row) != {"process", "generation", "pid",
+                                "was_running_before_cleanup", "terminate_requested",
+                                "kill_requested", "exit_observed", "returncode", "scope"}
+                or row.get("process") not in {"database", "api", "lobby", "world"}
+                or type(row.get("generation")) is not int or row["generation"] <= 0
+                or type(row.get("pid")) is not int or row["pid"] <= 0
+                or row.get("scope") !=
+                    "exact-owned-isolated-process-teardown-not-graceful-server-exit"
+                or type(row.get("was_running_before_cleanup")) is not bool
+                or row["was_running_before_cleanup"] is not True
+                or type(row.get("terminate_requested")) is not bool
+                or row["terminate_requested"] is not True
+                or type(row.get("kill_requested")) is not bool
+                or type(row.get("exit_observed")) is not bool
+                or row["exit_observed"] is not True
+                or type(row.get("returncode")) is not int):
+            raise SetupError("invalid isolated process teardown receipt")
+        teardown_keys.append((row.get("process"), row.get("generation"), row.get("pid")))
+    if len(teardown_keys) != len(set(teardown_keys)) or set(teardown_keys) != set(start_keys):
+        raise SetupError("isolated process starts and teardowns do not match")
+    return {"verified": True,
+            "scope": "all-exact-owned-isolated-process-generations-observed-terminated",
+            "process_count": len(start_keys),
+            "generations": {name: len(values) for name, values in sorted(generations.items())}}
+
+
 class Environment:
     def __init__(self, profile):
         self.profile = profile
@@ -119,6 +169,10 @@ class Environment:
         self.db_password = secrets.token_hex(24)
         self.redactions = {self.secret, self.db_password}
         self.processes = {}
+        self._process_generations = {}
+        self._process_metadata = {}
+        self.process_starts = []
+        self.process_teardowns = []
         self.streams = []
         self._closed = False
         self._http = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -204,10 +258,20 @@ class Environment:
             raise SetupError(f"{name} exited {result.returncode}; inspect isolated logs")
 
     def _start(self, name, args):
+        if name in self.processes:
+            raise SetupError(f"refuse to replace active owned process: {name}")
         stream = (self.runtime / f"{name}.log").open("ab")
         self.streams.append(stream)
-        self.processes[name] = subprocess.Popen([str(x) for x in args], cwd=self.runtime,
+        process = subprocess.Popen([str(x) for x in args], cwd=self.runtime,
             stdin=subprocess.DEVNULL, stdout=stream, stderr=subprocess.STDOUT)
+        if type(process.pid) is not int or process.pid <= 0:
+            raise SetupError(f"owned process lacks a valid PID: {name}")
+        generation = self._process_generations.get(name, 0) + 1
+        self._process_generations[name] = generation
+        self._process_metadata[name] = {"process": name, "generation": generation,
+                                        "pid": process.pid}
+        self.process_starts.append(dict(self._process_metadata[name]))
+        self.processes[name] = process
 
     def check_alive(self):
         for name, process in self.processes.items():
@@ -337,13 +401,31 @@ class Environment:
 
     def _stop(self, name):
         process = self.processes.pop(name, None)
-        if process is not None and process.poll() is None:
-            process.terminate()
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait(timeout=5)
+        metadata = self._process_metadata.pop(name, None)
+        if process is None:
+            return
+        if not isinstance(metadata, dict):
+            raise SetupError(f"owned process metadata is missing: {name}")
+        before = process.poll()
+        receipt = {**metadata, "was_running_before_cleanup": before is None,
+                   "terminate_requested": False, "kill_requested": False,
+                   "exit_observed": before is not None, "returncode": before,
+                   "scope": "exact-owned-isolated-process-teardown-not-graceful-server-exit"}
+        try:
+            if before is None:
+                receipt["terminate_requested"] = True
+                process.terminate()
+                try:
+                    returncode = process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    receipt["kill_requested"] = True
+                    process.kill()
+                    returncode = process.wait(timeout=5)
+                if type(returncode) is not int:
+                    raise SetupError(f"owned process exit code is unavailable: {name}")
+                receipt.update(exit_observed=True, returncode=returncode)
+        finally:
+            self.process_teardowns.append(receipt)
 
     def close(self):
         if self._closed:
@@ -352,6 +434,12 @@ class Environment:
             self._stop(name)
         for stream in self.streams:
             stream.close()
+        lifecycle = {"version": 1,
+                     "scope": "exact-owned-isolated-process-teardown-not-graceful-server-exit",
+                     "starts": getattr(self, "process_starts", []),
+                     "teardowns": getattr(self, "process_teardowns", [])}
+        (self.artifacts / "process-lifecycle.json").write_text(
+            json.dumps(lifecycle, indent=2), encoding="utf-8")
         # Only publish redacted text logs, never DB files, game assets or credentials/configs.
         for path in self.runtime.rglob("*.log"):
             text = path.read_text(encoding="utf-8", errors="replace")
