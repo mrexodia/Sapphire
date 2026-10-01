@@ -17,6 +17,7 @@ class DevelopmentError(RuntimeError):
 
 
 WORKER_EXIT_SCOPE = "owned-native-worker-exit-not-server-session-closure"
+MOVEMENT_SCOPE = "independent-witness-waypoints-not-server-authority-or-rendering"
 
 
 def require_normal_worker_exit(report, key="worker_exit"):

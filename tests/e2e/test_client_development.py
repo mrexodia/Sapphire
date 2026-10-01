@@ -108,8 +108,18 @@ def completed():
             'name':row['name'],'party_id':party_id,'token':50+index}
             for index,row in enumerate(tell_identities)],
         'both_empty_after_disband':True}
+    movement={'requested':True,'verified':True,
+        'scope':'independent-witness-waypoints-not-server-authority-or-rendering',
+        'cycles':1,'authored_route':[[0,0,0],[1,0,0]],
+        'mover_entity_id':1,'witness_entity_id':2,'speed':2.0,
+        'baseline_witness_sequence':5,
+        'observations':[{'cycle':0,'step':0,'target':[1,0,0],
+                         'received_position':[1,0,0],'witness_sequence':6},
+                        {'cycle':0,'step':1,'target':[0,0,0],
+                         'received_position':[0,0,0],'witness_sequence':7}]}
     return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
-            'entities':[1,2],'territory':130,'run_id':run_id,
+            'entities':[1,2],'territory':130,'run_id':run_id,'cycles':1,
+            'catalog_sha256':'c'*64,
             'worker_closed':True,
             'worker_exit':{'scope':'owned-native-worker-exit-not-server-session-closure',
                            'context_entered':True,'context_exit_attempted':True,
@@ -131,7 +141,7 @@ def completed():
                 'cleanup_may_exceed_deadline':True},
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
-            'party_verification':party,'reconnect_verification':copy.deepcopy(reconnect),
+            'movement_verification':movement,'party_verification':party,'reconnect_verification':copy.deepcopy(reconnect),
             'tell_verification':tell,'sprint_verification':sprint,'equipment_verification':equipment,
             'inventory_verification':{'requested':True,'verified':True,
                 'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
@@ -148,6 +158,7 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
     report=completed(); proof=bridge.require_graphical_check(report,'Tester Viewer',3)
     assert proof['status']=='passed' and proof['rendered_bot_actions_verified'] is False
     assert proof['continuous_presence']==report['viewer_verification']['continuous_presence']
+    assert proof['movement_scope']==report['movement_verification']['scope']
     assert proof['reconnect_scope']==report['reconnect_verification']['scope']
     assert proof['party_scope']==report['party_verification']['scope']
     assert proof['tell_scope']==report['tell_verification']['scope']
@@ -209,6 +220,30 @@ def test_graphical_bridge_rejects_malformed_inventory_receipt():
     )
     for mutate in mutations:
         report=completed();mutate(report['inventory_verification'])
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_malformed_movement_receipt():
+    mutations=(
+        lambda report: report['movement_verification'].update(scope='server-authority-proof'),
+        lambda report: report['movement_verification'].update(cycles=True),
+        lambda report: report['movement_verification'].update(mover_entity_id=True),
+        lambda report: report['movement_verification'].update(witness_entity_id=1),
+        lambda report: report['movement_verification'].update(speed=2),
+        lambda report: report['movement_verification'].update(baseline_witness_sequence=True),
+        lambda report: report['movement_verification']['authored_route'].append([10,0,0]),
+        lambda report: report['movement_verification']['observations'].pop(),
+        lambda report: report['movement_verification']['observations'][0].update(cycle=True),
+        lambda report: report['movement_verification']['observations'][0].update(target=[0,0,0]),
+        lambda report: report['movement_verification']['observations'][0].update(received_position=[2,0,0]),
+        lambda report: report['movement_verification']['observations'][1].update(witness_sequence=6),
+        lambda report: report['reconnect_verification'].update(expected_position=[1,0,0]),
+        lambda report: report.update(catalog_sha256='bad'),
+        lambda report: report['movement_verification'].update(extra=True),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report)
         with pytest.raises(DevelopmentError):
             bridge.require_graphical_check(report,'Tester Viewer',3)
 

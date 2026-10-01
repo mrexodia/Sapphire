@@ -58,7 +58,8 @@ def test_complete_received_projection_matches_after_exact_fresh_login(profile, t
     proof = result["inventory_verification"]
     assert proof["verified"] and proof["changed_slots"] == []
     assert proof["before"]["inventory"] == proof["after"]["inventory"] == rewards()["inventory"]
-    assert proof["before"]["received_sequence"] == 100 and proof["after"]["received_sequence"] == 80
+    # The initial reciprocal Say now advances the synthetic mover sequence before capture.
+    assert proof["before"]["received_sequence"] == 101 and proof["after"]["received_sequence"] == 80
     assert proof["before"]["containers"] == [0, 1, 2, 3, 1000, 2000]
     assert set(worker.commands) == {"login", "say", "logout", "close", "remove"}
     phases = [x["phase"] for x in result["timings"]]

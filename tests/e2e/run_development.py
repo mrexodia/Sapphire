@@ -11,8 +11,9 @@ from pathlib import Path
 import time
 import uuid
 
-from .support.development import (AccountLease, DevelopmentError, Timings, authenticate, check_managed_host,
-                                  idle_state, movement_route, validate_profile, witnessed)
+from .support.development import (AccountLease, DevelopmentError, MOVEMENT_SCOPE, Timings,
+                                  authenticate, check_managed_host, idle_state, movement_route,
+                                  validate_profile, witnessed)
 from .support.worker import Bot, Worker
 from .support.development_deadline import RunDeadline, DeadlineWorker
 from .support.development_worker_exit import ObservedWorker
@@ -68,6 +69,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "account_reset_performed_by_runner": False, "cycles": cycles,
               "administrative_preparation_wait_enabled": await_placement,
               "administrative_command_execution_attested": False,
+              "movement_verification": {"requested": bool(route), "verified": False},
               "reconnect_verification": {"requested": verify_reconnect, "verified": False},
               "inventory_verification": {"requested": verify_inventory, "verified": False},
               "party_verification": {"requested": verify_party, "verified": False},
@@ -155,13 +157,24 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                 report["entities"] = [actor, observer]
                 names = [account["character"] for account in profile["accounts"]]
                 with timings.phase("independent_initial_state"):
-                    worker.wait_state(witness.name,
-                        lambda s: idle_state(s, profile["territory"]) and witnessed(s, actor, names[0],
+                    initial_witness = worker.wait_state(witness.name,
+                        lambda s: s.get("entity_id") == observer
+                        and idle_state(s, profile["territory"]) and witnessed(s, actor, names[0],
                             route[0] if route else states[0]["observed_position"]),
                         "exact mover identity and route-start position", timeout=10)
                     worker.wait_state(mover.name,
                         lambda s: idle_state(s, profile["territory"]) and witnessed(s, observer, names[1],
                             states[1]["observed_position"]), "exact witness identity", timeout=10)
+                if route:
+                    if type(initial_witness.get("seq")) is not int or initial_witness["seq"] < 0:
+                        raise DevelopmentError("movement witness requires a received sequence")
+                    report["movement_verification"].update({
+                        "scope": MOVEMENT_SCOPE, "cycles": cycles,
+                        "authored_route": [list(point) for point in route],
+                        "mover_entity_id": actor, "witness_entity_id": observer,
+                        "speed": 2.0, "baseline_witness_sequence": initial_witness["seq"],
+                        "observations": [],
+                    })
                 viewer_continuity = None
                 if viewer_name is not None:
                     report["viewer_verification"]["start"] = viewer_checkpoint(
@@ -184,14 +197,30 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                         with timings.phase(f"observed_out_and_back_{cycle}"):
                             # No fabricated connecting segment, teleport or replan. A human
                             # viewer may remain nearby; the second bot proves each waypoint.
-                            for point in [*route[1:], *reversed(route[:-1])]:
+                            for step, point in enumerate([*route[1:], *reversed(route[:-1])]):
                                 if not idle_state(worker.snapshot(mover.name), profile["territory"]):
                                     raise DevelopmentError("mover left the expected idle public state")
                                 mover.walk_to(point, speed=2.0, timeout=10)
-                                worker.wait_state(witness.name,
-                                    lambda s: idle_state(s, profile["territory"])
+                                observed = worker.wait_state(witness.name,
+                                    lambda s: s.get("entity_id") == observer
+                                    and idle_state(s, profile["territory"])
                                     and witnessed(s, actor, names[0], point),
                                     "independently received waypoint", timeout=10)
+                                row = observed.get("actors", {}).get(str(actor), {})
+                                prior_sequence = (report["movement_verification"]["observations"][-1]["witness_sequence"]
+                                                  if report["movement_verification"]["observations"]
+                                                  else report["movement_verification"]["baseline_witness_sequence"])
+                                if (type(observed.get("seq")) is not int
+                                        or observed["seq"] <= prior_sequence
+                                        or not isinstance(row.get("position"), list)):
+                                    raise DevelopmentError("movement witness receipt is malformed or stale")
+                                report["movement_verification"]["observations"].append({
+                                    "cycle": cycle, "step": step, "target": list(point),
+                                    "received_position": list(row["position"]),
+                                    "witness_sequence": observed["seq"],
+                                })
+                if route:
+                    report["movement_verification"]["verified"] = True
                 if verify_decline:
                     report["decline_verification"] = verify_party_decline(
                         profile, worker, mover, witness, states, timings)

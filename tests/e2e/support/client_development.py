@@ -2,8 +2,8 @@
 import math
 import time
 
-from .development import (DevelopmentError, validate_profile, movement_route, position,
-                          require_normal_worker_exit)
+from .development import (DevelopmentError, MOVEMENT_SCOPE, validate_profile, movement_route,
+                          position, require_normal_worker_exit)
 from .worker import Worker, WorkerError
 from .development_lease import require_clear_terminal_account_leases
 from .development_inventory import CONTAINERS, SCOPE as INVENTORY_SCOPE
@@ -169,6 +169,55 @@ def require_sprint_receipt(value, entities):
             raise DevelopmentError('invalid graphical Sprint start metadata')
     if receipts[0]['effect'] != receipts[1]['effect']:
         raise DevelopmentError('graphical Sprint observers disagree')
+    return value
+
+
+def require_movement_receipt(value, entities, cycles, waypoints, catalog_hash):
+    fields = {'requested', 'verified', 'scope', 'cycles', 'authored_route',
+              'mover_entity_id', 'witness_entity_id', 'speed',
+              'baseline_witness_sequence', 'observations'}
+    if (not isinstance(value, dict) or set(value) != fields
+            or value.get('requested') is not True or value.get('verified') is not True
+            or value.get('scope') != MOVEMENT_SCOPE
+            or type(cycles) is not int or cycles != 1
+            or type(value.get('cycles')) is not int or value['cycles'] != cycles
+            or type(waypoints) is not int or not 2 <= waypoints <= 16
+            or not isinstance(catalog_hash, str) or len(catalog_hash) != 64
+            or any(char not in '0123456789abcdef' for char in catalog_hash)
+            or value.get('mover_entity_id') != entities[0]
+            or type(value.get('mover_entity_id')) is not int
+            or value.get('witness_entity_id') != entities[1]
+            or type(value.get('witness_entity_id')) is not int
+            or type(value.get('speed')) is not float or value['speed'] != 2.0
+            or type(value.get('baseline_witness_sequence')) is not int
+            or not 0 <= value['baseline_witness_sequence'] < 2**64):
+        raise DevelopmentError('invalid graphical movement receipt')
+    route = value.get('authored_route')
+    if (not isinstance(route, list) or len(route) != waypoints
+            or any(not position(point) for point in route)
+            or any(math.dist(left, right) <= 0 for left, right in zip(route, route[1:]))
+            or sum(math.dist(left, right) for left, right in zip(route, route[1:])) > 5):
+        raise DevelopmentError('invalid graphical authored movement route')
+    plan = [*route[1:], *reversed(route[:-1])]
+    observations = value.get('observations')
+    if not isinstance(observations, list) or len(observations) != cycles * len(plan):
+        raise DevelopmentError('incomplete graphical independent movement observations')
+    prior = value['baseline_witness_sequence']
+    for offset, observation in enumerate(observations):
+        cycle, step = divmod(offset, len(plan))
+        if (not isinstance(observation, dict)
+                or set(observation) != {'cycle', 'step', 'target', 'received_position',
+                                        'witness_sequence'}
+                or type(observation.get('cycle')) is not int or observation['cycle'] != cycle
+                or type(observation.get('step')) is not int or observation['step'] != step
+                or observation.get('target') != plan[step]
+                or not position(observation.get('target'))
+                or not position(observation.get('received_position'))
+                or math.dist(observation['target'], observation['received_position']) > 0.15
+                or type(observation.get('witness_sequence')) is not int
+                or not prior < observation['witness_sequence'] < 2**64):
+            raise DevelopmentError('invalid graphical independent movement observation')
+        prior = observation['witness_sequence']
     return value
 
 
@@ -391,13 +440,16 @@ def require_graphical_check(result, viewer_name, entity):
             or not isinstance(run_id, str) or len(run_id) != 32
             or any(char not in '0123456789abcdef' for char in run_id)):
         raise DevelopmentError('normal development entities/territory missing or invalid')
-    for key in ('party_verification', 'tell_verification', 'reconnect_verification',
-                'inventory_verification', 'sprint_verification', 'equipment_verification',
-                'viewer_verification'):
+    for key in ('movement_verification', 'party_verification', 'tell_verification',
+                'reconnect_verification', 'inventory_verification', 'sprint_verification',
+                'equipment_verification', 'viewer_verification'):
         value = result.get(key, {})
         if (not isinstance(value, dict) or value.get('requested') is not True
                 or value.get('verified') is not True):
             raise DevelopmentError('required development subcheck missing or failed')
+    movement = require_movement_receipt(
+        result['movement_verification'], entities, result.get('cycles'),
+        result.get('movement_waypoints_per_cycle'), result.get('catalog_sha256'))
     inventory = result['inventory_verification']
     if (set(inventory) != {'requested', 'verified', 'scope', 'before', 'after', 'changed_slots'}
             or inventory.get('scope') != INVENTORY_SCOPE or inventory.get('changed_slots') != []):
@@ -413,6 +465,8 @@ def require_graphical_check(result, viewer_name, entity):
         result['equipment_verification'], entities, territory, before)
     reconnect = require_reconnect_receipt(
         result['reconnect_verification'], equipment['identity'], territory)
+    if math.dist(movement['authored_route'][0], reconnect['expected_position']) > 0.15:
+        raise DevelopmentError('graphical movement and reconnect origins disagree')
     viewer = result['viewer_verification']
     if viewer.get('viewer_login_or_control_performed') is not False:
         raise DevelopmentError('runner must not control the graphical viewer')
@@ -434,7 +488,8 @@ def require_graphical_check(result, viewer_name, entity):
         raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
-            'inventory_scope':INVENTORY_SCOPE, 'reconnect_scope':reconnect['scope'],
+            'movement_scope':movement['scope'], 'inventory_scope':INVENTORY_SCOPE,
+            'reconnect_scope':reconnect['scope'],
             'party_scope':party['scope'], 'tell_scope':tell['scope'],
             'sprint_scope':sprint['scope'],
             'equipment_scope':equipment['scope'], 'continuous_presence':continuity,

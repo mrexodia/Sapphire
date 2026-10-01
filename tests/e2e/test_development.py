@@ -79,7 +79,7 @@ class FakeWorker:
         for index, name in enumerate(("mover", "witness")):
             self.states[name] = {"phase": "ready", "entity_id": index + 1, "gm_rank": 0,
                 "territory": 130, "moving": False, "scene": None, "event_id": None,
-                "observed_position": [0, 0, 0], "actors": {}, "chat": []}
+                "observed_position": [0, 0, 0], "actors": {}, "chat": [], "seq": 0}
         self.states["mover"]["actors"]["2"] = {"name": "Bot Witness", "gm_rank": 0, "position": [0, 0, 0]}
         self.states["witness"]["actors"]["1"] = {"name": "Bot Mover", "gm_rank": 0, "position": [0, 0, 0]}
 
@@ -87,8 +87,10 @@ class FakeWorker:
         self.commands.append(method)
         if method == "say":
             peer = "witness" if bot == "mover" else "mover"
+            self.states[peer]["seq"] += 1
             self.states[peer]["chat"].append({"actor": self.states[bot]["entity_id"], "message": args["message"]})
         if method == "walk_to":
+            self.states["witness"]["seq"] += 1
             self.states["witness"]["actors"]["1"]["position"] = args["position"]
         if method == "logout":
             self.states[bot]["phase"] = "logged_out"
@@ -166,6 +168,11 @@ def test_out_and_back_requires_each_independent_waypoint(profile, tmp_path, monk
     monkeypatch.setattr(run_development, "movement_route", lambda _: ([[0, 0, 0], [1, 0, 0]], "catalog-hash"))
     report, fake = execute(profile, tmp_path)
     assert report["status"] == "passed" and fake.commands.count("walk_to") == 2
+    movement = report["movement_verification"]
+    assert movement["verified"] and movement["authored_route"] == [[0,0,0],[1,0,0]]
+    assert [row["target"] for row in movement["observations"]] == [[1,0,0],[0,0,0]]
+    assert all(row["witness_sequence"] > movement["baseline_witness_sequence"]
+               for row in movement["observations"])
     class NoPublication(FakeWorker):
         def request(self, method, bot=None, **args):
             if method == "walk_to":
@@ -175,6 +182,15 @@ def test_out_and_back_requires_each_independent_waypoint(profile, tmp_path, monk
     other.mkdir()
     failed, _ = execute(profile, other, NoPublication())
     assert failed["status"] == "failed" and failed["lease_retained"]
+    class StaleWitnessSequence(FakeWorker):
+        def request(self, method, bot=None, **args):
+            result = super().request(method, bot, **args)
+            if method == "walk_to": self.states["witness"]["seq"] -= 1
+            return result
+    stale_root = tmp_path / "stale"
+    stale_root.mkdir()
+    stale, _ = execute(profile, stale_root, StaleWitnessSequence())
+    assert stale["status"] == "failed" and not stale["movement_verification"]["verified"]
 
 
 def test_opt_in_and_cycles_before_worker_or_artifacts(profile, tmp_path):

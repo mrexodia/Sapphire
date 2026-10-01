@@ -417,6 +417,15 @@ to 1..10; they repeat successful actions, not failed attempts. Your character ma
 watch without becoming an assertion dependency. Other players need not disappear
 from the world for this lane to pass.
 
+When the profile includes the supported quest catalog, `movement_verification`
+records the exact bounded authored prefix, mover/witness entities, speed, starting
+witness sequence and every out-and-back target/received position. Success requires
+the continuously connected witness's sequence to advance at each independently
+received waypoint; stale position caches and movement acknowledgements cannot
+qualify. The route remains at most 16 authored points and 5m one-way, with no
+teleport, fabricated segment or replan. This is received movement evidence, not
+server authority, rendering, general navigation or natural quest progression.
+
 ### Cooperative session deadline
 
 The CLI defaults to `--max-seconds 300`; explicitly select an integer1..900 for

@@ -105,8 +105,9 @@ reset, resource grant/restoration or viewer UI control is performed. Fixture
 placement is administrative setup only.
 
 `development_check` in the graphical result references the exact normal-runner
-summary and requires every requested subcheck, including exact two-member party,
-bound channel/chat and empty-after-disband evidence, two exact reciprocal received
+summary and requires every requested subcheck, including the exact bounded authored
+out-and-back route with an advancing independent-witness receipt at every waypoint,
+exact two-member party, bound channel/chat and empty-after-disband evidence, two exact reciprocal received
 Tell rows bound to the run/peer identities, and strict internally
 consistent Sprint identities/baselines/request/effect/zero-TP/start observations,
 exact starter-body before/unequipped/re-equipped projections and all three
