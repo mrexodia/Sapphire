@@ -182,6 +182,15 @@ bounded provisioning/lifecycle/receipt-consumer evidence, not gameplay, existing
 database safety or reset authority. Live expiry was deliberately not induced;
 uncertain creation recovery remains covered by synthetic fail-closed contracts.
 
+A separate fresh owned-runtime check carried the same current strict receipt chain
+through actual registered placement. Each exact slot was published once by a
+separate GM operator; both ordinary GM0 clients independently received territory
+182→130 at the reviewed position, then completed bounded party and fresh-login
+checks. Provisioning, runner and operator workers all had exact exit-0 receipts;
+both account-using terminal lease snapshots were `clear`. This remains
+administrative setup—not natural travel/progression, existing-shared-database
+safety, reset authority, or graphical-client evidence.
+
 Errors and deadline expiry preserve the credential file and, once acquired, local
 leases; inspect partial results instead of retrying creation or deleting characters
 automatically. To record the two exact local lease files without changing them:

@@ -394,13 +394,66 @@ checked identities/actions/events/receipts and hashes all retained diagnostics.
 provisioning-summary SHA-256 is
 `a5ab96b117c9b8db99e46331f68d423f672b1e1780fe8d579598a1c6e6ae1ce9`.
 
-This closes positive current producer→strict-planner integration only. Actual
-placement execution and current graphical execution remain pending. The registry,
+That artifact closes positive current producer→strict-planner integration only;
+it deliberately did not execute placement. Current placement execution is recorded
+separately below, while current graphical execution remains pending. The registry,
 worker exit, normal server closures and local clear snapshot still do not prove
 server-side offline exclusion, account reuse authority, lease atomicity,
 reset/reprovisioning authority, gameplay, graphical compatibility or shared-world
-cleanliness. No full gate, soak or platform sweep ran; overall goal remains
-incomplete.
+cleanliness.
+
+### Current strict receipt chain through registered placement
+
+Bounded **`development-strict-placement-live-001` passed** on another fresh owned
+disposable runtime using the same clean `c198af1c3` controller snapshot and
+source-manifest hash. It did not access an existing database or start a graphical
+client. Before any connection, the driver pinned the only newly generated operator
+by account/character/entity/rank and changed exactly one GMRank0 row to GMRank1.
+That isolated pre-first-connection fixture setup is administrative preparation,
+not gameplay or permission to edit a live cached character.
+
+Current bounded provisioning created normal GM0 **Tester GCUCMBAADWVD /
+2097154 / 18014398526259202** and **Tester VBEHJMHZLWFC / 2097155 /
+18014398526259203** in private182 in **11.485s**. Its exact worker PID217296
+exited0 and its strict terminal lease snapshot was `clear`. The current strict
+planner bound those exact received identities into registry SHA-256
+`8f6f30c0cdfb9b7d9b99ccf701e1332110891579d11f0c5f877dc42306d97555`.
+
+A separate authenticated GM operator published each exact approval/slot once; the
+exclusive pre-dispatch intents remain `publication_outcome_unknown`, so neither
+local receipt is misreported as mutation proof and neither request was retried.
+Both ordinary non-GM clients independently journaled `init_zone` **182→130** at
+the reviewed position. Their subsequent **25.625s** normal check verified a
+received two-bot party/chat/disband, exact identity/position on a fresh login,
+independent old-session despawn, and two ordinary Say challenges from the separate
+operator. The operator's selected territory/position/party state remained
+unchanged. This separate player is **not** graphical-client attestation.
+
+Provisioner PID217296, normal-runner PID68444 and operator PID253640 each have exact
+observed exit0 receipts. All six logout journeys have one
+`server_logout_complete`; both provisioning and runner terminal lease snapshots
+are strict `clear`; all worker stderr files are empty. Startup took **17.469s** and
+the whole driver **63.016s** including teardown. The private runtime and exact
+leases are absent, source re-verification/password scan passed, and no Sapphire or
+owned database process remains.
+
+Private independent inspection checked the reviewed identity bindings, exact two
+administrative action records and intent files, both received zone transitions,
+fresh-login territory130, normal party/reconnect/viewer observations, all worker
+exits/closures, terminal lease evidence, diagnostics and cleanup. Summary hashes:
+
+- `inspected-evidence.json`:
+  `e0dc55ce0b6b0139558442c8eee2e5b0691fd4fa0f9782312251ef15b071e3b4`
+- `verification-summary.json`:
+  `a52dd98a545f0db371c161239d8fdb5e35fa90243c74cfcad62374b27c2d9ec2`
+- `check/development-summary.json`:
+  `af3590bad92fcfcecc2d1d1eac04e0bc4dad85193966cf7ab24709dd71d168cc`
+
+Placement is administrative setup only: it proves neither natural travel nor
+progression and grants no reset/reprovisioning or account-reuse authority. The
+fresh owned runtime does not prove safety on an existing shared server, graphical
+compatibility, arbitrary social behavior or shared-world cleanliness. No full
+gate, soak or platform sweep ran; overall goal remains incomplete.
 
 ## Dedicated provisioning has one cooperative success deadline
 
@@ -876,8 +929,8 @@ or completion audit. The original plan checklist below still applies.
 
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
-| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; current bounded producer→planner live audit | Implemented and positive producer→strict-planner path live-verified on an owned runtime; expiry/no-retry paths are synthetic and no placement executed; worker exit, server closure and local lease state remain distinct and grant no adoption/reset authority |
-| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; placement-live-002 | Registered placement verified; setup is not progression or general reset |
+| Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts and strict producer/consumer terminal exact-lease snapshots; current bounded planner-only and placement-chain live audits | Implemented and positive producer→strict-planner→registered-placement path live-verified on fresh owned runtimes; expiry/no-retry paths remain synthetic; worker exit, server closure and local lease state remain distinct and grant no adoption/reset authority |
+| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-strict-placement-live-001` | Current strict provisioning→planner→registered placement verified with ordinary non-GM received arrival; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
 | Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit and terminal-lease receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
@@ -1970,7 +2023,7 @@ a nearby passing test does not close them.
 | Scheduled exploration/soak tier | local workload commands and artifacts | **Partial:** no authorized hosted scheduled execution |
 | Manual/scheduled real-client tier | policy plus completed isolated manual Sandbox lane | Verified once locally; no scheduled breadth |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
-| Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and automatic sanitized exact-lease snapshots in shared runner/provisioner summaries | Verified for implemented paths; embedded snapshot producer is synthetic-only and lease snapshots do not establish server session state |
+| Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and automatic sanitized exact-lease snapshots in shared runner/provisioner summaries | Verified for implemented paths, including current live producer→planner→runner consumption; lease snapshots do not establish server session state |
 | Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured unexpected-process-exit metadata are retained | **Partial:** one owned-world termination is verified, but platform crash dumps are only retained where externally produced |
 | Fixture/persistence evidence, redaction, JUnit and summary | scenario JSON snapshots, restart state, redaction contracts, `live.xml` and CI JSON summary | Verified |
 | Bounded soak logs and generator saturation | capped plans/journals, checkpoints, action percentiles and API/lobby/world/DB/worker/runner resource samples | Verified; scenario coverage remains reported separately from concurrency |
