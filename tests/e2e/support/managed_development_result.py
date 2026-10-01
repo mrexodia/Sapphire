@@ -19,6 +19,7 @@ from .client_development import (INVENTORY_SCOPE, require_decline_receipt,
                                  require_reconnect_receipt, require_shared_runner_metadata,
                                  require_sprint_receipt, require_tell_receipt)
 from .development_host_result import inspect_owned_development_host
+from .development_artifact import RUN_SCOPE, require_worker_artifacts
 from .development_lease import require_clear_terminal_account_leases
 
 SCOPE = "managed-development-received-evidence-and-terminal-owned-host-correlation"
@@ -152,6 +153,7 @@ def inspect_managed_development_run(session_dir, summary_path):
             or report.get("worker_closed") is not True
             or report.get("lease_snapshot_matches_run_state") is not True):
         raise DevelopmentError("managed development run boundary is not passing or remains mutable")
+    worker_artifacts = require_worker_artifacts(summary_path, report, RUN_SCOPE)
     binding = require_managed_host_binding(report.get("managed_host_binding"), True)
     receipt = binding["finish"]
     expected = {"session_id":terminal.get("session_id"),
@@ -181,6 +183,7 @@ def inspect_managed_development_run(session_dir, summary_path):
             "worker_sha256":receipt["worker_sha256"],
             "run_deadline":report["run_deadline"],
             "run_worker_exit":report["worker_exit"],"verified_checks":checks,
+            "worker_artifacts":worker_artifacts,
             "lease_snapshot":lease,"host_process_teardown":host["process_teardown"],
             "host_lifecycle_sha256":host["lifecycle_sha256"],
             "host_environment_artifact_tree_sha256":host["environment_artifact_tree_sha256"],

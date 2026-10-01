@@ -9,7 +9,9 @@ from types import SimpleNamespace
 import pytest
 
 from . import provision_development
+from .support import development_artifact
 from .support.development import DevelopmentError, create_account
+from .support.environment import artifact_tree_sha256
 
 
 @pytest.fixture
@@ -84,6 +86,19 @@ def execute(server, tmp_path, *, fake=None, register=None, login=None):
     return result, fake, calls
 
 
+def test_worker_artifact_identity_failure_never_retries_account_creation(
+        server, tmp_path, monkeypatch):
+    def fail(_):
+        raise DevelopmentError("synthetic worker artifact identity failure")
+    monkeypatch.setattr(development_artifact, "artifact_tree_sha256", fail)
+    result, fake, calls = execute(server, tmp_path)
+    assert result["status"] == "failed"
+    assert result["failure_stage"] == "worker_artifact_identity"
+    assert [kind for kind, _ in calls].count("create") == 2
+    assert [kind for kind, _ in calls].count("login") == 2
+    assert fake.closed and (tmp_path / "private.json").exists()
+
+
 def test_new_accounts_are_generated_and_not_adopted(server):
     first = provision_development.new_profile(server)
     second = provision_development.new_profile(server)
@@ -109,6 +124,8 @@ def test_success_is_provisioning_not_public_world_ready(server, tmp_path):
     assert not result["ready_for_shared_checks"] and not result["administrative_placement_performed"]
     assert not result["database_access"] and not result["server_processes_owned"]
     assert result["credential_profile_saved"] and result["worker_closed"] and fake.closed
+    assert result["worker_artifact_tree_sha256"] == artifact_tree_sha256(
+        tmp_path / "artifacts/worker")
     assert result["managed_host_binding"] == {"requested":False,"verified":False,
         "start":{"managed":False,"verified":False,
                  "scope":"external-shared-server-without-owned-host-binding"},

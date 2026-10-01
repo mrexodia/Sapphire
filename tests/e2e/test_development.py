@@ -9,6 +9,7 @@ from . import run_development
 from .support.development import (AccountLease, DevelopmentError, NoRedirect, Timings,
                                   authenticate, idle_state, movement_route, validate_profile, witnessed)
 from .support.timing import PhaseTiming
+from .support.environment import artifact_tree_sha256
 
 
 @pytest.fixture
@@ -142,6 +143,7 @@ def test_shared_smoke_lifecycle_and_timings(profile, tmp_path):
                  "scope":"external-shared-server-without-owned-host-binding"},
         "finish":None,"same_binding_verified":False}
     assert report["worker_closed"] and fake.closed
+    assert report["worker_artifact_tree_sha256"] == artifact_tree_sha256(tmp_path / "run/worker")
     assert not report["lease_retained"] and not list((tmp_path / "leases").iterdir())
     assert report["lease_snapshot"]["state"] == "clear"
     assert report["lease_snapshot_matches_run_state"] is True

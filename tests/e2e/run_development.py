@@ -18,6 +18,8 @@ from .support.worker import Bot, Worker
 from .support.development_deadline import RunDeadline, DeadlineWorker
 from .support.development_worker_exit import ObservedWorker
 from .support.development_lease import terminal_account_lease_snapshot
+from .support.development_artifact import (RUN_SCOPE, bind_worker_artifacts,
+                                           initialize_worker_artifacts)
 from .support.development_reconnect import verify_position_reconnect
 from .support.development_party import require_bound_party_worker, verify_two_bot_party
 from .support.development_viewer import VIEWER_SCOPE, validate_viewer_name, viewer_checkpoint
@@ -59,6 +61,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     artifacts = Path(artifacts)
     artifacts.mkdir(parents=True, exist_ok=False)
     run_id = uuid.uuid4().hex
+    worker_artifacts = initialize_worker_artifacts(artifacts / "worker", run_id, RUN_SCOPE)
     timings, start = Timings(), time.monotonic()
     deadline = RunDeadline(max_seconds, started=start) if max_seconds is not None else None
     if deadline is not None:
@@ -105,7 +108,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         with timings.phase("worker_session_including_close"):
             if deadline is not None:
                 deadline.check()
-            with ObservedWorker(worker_factory(Path(profile["worker"]), artifacts / "worker"),
+            with ObservedWorker(worker_factory(Path(profile["worker"]), worker_artifacts),
                                 report["worker_exit"]) as raw_worker:
                 if deadline is not None:
                     deadline.check()
@@ -324,6 +327,15 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
             report["recovery"] = "Lease release cannot be verified; do not retry, reuse accounts or remove lease files without independent offline evidence."
         report["elapsed_seconds"] = time.monotonic() - start
         report["timings"] = timings.rows
+        try:
+            bind_worker_artifacts(report, worker_artifacts)
+        except BaseException as error:
+            if report["status"] == "passed":
+                report.update(status="failed", error_type=type(error).__name__,
+                              failure_stage="worker_artifact_identity",
+                              recovery="Retain the private run; do not retry gameplay or trust incomplete worker journals.")
+            else:
+                report["worker_artifact_error_type"] = type(error).__name__
         (artifacts / "development-summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
 

@@ -26,6 +26,7 @@ from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                            validate_review, witness_say_challenge)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
+from .development_artifact import RUN_SCOPE, require_worker_artifacts
 from .environment import (SetupError, artifact_tree_sha256,
                           has_cleanup_failure_marker, require_process_teardowns)
 
@@ -355,6 +356,8 @@ def inspect_client_development_result(output, expected_source_revision):
     decline_path = output / "development-decline" / "development-summary.json"
     main, decline = _read_json(main_path), _read_json(decline_path)
     main_hash, decline_hash = _sha256(main_path), _sha256(decline_path)
+    main_worker_artifacts = require_worker_artifacts(main_path, main, RUN_SCOPE)
+    decline_worker_artifacts = require_worker_artifacts(decline_path, decline, RUN_SCOPE)
     main_proof = require_graphical_check(main, viewer_name, viewer_entity)
     decline_proof = require_graphical_decline_check(decline, viewer_name, viewer_entity)
     main_check, decline_check = report.get("development_check"), report.get("decline_check")
@@ -473,6 +476,8 @@ def inspect_client_development_result(output, expected_source_revision):
             "development_summary_sha256": main_hash,
             "decline_summary_sha256": decline_hash,
             "worker_sha256": pair["worker_sha256"],
+            "development_worker_artifacts":main_worker_artifacts,
+            "decline_worker_artifacts":decline_worker_artifacts,
             "outer_journey": outer_journey,
             "bot_interaction_review": {"verified": True,
                 "frame_sha256": interaction_hash, "scope": INTERACTION_CAPTURE_SCOPE,

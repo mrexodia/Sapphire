@@ -23,6 +23,8 @@ from .support.development_binding import provisioning_binding
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 from .support.development_deadline import RunDeadline, DeadlineWorker
 from .support.development_lease import terminal_account_lease_snapshot
+from .support.development_artifact import (PROVISIONING_SCOPE, bind_worker_artifacts,
+                                           initialize_worker_artifacts)
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -74,6 +76,8 @@ def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
         raise DevelopmentError("credential profile must be outside the diagnostic artifact directory")
     artifacts.mkdir(parents=True, exist_ok=False)
     run_id, start = uuid.uuid4().hex, time.monotonic()
+    worker_artifacts = initialize_worker_artifacts(
+        artifacts / "worker", run_id, PROVISIONING_SCOPE)
     timings = Timings()
     lease = AccountLease(profile, run_id, lease_root)
     report = {"version": 1, "run_id": run_id, "status": "failed",
@@ -108,7 +112,7 @@ def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
             if deadline is not None:
                 deadline.check()
         with timings.phase("worker_session_including_close"):
-            with ObservedWorker(worker_factory(Path(profile["worker"]), artifacts / "worker"),
+            with ObservedWorker(worker_factory(Path(profile["worker"]), worker_artifacts),
                                 report["worker_exit"]) as raw_worker:
                 if deadline is not None:
                     deadline.check()
@@ -188,6 +192,17 @@ def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
             report.pop("next_step", None)
         report["elapsed_seconds"] = time.monotonic() - start
         report["timings"] = timings.rows
+        try:
+            bind_worker_artifacts(report, worker_artifacts)
+        except BaseException as error:
+            if report["status"] == "provisioned":
+                report.update(status="failed", error_type=type(error).__name__,
+                              failure_stage="worker_artifact_identity",
+                              recovery="Retain private credentials and artifacts; do not retry account creation or trust incomplete worker journals.")
+                report.pop("provisioning_binding", None)
+                report.pop("next_step", None)
+            else:
+                report["worker_artifact_error_type"] = type(error).__name__
         (artifacts / "provisioning-summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report
 

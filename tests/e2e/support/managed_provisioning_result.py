@@ -15,6 +15,7 @@ from .development import (DevelopmentError, require_managed_host_binding,
                           require_normal_worker_exit, validate_profile)
 from .development_binding import require_provisioning_binding
 from .development_host_result import inspect_owned_development_host
+from .development_artifact import PROVISIONING_SCOPE, require_worker_artifacts
 from .development_lease import require_clear_terminal_account_leases
 
 SCOPE = "managed-provisioning-and-terminal-owned-host-evidence-correlation"
@@ -52,7 +53,8 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
     fields = {"version","run_id","status","scope","ready_for_shared_checks",
               "server_identity_verified","server_processes_owned","database_access",
               "administrative_placement_performed","lease_retained","credential_profile_saved",
-              "worker_closed","worker_exit","managed_host_binding","worker_sha256","accounts",
+              "worker_closed","worker_exit","managed_host_binding","worker_sha256",
+              "worker_artifact_tree_sha256","accounts",
               "provisioning_binding","next_step","run_deadline","lease_snapshot",
               "lease_snapshot_matches_run_state","elapsed_seconds","timings"}
     expected_phases = ["reserve_private_credential_profile","account_lease",
@@ -85,6 +87,7 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
             or report.get("next_step") != ("Opening/public-world preparation is still required before "
                                             "run_development. No placement or reset command was run.")):
         raise DevelopmentError("managed provisioning boundary is incomplete or mutable")
+    worker_artifacts = require_worker_artifacts(summary_path, report, PROVISIONING_SCOPE)
     deadline = report.get("run_deadline")
     if (not isinstance(deadline, dict)
             or set(deadline) != {"enabled","limit_seconds","expired",
@@ -147,6 +150,7 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
                                     "entity_id":row["entity_id"],"character_id":row["character_id"]}
                                    for row in accounts],
             "run_worker_exit":report["worker_exit"],"lease_snapshot":lease,
+            "worker_artifacts":worker_artifacts,
             "host_process_teardown":host["process_teardown"],
             "host_lifecycle_sha256":host["lifecycle_sha256"],
             "host_environment_artifact_tree_sha256":host["environment_artifact_tree_sha256"],

@@ -22,13 +22,16 @@ from .support.managed_development_result import (SCOPE as MANAGED_RESULT_SCOPE,
 from .support.managed_provisioning_result import (SCOPE as MANAGED_PROVISIONING_SCOPE,
                                                   inspect_managed_provisioning)
 from .support.development_binding import provisioning_binding
+from .support.development_artifact import (PROVISIONING_SCOPE, RUN_SCOPE,
+                                            bind_worker_artifacts,
+                                            initialize_worker_artifacts)
 from .support.development_party import BOUND_METHODS
 from .support.environment import artifact_tree_sha256, redact_runtime_log
 
 
 @pytest.fixture
 def assets(tmp_path, monkeypatch):
-    worker = tmp_path / "worker"
+    worker = tmp_path / "synthetic-worker.exe"
     worker.write_bytes(b"synthetic-worker")
     catalog = tmp_path / "catalog.json"
     catalog.write_text("synthetic-source-catalog")
@@ -201,6 +204,8 @@ def managed_summary(path, receipt, worker_sha256):
             "context_entered":True,"context_exit_attempted":True,
             "context_exit_completed":True,"process_exit_observed":True,
             "process_id":999,"returncode":0}}
+    worker_artifacts = initialize_worker_artifacts(path.parent / "worker", report["run_id"], RUN_SCOPE)
+    bind_worker_artifacts(report, worker_artifacts)
     path.write_text(json.dumps(report, indent=2))
     return report
 
@@ -232,6 +237,10 @@ def managed_provisioning_summary(path, profile, receipt, worker_sha256):
              "provisioning_deadline_completion","release_accounts")],
         "next_step":"Opening/public-world preparation is still required before run_development. No placement or reset command was run."}
     report["provisioning_binding"] = provisioning_binding(profile, accounts)
+    worker_artifacts = path.parent / "worker"
+    (worker_artifacts / "ownership.json").write_text(json.dumps(
+        {"version":1,"scope":PROVISIONING_SCOPE,"run_id":report["run_id"]}, indent=2))
+    bind_worker_artifacts(report, worker_artifacts)
     path.write_text(json.dumps(report, indent=2))
     return report
 
@@ -264,8 +273,23 @@ def test_composite_managed_run_inspector_correlates_terminal_host_read_only(
     after = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
     assert before == after and proof["scope"] == MANAGED_RESULT_SCOPE
     assert proof["host_session_id"] == host_report["session_id"]
+    assert proof["worker_artifacts"]["scope"] == RUN_SCOPE
     assert inspect_managed_main(["--session-dir",str(session),"--summary",str(summary)]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+
+
+def test_composite_managed_run_rejects_changed_worker_artifact_tree(assets, tmp_path):
+    captured = {}
+    def ready(env, session, clock):
+        profile = json.loads((session / "bot-profile.json").read_text())
+        captured["receipt"] = check_managed_host(profile, clock=clock)
+        (session / "stop").touch()
+    host_report, _, session = run_host(assets, tmp_path, on_ready=ready)
+    summary = tmp_path / "development-summary.json"
+    managed_summary(summary, captured["receipt"], host_report["worker_sha256"])
+    (tmp_path / "worker/foreign.json").write_text("{}")
+    with pytest.raises(DevelopmentError, match="worker artifact tree differs"):
+        inspect_managed_development_run(session, summary)
 
 
 @pytest.mark.parametrize("mutate", [
@@ -315,12 +339,31 @@ def test_composite_managed_provisioning_inspector_is_read_only_and_redacted(
     proof = inspect_managed_provisioning(session, summary, profile_path)
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
     assert proof["scope"] == MANAGED_PROVISIONING_SCOPE
+    assert proof["worker_artifacts"]["scope"] == PROVISIONING_SCOPE
     text = json.dumps(proof)
     for account in profile["accounts"]:
         assert account["username"] not in text and account["password"] not in text
     assert inspect_provisioning_main(["--session-dir",str(session),"--summary",str(summary),
                                       "--profile",str(profile_path)]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+
+
+def test_composite_managed_provisioning_rejects_changed_worker_artifact_tree(
+        assets, tmp_path):
+    captured = {}
+    def ready(env, session, clock):
+        profile = json.loads((session / "bot-profile.json").read_text())
+        captured.update(profile=profile, receipt=check_managed_host(profile, clock=clock))
+        (session / "stop").touch()
+    host_report, _, session = run_host(assets, tmp_path, on_ready=ready)
+    summary = tmp_path / "provisioning-summary.json"
+    managed_provisioning_summary(
+        summary, captured["profile"], captured["receipt"], host_report["worker_sha256"])
+    (tmp_path / "worker/foreign.json").write_text("{}")
+    profile_path = session / "retained-private-profile.json"
+    profile_path.write_text(json.dumps(captured["profile"]))
+    with pytest.raises(DevelopmentError, match="worker artifact tree differs"):
+        inspect_managed_provisioning(session, summary, profile_path)
 
 
 @pytest.mark.parametrize("mutate", [

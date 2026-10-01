@@ -16,6 +16,8 @@ from .support.client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                                    witness_say_challenge)
 from .support.client_snapshot import git
 from .support.development import DevelopmentError
+from .support.development_artifact import (RUN_SCOPE, bind_worker_artifacts,
+                                            initialize_worker_artifacts)
 from .support.environment import REPO, artifact_tree_sha256
 from .test_client_development import completed, declined
 
@@ -87,6 +89,12 @@ def build_output(root, source_revision="1" * 40):
     for stage in ("start", "finish"):
         for reply in decline["viewer_verification"][stage]["received_replies"]:
             reply["message"] = reply["message"].replace("viewer aaaaaaaa", "viewer bbbbbbbb")
+    for directory, report in ((root / "development", main),
+                              (root / "development-decline", decline)):
+        directory.mkdir(parents=True)
+        worker_artifacts = initialize_worker_artifacts(
+            directory / "worker", report["run_id"], RUN_SCOPE)
+        bind_worker_artifacts(report, worker_artifacts)
     write_json(root / "development/development-summary.json", main)
     write_json(root / "development-decline/development-summary.json", decline)
     main_path = root / "development/development-summary.json"
@@ -297,6 +305,8 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
     assert proof["environment_manifest"]["evidence"]["server_navigation_file_count"] == 1
     assert proof["environment_manifest"]["evidence"]["worker_sha256"] == proof["worker_sha256"]
     assert proof["environment_process_teardown"]["evidence"]["process_count"] == 4
+    assert proof["development_worker_artifacts"]["scope"] == RUN_SCOPE
+    assert proof["decline_worker_artifacts"]["scope"] == RUN_SCOPE
     assert proof["environment_artifact_tree_sha256"] == artifact_tree_sha256(
         root / "artifacts/sapphire-e2e-synthetic")
     assert proof["activity_deadline"]["activity_and_worker_exit_completed_within_budget"] is True
@@ -353,6 +363,9 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
     lambda root, report: report.update(environment_artifact_tree_sha256="0" * 64),
     lambda root, report: write_json(root /
         "artifacts/sapphire-e2e-synthetic/foreign.json", {"changed":True}),
+    lambda root, report: write_json(root / "development/worker/foreign.json", {"changed":True}),
+    lambda root, report: (root / "development-decline/worker/ownership.json").write_text(
+        '{"version":1,"version":1}'),
     lambda root, report: report["environment_process_teardown"]["evidence"].update(
         process_count=True),
     lambda root, report: json_file(root /
