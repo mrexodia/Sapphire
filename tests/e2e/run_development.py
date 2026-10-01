@@ -20,11 +20,12 @@ from .support.development_viewer import validate_viewer_name, viewer_checkpoint
 from .support.development_tell import require_visible_tell_worker, verify_visible_tells
 from .support.development_decline import require_decline_worker, verify_party_decline
 from .support.development_sprint import require_sprint_worker, verify_sprint as verify_self_sprint
+from .support.development_equipment import require_equipment_worker, begin_roundtrip, finish_roundtrip
 
 
 def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         verify_reconnect=False, verify_party=False, verify_tell=False, verify_decline=False,
-        verify_inventory=False, verify_sprint=False, viewer_name=None,
+        verify_inventory=False, verify_sprint=False, verify_equipment=False, viewer_name=None,
         worker_factory=Worker, login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
@@ -34,10 +35,12 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
     if any(type(flag) is not bool for flag in
-           (verify_reconnect, verify_party, verify_tell, verify_decline, verify_inventory, verify_sprint)):
+           (verify_reconnect, verify_party, verify_tell, verify_decline, verify_inventory, verify_sprint, verify_equipment)):
         raise DevelopmentError("verification flags must be boolean")
     if verify_inventory and not verify_reconnect:
         raise DevelopmentError("inventory comparison requires explicit --verify-reconnect")
+    if verify_equipment and not (verify_reconnect and verify_inventory):
+        raise DevelopmentError("equipment round trip requires explicit --verify-reconnect and --verify-reconnect-inventory")
     if verify_decline and verify_party:
         raise DevelopmentError("decline and party-creation checks require separate fresh runs")
     route, catalog_hash = movement_route(profile)
@@ -60,6 +63,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "tell_verification": {"requested": verify_tell, "verified": False},
               "decline_verification": {"requested": verify_decline, "verified": False},
               "sprint_verification": {"requested": verify_sprint, "verified": False},
+              "equipment_verification": {"requested": verify_equipment, "verified": False},
               "viewer_verification": {"requested": viewer_name is not None, "verified": False,
                                       "scope": "two-checkpoint-presence-not-graphical-attestation",
                                       "viewer_login_or_control_performed": False},
@@ -89,6 +93,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                 if verify_sprint:
                     with timings.phase("sprint_worker_capability"):
                         require_sprint_worker(worker)
+                if verify_equipment:
+                    with timings.phase("equipment_worker_capability"):
+                        require_equipment_worker(worker)
                 bots = [Bot(worker, "mover"), Bot(worker, "witness")]
                 states = []
                 for index, (bot, account) in enumerate(zip(bots, profile["accounts"])):
@@ -168,12 +175,16 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
                 if verify_sprint:
                     report["sprint_verification"] = verify_self_sprint(
                         profile, worker, mover, witness, states, timings)
+                if verify_equipment:
+                    begin_roundtrip(profile, worker, mover, states[0], report["equipment_verification"], timings)
                 if verify_reconnect:
                     mover, report["reconnect_verification"] = verify_position_reconnect(
                         profile, worker, mover, witness, states[0],
                         route[0] if route else states[0]["observed_position"], run_id, timings, login,
                         inventory_report=report["inventory_verification"] if verify_inventory else None)
                     bots = [mover, witness]
+                if verify_equipment:
+                    finish_roundtrip(profile, worker, mover, report["equipment_verification"], timings)
                 if viewer_name is not None:
                     report["viewer_verification"]["finish"] = viewer_checkpoint(
                         worker, [mover, witness], [actor, observer], profile["territory"],
@@ -227,6 +238,8 @@ def main(argv=None):
                         help="Two fresh received direct Tells between visible non-GM bots; no remote fallback")
     parser.add_argument("--verify-sprint", action="store_true",
                         help="One ordinary self-Sprint with fresh independent effect/zero-TP observations; no retry")
+    parser.add_argument("--verify-starter-equipment", dest="verify_equipment", action="store_true",
+                        help="Ordinary starter-body round trip around explicit inventory reconnect; no failure restoration")
     parser.add_argument("--viewer-name", help="Exact separate visible player name; requires unique Say replies at start/finish")
     args = parser.parse_args(argv)
     try:
@@ -235,7 +248,7 @@ def main(argv=None):
                      await_placement=args.await_placement, verify_reconnect=args.verify_reconnect,
                      verify_party=args.verify_party, verify_tell=args.verify_tell,
                      verify_decline=args.verify_decline, verify_inventory=args.verify_inventory,
-                     verify_sprint=args.verify_sprint,
+                     verify_sprint=args.verify_sprint, verify_equipment=args.verify_equipment,
                      viewer_name=args.viewer_name)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.

@@ -495,6 +495,43 @@ are covered by synthetic contracts, not that live run. A separate headless
 observer and normal cleanup were inspected; no graphical attestation or existing
 shared-database deployment is inferred. See the implementation audit for hashes.
 
+### Optional starter-body round trip around inventory reconnect
+
+Explicitly combine `--verify-starter-equipment --verify-reconnect
+--verify-reconnect-inventory` (three separate CLI arguments). The mover must have
+Ul'dah starter class1/2/7, exactly one body2983 in equipment1000:3 and an empty
+ordinary bag0:0. Other clothing, occupied destinations, incomplete selected
+containers, changed identity/class or non-idle/party/invitation state are rejected.
+Both native equipment methods must be advertised before authentication.
+
+This runs after the other short scenarios:
+
+1. Capture the complete selected bag/equipment/Currency projection, then publish
+   one ordinary unequip of that exact body to bag0:0. Require a newer received
+   projection with precisely that move; the operation acknowledgement is not proof.
+2. Perform the separately requested normal logout/server closure/despawn and
+   fresh login. Existing inventory comparison must now retain the **nonempty bag**;
+   the independent witness observes lifecycle/position/Say, not private inventory.
+3. Recheck the same class, identity and exact unequipped projection. Only then
+   publish one ordinary re-equip to equipment1000:3 and require a newer received
+   projection equal to the original selected slots/catalog IDs/counts.
+
+`equipment_verification` retains the identity/class, before/expected/received
+projections, publication-attempt markers and acknowledgements (still explicitly
+not inventory-mutation proof). Each mutation has a ten-second success budget;
+normal bounded RPCs are not hard-interrupted. The four `equipment_*` observation/
+mutation phases are timed separately from reconnect. No gameplay retry, currency
+mutation, grant, DB edit, reset or new administrative authority is introduced.
+
+Re-equip is an explicit successful-scenario step, **never failure cleanup**. A
+failed/uncertain acknowledgement, observation or reconnect stops before the next
+operation and retains local leases/evidence. The body may remain in the bag;
+verify the bot offline and inspect its state before taking any manual action.
+This is slot/catalog/count evidence, not item-instance/durability, appearance,
+all-character-state, world-restart or crash-consistency proof. Unequipping can
+change derived stats; the runner does not claim those remained invariant.
+Default runs and the read-only inventory option alone do not add equipment operations.
+
 ### Optional independently observed self-Sprint
 
 Add `--verify-sprint` to publish **one** ordinary Sprint (action3) on the mover,
