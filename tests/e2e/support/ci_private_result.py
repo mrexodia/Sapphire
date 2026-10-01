@@ -35,6 +35,26 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
     if supplied_root.is_symlink() or not supplied_root.is_dir():
         raise SetupError("private isolated run root is missing or unsafe")
     root = supplied_root.resolve()
+    diagnostics_raw, diagnostics = _read(root / "gate-diagnostics.json", 1024 * 1024,
+                                         "gate diagnostics")
+    expected_diagnostics = {"collected","reports","unexpected","environment_count",
+                            "case_environment_count","environment_evidence"}
+    reports = diagnostics.get("reports")
+    if (hashlib.sha256(diagnostics_raw).hexdigest() != public["gate_diagnostics_sha256"]
+            or set(diagnostics) != expected_diagnostics
+            or diagnostics.get("collected") != list(EXPECTED_CASES)
+            or type(diagnostics.get("unexpected")) is not int or diagnostics["unexpected"] != 0
+            or type(diagnostics.get("environment_count")) is not int
+            or diagnostics["environment_count"] != len(EXPECTED_CASES)
+            or type(diagnostics.get("case_environment_count")) is not int
+            or diagnostics["case_environment_count"] != len(EXPECTED_CASES)
+            or diagnostics.get("environment_evidence") != public["environment_evidence"]
+            or not isinstance(reports, dict) or list(reports) != list(EXPECTED_CASES)
+            or any(not isinstance(phases, dict)
+                   or list(phases) != ["setup","call","teardown"]
+                   or any(phases[phase] != ["passed"] for phase in ("setup","call","teardown"))
+                   for phases in reports.values())):
+        raise SetupError("private isolated gate diagnostics differ from public result")
     artifacts = root / "artifacts"
     if artifacts.is_symlink() or not artifacts.is_dir():
         raise SetupError("private isolated artifact root is missing or unsafe")
@@ -88,7 +108,9 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
     return {"version":1,"status":"accepted","scope":SCOPE,
             "revision":expected_revision,"summary_sha256":public_proof["summary_sha256"],
             "case_count":len(rows),"private_manifest_count":len(rows),
-            "private_lifecycle_count":len(rows),"environment_evidence":rows,
+            "private_lifecycle_count":len(rows),
+            "gate_diagnostics_sha256":public["gate_diagnostics_sha256"],
+            "environment_evidence":rows,
             "process_generations_verified":True,"staged_inputs_verified":True,
             "private_paths_or_runtime_identities_disclosed":False,
             "note":"Exact private-byte correlation only; hashes do not prove hosted execution, VM disposal or gameplay beyond the gate."}

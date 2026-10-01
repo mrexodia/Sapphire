@@ -517,6 +517,7 @@ def current_public_summary(revision="a" * 40):
         "scope":"headless-live-not-real-client","revision":revision,"source_dirty":False,
         "identities":identities,"deadline_scale":1,"collection_verified":True,
         "environment_isolation_verified":True,"environment_evidence":evidence,
+        "gate_diagnostics_sha256":"e" * 64,
         "cleanup_verified":True,"process_cleanup_verified":True,
         "cases":{case:True for case in run_ci.CASES},"pytest_exit_code":0,
         "inputs_verified":True}
@@ -550,6 +551,14 @@ def private_gate_evidence(tmp_path, report):
             "manifest_sha256":hashlib.sha256((directory / "manifest.json").read_bytes()).hexdigest(),
             "lifecycle_sha256":hashlib.sha256((directory / "process-lifecycle.json").read_bytes()).hexdigest()})
     report["environment_evidence"] = rows
+    diagnostics = {"collected":list(run_ci.CASES),
+        "reports":{case:{phase:["passed"] for phase in ("setup","call","teardown")}
+                   for case in run_ci.CASES},
+        "unexpected":0,"environment_count":len(run_ci.CASES),
+        "case_environment_count":len(run_ci.CASES),"environment_evidence":rows}
+    diagnostics_path = root / "gate-diagnostics.json"
+    diagnostics_path.write_text(json.dumps(diagnostics, indent=2))
+    report["gate_diagnostics_sha256"] = hashlib.sha256(diagnostics_path.read_bytes()).hexdigest()
     return root, directories
 
 
@@ -581,8 +590,9 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     report = current_public_summary(revision)
     private, directories = private_gate_evidence(tmp_path, report)
     summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report, indent=2))
-    files = [summary, *[path / name for path in directories
-                        for name in ("manifest.json","process-lifecycle.json")]]
+    files = [summary, private / "gate-diagnostics.json",
+             *[path / name for path in directories
+               for name in ("manifest.json","process-lifecycle.json")]]
     before = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     proof = inspect_ci_private_evidence(summary, private, revision)
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
@@ -594,7 +604,7 @@ def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path
     assert json.loads(capsys.readouterr().out) == proof
 
 
-@pytest.mark.parametrize("mutation", ["changed-bytes","missing","lifecycle","inputs","database"])
+@pytest.mark.parametrize("mutation", ["changed-bytes","missing","diagnostics","lifecycle","inputs","database"])
 def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_private_bytes(
         tmp_path, mutation):
     report = current_public_summary(); private, directories = private_gate_evidence(tmp_path, report)
@@ -603,6 +613,11 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
         with (target / "manifest.json").open("a") as stream: stream.write(" ")
     elif mutation == "missing":
         import shutil; shutil.rmtree(target)
+    elif mutation == "diagnostics":
+        path = private / "gate-diagnostics.json"
+        value = json.loads(path.read_text()); value["reports"][run_ci.CASES[0]]["call"] = []
+        path.write_text(json.dumps(value))
+        report["gate_diagnostics_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     elif mutation == "lifecycle":
         value = json.loads((target / "process-lifecycle.json").read_text())
         value["teardowns"][0]["returncode"] = True
@@ -630,6 +645,7 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
     lambda report:report.update(source_dirty=0),
     lambda report:report.update(process_cleanup_verified=1),
     lambda report:report.update(environment_isolation_verified=1),
+    lambda report:report.update(gate_diagnostics_sha256="g" * 64),
     lambda report:report["environment_evidence"].pop(),
     lambda report:report["environment_evidence"].reverse(),
     lambda report:report["environment_evidence"][0].update(manifest_sha256="g" * 64),

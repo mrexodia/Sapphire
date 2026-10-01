@@ -56,8 +56,8 @@ def inspect_ci_result(summary_path, expected_revision):
         raise SetupError("cannot read isolated-gate public summary") from error
     fields = {"version","status","stage","scope","revision","source_dirty","identities",
               "deadline_scale","collection_verified","environment_isolation_verified",
-              "environment_evidence","cleanup_verified","process_cleanup_verified","cases","pytest_exit_code",
-              "inputs_verified"}
+              "environment_evidence","gate_diagnostics_sha256","cleanup_verified",
+              "process_cleanup_verified","cases","pytest_exit_code","inputs_verified"}
     if (not isinstance(report, dict) or set(report) != fields
             or type(report.get("version")) is not int or report["version"] != 1
             or report.get("status") != "passed" or report.get("stage") != "verified"
@@ -68,6 +68,7 @@ def inspect_ci_result(summary_path, expected_revision):
             or not 1 <= report["deadline_scale"] <= 3
             or report.get("collection_verified") is not True
             or report.get("environment_isolation_verified") is not True
+            or not _hex(report.get("gate_diagnostics_sha256"))
             or report.get("cleanup_verified") is not True
             or report.get("process_cleanup_verified") is not True
             or report.get("inputs_verified") is not True
@@ -104,6 +105,7 @@ def inspect_ci_result(summary_path, expected_revision):
             "case_count":len(EXPECTED_CASES),"deadline_scale":report["deadline_scale"],
             "collection_verified":True,"environment_isolation_verified":True,
             "environment_evidence":evidence,
+            "gate_diagnostics_sha256":report["gate_diagnostics_sha256"],
             "inputs_verified":True,"cleanup_verified":True,
             "process_cleanup_verified":True,
             "note":"Public gate claim only; private PID/generation records, hosted execution and real-client compatibility are out of scope."}

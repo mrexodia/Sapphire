@@ -291,13 +291,16 @@ def run(profile_path, private_root, summary_path, *, worker=None, binaries=None,
                                         "-o", "addopts=", "-p", "no:cacheprovider", "--strict-markers",
                                         "--junitxml", str(private / "live.xml")], plugins=[gate])
                 report.update(gate.summary(code))
-                (private / "gate-diagnostics.json").write_text(json.dumps({
+                diagnostics_path = private / "gate-diagnostics.json"
+                diagnostics_path.write_text(json.dumps({
                     "collected": gate.collected,
                     "reports": gate.reports,
                     "unexpected": gate.unexpected,
                     "environment_count": len(gate.environments),
                     "case_environment_count": len(gate.case_environments),
+                    "environment_evidence": report["environment_evidence"],
                 }, indent=2), encoding="utf-8")
+                report["gate_diagnostics_sha256"] = sha256(diagnostics_path)
                 environments = gate.environments or ([gate.environment] if gate.environment is not None else [])
                 report["inputs_verified"] = bool(environments) and all(
                     inputs_match(identities, json.loads(

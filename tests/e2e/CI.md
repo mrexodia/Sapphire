@@ -109,7 +109,8 @@ PID/generation records deleted with disposable fixtures,
 prove hosted execution, or replace an actual current gate run. When the authorized
 private run directory is retained, the second inspector matches every public hash
 pair one-to-one to exactly 15 safe private environment directories, revalidates all
-service generations and staged source/input identities, and emits no private path,
+service generations and staged source/input identities, requires exact private
+collection plus one passed setup/call/teardown per case, and emits no private path,
 database, runtime, port or PID. It never makes absent private bytes recoverable. `run_ci` does not itself compile
 binaries, so running it against an external profile does not prove build provenance.
 Component hashes identify the actual tested inputs; the workflow's build step is
@@ -150,9 +151,11 @@ separate evidence that its binaries came from the checkout.
 - Only `.e2e-ci-summary.json` is uploaded: fixed schema, allowlisted case identities
   and booleans, checkout identity, component hashes and cleanup/collection results.
   It also carries exactly 15 ordered `{case, manifest_sha256, lifecycle_sha256}`
-  rows. These bind each public case to the exact private staged-manifest and process-
-  lifecycle bytes without publishing paths, ports, database names, PIDs, return
-  codes or credentials; hashes are correlation, not independent content proof.
+  rows plus the SHA-256 of private `gate-diagnostics.json`. These bind each public
+  case to exact private staged-manifest/process-lifecycle bytes and the exact
+  collection/setup/call/teardown report without publishing paths, ports, database
+  names, PIDs, return codes, captured output or credentials; hashes are correlation,
+  not independent content proof.
   The upload step requires the current gameplay step to create the report. It
   does not reuse a stale report after an earlier step fails.
 - Private run directories contain `profile.json`, `entry-error.log` on entry
