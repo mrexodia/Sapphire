@@ -1,9 +1,10 @@
 # Fast shared-server development lane
 
 This lane connects two normal non-GM bots to an **already-running local development
-server**. It does not create a disposable environment, install/migrate a database,
-change server/client configuration, restart a process, or perform administrative
-resets. It is explicitly `shared-development-not-acceptance` evidence.
+server**. The runner does not create a disposable environment, install/migrate a
+database, change server/client configuration, restart a process, or issue
+administrative resets. Separate opt-in GM fixture placement is described below.
+Results are explicitly `shared-development-not-acceptance` evidence.
 
 Use this lane for short development feedback and watching bots from a graphical
 client. Keep the existing isolated pytest lane for clean regression/acceptance;
@@ -68,7 +69,85 @@ opening territory. This command does not skip openings, teleport, grant levels,
 reset quests, or assert that the shared smoke preconditions hold. Its summary
 always says `ready_for_shared_checks: false`. Complete the opening or explicitly
 prepare public-world fixtures with your development tools before running the
-shared checks. Targeted administrative placement/reprovisioning is still pending.
+shared checks. The opt-in placement lane below can prepare the registered bots
+without stopping the world. General reprovisioning/reset is still pending.
+
+## Targeted administrative placement (opt-in; live verification pending)
+
+The server now implements a **disabled-by-default**, GM-only `!devbot place`
+command. This is administrative fixture setup, not gameplay. It only places one
+of two explicitly registered generated bots into public Ul'dah (130) at the first
+point of the validated Motivational Speaking corridor and sets OpeningSequence=2.
+It does not grant items/levels/quest completion or reset enemies/other players.
+
+1. Use a provisioning report from the current provisioner, which records exact
+   received lobby character IDs as well as world entity IDs. Legacy reports
+   without character IDs fail closed; do not invent IDs or rerun uncertain creation.
+2. Add the matching `quest_catalog` path to your private `.e2e-dev.json`.
+3. Generate and review a **new** private registry:
+
+   ```powershell
+   python -m tests.e2e.prepare_development --profile .e2e-dev.json `
+     --provisioning-report .e2e-artifacts/dev-provision-001/provisioning-summary.json `
+     --registry .e2e-bot-placement.json --approve-fixture-placement
+   ```
+
+   This is an offline planner: it does not contact the server or execute a reset.
+   Check both names, entity IDs, character IDs, catalog hash and position. The
+   registry is an operator-controlled allowlist, **not a cryptographic attestation**;
+   protect it against untrusted edits. The server checks its schema/bounds and
+   live identities, not navigation provenance. The planner binds the source route.
+4. In a development server built with this feature, explicitly configure:
+
+   ```ini
+   [DevelopmentBots]
+   Enabled = true
+   RegistryPath = C:/private/.e2e-bot-placement.json
+   ```
+
+   Use an absolute path. Configuration is loaded at startup; arrange that one-time
+   restart yourself if necessary. The harness does not edit/restart your server.
+   The registry file is read on each command. Default configuration stays disabled.
+5. Log your separate GM operator/viewer character in and start:
+
+   ```powershell
+   python -m tests.e2e.run_development --profile .e2e-dev.json `
+     --allow-shared-development --await-placement --cycles 1 `
+     --artifacts .e2e-artifacts/dev-prepare-001
+   ```
+
+   Once `placement-ready.json` appears in that artifact directory, both bot
+   sessions are logged in and idle. Check their identities against the registry.
+   The runner allows **120 seconds total** for the separate administrative action.
+6. From the GM operator's normal chat input, issue the two exact commands printed
+   by the registry planner: `!devbot place <approval_id> 0` and
+   `!devbot place <approval_id> 1`. Do not give GM rank to the bots. A non-GM viewer
+   can watch; a separate GM operator must perform the placement in that case.
+
+The server checks exact character/entity/name bindings, non-GM bot state, a valid
+connected/loading-complete session, alive/not busy, no party, and source territory
+182 or 130. It rejects self-targeting and targets outside the registry. Commands
+execute through the existing world-thread input queue. The warp uses the existing
+WarpMgr path, with BetweenAreas set immediately to prevent overlapping placement.
+An approval/slot is consumed once per server process (maximum 1024 retained keys).
+A queued-warp message is **not success or permission to retry**. Server logs record
+operator, approval, target identities, source and catalog hash, not credentials.
+
+The runner waits for received public-world readiness and position, then checks
+both identities/positions independently before normal Say and per-waypoint
+movement checks. Administrative waiting is timed and labelled separately. It
+never sends the debug command itself and does not attest that the command fired:
+if the bots already satisfy the destination preconditions, that is not proof of
+an administrative mutation. Placement persistence across fresh login is not
+claimed by this run; a later normal shared check can separately observe reloaded
+positions. Failed/uncertain placements retain leases for inspection. Do not
+regenerate approvals to hide failed outcomes. After server restart the in-memory
+one-shot set is lost; this is not crash-consistent/idempotent reset infrastructure.
+
+This implementation has native policy tests, a compiled server command translation
+unit, and synthetic runner tests. Actual GM-triggered placement, client zoning and
+fresh-login persistence on a shared development world **remain unverified**. No
+server has been configured/deployed/modified by the agent to exercise it yet.
 
 ## Run a short check
 
@@ -129,9 +208,9 @@ only the checks actually executed against that shared world. It does not prove
 isolation, fixture reset, persistence across restart, combat/progression, capacity,
 graphical-client compatibility, or acceptance coverage.
 
-World reset commands and reprovisioning of existing characters remain separate
-follow-up work. New-account provisioning is described above. A future reset must
-be development-only, explicitly targeted, require
+World-enemy/respawn resets and general reprovisioning of existing characters remain
+separate follow-up work; the command above is only opening bypass/placement of
+registered dedicated bots. A future reset must be development-only, explicitly targeted, require
 exclusive ownership/offline actors as appropriate, and record administrative
 preparation separately from normal gameplay evidence. Broad world resets must not
 interrupt a human viewer or be silently run between tests.
@@ -154,5 +233,5 @@ coverage or acceptance verifier.
 Synthetic checks (no server, no credential profile):
 
 ```powershell
-python -m pytest tests/e2e/test_development.py tests/e2e/test_development_provisioning.py -q
+python -m pytest tests/e2e/test_development.py tests/e2e/test_development_provisioning.py tests/e2e/test_development_placement.py -q
 ```

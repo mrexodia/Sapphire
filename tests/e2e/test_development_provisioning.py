@@ -29,8 +29,11 @@ class ProvisionWorker:
         if method == "login":
             assert args["create_character"] is True and args["creation_class"] == 1
             assert args["session"] == "private-session"
+            entity = len(self.states) + 1
             self.states[bot] = {"phase": "ready", "gm_rank": 0, "territory": 182,
-                                "entity_id": len(self.states) + 1, "created_via_lobby": True}
+                                "entity_id": entity, "created_via_lobby": True,
+                                "characters": [{"entity_id": entity, "character_id": 100 + entity,
+                                                "name": args["character"]}]}
         if method == "logout":
             self.states[bot]["phase"] = "logged_out"
         return {}

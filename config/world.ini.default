@@ -24,6 +24,12 @@ MeshPath = navi
 ; false = fully lazy map data loading
 EagerENpcEObjCache = true
 
+[DevelopmentBots]
+; Administrative fixture placement only; never enabled by normal gameplay tests.
+; Requires a GM operator plus an explicit exact-identity registry. See tests/e2e/DEVELOPMENT.md.
+Enabled = false
+RegistryPath =
+
 [Housing]
 ; Set the default estate name. {0} will be replaced with the plot number
 DefaultEstateName = Estate ${0}

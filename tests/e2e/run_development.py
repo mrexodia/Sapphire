@@ -6,6 +6,7 @@ mutations. This is explicitly non-isolated evidence, NOT an acceptance gate.
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 import time
 import uuid
@@ -15,7 +16,7 @@ from .support.development import (AccountLease, DevelopmentError, Timings, authe
 from .support.worker import Bot, Worker
 
 
-def run(profile, artifacts, *, confirmed=False, cycles=1, worker_factory=Worker,
+def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False, worker_factory=Worker,
         login=authenticate, lease_root=None):
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
@@ -23,6 +24,8 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, worker_factory=Worker,
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
     route, catalog_hash = movement_route(profile)
+    if type(await_placement) is not bool or (await_placement and not route):
+        raise DevelopmentError("administrative placement wait requires a source-bound quest route")
     artifacts = Path(artifacts)
     artifacts.mkdir(parents=True, exist_ok=False)
     run_id = uuid.uuid4().hex
@@ -31,7 +34,9 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, worker_factory=Worker,
     report = {"version": 1, "run_id": run_id, "status": "failed",
               "scope": "shared-development-not-acceptance", "server_identity_verified": False,
               "server_processes_owned": False, "database_access": False,
-              "account_reset_performed": False, "cycles": cycles,
+              "account_reset_performed_by_runner": False, "cycles": cycles,
+              "administrative_preparation_wait_enabled": await_placement,
+              "administrative_command_execution_attested": False,
               "protocol": profile["protocol"], "territory": profile["territory"],
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
               "catalog_sha256": catalog_hash, "movement_waypoints_per_cycle": len(route),
@@ -53,8 +58,29 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, worker_factory=Worker,
                     with timings.phase(f"lobby_world_login_{index}"):
                         state = bot.login_via_lobby(auth, account["character"])
                         states.append(state)
-                        if not idle_state(state, profile["territory"]):
-                            raise DevelopmentError("bot is not idle in the configured public territory")
+                        initial_territory = state.get("territory") if await_placement else profile["territory"]
+                        if (await_placement and initial_territory not in {130, 182}) or not idle_state(state, initial_territory):
+                            raise DevelopmentError("bot is not idle in the expected territory")
+                if await_placement:
+                    with timings.phase("administrative_placement_wait_not_gameplay"):
+                        deadline = time.monotonic() + 120
+                        (artifacts / "placement-ready.json").write_text(json.dumps({
+                            "scope": "administrative-preparation-not-gameplay", "run_id": run_id,
+                            "wait_seconds": 120, "territory": profile["territory"], "position": route[0],
+                            "bots": [{"entity_id": state["entity_id"], "name": account["character"]}
+                                     for state, account in zip(states, profile["accounts"])],
+                            "note": "Readiness only; a separate GM-approved registry command is required."
+                        }, indent=2), encoding="utf-8")
+                        for index, bot in enumerate(bots):
+                            remaining = deadline - time.monotonic()
+                            if remaining <= 0:
+                                raise DevelopmentError("administrative placement observation deadline exceeded")
+                            expected_entity = states[index]["entity_id"]
+                            states[index] = worker.wait_state(bot.name,
+                                lambda s: idle_state(s, profile["territory"])
+                                and s["entity_id"] == expected_entity
+                                and math.dist(s["observed_position"], route[0]) <= 0.15,
+                                "operator-prepared public-world state (not gameplay)", timeout=remaining)
                 mover, witness = bots
                 actor, observer = [state["entity_id"] for state in states]
                 if not actor or not observer or actor == observer:
@@ -120,10 +146,13 @@ def main(argv=None):
     parser.add_argument("--artifacts", required=True, help="New private artifact directory (must not exist)")
     parser.add_argument("--allow-shared-development", action="store_true")
     parser.add_argument("--cycles", type=int, default=1)
+    parser.add_argument("--await-placement", action="store_true",
+                        help="Allow up to 120s for separate GM-approved placement; requires quest_catalog")
     args = parser.parse_args(argv)
     try:
         profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
-        result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles)
+        result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles,
+                     await_placement=args.await_placement)
     except (Exception, KeyboardInterrupt) as error:
         # In particular, do not let JSONDecodeError reproduce a credential line.
         print(json.dumps({"status": "failed", "stage": "preflight", "error_type": type(error).__name__}))

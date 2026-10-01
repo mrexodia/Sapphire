@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <Common.h>
 
 #include "DebugCommand/DebugCommand.h"
@@ -15,6 +16,8 @@ namespace Sapphire::World::Manager
   private:
     // container mapping command string to command object
     std::map< std::string, std::shared_ptr< DebugCommand > > m_commandMap;
+    // One-shot administrative requests; never automatically replay a queued warp.
+    std::set< std::string > m_usedDevelopmentPlacements;
 
   public:
     DebugCommandMgr();
@@ -68,6 +71,8 @@ namespace Sapphire::World::Manager
     void hotReload( char* data, Sapphire::Entity::Player& player, std::shared_ptr< DebugCommand > command );
 
     void facing( char* data, Sapphire::Entity::Player& player, std::shared_ptr< DebugCommand > command );
+
+    void developmentBot( char* data, Entity::Player& player, std::shared_ptr< DebugCommand > command );
 
   };
 

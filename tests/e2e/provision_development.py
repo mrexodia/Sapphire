@@ -15,7 +15,7 @@ import time
 import uuid
 
 from .support.development import (AccountLease, DevelopmentError, Timings, authenticate,
-                                  create_account, validate_profile)
+                                  create_account, received_character_identity, validate_profile)
 from .support.worker import Bot, Worker
 
 REPO = Path(__file__).resolve().parents[2]
@@ -99,9 +99,10 @@ def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Wo
                     with timings.phase(f"lobby_create_and_world_{index}"):
                         row["character_creation"] = "requested_outcome_unknown"
                         state = bot.create_character_via_lobby(auth, account["character"], creation_class=1)
+                        identity = received_character_identity(state, account["character"])
                         row.update(character_creation="refreshed_lobby_and_world_verified",
-                                   entity_id=state["entity_id"], territory=state["territory"],
-                                   gm_rank=state["gm_rank"])
+                                   entity_id=identity["entity_id"], character_id=identity["character_id"],
+                                   territory=state["territory"], gm_rank=state["gm_rank"])
                     with timings.phase(f"logout_{index}"):
                         bot.logout(wait_server_close=True)
                         bot.close()

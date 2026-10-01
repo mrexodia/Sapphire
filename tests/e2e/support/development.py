@@ -137,6 +137,19 @@ def create_account(profile, account):
     return _account_session(profile, account, "createAccount")
 
 
+def received_character_identity(state, name):
+    rows = [row for row in state.get("characters", []) if row.get("name") == name]
+    if len(rows) != 1:
+        raise DevelopmentError("expected exactly one received lobby character identity")
+    row = rows[0]
+    for key, maximum in (("entity_id", 2**32 - 1), ("character_id", 2**64 - 1)):
+        if type(row.get(key)) is not int or not 0 < row[key] <= maximum:
+            raise DevelopmentError("invalid received character identity")
+    if row["entity_id"] != state.get("entity_id"):
+        raise DevelopmentError("lobby and world identities differ")
+    return {key: row[key] for key in ("name", "entity_id", "character_id")}
+
+
 def position(value):
     return (isinstance(value, list) and len(value) == 3
             and all(type(x) in (int, float) and math.isfinite(x) and abs(x) < 1000 for x in value))

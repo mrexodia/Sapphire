@@ -185,6 +185,6 @@ if( SAPPHIRE_BUILD_TEST_CLIENT )
   if( BUILD_TESTING )
     add_dependencies( sapphire_gameplay_ci sapphire_protocol_tests sapphire_reward_tests
                       sapphire_combat_tests sapphire_navigation_tests sapphire_database_binding_tests
-                      sapphire_item_id_tests )
+                      sapphire_item_id_tests sapphire_dev_placement_tests )
   endif()
 endif()
