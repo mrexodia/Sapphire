@@ -32,6 +32,7 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     assert [row["timeout_minutes"] for row in private["jobs"]] == [5, 120]
     assert private["private_evidence_inspection_required"] is True
     assert private["service_free_staging_required"] is True
+    assert private["exact_clean_checkout_required"] is True
     assert private["failed_summary_inspection_required"] is True
     assert [len(public["pinned_actions"]), len(private["pinned_actions"])] == [3, 3]
     assert all("@" in action and len(action.rsplit("@", 1)[1]) == 40
@@ -53,6 +54,10 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     (PRIVATE, "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
               "    runs-on: ubuntu-latest"),
     (PRIVATE, "  workflow_dispatch:", "  pull_request:\n  workflow_dispatch:"),
+    (PRIVATE, "          ref: ${{ github.sha }}", "          ref: ${{ github.ref }}"),
+    (PRIVATE, "$head -ne $env:EXPECTED_SHA", "$head -ne $head"),
+    (PRIVATE, "$changes.Count -ne 0", "$changes.Count -lt 0"),
+    (PRIVATE, "$_ -match '^[-+U]'", "$_ -match '^$'"),
     (PRIVATE, "--expected-revision \"${{ github.sha }}\"",
               "--expected-revision \"${{ github.ref }}\""),
     (PRIVATE, "if ($LASTEXITCODE -ne 0) { throw 'Published gameplay summary inspection failed' }",

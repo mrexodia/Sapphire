@@ -118,6 +118,12 @@ def inspect_workflow(path, *, private):
                     "    needs: authorize",
                     "        type: boolean",
                     "        default: false",
+                    "          ref: ${{ github.sha }}",
+                    "      - name: Verify exact clean reviewed checkout",
+                    "          EXPECTED_SHA: ${{ github.sha }}",
+                    "          if ($LASTEXITCODE -ne 0 -or $head -ne $env:EXPECTED_SHA) { throw 'Checkout differs from dispatch SHA' }",
+                    "          if ($LASTEXITCODE -ne 0 -or $changes.Count -ne 0) { throw 'Checkout is not clean before build' }",
+                    "          if ($LASTEXITCODE -ne 0 -or @($submodules | Where-Object { $_ -match '^[-+U]' }).Count -ne 0) { throw 'Submodule checkout is incomplete or changed' }",
                     "          test \"$ACK\" = true || { echo 'Explicit review acknowledgement required'; exit 1; }",
                     "          test \"$ENABLED\" = true || { echo 'Private E2E runner is not enabled'; exit 1; }",
                     "          test \"$SELECTED_REF\" = \"$TRUSTED_REF\" || { echo 'Only the trusted default branch is allowed'; exit 1; }",
@@ -135,7 +141,20 @@ def inspect_workflow(path, *, private):
         stage_root = "          $stageRoot = Join-Path $env:RUNNER_TEMP \"sapphire-private-e2e-stage-${{ github.run_id }}-${{ github.run_attempt }}\""
         stage_absent = "          if (Test-Path $stageRoot) { throw 'Private staging root must start absent' }"
         stage_guard = "          if ($LASTEXITCODE -ne 0) { throw 'Service-free private profile staging failed' }"
+        checkout = next((index for index, line in enumerate(lines)
+                         if line.startswith("      - uses: actions/checkout@")), None)
+        checkout_ref = "          ref: ${{ github.sha }}"
+        checkout_verify = "      - name: Verify exact clean reviewed checkout"
+        head_guard = "          if ($LASTEXITCODE -ne 0 -or $head -ne $env:EXPECTED_SHA) { throw 'Checkout differs from dispatch SHA' }"
+        clean_guard = "          if ($LASTEXITCODE -ne 0 -or $changes.Count -ne 0) { throw 'Checkout is not clean before build' }"
+        submodule_guard = "          if ($LASTEXITCODE -ne 0 -or @($submodules | Where-Object { $_ -match '^[-+U]' }).Count -ne 0) { throw 'Submodule checkout is incomplete or changed' }"
+        build = next((index for index, line in enumerate(lines)
+                      if line.startswith("          cmake -S . -B build-e2e-ci ")), None)
         if (any(value not in lines for value in required)
+                or checkout is None or build is None
+                or not checkout < lines.index(checkout_ref) < lines.index(checkout_verify) \
+                    < lines.index(head_guard) < lines.index(clean_guard) \
+                    < lines.index(submodule_guard) < build
                 or not all(value in staging for value in
                            ('--private-artifacts "$stageRoot"',
                             '--expected-revision "${{ github.sha }}"',
@@ -180,6 +199,7 @@ def inspect_workflow(path, *, private):
             "private_asset_workflow": private,
             "private_evidence_inspection_required":private,
             "service_free_staging_required":private,
+            "exact_clean_checkout_required":private,
             "failed_summary_inspection_required":private,
             "permissions": {"contents": "read"},
             "jobs": jobs, "pinned_actions": actions}
