@@ -1,11 +1,15 @@
 """CI gate contracts use synthetic files/reports, not gameplay evidence."""
 import json
+from pathlib import Path
 import struct
 from types import SimpleNamespace
 
 import pytest
 
 from . import run_ci
+from .inspect_ci_result import main as inspect_ci_main
+from .support.ci_result import SCOPE as CI_RESULT_SCOPE, inspect_ci_result
+from .support.environment import SetupError
 
 
 @pytest.fixture
@@ -435,3 +439,62 @@ def test_preflight_exception_is_only_in_private_diagnostics(tmp_path, monkeypatc
     assert source.read_text() == '{"example": "PRIVATE_MARKER"}'
     with pytest.raises(run_ci.PreflightError, match="fresh"):
         run_ci.run(source, private, public)
+
+
+def current_public_summary(revision="a" * 40):
+    identities = {"worker":"1" * 64,
+        "binaries":{key:str(index) * 64 for index,key in enumerate(("api","lobby","server","dbm"),2)},
+        "catalogs":{key:format(index + 6,"x") * 64 for index,key in enumerate(run_ci.CATALOGS)},
+        "meshes":{"w1t1":"e" * 64,"w1f2":"f" * 64},
+        "script_modules":["0" * 64,"a" * 64]}
+    return {"version":1,"status":"passed","stage":"verified",
+        "scope":"headless-live-not-real-client","revision":revision,"source_dirty":False,
+        "identities":identities,"deadline_scale":1,"collection_verified":True,
+        "cleanup_verified":True,"process_cleanup_verified":True,
+        "cases":{case:True for case in run_ci.CASES},"pytest_exit_code":0,
+        "inputs_verified":True}
+
+
+def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp_path, capsys):
+    revision = "a" * 40
+    path = tmp_path / "summary.json"
+    path.write_text(json.dumps(current_public_summary(revision), indent=2))
+    before = path.read_bytes()
+    proof = inspect_ci_result(path, revision)
+    assert path.read_bytes() == before
+    assert proof["scope"] == CI_RESULT_SCOPE and proof["case_count"] == len(run_ci.CASES)
+    assert inspect_ci_main(["--summary",str(path),"--expected-revision",revision]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda report:report.update(status="failed"),
+    lambda report:report.update(stage="verification"),
+    lambda report:report.update(source_dirty=0),
+    lambda report:report.update(process_cleanup_verified=1),
+    lambda report:report.update(cleanup_verified=False),
+    lambda report:report.update(deadline_scale=True),
+    lambda report:report["cases"].pop(run_ci.CASES[0]),
+    lambda report:report["cases"].update({run_ci.CASES[0]:1}),
+    lambda report:report["identities"]["binaries"].update(api="g" * 64),
+    lambda report:report["identities"].update(script_modules=["a" * 64,"0" * 64]),
+    lambda report:report.update(extra=True),
+])
+def test_current_public_result_inspector_rejects_partial_foreign_or_type_confused(
+        tmp_path, mutate):
+    report = current_public_summary(); mutate(report)
+    path = tmp_path / "summary.json"; path.write_text(json.dumps(report))
+    with pytest.raises(SetupError):
+        inspect_ci_result(path, "a" * 40)
+
+
+def test_current_public_result_inspector_rejects_wrong_revision_and_legacy_summary(tmp_path):
+    path = tmp_path / "summary.json"
+    report = current_public_summary()
+    path.write_text(json.dumps(report))
+    with pytest.raises(SetupError, match="incomplete, foreign or failed"):
+        inspect_ci_result(path, "b" * 40)
+    report.pop("process_cleanup_verified")
+    path.write_text(json.dumps(report))
+    with pytest.raises(SetupError, match="incomplete, foreign or failed"):
+        inspect_ci_result(path, "a" * 40)

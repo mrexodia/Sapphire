@@ -86,11 +86,19 @@ python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/tes
 python -m tests.e2e.run_ci --profile .e2e-local.json \
   --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe \
   --private-root .e2e-artifacts/ci --summary build-e2e/ci-summary.json --require-clean
+python -m tests.e2e.inspect_ci_result --summary build-e2e/ci-summary.json \
+  --expected-revision <exact-40-hex-checked-out-revision>
 ```
 
 The summary destination must not already exist. Without `--require-clean`, local
 rehearsals may use a dirty checkout; the summary explicitly records that fact.
-The workflow always requires a clean checkout. `run_ci` does not itself compile
+The workflow always requires a clean checkout. The read-only inspector requires
+the exact current 15-case schema, successful collection/inputs/cleanup, the new
+`process_cleanup_verified` claim, typed component identities, and the operator-
+supplied clean source revision; historical summaries without that field are not
+upgraded. This verifies the sanitized public result's current contract. It cannot
+reconstruct the private PID/generation records deleted with disposable fixtures,
+prove hosted execution, or replace an actual current gate run. `run_ci` does not itself compile
 binaries, so running it against an external profile does not prove build provenance.
 Component hashes identify the actual tested inputs; the workflow's build step is
 separate evidence that its binaries came from the checkout.
