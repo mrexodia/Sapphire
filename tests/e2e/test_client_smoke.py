@@ -10,7 +10,8 @@ from .support.client_smoke import (REAL_SAY, REVIEW_CHECKS, moved, other_player,
                                    real_logout_baseline, real_movement_baseline,
                                    real_say_baseline, real_spawn_baseline,
                                    received_real_logout, received_real_movement,
-                                   received_real_say, received_real_spawn, validate_review)
+                                   received_real_say, received_real_spawn, validate_review,
+                                   witness_say_challenge)
 from .support.environment import sha256
 
 
@@ -191,9 +192,11 @@ def test_real_say_rejects_stale_malformed_or_ambiguous_receipts():
 
 def review_files(tmp_path):
     (tmp_path / "review.png").write_bytes(b"synthetic contract input, not an image")
-    ticket = {"run": "run-a", "frame_sha256": sha256(tmp_path / "review.png")}
+    run_id = "a" * 32
+    ticket = {"run": run_id, "frame_sha256": sha256(tmp_path / "review.png"),
+              "witness_say_challenge": witness_say_challenge(run_id)}
     (tmp_path / "review-ticket.json").write_text(json.dumps(ticket))
-    (tmp_path / "status.json").write_text(json.dumps({"run": "run-a", "phase": "review"}))
+    (tmp_path / "status.json").write_text(json.dumps({"run": run_id, "phase": "review"}))
     return ticket
 
 
@@ -203,7 +206,8 @@ def test_explicit_review_bound_to_active_run_and_exact_frame(tmp_path):
     approve(tmp_path)  # Represents an explicit operator action, not image recognition.
     receipt = json.loads((tmp_path / "review.json").read_text())
     assert validate_review(receipt, ticket)["checks"] == REVIEW_CHECKS
-    for key, value in [("run", "other-run"), ("frame_sha256", "different-frame"),
+    for key, value in [("run", "b" * 32), ("frame_sha256", "0" * 64),
+                       ("witness_say_challenge", "stale challenge"),
                        ("manual_review", False), ("manual_review", 1), ("version", True),
                        ("checks", []), ("extra", True)]:
         invalid = {**receipt, key: value}
@@ -214,8 +218,19 @@ def test_explicit_review_bound_to_active_run_and_exact_frame(tmp_path):
         approve(tmp_path)
 
 
-@pytest.mark.parametrize("status", [{"run": "run-b", "phase": "review"},
-                                    {"run": "run-a", "phase": "logout"}])
+def test_review_rejects_foreign_run_bound_witness_challenge(tmp_path):
+    ticket = review_files(tmp_path)
+    ticket["witness_say_challenge"] = witness_say_challenge("b" * 32)
+    (tmp_path / "review-ticket.json").write_text(json.dumps(ticket))
+    with pytest.raises(ValueError, match="foreign Say challenge"):
+        approve(tmp_path)
+    for value in (True, "g" * 32, "a" * 31, "A" * 32):
+        with pytest.raises(ValueError):
+            witness_say_challenge(value)
+
+
+@pytest.mark.parametrize("status", [{"run": "b" * 32, "phase": "review"},
+                                    {"run": "a" * 32, "phase": "logout"}])
 def test_stale_or_wrong_phase_review_rejected(tmp_path, status):
     review_files(tmp_path)
     (tmp_path / "status.json").write_text(json.dumps(status))

@@ -10,11 +10,12 @@ import subprocess
 import time
 import uuid
 
-from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, WITNESS_SAY, other_player,
+from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, other_player,
                                    real_logout_baseline, real_movement_baseline,
                                    real_say_baseline, real_spawn_baseline,
                                    received_real_logout, received_real_movement,
-                                   received_real_say, received_real_spawn, validate_review)
+                                   received_real_say, received_real_spawn, validate_review,
+                                   witness_say_challenge)
 from .support.environment import Environment, sha256, REPO
 from .support.client_snapshot import verify_source
 from .support.client_timing import ClientPhaseTiming
@@ -182,13 +183,16 @@ def run():
             say_state = wait(said)
             report["real_say_receipt"] = received_real_say(
                 say_state, entity, say_baseline_sequence)
-            bot.say(WITNESS_SAY)
+            challenge = witness_say_challenge(report["run"])
+            report["witness_say_challenge"] = challenge
+            bot.say(challenge)
             time.sleep(2)  # Allow drawing; only the following MANUAL review certifies rendering.
             frame = OUTPUT / "review.png"
             ImageGrab.grab(all_screens=True).save(frame)
-            ticket = {"run": report["run"], "frame_sha256": sha256(frame)}
+            ticket = {"run": report["run"], "frame_sha256": sha256(frame),
+                      "witness_say_challenge": challenge}
             publish("review-ticket", ticket)
-            phase("review", "Review fixture in world and rendered witness Say; see REAL_CLIENT.md.")
+            phase("review", f"Review fixture in world and exact rendered Say '{challenge}'; see REAL_CLIENT.md.")
 
             def reviewed(state):
                 other_player(state, entity)

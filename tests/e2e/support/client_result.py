@@ -17,7 +17,8 @@ from .client_smoke import (CLIENT_SHA256, other_player,
                            real_logout_baseline, real_movement_baseline,
                            real_say_baseline, real_spawn_baseline,
                            received_real_logout, received_real_movement,
-                           received_real_say, received_real_spawn, validate_review)
+                           received_real_say, received_real_spawn, validate_review,
+                           witness_say_challenge)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
 
@@ -298,7 +299,10 @@ def inspect_client_development_result(output, expected_source_revision):
 
     ticket = _read_json(output / "review-ticket.json")
     review = _read_json(output / "review.json")
+    challenge = witness_say_challenge(run_id)
     if (not _typed_equal(report.get("manual_review"), review) or ticket.get("run") != run_id
+            or report.get("witness_say_challenge") != challenge
+            or ticket.get("witness_say_challenge") != challenge
             or not _hex(ticket.get("frame_sha256"), 64)
             or _sha256(output / "review.png") != ticket["frame_sha256"]):
         raise DevelopmentError("graphical manual-review frame binding is invalid")

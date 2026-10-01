@@ -85,6 +85,7 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     retired.request = request
     monkeypatch.setattr(guest.time, "monotonic", lambda: now[0])
     cleanup = []
+    said = []
 
     class Environment:
         redactions = []
@@ -139,7 +140,7 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
         def login_via_lobby(self, *args):
             return {"actors": {}}
         def say(self, message):
-            assert message == guest.WITNESS_SAY
+            said.append(message)
 
     class Client:
         pid = 123
@@ -228,6 +229,11 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     else:
         assert report["witness_retirements"] == [{"bot": "owned-witness", "server_close_observed": True,
             "native_bot_removed": True, "scope": "normal-witness-session-retirement-not-offline-exclusion"}]
+    if failure == "stale_real_say":
+        assert said == [] and "witness_say_challenge" not in report
+    else:
+        assert said == [guest.witness_say_challenge(report["run"])]
+        assert report["witness_say_challenge"] == said[0]
     assert report["pre_client_state"] == {"actors":{}}
     assert report["real_spawn_receipt"] == {
         "verified":True,"scope":"fresh-exact-fixture-real-client-spawn-not-client-provenance",

@@ -9,8 +9,16 @@ import math
 CLIENT_SHA256 = "d818584c782bbe3cacbc2b306391e6f3246bc3065c517a3324784e49d572ba12"
 CLIENT_VERSION = "2016.07.05.0000.0001"
 REAL_SAY = "E2E real client verified"
-WITNESS_SAY = "E2E independent witness"
-REVIEW_CHECKS = ["fixture_character_in_world", "witness_say_rendered"]
+REVIEW_CHECKS = ["fixture_character_in_world", "run_bound_witness_say_rendered"]
+
+
+def witness_say_challenge(run_id):
+    """Derive the human-visible witness challenge from one exact graphical run."""
+    if (not isinstance(run_id, str) or len(run_id) != 32
+            or any(char not in "0123456789abcdef" for char in run_id)):
+        raise ValueError("graphical run ID cannot produce a witness Say challenge")
+    return f"E2E witness challenge {run_id[:12]}"
+
 
 
 def position(value):
@@ -189,8 +197,15 @@ def received_real_logout(state, expected_entity, baseline):
 
 
 def validate_review(review, ticket):
-    expected = {"version": 1, "run": ticket["run"], "frame_sha256": ticket["frame_sha256"],
-                "checks": REVIEW_CHECKS, "manual_review": True}
-    if review != expected or type(review.get("version")) is not int or review.get("manual_review") is not True:
+    if (not isinstance(ticket, dict)
+            or set(ticket) != {"run", "frame_sha256", "witness_say_challenge"}
+            or ticket.get("witness_say_challenge") != witness_say_challenge(ticket.get("run"))
+            or not isinstance(ticket.get("frame_sha256"), str)
+            or len(ticket["frame_sha256"]) != 64
+            or any(char not in "0123456789abcdef" for char in ticket["frame_sha256"])):
+        raise ValueError("manual review ticket is malformed or has a foreign Say challenge")
+    expected = {"version": 1, **ticket, "checks": REVIEW_CHECKS, "manual_review": True}
+    if (review != expected or type(review.get("version")) is not int
+            or review.get("manual_review") is not True):
         raise ValueError("explicit manual review of this run's exact frame is required")
     return review

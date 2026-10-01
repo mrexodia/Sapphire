@@ -10,7 +10,7 @@ from .support.client_development import (require_graphical_check,
                                          require_graphical_decline_check,
                                          require_graphical_run_pair)
 from .support.client_result import inspect_client_development_result, RESULT_SCOPE
-from .support.client_smoke import CLIENT_SHA256, REVIEW_CHECKS
+from .support.client_smoke import CLIENT_SHA256, REVIEW_CHECKS, witness_say_challenge
 from .support.client_snapshot import git
 from .support.development import DevelopmentError
 from .support.environment import REPO
@@ -52,9 +52,10 @@ def build_output(root, source_revision="1" * 40):
     frame = b"synthetic frame bytes, not reviewed pixels"
     (root / "review.png").write_bytes(frame)
     frame_hash = hashlib.sha256(frame).hexdigest()
-    ticket = {"run": run_id, "frame_sha256": frame_hash}
-    review = {"version": 1, "run": run_id, "frame_sha256": frame_hash,
-              "checks": REVIEW_CHECKS, "manual_review": True}
+    challenge = witness_say_challenge(run_id)
+    ticket = {"run": run_id, "frame_sha256": frame_hash,
+              "witness_say_challenge": challenge}
+    review = {"version": 1, **ticket, "checks": REVIEW_CHECKS, "manual_review": True}
     write_json(root / "review-ticket.json", ticket)
     write_json(root / "review.json", review)
     (root / "logout.png").write_bytes(b"synthetic nonempty logout frame")
@@ -67,7 +68,8 @@ def build_output(root, source_revision="1" * 40):
         "scope": "manual-real-client-login-movement-say-logout",
         "source_revision": source_revision,
         "real_name": "Tester Viewer", "real_entity": 3,
-        "witness_name": "bot mover", "client_sha256": CLIENT_SHA256,
+        "witness_name": "bot mover", "witness_say_challenge": challenge,
+        "client_sha256": CLIENT_SHA256,
         "sandbox_disposal": "operator_required", "runtime_removed": True,
         "fixture": {"position": [0, 0, 0], "territory": 130,
                     "catalog_sha256": "c" * 64, "placement_is_travel": False,
@@ -183,6 +185,10 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
         activity_and_worker_exit_completed_within_budget=False),
     lambda root, report: report["timing"]["phases"][0].update(seconds=float("nan")),
     lambda root, report: report.update(observed_movement_metres=True),
+    lambda root, report: report.update(witness_say_challenge="stale challenge"),
+    lambda root, report: write_json(root / "review-ticket.json",
+        {"run":"f"*32,"frame_sha256":hashlib.sha256((root / "review.png").read_bytes()).hexdigest(),
+         "witness_say_challenge":witness_say_challenge("e"*32)}),
     lambda root, report: report["pre_client_state"]["actors"].update(
         {"4":{"kind":1,"name":"foreign","gm_rank":0,"level":1,"hp":94,"position":[0,0,0]}}),
     lambda root, report: report["pre_client_state"].update(entity_id=True),

@@ -215,10 +215,12 @@ are absent, not passing. On completion or failure, `status.json` changes to
    and no newer than the received state. A typo, duplicate, stale cache or local
    send acknowledgement does not pass; inspect the input before any other explicit
    attempt. The coordinator never retries it.
-4. The witness sends `E2E independent witness`. At `review`, inspect the private
-   `review.png`: the fixture character must be rendered in-world, and the exact
-   witness message must be rendered in the game chat log. Compare the fixture
-   name against `status.json`. If obscured, missing or wrong, **do not approve**.
+4. The witness sends the run-bound text shown by `status.json`, in the form
+   `E2E witness challenge <first-12-run-hex>`. At `review`, inspect the private
+   `review.png`: the fixture character must be rendered in-world, and that exact
+   run-specific witness message must be rendered in the game chat log. Compare
+   both the fixture name and challenge against `status.json` and
+   `review-ticket.json`. If obscured, missing, stale or wrong, **do not approve**.
    The captured image is not automatically interpreted; its existence proves
    nothing about correct rendering. After actually examining both checks:
 
@@ -227,9 +229,10 @@ are absent, not passing. On completion or failure, `status.json` changes to
      --output .e2e-artifacts/<fresh-private-run>/output --reviewed-all-checks
    ```
 
-   Approval is an operator attestation bound to this run and exact screenshot
-   SHA-256, not an independently computed visual assertion. Stale receipts,
-   changed images, wrong phases and incomplete checks are rejected.
+   Approval is an operator attestation bound to this run, its derived witness Say
+   challenge and the exact screenshot SHA-256, not an independently computed
+   visual assertion. Stale/foreign challenges or receipts, changed images, wrong
+   phases and incomplete checks are rejected.
 5. At `logout`, use the client's normal `/logout` command and confirm. Inspect
    any overlapping first-run help notification before clicking; opening and
    closing its help window can uncover the confirmation buttons. Do not interpret
@@ -273,7 +276,8 @@ are absent, not passing. On completion or failure, `status.json` changes to
    fresh sequence-bound bounded displacement, fresh sequence-bound Say, review
    presence and fresh post-phase logout absence;
    both nested summaries/hashes and
-   strict consumers; pair/handoff/restoration receipts; review-frame binding,
+   strict consumers; pair/handoff/restoration receipts; run-bound Say challenge
+   and review-frame binding,
    retirements, outer deadline/worker exit, terminal status and reported runtime
    removal. `accepted` explicitly leaves
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
