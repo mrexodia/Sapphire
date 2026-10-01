@@ -133,7 +133,8 @@ def inspect_owned_development_host(session_dir):
     association_raw, association = read_development_account_association(
         session_dir / "account-association.json")
     expected_session = {"path":str(session_dir / "status.json"),"id":status["session_id"]}
-    if (hashlib.sha256(association_raw).hexdigest() != association_receipt["sha256"]
+    if (association.get("schema") != "development-run-account-input-v2"
+            or hashlib.sha256(association_raw).hexdigest() != association_receipt["sha256"]
             or association.get("host_session") != expected_session
             or association.get("api_port") != status.get("api_port")
             or association.get("lobby_port") != status.get("lobby_port")):
@@ -208,12 +209,16 @@ def inspect_owned_development_host(session_dir):
                 or row.get("phase") != phase or row.get("outcome") != "passed"
                 or type(seconds) not in (int, float) or not math.isfinite(seconds) or seconds < 0):
             raise DevelopmentError("owned-host timing receipt is malformed")
+    viewer_encoded = json.dumps(association["viewer"], sort_keys=True,
+                                separators=(",", ":")).encode("utf-8")
     return {"version":1,"status":"accepted","scope":SCOPE,
             "session_id":status["session_id"],"stop_reason":status["stop_reason"],
             "worker_sha256":status["worker_sha256"],
             "lifecycle_sha256":receipt["sha256"],
             "environment_artifact_tree_sha256":status["environment_artifact_tree_sha256"],
             "account_association_sha256":association_receipt["sha256"],
+            "fixture_identity_count":3,
+            "viewer_identity_sha256":hashlib.sha256(viewer_encoded).hexdigest(),
             "process_teardown":proof,
             "private_profiles_removed":True,
             "note":"Owned warm-host teardown only; not external-server or offline/reset proof."}

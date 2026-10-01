@@ -151,7 +151,10 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
     assert env.starts == env.closes == 1 and not env.root.exists()
     assert not list(session.glob("*-profile.json"))
     association = json.loads((session / "account-association.json").read_text())
+    assert association["schema"] == "development-run-account-input-v2"
     assert set(association["accounts"][0]) == {"username","character"}
+    assert association["viewer"] == {
+        "username":"e2e_fixture_2","character":"Tester CCCCCCCCCC"}
     assert "private-password" not in (session / "status.json").read_text()
     assert "private-password" not in json.dumps(association)
     assert report["normal_lobby_creation_verified"] is False
@@ -165,6 +168,9 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
     assert proof["process_teardown"]["process_count"] == 4
     assert proof["environment_artifact_tree_sha256"] == report["environment_artifact_tree_sha256"]
     assert proof["account_association_sha256"] == report["account_association"]["sha256"]
+    assert proof["fixture_identity_count"] == 3
+    assert len(proof["viewer_identity_sha256"]) == 64
+    assert "e2e_fixture_2" not in json.dumps(proof)
 
 
 def managed_summary(path, receipt, worker_sha256, session_dir=None):
@@ -307,6 +313,8 @@ def test_composite_managed_run_inspector_correlates_terminal_host_read_only(
     assert proof["host_session_id"] == host_report["session_id"]
     assert proof["worker_artifacts"]["scope"] == RUN_SCOPE
     assert proof["account_association_sha256"] == host_report["account_association"]["sha256"]
+    assert proof["host_fixture_identity_count"] == 3
+    assert len(proof["host_viewer_identity_sha256"]) == 64
     assert "e2e_fixture_0" not in json.dumps(proof)
     assert inspect_managed_main(["--session-dir",str(session),"--summary",str(summary)]) == 0
     assert json.loads(capsys.readouterr().out) == proof
@@ -399,6 +407,8 @@ def test_composite_managed_provisioning_inspector_is_read_only_and_redacted(
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
     assert proof["scope"] == MANAGED_PROVISIONING_SCOPE
     assert proof["worker_artifacts"]["scope"] == PROVISIONING_SCOPE
+    assert proof["host_fixture_identity_count"] == 3
+    assert len(proof["host_viewer_identity_sha256"]) == 64
     text = json.dumps(proof)
     for account in profile["accounts"]:
         assert account["username"] not in text and account["password"] not in text
@@ -533,6 +543,22 @@ def test_terminal_host_inspector_rejects_changed_or_aliased_account_association(
         try: os.link(association, session / "association-alias.json")
         except OSError as error: pytest.skip(f"hard links unavailable: {error}")
     with pytest.raises(DevelopmentError):
+        inspect_owned_development_host(session)
+
+
+def test_terminal_host_inspector_rejects_viewer_reusing_bot_identity_even_with_matching_hash(
+        assets, tmp_path):
+    _, _, session = run_host(assets, tmp_path)
+    association_path = session / "account-association.json"
+    association = json.loads(association_path.read_text())
+    association["viewer"]["username"] = association["accounts"][0]["username"]
+    association_path.write_text(json.dumps(association))
+    status_path = session / "status.json"
+    status = json.loads(status_path.read_text())
+    status["account_association"]["sha256"] = hashlib.sha256(
+        association_path.read_bytes()).hexdigest()
+    status_path.write_text(json.dumps(status))
+    with pytest.raises(DevelopmentError, match="viewer is not separate"):
         inspect_owned_development_host(session)
 
 

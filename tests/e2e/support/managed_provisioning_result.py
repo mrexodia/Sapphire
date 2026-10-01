@@ -14,7 +14,7 @@ import stat
 
 from .development import (DevelopmentError, require_managed_host_binding,
                           require_normal_worker_exit, validate_profile)
-from .development_binding import (development_run_account_association,
+from .development_binding import (account_association_matches_profile,
                                   read_development_account_association,
                                   require_provisioning_binding)
 from .development_host_result import inspect_owned_development_host
@@ -158,7 +158,7 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
     host = inspect_owned_development_host(session_dir)
     association_raw, association = read_development_account_association(
         session_dir / "account-association.json")
-    if (association != development_run_account_association(profile)
+    if (not account_association_matches_profile(association, profile)
             or hashlib.sha256(association_raw).hexdigest()
                 != host["account_association_sha256"]):
         raise DevelopmentError("managed provisioning profile differs from host accounts")
@@ -186,6 +186,8 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
             "worker_sha256":receipt["worker_sha256"],"run_deadline":evidence["deadline"],
             "provisioning_binding":report["provisioning_binding"],
             "account_association_sha256":host["account_association_sha256"],
+            "host_fixture_identity_count":host["fixture_identity_count"],
+            "host_viewer_identity_sha256":host["viewer_identity_sha256"],
             "received_identities":[{"slot":row["slot"],"character":row["character"],
                                     "entity_id":row["entity_id"],"character_id":row["character_id"]}
                                    for row in accounts],

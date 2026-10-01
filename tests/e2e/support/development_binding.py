@@ -37,22 +37,33 @@ def provisioning_binding(profile, accounts):
     return {"schema": document["schema"], "sha256": hashlib.sha256(encoded).hexdigest()}
 
 
-def development_run_account_association(profile, *, require_worker=True):
+def development_run_account_association(profile, *, require_worker=True, viewer=None):
     """Retain binding inputs without retaining passwords or worker paths."""
     validate_profile(profile, require_worker=require_worker)
-    return {"schema":"development-run-account-input-v1","version":profile["version"],
-            "mode":profile["mode"],"protocol":profile["protocol"],
-            "api_host":"127.0.0.1","api_port":profile["api_port"],
-            "lobby_port":profile["lobby_port"],"host_session":profile.get("host_session"),
-            "accounts":[{"username":row["username"].casefold(),
-                         "character":row["character"]} for row in profile["accounts"]]}
+    value = {"schema":"development-run-account-input-v1","version":profile["version"],
+             "mode":profile["mode"],"protocol":profile["protocol"],
+             "api_host":"127.0.0.1","api_port":profile["api_port"],
+             "lobby_port":profile["lobby_port"],"host_session":profile.get("host_session"),
+             "accounts":[{"username":row["username"].casefold(),
+                          "character":row["character"]} for row in profile["accounts"]]}
+    if viewer is not None:
+        if not isinstance(viewer, dict) or set(viewer) != {"username","character"}:
+            raise DevelopmentError("managed viewer account association is malformed")
+        value["schema"] = "development-run-account-input-v2"
+        value["viewer"] = {"username":viewer["username"].casefold(),
+                           "character":viewer["character"]}
+    return validate_development_run_account_association(value)
 
 
 def validate_development_run_account_association(value):
     fields = {"schema","version","mode","protocol","api_host","api_port",
               "lobby_port","host_session","accounts"}
+    schema = value.get("schema") if isinstance(value, dict) else None
+    if schema == "development-run-account-input-v2":
+        fields.add("viewer")
     if (not isinstance(value, dict) or set(value) != fields
-            or value.get("schema") != "development-run-account-input-v1"
+            or schema not in {"development-run-account-input-v1",
+                              "development-run-account-input-v2"}
             or type(value.get("version")) is not int or value["version"] != 1
             or value.get("mode") != "shared-development"
             or value.get("protocol") != "sapphire-3.3"
@@ -79,7 +90,29 @@ def validate_development_run_account_association(value):
     if any(len({row[key].casefold() for row in value["accounts"]}) != 2
            for key in ("username","character")):
         raise DevelopmentError("development run account association is ambiguous")
+    if schema == "development-run-account-input-v2":
+        viewer = value.get("viewer")
+        if (not isinstance(viewer, dict) or set(viewer) != {"username","character"}
+                or not isinstance(viewer.get("username"), str)
+                or not viewer["username"].startswith("e2e_")
+                or viewer["username"] != viewer["username"].casefold()
+                or not isinstance(viewer.get("character"), str)
+                or not 1 <= len(viewer["character"]) <= 31):
+            raise DevelopmentError("managed viewer account association is malformed")
+        rows = [*value["accounts"], viewer]
+        if any(len({row[key].casefold() for row in rows}) != 3
+               for key in ("username","character")):
+            raise DevelopmentError("managed viewer is not separate from bot accounts")
     return value
+
+
+def account_association_matches_profile(association, profile, *, require_worker=True):
+    association = validate_development_run_account_association(association)
+    expected = development_run_account_association(
+        profile, require_worker=require_worker)
+    keys = {"version","mode","protocol","api_host","api_port",
+            "lobby_port","host_session","accounts"}
+    return all(association[key] == expected[key] for key in keys)
 
 
 def read_development_account_association(path):

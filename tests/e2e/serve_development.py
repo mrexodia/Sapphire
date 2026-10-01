@@ -87,7 +87,8 @@ def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Env
                    "viewer-profile.json": {**common, "role": "separate-viewer", "account": accounts[2]}}
         with timings.phase("private_profile_export"):
             association_path = session_dir / "account-association.json"
-            association = development_run_account_association(bots)
+            association = development_run_account_association(bots, viewer={
+                "username":accounts[2]["username"],"character":accounts[2]["character"]})
             try:
                 reserve_private_profile(association_path, association)
             except BaseException:

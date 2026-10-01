@@ -226,6 +226,8 @@ def inspect_managed_development_run(session_dir, summary_path):
             "worker_sha256":receipt["worker_sha256"],
             "development_profile_binding":profile_binding,
             "account_association_sha256":host["account_association_sha256"],
+            "host_fixture_identity_count":host["fixture_identity_count"],
+            "host_viewer_identity_sha256":host["viewer_identity_sha256"],
             "run_deadline":report["run_deadline"],
             "run_worker_exit":report["worker_exit"],"verified_checks":checks,
             "worker_artifacts":worker_artifacts,
