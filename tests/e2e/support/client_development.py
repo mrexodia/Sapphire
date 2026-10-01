@@ -3,15 +3,16 @@ import math
 import time
 
 from .development import (DevelopmentError, MOVEMENT_SCOPE, validate_profile, movement_route,
-                          position, require_normal_worker_exit)
+                          idle_state, position, received_character_identity,
+                          require_normal_worker_exit)
 from .worker import Worker, WorkerError
 from .development_lease import require_clear_terminal_account_leases
 from .development_inventory import CONTAINERS, SCOPE as INVENTORY_SCOPE
-from .development_viewer import CONTINUITY_SCOPE, VIEWER_SCOPE
+from .development_viewer import CONTINUITY_SCOPE, VIEWER_SCOPE, observe_viewer
 from .development_sprint import HISTORIES as SPRINT_HISTORIES, SCOPE as SPRINT_SCOPE
 from .development_equipment import BODY, BAG, SCOPE as EQUIPMENT_SCOPE
 from .development_tell import SCOPE as TELL_SCOPE
-from .development_party import SCOPE as PARTY_SCOPE
+from .development_party import EMPTY_PARTY, SCOPE as PARTY_SCOPE
 from .development_decline import SCOPE as DECLINE_SCOPE
 
 
@@ -620,6 +621,51 @@ def require_graphical_run_pair(comprehensive, decline, expected_names, expected_
             'comprehensive_run_id': main_run, 'decline_run_id': decline_run,
             'worker_sha256': expected_worker_sha256,
             'identities': main_identities}
+
+
+def require_graphical_logout_witness(state, run_pair, viewer_name, viewer_entity):
+    """Bind the fresh final observer to the paired mover and received viewer."""
+    fields = {'verified', 'scope', 'comprehensive_run_id', 'decline_run_id',
+              'worker_sha256', 'identities'}
+    identities = run_pair.get('identities') if isinstance(run_pair, dict) else None
+    if (not isinstance(run_pair, dict) or set(run_pair) != fields
+            or run_pair.get('verified') is not True
+            or run_pair.get('scope') !=
+                'same-dedicated-bot-identities-across-distinct-runs-not-offline-or-reset-proof'
+            or not isinstance(identities, list) or len(identities) != 2
+            or any(not isinstance(row, dict)
+                   or set(row) != {'name', 'entity_id', 'character_id'}
+                   or not isinstance(row.get('name'), str) or not 1 <= len(row['name']) <= 31
+                   or type(row.get('entity_id')) is not int or row['entity_id'] <= 0
+                   or type(row.get('character_id')) is not int
+                   or not 0 < row['character_id'] < 2**64 for row in identities)
+            or len({row['name'] for row in identities}) != 2
+            or len({row['entity_id'] for row in identities}) != 2
+            or len({row['character_id'] for row in identities}) != 2
+            or any(not isinstance(run_pair.get(key), str)
+                   or len(run_pair[key]) != 32
+                   or any(char not in '0123456789abcdef' for char in run_pair[key])
+                   for key in ('comprehensive_run_id', 'decline_run_id'))
+            or run_pair['comprehensive_run_id'] == run_pair['decline_run_id']
+            or not isinstance(run_pair.get('worker_sha256'), str)
+            or len(run_pair['worker_sha256']) != 64
+            or any(char not in '0123456789abcdef' for char in run_pair['worker_sha256'])):
+        raise DevelopmentError('final graphical witness requires exact paired-run provenance')
+    expected = identities[0]
+    if (not idle_state(state, 130) or state.get('entity_id') != expected.get('entity_id')
+            or state.get('party') != EMPTY_PARTY
+            or state.get('pending_party_invite') is not None):
+        raise DevelopmentError('final graphical witness is not an idle ungrouped paired mover')
+    identity = received_character_identity(state, expected.get('name'))
+    if identity != expected:
+        raise DevelopmentError('final graphical witness character differs from paired mover')
+    viewer = observe_viewer(state, viewer_name, 130, identity['entity_id'],
+                            [row['entity_id'] for row in identities])
+    if (viewer is None or viewer['entity_id'] != viewer_entity or viewer['gm_rank'] != 0):
+        raise DevelopmentError('final graphical witness lacks exact received non-GM viewer')
+    return {'verified': True,
+            'scope': 'fresh-paired-witness-login-and-viewer-presence-not-offline-exclusion',
+            'identity': identity, 'viewer': viewer, 'received_sequence': state['seq']}
 
 
 def require_graphical_decline_check(result, viewer_name, entity):

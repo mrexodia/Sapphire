@@ -21,6 +21,7 @@ from .support.worker import Worker, Bot
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 from .support.client_development import (development_profile, require_graphical_check,
                                          require_graphical_decline_check,
+                                         require_graphical_logout_witness,
                                          require_graphical_run_pair,
                                          run_graphical_development, run_graphical_decline)
 from .support.development import authenticate, movement_route
@@ -98,6 +99,8 @@ def run():
         report["development_check"] = {"requested": development_enabled, "status": "not_run"}
         report["decline_check"] = {"requested": development_enabled, "status": "not_run"}
         report["development_run_pair"] = {"requested": development_enabled, "verified": False}
+        report["logout_witness_restoration"] = {"requested": development_enabled,
+                                                  "verified": False}
         with ObservedWorker(Worker(env.worker, env.artifacts / "observer", env.deadline_scale),
                             report["observer_worker_exit"]) as worker:
             witness = env.fresh_character(fixture["position"])
@@ -214,13 +217,15 @@ def run():
                 if client.poll() is not None or time.monotonic() >= deadline:
                     raise RuntimeError("graphical process/activity unavailable after decline scenario")
                 report["decline_check"]["evidence"] = decline_proof
-                report["development_run_pair"] = require_graphical_run_pair(
+                run_pair = require_graphical_run_pair(
                     result, decline, [account["character"] for account in shared["accounts"]],
                     sha256(env.worker))
-                # Restore an independent witness for the original manual logout check.
+                report["development_run_pair"] = run_pair
+                # Restore the exact paired mover as an independent final logout witness.
                 bot = Bot(worker, "witness-after-development")
                 state = bot.login_via_lobby(bounded_login(shared, shared["accounts"][0]), witness["name"])
-                other_player(state, entity)
+                report["logout_witness_restoration"] = require_graphical_logout_witness(
+                    state, run_pair, real["name"], entity)
             phase("logout", "Use /logout and confirm normally. Leave the client running at its title screen.")
             wait(lambda s: other_player(s, entity, allow_absent=True) is None)
             # Despawn alone could mean an abnormal disconnect. Also require the real

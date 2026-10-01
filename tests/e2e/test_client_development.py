@@ -324,6 +324,57 @@ def test_graphical_run_pair_rejects_reused_or_foreign_provenance():
             ['bot mover', 'foreign'], 'd'*64)
 
 
+def restored_witness_state():
+    return {'phase':'ready','territory':130,'gm_rank':0,'moving':False,
+        'scene':None,'event_id':None,'observed_position':[0,0,0],
+        'entity_id':1,'seq':20,
+        'characters':[{'name':'bot mover','entity_id':1,'character_id':11}],
+        'party':{'id':0,'chat_channel':0,'count':0,'leader_index':0,'members':[]},
+        'pending_party_invite':None,
+        'actors':{'3':{'kind':1,'name':'Tester Viewer','gm_rank':0,'position':[1,0,0]}},
+        'known_players':{'3':{'name':'Tester Viewer','spawned':True,'last_seen_token':19}}}
+
+
+def test_final_logout_witness_is_exact_paired_mover_with_received_viewer():
+    comprehensive, decline = completed(), declined(); decline['run_id']='b'*32
+    pair = bridge.require_graphical_run_pair(
+        comprehensive, decline, ['bot mover','bot witness'], 'd'*64)
+    proof = bridge.require_graphical_logout_witness(
+        restored_witness_state(), pair, 'Tester Viewer', 3)
+    assert proof == {'verified':True,
+        'scope':'fresh-paired-witness-login-and-viewer-presence-not-offline-exclusion',
+        'identity':{'name':'bot mover','entity_id':1,'character_id':11},
+        'viewer':{'entity_id':3,'name':'Tester Viewer','gm_rank':0,
+                  'position':[1,0,0],'presence_token':19},
+        'received_sequence':20}
+
+
+def test_final_logout_witness_rejects_foreign_or_stale_state():
+    comprehensive, decline = completed(), declined(); decline['run_id']='b'*32
+    pair = bridge.require_graphical_run_pair(
+        comprehensive, decline, ['bot mover','bot witness'], 'd'*64)
+    mutations = (
+        lambda state, receipt: state.update(phase='loading'),
+        lambda state, receipt: state.update(entity_id=2),
+        lambda state, receipt: state['characters'][0].update(character_id=99),
+        lambda state, receipt: state['party'].update(count=1),
+        lambda state, receipt: state.update(pending_party_invite={}),
+        lambda state, receipt: state['actors']['3'].update(name='foreign'),
+        lambda state, receipt: state['actors']['3'].update(gm_rank=1),
+        lambda state, receipt: state['known_players']['3'].update(spawned=False),
+        lambda state, receipt: state['known_players']['3'].update(last_seen_token=True),
+        lambda state, receipt: receipt.update(scope='offline-proof'),
+        lambda state, receipt: receipt['identities'][0].update(character_id=True),
+        lambda state, receipt: receipt.update(decline_run_id=receipt['comprehensive_run_id']),
+    )
+    for mutate in mutations:
+        state, receipt = restored_witness_state(), copy.deepcopy(pair)
+        mutate(state, receipt)
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_logout_witness(
+                state, receipt, 'Tester Viewer', 3)
+
+
 def test_graphical_decline_rejects_malformed_or_mixed_receipts():
     mutations=(
         lambda report: report.update(status='failed'),

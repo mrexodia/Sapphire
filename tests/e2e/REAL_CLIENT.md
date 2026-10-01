@@ -139,8 +139,12 @@ recipient reply, inviter rejection, advancing sequences, empty final parties, it
 own viewer receipts, exact worker exit and clear leases; all unrelated subscenarios
 must remain disabled. `development_run_pair` additionally requires distinct runner
 IDs while binding both summaries to the same ordered names, entity IDs, character
-IDs and exact staged-worker digest. This is dedicated-character provenance, not a
-server-offline, reset, cache-quiescence or exclusive-session claim. Each nested runner
+IDs and exact staged-worker digest. Before the manual logout step, the outer
+observer then freshly authenticates the paired mover and records its exact lobby/
+world identity, idle nonparty state, and a newly received spawn-generation token
+for the exact non-GM viewer. This is dedicated-character/presence provenance, not
+a server-offline, reset, cache-quiescence, uninterrupted-viewer or exclusive-
+session claim. Each nested runner
 receives an integer cooperative deadline strictly inside the remaining graphical
 activity budget (maximum 900 seconds); bridge success requires both exact enabled,
 unexpired, completed deadline receipts. Older graphical evidence without these
