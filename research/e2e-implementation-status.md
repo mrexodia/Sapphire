@@ -1321,6 +1321,45 @@ No client, Sandbox, server, account, worker, endpoint, gameplay or disposal
 operation ran. A current manually attended execution and composite disposal remain
 pending; no full gate, soak or platform sweep ran.
 
+## E2E workflows have enforceable repository control policy
+
+CI commits **`279623c59`** and **`1f26e71f6`** harden both `.github/workflows/test-client.yml` and
+`.github/workflows/gameplay-e2e.yml`. All six external action uses are pinned to
+exact 40-hex revisions; both workflows declare only `contents:read`, disable
+checkout credential persistence, bound every job and every individual step, and
+set explicit artifact missing-file/retention policy. The public matrix job is
+bounded to25 minutes. Private authorization is bounded to5 minutes, private
+gameplay remains45 minutes, serialized without cancellation, manually dispatched,
+default-branch reviewed, protected-environment named and selected only by the four
+self-hosted/Windows/X64/ephemeral labels.
+
+New `support/workflow_policy.py` fail-closes on mutable actions, additional token
+permission, absent/zero/excess timeout, step timeout beyond its job, persisted
+checkout credentials, retention over30 days, ignored missing artifacts, untrusted
+private triggers, cancellation, missing environment/authorization dependency,
+changed runner selector, absent boolean opt-in/default-false input, disabled-feature
+bypass or failure to compare the selected ref to the repository default branch. Both workflows execute its own contract file, and
+`python -m tests.e2e.inspect_workflow_policy` emits hashes/job/action inventories
+under scope `repository-workflow-controls-not-hosted-execution-or-runner-policy`.
+It explicitly emits false for hosted execution, actual runner-group policy and
+ephemeral VM destruction.
+
+Frozen, remote-free source **`1f26e71f6d14a6dbed5ac0bccd4e0b14b25faded`**
+passed **54 focused tests in 1.06s**. Test-log SHA-256:
+`15db058809a3b3938b82cc3ec10e6f65df558e062ef2a019b42e5716ae7a30d7`.
+Structured policy receipt SHA-256:
+`472687b82408ee3fb6ba8dfdd1aba04f58effb03f3ee9cd4f6caf4f805ec413a`.
+Artifacts: `workflow-authorization-clean-{source.json,python.log,receipt.json}`.
+A separate PyYAML BaseLoader syntax parse of both committed files passed; its log
+SHA-256 is `30630799f965d2d1296180bda59c626d9c45c26fc3b1055bb4a4fe43a9b4cd23`.
+That is YAML syntax evidence only, not GitHub Actions schema validation.
+
+No workflow was dispatched, no runner was registered and no repository/environment
+setting or remote infrastructure changed. Hosted action availability, protected
+environment reviewers, runner-group exclusivity, cancellation destruction and the
+current Linux gate remain pending. No gameplay, full gate, soak or platform sweep
+ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -3147,8 +3186,8 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned-process exit receipts, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, a controlled live diagnostic-write failure, one intentional owned-world termination, and a clean scale-1 Windows gate verified; worker exit is not server-offline proof and broader stress/signal testing remains |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities | Implemented; hashes do not prove independent compatibility |
-| Asset-independent CI | `.github/workflows/test-client.yml` | Authored; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md` | Authored; current isolated fifteen-case Windows gate passes, older nine-case Linux gate passes, but the current expanded Linux gate remains red under observed delayed scene/action/logout/zoning delivery; hosted execution/runner controls unverified, no registered runners |
+| Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `CI.md`; strict workflow-policy receipt | Authored repository controls are pinned/read-only/bounded and private dispatch remains protected/serialized in YAML; current isolated fifteen-case Windows gate passes and older nine-case Linux gate passes, but the expanded Linux gate remains red under observed delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say and normal logout; isolated Sandbox | Narrow independent lane live-verified; broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
