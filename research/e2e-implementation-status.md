@@ -423,6 +423,60 @@ movement speed, status expiry, exact net TP debit, cooldown readiness, persisten
 or rendering. A fresh manually attended current graphical run and explicit guest
 disposal remain pending; no full gate, soak or platform sweep ran.
 
+## Graphical companion scenario requires starter-body round trip
+
+Feature **`e68038dfd`** adds the existing `verify_equipment=True` option to the
+fixed nested graphical companion scenario. After social/Sprint work, the non-GM
+mover publishes one ordinary unequip of starter body item2983 from equipment
+1000:3 to required-empty bag0:0. It must complete a normal logout, server closure,
+independently observed despawn, fresh HTTP/lobby/world login, identity/position
+check, independent respawn/Say and received inventory projection before the normal
+read-only inventory reconnect. It then publishes one ordinary re-equip and repeats
+that fresh-login lifecycle/projection. Thus the scenario has three mover reconnects
+in total. The separate viewer account is never passed to these operations.
+
+Acknowledgements remain explicitly non-authoritative mutation evidence. The
+current graphical consumer requires the exact 18-field equipment result, narrow
+scope, mover identity/entity and supported Ul'dah starter class; exact initial
+body and empty destination; derived unequipped contents; exact before,
+unequipped, before-re-equip and restored projections; agreement with the normal
+inventory comparison; strict typed operation8/context acknowledgements marked
+`inventory_change_verified:false`; and two exact successful fresh-login lifecycle
+receipts with bounded matching positions and no world restart. Missing, malformed,
+type-confused, extra, foreign, changed or internally inconsistent rows fail closed.
+The bridge proof exposes only the slot/catalog/count round-trip scope, not item
+instance identity or rendered appearance. Historical graphical summaries without
+this option remain rejected.
+
+Frozen, remote-free source **`e68038dfde7adfdb86b0409e7700ed2e4117e63e`**
+passed **373 tests in 3.24s** across graphical policy, equipment, Sprint, viewer,
+movement, reconnect, inventory, party, Tell, deadlines, worker exit, smoke and
+lifecycle. Negatives include wrong scope/count/identity/class, absent body,
+changed derived/fresh-login/restored/main projections, malformed acknowledgements,
+failed server closure, mismatched position, extra fields and all existing
+no-retry/no-restoration mutation failures. Test-log SHA-256:
+`c9605a7c4ab9b60b9d7af5a92301960f8f3352a70d8a8a5031068c8464df0c60`.
+Artifacts: `client-graphical-equipment-clean-{source.json,python.log}`.
+
+The strict current consumer accepted the retained genuine headless
+`development-equipment-live-002` result read-only: Gladiator entity2097153,
+body2983 at 1000:3 (sequence122), then at bag0:0 (fresh-session sequence118 and
+matching normal inventory projection), then restored to 1000:3 (fresh-session
+sequence118). Both operation8 receipts remained labelled not mutation proof, and
+the two additional lifecycle receipts were required. The compatibility artifact
+is `client-graphical-equipment-live-artifact-check.json` (SHA-256
+`18f2536309f2a2808f008ba7ab7e9486b235e925f8e10a33cf029f86474c41d4`).
+It does not repeat the mutations or upgrade that headless-viewer run to graphical
+evidence.
+
+No server, account, worker process, Sandbox, matching client, endpoint or gameplay
+operation ran for this increment. This is slot/catalog/count restoration across
+fresh logins, not item-instance, appearance, quality/durability, world-restart,
+crash-consistency or all-state proof. Uncertain mutation still retains leases and
+is never retried/restored automatically. A fresh manually attended current
+graphical run and explicit guest disposal remain pending; no full gate, soak or
+platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1024,10 +1078,13 @@ environment `sapphire-e2e-ue09d1v4`. CLI summary SHA-256
 aggregate SHA-256
 `c1be3a0bb21b3ef64dc3b0db461b4c0069aa14b0692cbf68c0d5a6489146e9d6`.
 
-No matching graphical equipment/appearance, item-instance/durability, all-character-
-state, world-restart or crash-consistency proof is claimed. Nonzero-currency live
-comparison, existing shared deployment, safe general reprovisioning/owned-world
-reset and broader original requirements remain pending. No full gate, soak or
+At this checkpoint no matching graphical equipment/appearance proof was claimed.
+Current policy at `e68038dfd` now requires the ordinary starter-body round trip and
+strict fresh-login receipts inside a future graphical companion run, but current
+graphical execution and any rendered appearance claim remain pending. Item-instance/
+durability, all-character-state, world-restart, crash-consistency, nonzero-currency
+live comparison, existing shared deployment, safe general reprovisioning/owned-world
+reset and broader original requirements also remain open. No full gate, soak or
 platform sweep ran; overall goal is incomplete.
 
 ## Shared-development self-Sprint: independently received effect and zero TP
@@ -1226,8 +1283,8 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current Sprint/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict independently received Sprint evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
-| Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; decline has headless-only live coverage; current graphical policy requires read-only inventory but awaits graphical execution |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current Sprint/equipment/continuity/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator additionally require strict independently received Sprint and fresh-login equipment round-trip evidence, persistent-witness unchanged spawn generation, exact unchanged reconnect inventory, an aggregate completed deadline, fresh clear terminal-lease and nested/outer worker receipts pending graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Short meaningful scenarios and timing | Movement/party/Tell/Sprint/equipment/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage; current graphical policy requires Sprint, starter-body round trip and read-only inventory but awaits current graphical execution |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
 | Preserve viewer, private inputs, historical failures and unrelated experiments | Separate viewer profiles; private artifact hashes; failed graphical 001–003 retained; seven experimental paths remain separate | No all-state viewer invariance, shared-world cleanliness or crash-consistency claim |
