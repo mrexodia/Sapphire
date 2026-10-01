@@ -252,12 +252,20 @@ def inspect_workflow(path, *, private):
                           '--worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" '
                           '--private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" '
                           '--expected-revision "${{ github.sha }}"')
-        standalone_run_guard = "          if ($LASTEXITCODE -ne 0) { throw 'Standalone isolated case failed; inspect private runner diagnostics' }"
+        standalone_exit = "          $standaloneExit = $LASTEXITCODE"
+        standalone_success_branch = "          if ($standaloneExit -eq 0) {"
         standalone_inspection = ('          python -m tests.e2e.inspect_isolated_case_run --private-root '
                                  '"$privateRoot" --expected-case "$env:EXECUTION_SCOPE" '
                                  '--expected-revision "${{ github.sha }}" | Out-File -FilePath '
                                  '.e2e-isolated-case-summary.json -Encoding utf8')
         standalone_inspection_guard = "          if ($LASTEXITCODE -ne 0) { throw 'Standalone isolated case publication inspection failed' }"
+        standalone_failed_inspection = ('          python -m tests.e2e.inspect_isolated_case_run_failure --private-root '
+                                        '"$privateRoot" --expected-case "$env:EXECUTION_SCOPE" '
+                                        '--expected-revision "${{ github.sha }}" | Out-File -FilePath '
+                                        '.e2e-isolated-case-summary.json -Encoding utf8')
+        standalone_failed_guard = ("          if ($LASTEXITCODE -ne 0) { Remove-Item -Force -ErrorAction "
+                                   "SilentlyContinue .e2e-isolated-case-summary.json; throw 'Failed standalone "
+                                   "isolated case summary is unsafe to publish' }")
         publication = "          'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append"
         publication_path = '          "summary_path=$summaryPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append'
         failed_inspection = ('          python -m tests.e2e.inspect_ci_failure_result --summary '
@@ -271,9 +279,12 @@ def inspect_workflow(path, *, private):
         standalone_absent = "          if (Test-Path .e2e-isolated-case-summary.json) { throw 'Standalone summary destination must start absent' }"
         if (lines.count(inspection) != 1 or lines.count(inspection_failure) != 1
                 or lines.count(private_inspection) != 1 or lines.count(private_failure) != 1
-                or lines.count(standalone_run) != 1 or lines.count(standalone_run_guard) != 1
+                or lines.count(standalone_run) != 1 or lines.count(standalone_exit) != 1
+                or lines.count(standalone_success_branch) != 1
                 or lines.count(standalone_inspection) != 1
                 or lines.count(standalone_inspection_guard) != 1
+                or lines.count(standalone_failed_inspection) != 1
+                or lines.count(standalone_failed_guard) != 1
                 or lines.count(publication) != 1 or lines.count(publication_path) != 1
                 or lines.count(failed_inspection) != 1
                 or lines.count(failed_inspection_guard) != 1
@@ -285,9 +296,11 @@ def inspect_workflow(path, *, private):
                 or lines.count("          if ($gateFailed) { throw 'Gameplay evidence gate failed; inspect private runner diagnostics' }") != 1
                 or not lines.index(inspection) < lines.index(inspection_failure) \
                     < lines.index(private_inspection) < lines.index(private_failure) \
-                    < lines.index(standalone_run) < lines.index(standalone_run_guard) \
-                    < lines.index(standalone_inspection) < lines.index(standalone_inspection_guard) \
-                    < lines.index(publication) < lines.index(publication_path)
+                    < lines.index(standalone_run) < lines.index(standalone_exit) \
+                    < lines.index(standalone_success_branch) < lines.index(standalone_inspection) \
+                    < lines.index(standalone_inspection_guard) < lines.index(standalone_failed_inspection) \
+                    < lines.index(standalone_failed_guard) < lines.index(publication) \
+                    < lines.index(publication_path)
                 or not lines.index(failed_inspection) < lines.index(failed_inspection_guard) \
                     < lines.index(publication)
                 or lines.index(upload_guard) < lines.index(publication_path)):
@@ -299,6 +312,7 @@ def inspect_workflow(path, *, private):
     standalone_contracts = (
         "tests/e2e/test_isolated_case_runner.py",
         "tests/e2e/test_isolated_case_run_result.py",
+        "tests/e2e/test_isolated_case_run_failure_result.py",
     )
     if any(sum(contract in line for line in lines) != 1 for contract in standalone_contracts):
         raise DevelopmentError("workflow must run standalone isolated-case runner/consumer contracts")
@@ -316,6 +330,7 @@ def inspect_workflow(path, *, private):
             "standalone_case_runner_contracts_required":True,
             "standalone_dispatch_required":private,
             "standalone_private_evidence_inspection_required":private,
+            "standalone_failure_sanitization_required":private,
             "explicit_execution_authorization_required":private,
             "service_free_staging_required":private,
             "exact_clean_checkout_required":private,

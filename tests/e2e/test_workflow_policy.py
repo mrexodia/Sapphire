@@ -46,6 +46,7 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     assert private["standalone_case_runner_contracts_required"] is True
     assert private["standalone_dispatch_required"] is True
     assert private["standalone_private_evidence_inspection_required"] is True
+    assert private["standalone_failure_sanitization_required"] is True
     assert private["explicit_execution_authorization_required"] is True
     assert public["standalone_dispatch_required"] is False
     assert inspect_dependency_lock(DEPENDENCIES)["package_count"] == 7
@@ -70,6 +71,7 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
              "      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '0'"),
     (PUBLIC, " tests/e2e/test_isolated_case_runner.py", ""),
     (PUBLIC, " tests/e2e/test_isolated_case_run_result.py", ""),
+    (PUBLIC, " tests/e2e/test_isolated_case_run_failure_result.py", ""),
     (PUBLIC, "          if-no-files-found: warn", "          if-no-files-found: ignore"),
     (PRIVATE, "  cancel-in-progress: false", "  cancel-in-progress: true"),
     (PRIVATE, "pip install --require-hashes --only-binary=:all:",
@@ -78,6 +80,7 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
               "      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '0'"),
     (PRIVATE, " tests/e2e/test_isolated_case_runner.py", ""),
     (PRIVATE, " tests/e2e/test_isolated_case_run_result.py", ""),
+    (PRIVATE, " tests/e2e/test_isolated_case_run_failure_result.py", ""),
     (PRIVATE, "--only-binary=:all: --no-deps", "--only-binary=:all:"),
     (PRIVATE, "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
               "    runs-on: ubuntu-latest"),
@@ -111,6 +114,11 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
               "python -m tests.e2e.run_ci --profile"),
     (PRIVATE, "python -m tests.e2e.inspect_isolated_case_run --private-root",
               "python -m tests.e2e.inspect_isolated_case --private-root"),
+    (PRIVATE, "python -m tests.e2e.inspect_isolated_case_run_failure --private-root",
+              "python -m tests.e2e.inspect_isolated_case_run --private-root"),
+    (PRIVATE, "$standaloneExit = $LASTEXITCODE", "$standaloneExit = 0"),
+    (PRIVATE, "Failed standalone isolated case summary is unsafe to publish",
+              "Failed standalone isolated case summary may publish"),
     (PRIVATE, "          path: ${{ steps.gameplay.outputs.summary_path }}",
               "          path: .e2e-ci-summary.json"),
     (PRIVATE, "          $summaryPath = '.e2e-isolated-case-summary.json'",

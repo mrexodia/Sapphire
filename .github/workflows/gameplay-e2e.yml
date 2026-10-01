@@ -130,7 +130,7 @@ jobs:
       - name: Controller and CI gate contracts
         timeout-minutes: 10
         run: |
-          python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_isolated_case_runner.py tests/e2e/test_isolated_case_run_result.py tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py tests/e2e/test_workflow_policy.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
+          python -m pytest tests/e2e/test_worker.py tests/e2e/test_policy.py tests/e2e/test_ci.py tests/e2e/test_isolated_case_runner.py tests/e2e/test_isolated_case_run_result.py tests/e2e/test_isolated_case_run_failure_result.py tests/e2e/test_soak.py tests/e2e/test_client_smoke.py tests/e2e/test_workload_cleanup.py tests/e2e/test_combat_policy.py tests/e2e/test_inventory_policy.py tests/e2e/test_minimize.py tests/e2e/test_workflow_policy.py --e2e-worker build-e2e-ci/bin/sapphire_test_client.exe -q
           if ($LASTEXITCODE -ne 0) { throw 'Controller contracts failed' }
       - name: Isolated gameplay and evidence gate
         id: gameplay
@@ -170,9 +170,15 @@ jobs:
           } else {
           $summaryPath = '.e2e-isolated-case-summary.json'
           python -m tests.e2e.run_isolated_case --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" --expected-revision "${{ github.sha }}"
-          if ($LASTEXITCODE -ne 0) { throw 'Standalone isolated case failed; inspect private runner diagnostics' }
+          $standaloneExit = $LASTEXITCODE
+          if ($standaloneExit -eq 0) {
           python -m tests.e2e.inspect_isolated_case_run --private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" --expected-revision "${{ github.sha }}" | Out-File -FilePath .e2e-isolated-case-summary.json -Encoding utf8
           if ($LASTEXITCODE -ne 0) { throw 'Standalone isolated case publication inspection failed' }
+          } else {
+          python -m tests.e2e.inspect_isolated_case_run_failure --private-root "$privateRoot" --expected-case "$env:EXECUTION_SCOPE" --expected-revision "${{ github.sha }}" | Out-File -FilePath .e2e-isolated-case-summary.json -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { Remove-Item -Force -ErrorAction SilentlyContinue .e2e-isolated-case-summary.json; throw 'Failed standalone isolated case summary is unsafe to publish' }
+          $gateFailed = $true
+          }
           }
           'summary_created=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           "summary_path=$summaryPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
