@@ -12,6 +12,75 @@ adapters, rewards/restart tests, diagnostics, CI and supported-action exploratio
 and soak workflows. Keep fixture setup distinct from gameplay. Never silently
 accept unknown scenes or label codec/mock tests as gameplay/real-client evidence.
 
+## Corrected graphical guest startup reached; manual spawn deadline retained
+
+Fresh `.e2e-artifacts/client-development-live-003` ran frozen coordinator
+`d6838445842e038437e35eb4a1ce13953d81256b` with explicit x64 Release CRTs and the
+path-only localized catalog. Guest source verification and all staged input
+hashes were inspected again after execution. Effective input manifest SHA-256:
+`424e1476042d0a5aaa2aeb12f72f1bcf77913bd0fdafd02fdd905729d4010ec0`.
+Native backend/worker identities remain the previously recorded clean placement
+backend and Tell worker; preserved working-tree experiments were not inputs.
+
+This attempt passed the earlier packaging blockers: private database/services
+started, and the ordinary headless witness reached received ready state in
+public territory 130. Its received self spawn is entity **2097153**, named
+`Tester OIPOPIJDOA`, level one, **GM rank 0**. Its action journal contains only
+`login`; no bot gameplay, party, Tell, placement or reset action was issued.
+The exact matching unmodified graphical executable was launched. Actual inspected
+screenshots show the title/version, local data-centre selection, introductory
+movie, and `Tester LOAKHGCKHE` in the `Sapphire E2E` character list.
+
+Individual screenshot-reviewed UI inputs declined controller calibration,
+selected the local data centre, skipped the introductory movie and reached the
+first-run character-creation prompt. Proceed entered the creation editor; an
+explicit cancel opened its confirmation. There was **no completed graphical
+world entry**. The coordinator reached its **twenty-minute activity deadline**
+while waiting at `spawn`, then failed and removed its runtime. One late explicit
+cancel-confirmation request had no relay reply and was not repeated; no success
+is inferred from its publication. Eleven private operator request files and ten
+replies/screenshots are retained, including the unanswered request. This is
+manual operator progress/deadline evidence, not an autonomous UI or gameplay pass.
+
+`output/result.json` remains **failed**, `failure_stage=spawn`, with
+`development_check.status=not_run` and `runtime_removed=true`. Result SHA-256:
+`b53e893bb5a30a4a73cf111d68e6e25276c3c9d56a74befde5022125cb0dc7c6`.
+The Sandbox discard dialog was inspected and its exact owned OK button confirmed
+once. Initial disposal targeting rejected two ambiguous parent/dialog windows
+without sending confirmation; inspection identified the dialog's child button.
+Subsequent process inspection showed only pre-existing MySQL PID 7764, with no
+Sandbox/client/owned test services. `inspected-failure.json` binds the result,
+inputs, journals, manual frames/requests, disposal screenshot/confirmation and
+post-disposal process list. Whole-runtime cleanup is not normal graphical logout.
+The older two setup failures below are unchanged.
+
+**Small diagnostic increment:** `18cf29b55` adds monotonic manual-phase wall
+measurements and terminal `finished` status. Results separate setup, entered
+manual/scenario phases and client/environment cleanup; unentered phases remain
+absent. Phase announcements include the remaining activity budget **at
+publication**, not a live countdown. Timing includes operator waiting and worker
+unwinding, not gameplay CPU time or acceptance coverage. This instrumentation
+was added **after** attempt 003 and is not retroactively attributed to it.
+
+Focused contracts: **46 passed in 0.28s** in
+`.e2e-artifacts/client-phase-timing-contracts-2.json`; clean committed snapshot:
+**5 passed in 0.15s**, with source unchanged, in
+`client-phase-timing-clean-timings.json`. Coverage includes elapsed/phase totals,
+zero-length setup, optional development, idempotent finish, post-finish rejection,
+source rejection before setup, and startup failure with both successful and
+failing cleanup/terminal status. An initial test incorrectly expected eight
+one-second advances when it performed seven; the failing result is retained in
+`client-phase-timing-contracts.json`. No native code changed. The new timing and
+terminal-status code has not had another guest execution.
+
+**Still pending:** a fresh manually attended run reaching actual world entry,
+movement/Say/rendering approval, the two fresh viewer replies, normal logout and
+successful-run disposal. Assets/guest startup are available; the current blocker
+is incomplete manual execution within the existing activity window, not missing
+endpoints or a reason to extend deadlines/weaken checks. Existing shared-database
+deployment, safe general reset/reprovisioning, broader real-client agreement,
+Linux/hosted CI and acceptance gaps remain. No full gate or soak was run.
+
 ## Graphical bridge guest attempts: two retained setup failures
 
 Two fresh owned Sandbox attempts reached the guest's frozen-source/client-hash
