@@ -93,6 +93,11 @@ logout. The existing twenty-minute activity budget remains in use: native RPC
 and observation waits are capped by its remainder; late successes fail. Bounded
 HTTP/fixture calls and cleanup are not forcibly interrupted mid-call.
 
+The development catalog is copied with only `navigation.mesh` localized to an
+exact byte-for-byte mesh copy inside the guest input mapping. The untouched
+original catalog, both catalog hashes and mesh hash are retained. No corridor,
+actor, quest or route-length fields are regenerated or weakened.
+
 The prior screenshot review does **not** certify rendering of these added bot
 actions. Even a successful bridge is endpoint co-presence, not continuous presence,
 visual quest/combat agreement, normal opening progression, shared-database

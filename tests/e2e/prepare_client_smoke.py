@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import importlib.util
 import json
 import os
@@ -54,6 +55,32 @@ def approve(output):
     temporary = output / "review.tmp"
     temporary.write_text(json.dumps(review, indent=2), encoding="utf-8")
     temporary.replace(output / "review.json")
+
+
+def stage_guest_catalog(catalog_path, inputs):
+    """Localize only provenance's mesh path; preserve route/content and exact mesh bytes."""
+    catalog_path, inputs = Path(catalog_path), Path(inputs)
+    original = load_quest_catalog(catalog_path)
+    navigation = original.get("navigation", {})
+    if (navigation.get("format") != "TSET-v1" or type(navigation.get("polyref_bits")) is not int
+            or navigation["polyref_bits"] != 64 or not isinstance(navigation.get("mesh"), str)):
+        raise ValueError("development catalog requires supported navigation provenance")
+    mesh = Path(navigation["mesh"])
+    if not mesh.is_file():
+        raise ValueError("catalog provenance mesh is missing")
+    shutil.copy2(catalog_path, inputs / "quest_catalog.original.json")
+    shutil.copy2(mesh, inputs / "catalog-mesh.nav")
+    localized = copy.deepcopy(original)
+    localized["navigation"]["mesh"] = "C:/e2e-input/catalog-mesh.nav"
+    (inputs / "quest_catalog.json").write_text(json.dumps(localized, indent=2), encoding="utf-8")
+    proof = {"scope": "navigation-path-localization-only-not-route-generation",
+             "source_catalog_sha256": sha256(catalog_path),
+             "staged_catalog_sha256": sha256(inputs / "quest_catalog.json"),
+             "mesh_sha256": sha256(mesh), "changed_field": "navigation.mesh"}
+    if sha256(inputs / "catalog-mesh.nav") != proof["mesh_sha256"]:
+        raise ValueError("staged catalog mesh differs from source")
+    (inputs / "catalog-provenance.json").write_text(json.dumps(proof, indent=2), encoding="utf-8")
+    return proof
 
 
 def prepare(profile_path, client_path, destination, crt_dirs=(), *, development_check=False):
@@ -136,7 +163,9 @@ def prepare(profile_path, client_path, destination, crt_dirs=(), *, development_
                      "game_data": "C:/e2e-sqpack", "mariadb_bin": "C:/e2e-mariadb/bin",
                      "navigation": "C:/e2e-navigation"}
     if development_check:
-        shutil.copy2(catalog_path, inputs / "quest_catalog.json")
+        provenance = stage_guest_catalog(catalog_path, inputs)
+        fixture["source_catalog_sha256"] = provenance["source_catalog_sha256"]
+        fixture["catalog_sha256"] = provenance["staged_catalog_sha256"]
         guest_profile["quest_catalog"] = "C:/e2e-input/quest_catalog.json"
     (inputs / "profile.json").write_text(json.dumps(guest_profile, indent=2), encoding="utf-8")
     (inputs / "fixture.json").write_text(json.dumps(fixture, indent=2), encoding="utf-8")
