@@ -48,6 +48,37 @@ def moved(origin, current):
     return distance >= 1
 
 
+def real_spawn_baseline(state):
+    """Require no player before graphical launch and retain received sequence."""
+    if other_player(state) is not None:
+        raise ValueError("unexpected player before real-client launch")
+    sequence = state.get("seq")
+    if type(sequence) is not int or not 0 <= sequence < 2**64:
+        raise ValueError("real-client spawn baseline lacks a received sequence")
+    return sequence
+
+
+def received_real_spawn(state, expected_name, fixture_position, baseline):
+    """Return a fresh exact-name fixture spawn, or None while absent."""
+    if (not isinstance(expected_name, str) or not 1 <= len(expected_name) <= 31
+            or type(baseline) is not int or not 0 <= baseline < 2**64):
+        raise ValueError("real-client spawn expectation is invalid")
+    peer = other_player(state)
+    if peer is None:
+        return None
+    entity, actor = peer
+    sequence = state.get("seq")
+    if (actor.get("name") != expected_name or type(sequence) is not int
+            or not baseline < sequence < 2**64
+            or math.dist(position(actor.get("position")), position(fixture_position)) > 1):
+        raise ValueError("real-client spawn is stale, foreign, or outside the fixture")
+    return {"verified": True,
+            "scope": "fresh-exact-fixture-real-client-spawn-not-client-provenance",
+            "entity_id": entity, "name": expected_name, "gm_rank": 0, "level": 1,
+            "position": list(actor["position"]), "baseline_sequence": baseline,
+            "received_sequence": sequence}
+
+
 def real_movement_baseline(state, expected_entity, origin):
     """Reject displacement that occurred before the authored movement window."""
     _, actor = other_player(state, expected_entity)

@@ -532,7 +532,7 @@ its new spawn token is not asserted continuous with either nested runner. This i
 provenance, not server-offline or reset authority. That policy has focused
 contracts but still has no current graphical live attestation. After a current
 run, `python -m tests.e2e.inspect_client_development_result --output <output>`
-revalidates the outer real-client spawn/fresh movement/fresh Say/review/logout snapshots
+revalidates the outer empty baseline/fresh exact-name spawn/fresh movement/fresh Say/review/logout snapshots
 and all nested host-visible evidence read-only before the separately evidenced
 Sandbox disposal. Exact artifacts and limitations are in the implementation audit.
 

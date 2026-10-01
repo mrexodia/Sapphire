@@ -196,8 +196,12 @@ are absent, not passing. On completion or failure, `status.json` changes to
    answered automatically. In the exercised first-run UI, closing the welcome/
    character-creation prompt with its visible X returned to the fixture list;
    Proceed instead opened the creation editor. Do not create another character
-   when the named fixture already exists. The witness requires exactly one other level-one,
-   living, non-GM player in public territory 130, near the fixture position.
+   when the named fixture already exists. Before launch, the witness records a
+   world-ready sequence with no other player. World entry must then produce a
+   strictly newer received state containing exactly one level-one, living, non-GM
+   player whose exact name matches the prepared graphical fixture and whose
+   position is within one metre of the fixture point. A foreign/preexisting player
+   or cached spawn cannot pass.
 2. At `movement`, move that character **1–5 metres** using normal movement keys.
    After publishing the phase, the coordinator first requires a received baseline
    still within 0.15m of the original spawn. The final position must arrive at a
@@ -262,8 +266,9 @@ are absent, not passing. On completion or failure, `status.json` changes to
      --output .e2e-artifacts/<run>/output
    ```
 
-   It revalidates the outer received spawn, fresh sequence-bound bounded
-   displacement, fresh sequence-bound Say, review presence and logout absence;
+   It revalidates the empty pre-launch baseline, fresh exact-name received spawn,
+   fresh sequence-bound bounded displacement, fresh sequence-bound Say, review
+   presence and logout absence;
    both nested summaries/hashes and
    strict consumers; pair/handoff/restoration receipts; review-frame binding,
    retirements, outer deadline/worker exit, terminal status and reported runtime

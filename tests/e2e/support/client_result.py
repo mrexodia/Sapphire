@@ -15,7 +15,8 @@ from .client_development import (require_graphical_check, require_graphical_decl
                                  require_graphical_run_pair)
 from .client_smoke import (CLIENT_SHA256, other_player,
                            real_movement_baseline, real_say_baseline,
-                           received_real_movement, received_real_say, validate_review)
+                           real_spawn_baseline, received_real_movement,
+                           received_real_say, received_real_spawn, validate_review)
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
 
@@ -118,20 +119,31 @@ def _timing(value):
 
 def _outer_journey(report, pair, fixture):
     states = {key: report.get(key) for key in
-              ("spawn", "movement_baseline", "movement", "say_baseline",
-               "say", "review", "logout")}
+              ("pre_client_state", "spawn", "movement_baseline", "movement",
+               "say_baseline", "say", "review", "logout")}
     if any(not isinstance(value, dict) for value in states.values()):
         raise DevelopmentError("graphical outer received-state journey is incomplete")
     expected_self = pair["identities"][0]
     try:
-        initial_identity = received_character_identity(states["spawn"], report.get("witness_name"))
-        if not _typed_equal(initial_identity, expected_self):
+        initial_identity = received_character_identity(
+            states["pre_client_state"], report.get("witness_name"))
+        if (not _typed_equal(initial_identity, expected_self)
+                or type(states["pre_client_state"].get("entity_id")) is not int
+                or states["pre_client_state"]["entity_id"] != expected_self["entity_id"]):
             raise DevelopmentError("graphical initial witness differs from paired mover")
+        spawn_baseline = real_spawn_baseline(states["pre_client_state"])
+        spawn_receipt = received_real_spawn(
+            states["spawn"], report["real_name"], fixture["position"], spawn_baseline)
+        if (spawn_receipt is None or spawn_receipt["entity_id"] != report["real_entity"]
+                or not _typed_equal(report.get("real_spawn_receipt"), spawn_receipt)):
+            raise DevelopmentError("graphical result lacks exact fresh fixture spawn evidence")
         observations = {}
         for stage in ("spawn", "movement_baseline", "movement", "say_baseline", "say", "review"):
             state = states[stage]
             if (type(state.get("entity_id")) is not int
-                    or state["entity_id"] != expected_self["entity_id"]):
+                    or state["entity_id"] != expected_self["entity_id"]
+                    or not _typed_equal(received_character_identity(
+                        state, report["witness_name"]), expected_self)):
                 raise DevelopmentError("graphical outer witness identity changed")
             entity, actor = other_player(state, report["real_entity"])
             if actor.get("name") != report["real_name"]:
@@ -157,7 +169,9 @@ def _outer_journey(report, pair, fixture):
         if say_receipt is None or not _typed_equal(report.get("real_say_receipt"), say_receipt):
             raise DevelopmentError("graphical result lacks exact fresh real-client Say evidence")
         if (type(states["logout"].get("entity_id")) is not int
-                or states["logout"]["entity_id"] != expected_self["entity_id"]):
+                or states["logout"]["entity_id"] != expected_self["entity_id"]
+                or not _typed_equal(received_character_identity(
+                    states["logout"], report["witness_name"]), expected_self)):
             raise DevelopmentError("graphical final logout witness differs from paired mover")
         if other_player(states["logout"], report["real_entity"], allow_absent=True) is not None:
             raise DevelopmentError("graphical viewer remained present after ordinary logout")
@@ -166,6 +180,7 @@ def _outer_journey(report, pair, fixture):
     return {"verified": True,
             "scope": "received-real-client-spawn-movement-say-review-logout-not-rendering",
             "viewer_entity": report["real_entity"], "movement_metres": distance,
+            "spawn_scope": spawn_receipt["scope"],
             "movement_scope": movement_receipt["scope"],
             "say_scope": say_receipt["scope"]}
 

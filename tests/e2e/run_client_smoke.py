@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import ctypes
 import json
-import math
 import os
 from pathlib import Path
 import shutil
@@ -13,8 +12,8 @@ import uuid
 
 from .support.client_smoke import (CLIENT_SHA256, REAL_SAY, WITNESS_SAY, other_player,
                                    real_movement_baseline, real_say_baseline,
-                                   received_real_movement, received_real_say,
-                                   validate_review)
+                                   real_spawn_baseline, received_real_movement,
+                                   received_real_say, received_real_spawn, validate_review)
 from .support.environment import Environment, sha256, REPO
 from .support.client_snapshot import verify_source
 from .support.client_timing import ClientPhaseTiming
@@ -113,8 +112,8 @@ def run():
             real = env.fresh_character(fixture["position"])
             bot = Bot(worker, "witness")
             initial = bot.login_via_lobby(witness["auth"], witness["name"])
-            if other_player(initial) is not None:
-                raise ValueError("unexpected player before real-client launch")
+            report["pre_client_state"] = initial
+            spawn_baseline_sequence = real_spawn_baseline(initial)
             args = [str(root / "ffxiv_dx11.exe"), "DEV.TestSID=" + real["auth"]["sId"],
                     "DEV.UseSqPack=1", "DEV.DataPathType=1"]
             for i in range(1, 9):
@@ -153,11 +152,12 @@ def run():
                 raise TimeoutError("manual scenario exceeded twenty-minute activity deadline")
 
             phase("spawn", "In the game, select the named fixture character and enter the world.")
-            spawned = wait(lambda s: other_player(s) is not None)
-            entity, actor = other_player(spawned)
-            origin = actor["position"]
-            if math.dist(origin, fixture["position"]) > 1:
-                raise ValueError("unexpected fixture spawn position")
+            spawned = wait(lambda state: received_real_spawn(
+                state, real["name"], fixture["position"], spawn_baseline_sequence) is not None)
+            spawn_receipt = received_real_spawn(
+                spawned, real["name"], fixture["position"], spawn_baseline_sequence)
+            report["real_spawn_receipt"] = spawn_receipt
+            entity, origin = spawn_receipt["entity_id"], spawn_receipt["position"]
             report["real_entity"] = entity
             phase("movement", "Move the real character 1 to 5 metres using normal movement keys.")
             movement_baseline_state = worker.snapshot(bot.name)

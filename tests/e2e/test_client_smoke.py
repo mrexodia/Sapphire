@@ -8,7 +8,8 @@ import pytest
 from .prepare_client_smoke import approve, sandbox_xml
 from .support.client_smoke import (REAL_SAY, REVIEW_CHECKS, moved, other_player, position,
                                    real_movement_baseline, real_say_baseline,
-                                   received_real_movement, received_real_say, validate_review)
+                                   real_spawn_baseline, received_real_movement,
+                                   received_real_say, received_real_spawn, validate_review)
 from .support.environment import sha256
 
 
@@ -71,6 +72,34 @@ def test_fixture_placement_and_excess_movement_are_not_success():
     assert moved([0, 0, 0], [3, 4, 0])
     with pytest.raises(ValueError):
         moved([0, 0, 0], [5.01, 0, 0])
+
+
+def test_real_spawn_requires_empty_baseline_exact_name_and_advancing_sequence():
+    empty = state(); empty["actors"].pop("12")
+    baseline = real_spawn_baseline(empty)
+    assert baseline == 10 and received_real_spawn(
+        empty, "Tester Viewer", [1,2,3], baseline) is None
+    spawned = state(); spawned["seq"] = 11
+    assert received_real_spawn(spawned, "Tester Viewer", [1,2,3], baseline) == {
+        "verified":True,
+        "scope":"fresh-exact-fixture-real-client-spawn-not-client-provenance",
+        "entity_id":12,"name":"Tester Viewer","gm_rank":0,"level":1,
+        "position":[1,2,3],"baseline_sequence":10,"received_sequence":11}
+
+
+def test_real_spawn_rejects_preexisting_stale_foreign_or_distant_player():
+    with pytest.raises(ValueError, match="unexpected player"):
+        real_spawn_baseline(state())
+    mutations = (
+        lambda value: value.update(seq=10),
+        lambda value: value["actors"]["12"].update(name="foreign"),
+        lambda value: value["actors"]["12"].update(position=[3,2,3]),
+        lambda value: value.update(seq=True),
+    )
+    for mutate in mutations:
+        spawned = state(); spawned["seq"] = 11; mutate(spawned)
+        with pytest.raises(ValueError):
+            received_real_spawn(spawned, "Tester Viewer", [1,2,3], 10)
 
 
 def test_real_movement_requires_post_phase_baseline_and_advancing_received_state():

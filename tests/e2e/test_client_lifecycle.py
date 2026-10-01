@@ -155,6 +155,12 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     monkeypatch.setattr(guest, "Environment", Environment)
     monkeypatch.setattr(guest, "Worker", Worker); monkeypatch.setattr(guest, "Bot", Witness)
     monkeypatch.setattr(guest, "other_player", lambda s, *a, **k: (2, s["actors"]["2"]) if "2" in s["actors"] else None)
+    monkeypatch.setattr(guest, "real_spawn_baseline", lambda state: 0)
+    monkeypatch.setattr(guest, "received_real_spawn", lambda state, name, position, baseline:
+        ({"verified":True,"scope":"fresh-exact-fixture-real-client-spawn-not-client-provenance",
+          "entity_id":2,"name":name,"gm_rank":0,"level":1,
+          "position":state["actors"]["2"]["position"],"baseline_sequence":baseline,
+          "received_sequence":1} if "2" in state["actors"] else None))
     monkeypatch.setattr(guest, "real_movement_baseline", lambda state, entity, origin:
         {"sequence":state["seq"],"position":state["actors"][str(entity)]["position"]})
     monkeypatch.setattr(guest, "received_real_movement", lambda state, entity, origin, baseline:
@@ -212,6 +218,11 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     else:
         assert report["witness_retirements"] == [{"bot": "owned-witness", "server_close_observed": True,
             "native_bot_removed": True, "scope": "normal-witness-session-retirement-not-offline-exclusion"}]
+    assert report["pre_client_state"] == {"actors":{}}
+    assert report["real_spawn_receipt"] == {
+        "verified":True,"scope":"fresh-exact-fixture-real-client-spawn-not-client-provenance",
+        "entity_id":2,"name":"synthetic","gm_rank":0,"level":1,
+        "position":[0,0,0],"baseline_sequence":0,"received_sequence":1}
     assert report["movement_baseline"]["seq"] == 8
     assert report["real_movement_receipt"] == {
         "verified":True,
