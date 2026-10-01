@@ -1479,6 +1479,26 @@ passed **74 CI/workflow-policy tests in 1.24s**. Test-log SHA-256:
 This is independent schema review, not independent gameplay observation or a new
 gate. No workflow, service, account or gameplay operation ran.
 
+Feature **`f29cbf5c5`** closes a per-case isolation hole in the gate producer. The
+pytest plugin now records the exact fixture object used by every allowlisted node
+ID. Success requires all 15 exact cases to map to 15 pairwise-distinct disposable
+`Environment` objects, with the environment list also exactly length 15; one
+shared fixture, a missing mapping or an extra observed environment fails even when
+all test phase reports pass. Existing exact process-generation, removed-root and
+input-manifest validation then runs over every one of those environments. The
+public summary adds only typed `environment_isolation_verified`; object identities
+remain private, and `inspect_ci_result` requires that new field.
+
+Frozen, remote-free source **`f29cbf5c5e8863a17eecd574fb6062a45a6d8e0e`**
+passed **76 CI/workflow-policy tests in 1.52s**. Positives model all 15 distinct
+fixtures; negatives cover shared and missing case mappings plus retained cleanup.
+Test-log SHA-256:
+`e3d220d979f7d1d6878925118969481c75a7b0eb3e98c52fe8a479d87631b1d8`.
+This proves fail-closed controller attribution only. Historical gates predate the
+field, and a current authorized isolated run is still required to demonstrate 15
+real distinct fixtures with current process cleanup. No gate, service, account or
+gameplay operation ran.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
@@ -3700,7 +3720,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Python/pytest / JSON-lines / asynchronous channels | `support/worker.py`, dispatcher, Bot/Channel state machines | Verified |
 | Genuine HTTP login, lobby selection, world-ready, both keepalives, logout | Live smoke scenarios; FINISH_LOADING followed by received cleared BetweenAreas | Verified on Windows/3.3 |
 | Normal character creation/opening journey | `test_live_creation.py`: four empty accounts spanning Ul'dah starters Gladiator/Pugilist/Thaumaturge, lobby reserve/finalize/select, all ring choices with Ring1 and Ring2 round trips, exact duplicate-name rejection, one normal deletion with fresh-login absence, all five Gladiator starter slots plus each distinct starter-main-hand round trip, source-routed Coming to Ul'dah scenes 0/1/2, active sequence 255 and opening scenes 40→30 after restart | Starting classes, ring/accessory branches, deletion and quest acceptance verified; giver-to-recipient corridor blocks turn-in/rewards and that opening's private-to-public travel; appearance breadth and other cities/classes remain uncovered |
-| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required | Locally live-verified on Windows and containerized Ubuntu 22.04; hosted deployment unverified |
+| Isolated DB/config/processes / non-GM accounts / real sessions | Private MariaDB, unique schema/ports, staged binaries, rank-zero observations, sessions required; current gate additionally requires an exact one-to-one mapping from all 15 case IDs to 15 pairwise-distinct disposable environments and consumes every lifecycle/manifest | Earlier Windows and containerized Ubuntu 22.04 runs are live-verified at their historical scope; current per-case isolation/process-generation public evidence awaits a new gate, and hosted deployment remains unverified |
 | Movement / independent observer / semantic route API | Observer verifies movement/despawn; both bots walk a 322-waypoint quest route | Curated routes verified, not general navigation |
 | Compatible navigation assets | Separate TSET generation, complete sampled corridors; private server mesh root and live `NAVI` initialization for territories 130/141 | Verified for two quests and the selected exit; Due Diligence disconnected |
 | Versioned route/scene data | Private generated catalog v1; explicit Motivational Speaking, Gil for Gold, opening ring and Coming to Ul'dah acceptance choices | Four live verified adapters; Due Diligence and Coming to Ul'dah completion remain route-blocked |
