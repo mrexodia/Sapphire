@@ -250,7 +250,25 @@ verify both bots offline before any narrowly reviewed manual recovery; never ste
 a lease to make another run pass.
 
 The shared runner and provisioner also attach this snapshot to every terminal
-summary. A successful result requires `state: clear` after release. An acquired
+summary. For provisioning performed against an owned managed host, stop that host
+normally and correlate the
+private profile, received account/character outcomes and exact terminal teardown:
+
+```powershell
+python -m tests.e2e.inspect_managed_development_provisioning `
+  --session-dir .e2e-dev-host/watch-001 `
+  --summary .e2e-artifacts/dev-provision-001/provisioning-summary.json `
+  --profile .e2e-dev.json
+```
+
+The inspector emits no usernames or passwords. It requires the exact managed-host
+start/end identity, bounded deadline, two distinct GM0 received identities, fresh
+HTTP/lobby/world outcomes, both server-close receipts, provisioning association,
+normal worker exit, clear leases and terminal four-service teardown. This is
+retained setup/lifecycle correlation, not gameplay, offline/reset authority or
+permission to retry uncertain creation.
+
+A successful result requires `state: clear` after release. An acquired
 failed run normally records `state: retained`, with both receipts matching its
 `run_id`. Partial release, replacement races, malformed files or unavailable
 inspection remain failures and are never repaired automatically; provisioning

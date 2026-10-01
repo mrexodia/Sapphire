@@ -12,12 +12,16 @@ import pytest
 from . import provision_development, run_development, serve_development
 from .inspect_development_host import main as inspect_host_main
 from .inspect_managed_development_run import main as inspect_managed_main
+from .inspect_managed_development_provisioning import main as inspect_provisioning_main
 from .support.development import (DevelopmentError, authenticate, check_managed_host,
                                   require_managed_host_binding, validate_profile)
 from .support.development_host_result import (SCOPE as HOST_RESULT_SCOPE,
                                               inspect_owned_development_host)
 from .support.managed_development_result import (SCOPE as MANAGED_RESULT_SCOPE,
                                                  inspect_managed_development_run)
+from .support.managed_provisioning_result import (SCOPE as MANAGED_PROVISIONING_SCOPE,
+                                                  inspect_managed_provisioning)
+from .support.development_binding import provisioning_binding
 from .support.development_party import BOUND_METHODS
 from .support.environment import redact_runtime_log
 
@@ -200,6 +204,37 @@ def managed_summary(path, receipt, worker_sha256):
     return report
 
 
+def managed_provisioning_summary(path, profile, receipt, worker_sha256):
+    base = managed_summary(path, receipt, worker_sha256)
+    accounts = []
+    for index, account in enumerate(profile["accounts"]):
+        accounts.append({"slot":index,"character":account["character"],
+            "account_creation":"fresh_login_verified",
+            "character_creation":"refreshed_lobby_and_world_verified",
+            "entity_id":100 + index,"character_id":1000 + index,"territory":130,
+            "gm_rank":0,"logout_server_close_verified":True})
+    report = {"version":1,"run_id":"c" * 32,"status":"provisioned",
+        "scope":"shared-development-provisioning-not-gameplay",
+        "ready_for_shared_checks":False,"server_identity_verified":False,
+        "server_processes_owned":False,"database_access":False,
+        "administrative_placement_performed":False,"credential_profile_saved":True,
+        "worker_closed":True,"lease_retained":False,
+        "lease_snapshot_matches_run_state":True,"lease_snapshot":base["lease_snapshot"],
+        "worker_sha256":worker_sha256,"worker_exit":base["worker_exit"],
+        "run_deadline":base["run_deadline"],"managed_host_binding":base["managed_host_binding"],
+        "accounts":accounts,"elapsed_seconds":1.0,
+        "timings":[{"phase":phase,"seconds":0.01,"outcome":"passed"} for phase in
+            ("reserve_private_credential_profile","account_lease",
+             "create_account_0","fresh_http_login_0","lobby_create_and_world_0","logout_0",
+             "create_account_1","fresh_http_login_1","lobby_create_and_world_1","logout_1",
+             "worker_session_including_close","managed_host_completion_binding",
+             "provisioning_deadline_completion","release_accounts")],
+        "next_step":"Opening/public-world preparation is still required before run_development. No placement or reset command was run."}
+    report["provisioning_binding"] = provisioning_binding(profile, accounts)
+    path.write_text(json.dumps(report, indent=2))
+    return report
+
+
 def test_terminal_host_inspector_is_read_only_and_cli_matches(assets, tmp_path, capsys):
     report, _, session = run_host(assets, tmp_path)
     before = {path.name:hashlib.sha256(path.read_bytes()).hexdigest()
@@ -257,6 +292,67 @@ def test_composite_managed_run_inspector_rejects_foreign_or_type_confused_run(
     mutate(report); summary.write_text(json.dumps(report))
     with pytest.raises(DevelopmentError):
         inspect_managed_development_run(session, summary)
+
+
+def test_composite_managed_provisioning_inspector_is_read_only_and_redacted(
+        assets, tmp_path, capsys):
+    captured = {}
+    def ready(env, session, clock):
+        profile = json.loads((session / "bot-profile.json").read_text())
+        captured["profile"] = profile
+        captured["receipt"] = check_managed_host(profile, clock=clock)
+        (session / "stop").touch()
+    host_report, _, session = run_host(assets, tmp_path, on_ready=ready)
+    profile_path = session / "retained-private-profile.json"
+    profile = captured["profile"]
+    profile_path.write_text(json.dumps(profile))
+    summary = tmp_path / "provisioning-summary.json"
+    managed_provisioning_summary(summary, profile, captured["receipt"], host_report["worker_sha256"])
+    before = {path:hashlib.sha256(path.read_bytes()).hexdigest()
+              for path in (profile_path, summary, session / "status.json",
+                           session / "process-lifecycle.json")}
+    proof = inspect_managed_provisioning(session, summary, profile_path)
+    assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
+    assert proof["scope"] == MANAGED_PROVISIONING_SCOPE
+    text = json.dumps(proof)
+    for account in profile["accounts"]:
+        assert account["username"] not in text and account["password"] not in text
+    assert inspect_provisioning_main(["--session-dir",str(session),"--summary",str(summary),
+                                      "--profile",str(profile_path)]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda report, profile:report.update(status="failed"),
+    lambda report, profile:report.update(ready_for_shared_checks=True),
+    lambda report, profile:report["accounts"][0].update(gm_rank=True),
+    lambda report, profile:report["accounts"][1].update(character_id=report["accounts"][0]["character_id"]),
+    lambda report, profile:report["provisioning_binding"].update(sha256="0" * 64),
+    lambda report, profile:profile.update(host_session="0" * 32),
+    lambda report, profile:report["run_deadline"].update(expired=True),
+    lambda report, profile:report["managed_host_binding"]["finish"].update(api_port=True),
+    lambda report, profile:report.update(recovery="retry"),
+    lambda report, profile:report["timings"].reverse(),
+])
+def test_composite_managed_provisioning_rejects_partial_foreign_or_type_confused(
+        assets, tmp_path, mutate):
+    captured = {}
+    def ready(env, session, clock):
+        profile = json.loads((session / "bot-profile.json").read_text())
+        captured["profile"] = profile
+        captured["receipt"] = check_managed_host(profile, clock=clock)
+        (session / "stop").touch()
+    host_report, _, session = run_host(assets, tmp_path, on_ready=ready)
+    profile = captured["profile"]
+    summary = tmp_path / "provisioning-summary.json"
+    report = managed_provisioning_summary(
+        summary, profile, captured["receipt"], host_report["worker_sha256"])
+    mutate(report, profile)
+    summary.write_text(json.dumps(report))
+    profile_path = session / "retained-private-profile.json"
+    profile_path.write_text(json.dumps(profile))
+    with pytest.raises(DevelopmentError):
+        inspect_managed_provisioning(session, summary, profile_path)
 
 
 def test_composite_managed_run_inspector_rejects_terminal_identity_mismatch(
