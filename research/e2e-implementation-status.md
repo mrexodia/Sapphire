@@ -2299,6 +2299,24 @@ The inspector is read-only and sanitized but no current external shared-server r
 has passed it. It does not establish server identity, process ownership, isolation,
 offline exclusion, reset authority, rendering, shared-world cleanliness or acceptance.
 
+Feature **`b3eba3436`** adds the corresponding external-server provisioning
+consumer, `python -m tests.e2e.inspect_development_provisioning --summary
+<private-provisioning-summary> --profile <private-profile>`. A shared strict core
+now keeps unmanaged and managed-host timing/binding shapes distinct while requiring
+the same exact private profile association, two distinct received GM0 identities,
+fresh HTTP/lobby/world outcomes, server-close receipts, deadline, exact normal
+worker exit, clear leases and complete run-owned worker tree. Supported newly
+created character outcomes may be opening territory 182 or prepared public territory
+130; neither is counted as gameplay or placement. Duplicate-key JSON fails closed.
+
+Frozen, remote-free source **`b3eba34362ea06a3cded5de7aab8c16b745f9db3`**
+passed **927 focused contracts with no skips in 39.54s**. Test-log SHA-256:
+`766a03f8bece21853f6b8a13500d00c2581b0cd4a225593f09e252ee1c8fef10`.
+No account was created for this increment and historical provisioning artifacts were
+not upgraded. The sanitized result is retained provisioning correlation only—not
+server identity, active-session/offline exclusion, opening/placement readiness,
+gameplay, reset authority, retry permission or managed-host teardown.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling

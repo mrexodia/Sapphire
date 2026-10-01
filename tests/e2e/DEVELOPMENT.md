@@ -260,9 +260,25 @@ verify both bots offline before any narrowly reviewed manual recovery; never ste
 a lease to make another run pass.
 
 The shared runner and provisioner also attach this snapshot to every terminal
-summary. For provisioning performed against an owned managed host, stop that host
-normally and correlate the
-private profile, received account/character outcomes and exact terminal teardown:
+summary. Reinspect retained provisioning against an already-running external server
+without contacting that server:
+
+```powershell
+python -m tests.e2e.inspect_development_provisioning `
+  --summary .e2e-artifacts/dev-provision-001/provisioning-summary.json `
+  --profile .e2e-dev.json
+```
+
+This sanitized, read-only consumer requires the explicitly unmanaged boundary,
+private-profile association, bounded deadline, two distinct GM0 received identities
+in supported opening/public territory 182 or 130, fresh HTTP/lobby/world outcomes,
+both server-close receipts, normal exact worker exit, complete run-owned worker tree
+and clear local leases. It does not prove server identity, offline exclusion,
+placement/readiness, gameplay, reset safety or permission to retry creation.
+
+For provisioning performed against an owned managed host, stop that host normally
+and instead correlate the private profile, received account/character outcomes and
+exact terminal teardown:
 
 ```powershell
 python -m tests.e2e.inspect_managed_development_provisioning `
