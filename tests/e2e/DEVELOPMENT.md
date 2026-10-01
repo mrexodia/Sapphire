@@ -19,7 +19,83 @@ client. Keep the existing isolated pytest lane for clean regression/acceptance;
 do not point its `Environment` fixture at a shared database. No full acceptance
 run is required to use this lane.
 
-## Prepare once
+## Keep one owned warm world available for repeated runs
+
+When no existing development server is available, start a **bounded, disposable
+warm host** once. It uses the existing isolated-environment asset/binary profile,
+but does not restart or recreate fixtures between external development checks:
+
+```powershell
+python -m tests.e2e.serve_development --profile .e2e-local.json `
+  --worker build-e2e-msvc/Release/sapphire_test_client.exe `
+  --session-dir .e2e-dev-host/watch-001 --max-seconds 3600
+```
+
+Use a rebuilt matching worker: bound-party capabilities are checked **before**
+starting servers or preparing fixtures. Keep this terminal running and wait for
+its `ready` message. In another terminal:
+
+```powershell
+python -m tests.e2e.run_development `
+  --profile .e2e-dev-host/watch-001/bot-profile.json `
+  --artifacts .e2e-artifacts/watch-check-001 --allow-shared-development `
+  --verify-party --verify-reconnect
+```
+
+Repeat with a **new artifact directory**, not a new host. Each invocation still
+performs genuine fresh authentication, independent observations and normal
+logout. This reuses infrastructure and characters, not authenticated sessions.
+
+The private session directory must be new and ignored by Git (or outside this
+checkout). It contains:
+
+- `bot-profile.json`: exactly two dedicated bot accounts.
+- `viewer-profile.json`: a **third, separate non-GM account/character**, plus
+  local API/lobby context for an operator's matching graphical client.
+  Its `account` object contains credentials; do not paste it into chat or logs.
+- `server-profile.json`: endpoints/worker/catalog for normal dedicated
+  provisioning. This does not attest that GM placement is deployed.
+- `status.json`: identity, expiry, process IDs, lifecycle/timing and cleanup
+  diagnostics, without account credentials.
+
+The viewer is a new ephemeral fixture, **not your existing character**. No client
+is launched, no installed client/settings are changed, and graphical
+compatibility is not inferred from headless results. A matching client must be
+connected separately through the ordinary real-client lane. An already-running
+server with your existing character still uses the external profile lane below.
+
+Stop only after clients/checks are finished:
+
+```powershell
+New-Item .e2e-dev-host/watch-001/stop -ItemType File
+```
+
+POSIX equivalent: `touch .e2e-dev-host/watch-001/stop`. The host also shuts down
+on process loss, interruption, or expiry (60–14400 seconds **after readiness**).
+Expiry is a hard lifetime bound and may interrupt connected clients; it is not
+an automatic drain or retry. Do not start a long check near expiry.
+
+Only its own private database/processes/runtime are removed. Unmodified exported
+profiles are deleted on shutdown; user-modified or incomplete exports are retained
+and explicitly reported. No existing database is accessed. Preparation uses
+three **administrative pre-connection fixtures** at the source-supported public
+route start, not normal lobby creation, progression, or GM-placement evidence.
+No live cached character rows are edited, and no runtime reset is offered.
+
+Exported profiles bind the exact host session, owner PID **and creation time**,
+expiry, endpoints and worker hash. Runners/provisioners reject stopped, expired,
+orphaned or mismatched bindings **before authentication**, and HTTP operations
+recheck them. These are cooperating local-process checks, not server-side locks,
+authentication, cross-host exclusion, or atomic protection against process loss
+mid-operation. Coordinator hard-kill cleanup remains unverified; retained
+private runtimes/leases need manual ownership verification, never lease stealing.
+
+Raw running-server logs remain private. Cleanup redacts registered secrets and
+known lobby session-log fields, including independently authenticated viewers'
+sessions. This is not a universal sanitizer for arbitrary plugins. Windows
+profile/directory ACLs are inherited; choose a suitably private parent directory.
+
+## Prepare once (existing external server)
 
 1. Use matching Sapphire 3.3 server/client data and a built headless worker.
 2. Prepare **two dedicated bot accounts**, with usernames beginning `e2e_`, and

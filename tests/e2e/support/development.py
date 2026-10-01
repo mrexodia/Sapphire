@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import hashlib
 import json
 import math
+import psutil
 from pathlib import Path
 import tempfile
 import time
@@ -35,7 +36,7 @@ def validate_profile(profile):
     # No arbitrary URLs, redirects, DB credentials, server secrets or lifecycle options.
     required = {"version", "mode", "protocol", "worker", "api_port", "lobby_port",
                 "territory", "accounts"}
-    allowed = required | {"quest_catalog"}
+    allowed = required | {"quest_catalog", "host_session"}
     if not isinstance(profile, dict) or not required <= profile.keys() or profile.keys() - allowed:
         raise DevelopmentError("invalid development profile fields")
     if (type(profile["version"]) is not int or profile["version"] != 1
@@ -48,6 +49,13 @@ def validate_profile(profile):
         raise DevelopmentError("a supported public territory is required")
     if not isinstance(profile["worker"], str) or not Path(profile["worker"]).is_file():
         raise DevelopmentError("worker executable is missing")
+    if "host_session" in profile:
+        session = profile["host_session"]
+        if (not isinstance(session, dict) or set(session) != {"path", "id"}
+                or not isinstance(session["path"], str) or not Path(session["path"]).is_absolute()
+                or not isinstance(session["id"], str) or len(session["id"]) != 32
+                or any(c not in "0123456789abcdef" for c in session["id"])):
+            raise DevelopmentError("invalid managed development session binding")
     accounts = profile["accounts"]
     if not isinstance(accounts, list) or len(accounts) != 2:
         raise DevelopmentError("exactly two dedicated bot accounts are required")
@@ -64,6 +72,40 @@ def validate_profile(profile):
         if len({account[key].casefold() for account in accounts}) != 2:
             raise DevelopmentError("bot accounts and characters must be distinct")
     return profile
+
+
+def check_managed_host(profile, *, clock=time.monotonic, process=psutil.Process):
+    """Reject expired/stopped/orphaned managed profiles without contacting a server."""
+    binding = profile.get("host_session")
+    if binding is None:
+        return
+    try:
+        status_path = Path(binding["path"])
+        if status_path.with_name("stop").exists():
+            raise ValueError()
+        with status_path.open("rb") as stream:
+            raw = stream.read(16385)
+        if len(raw) > 16384:
+            raise ValueError()
+        status = json.loads(raw)
+        pid, created, deadline = (status[key] for key in ("owner_pid", "owner_created", "deadline_monotonic"))
+        owner = process(pid)
+        if (type(status.get("version")) is not int or status["version"] != 1
+                or status.get("kind") != "owned-development-host"
+                or status.get("session_id") != binding["id"] or status.get("status") != "ready"
+                or type(pid) is not int or pid <= 0
+                or type(created) not in (int, float) or not math.isfinite(created)
+                or type(deadline) not in (int, float) or not math.isfinite(deadline) or clock() >= deadline
+                or type(status.get("api_port")) is not int or status["api_port"] != profile["api_port"]
+                or type(status.get("lobby_port")) is not int or status["lobby_port"] != profile["lobby_port"]
+                or status.get("protocol") != profile["protocol"]
+                or not owner.is_running() or owner.status() in {psutil.STATUS_ZOMBIE, psutil.STATUS_DEAD}
+                or owner.create_time() != created):
+            raise ValueError()
+        if hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest() != status.get("worker_sha256"):
+            raise ValueError()
+    except Exception:
+        raise DevelopmentError("managed development host is unavailable, expired or does not match this profile") from None
 
 
 class AccountLease:
@@ -104,6 +146,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def _account_session(profile, account, method):
+    check_managed_host(profile)
     if method not in {"login", "createAccount"}:
         raise DevelopmentError("unsupported development account operation")
     request = urllib.request.Request(

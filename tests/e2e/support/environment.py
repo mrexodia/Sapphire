@@ -7,6 +7,7 @@ import hashlib
 import json
 import math
 import os
+import re
 from pathlib import Path
 import secrets
 import shutil
@@ -74,6 +75,16 @@ def sha256(path):
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             h.update(block)
     return h.hexdigest()
+
+
+def redact_runtime_log(text, secrets=()):
+    for value in sorted((value for value in secrets if value), key=len, reverse=True):
+        text = text.replace(value, "<redacted>")
+    # Warm worlds admit independently authenticated controllers/viewers. Their
+    # sessions are not necessarily known to this Environment's API wrapper.
+    # These exact production lobby log shapes must never publish session values.
+    return re.sub(r"((?:Login request from session|Allowed connection with no session|Could not retrieve session): )[^\r\n]*",
+                  r"\1<redacted>", text)
 
 
 class Environment:
@@ -344,9 +355,7 @@ class Environment:
         # Only publish redacted text logs, never DB files, game assets or credentials/configs.
         for path in self.runtime.rglob("*.log"):
             text = path.read_text(encoding="utf-8", errors="replace")
-            for value in self.redactions:
-                if value:
-                    text = text.replace(value, "<redacted>")
+            text = redact_runtime_log(text, self.redactions)
             target = self.artifacts / path.relative_to(self.runtime)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(text, encoding="utf-8")

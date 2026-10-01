@@ -15,7 +15,7 @@ import time
 import uuid
 
 from .support.development import (AccountLease, DevelopmentError, Timings, authenticate,
-                                  create_account, received_character_identity, validate_profile)
+                                  create_account, received_character_identity, validate_profile, check_managed_host)
 from .support.worker import Bot, Worker
 
 REPO = Path(__file__).resolve().parents[2]
@@ -23,7 +23,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def new_profile(server):
     required = {"version", "mode", "protocol", "worker", "api_port", "lobby_port", "territory"}
-    if not isinstance(server, dict) or not required <= server.keys() or server.keys() - (required | {"quest_catalog"}):
+    if not isinstance(server, dict) or not required <= server.keys() or server.keys() - (required | {"quest_catalog", "host_session"}):
         raise DevelopmentError("provisioning requires a server-only profile, without existing accounts")
     profile = dict(server)
     profile["accounts"] = [{"username": "e2e_dev_" + uuid.uuid4().hex,
@@ -33,7 +33,7 @@ def new_profile(server):
     return validate_profile(profile)
 
 
-def reserve_private_profile(path, profile):
+def require_private_output(path):
     path = Path(path).resolve()
     if path.is_relative_to(REPO):
         # Refuse accidental credential publication inside the checkout, including
@@ -42,6 +42,11 @@ def reserve_private_profile(path, profile):
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
         if not ignored:
             raise DevelopmentError("credential output inside the checkout must be git-ignored")
+    return path
+
+
+def reserve_private_profile(path, profile):
+    path = require_private_output(path)
     # No overwrite, no symlink following; POSIX 0600, inherited directory ACLs on Windows.
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
@@ -56,6 +61,7 @@ def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Wo
     if not confirmed:
         raise DevelopmentError("explicit --create-new-bot-accounts opt-in is required")
     profile = new_profile(server)
+    check_managed_host(profile)
     artifacts = Path(artifacts)
     if Path(output_profile).resolve().is_relative_to(artifacts.resolve()):
         raise DevelopmentError("credential profile must be outside the diagnostic artifact directory")

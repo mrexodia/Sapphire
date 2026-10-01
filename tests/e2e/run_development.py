@@ -11,7 +11,7 @@ from pathlib import Path
 import time
 import uuid
 
-from .support.development import (AccountLease, DevelopmentError, Timings, authenticate,
+from .support.development import (AccountLease, DevelopmentError, Timings, authenticate, check_managed_host,
                                   idle_state, movement_route, validate_profile, witnessed)
 from .support.worker import Bot, Worker
 from .support.development_reconnect import verify_position_reconnect
@@ -23,6 +23,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
     if not confirmed:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
     validate_profile(profile)
+    check_managed_host(profile)
     if type(cycles) is not int or not 1 <= cycles <= 10:
         raise DevelopmentError("cycles must be an integer in 1..10")
     if type(verify_reconnect) is not bool or type(verify_party) is not bool:
