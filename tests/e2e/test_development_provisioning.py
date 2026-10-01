@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import stat
+from types import SimpleNamespace
 
 import pytest
 
@@ -23,6 +24,7 @@ class ProvisionWorker:
         self.states = {}
         self.commands = []
         self.closed = False
+        self.process = SimpleNamespace(pid=12345, poll=lambda: 0 if self.closed else None)
 
     def request(self, method, bot=None, **args):
         self.commands.append(method)
@@ -97,6 +99,10 @@ def test_success_is_provisioning_not_public_world_ready(server, tmp_path):
     assert not result["ready_for_shared_checks"] and not result["administrative_placement_performed"]
     assert not result["database_access"] and not result["server_processes_owned"]
     assert result["credential_profile_saved"] and result["worker_closed"] and fake.closed
+    assert result["worker_exit"] == {
+        "context_entered": True, "context_exit_attempted": True, "context_exit_completed": True,
+        "process_exit_observed": True, "scope": "owned-native-worker-exit-not-server-session-closure",
+        "process_id": 12345, "returncode": 0}
     assert [kind for kind, _ in calls] == ["create", "login", "create", "login"]
     assert calls[0][1] == calls[1][1] and calls[2][1] == calls[3][1] and calls[0][1] != calls[2][1]
     assert fake.commands == ["login", "logout", "close", "remove"] * 2
@@ -149,6 +155,33 @@ def test_normal_creation_and_non_gm_world_evidence_required(server, tmp_path, pa
     assert result["status"] == "failed" and result["lease_retained"] and fake.closed
     assert result["accounts"][0]["character_creation"] == "requested_outcome_unknown"
     assert fake.commands == ["login"]
+
+
+@pytest.mark.parametrize("returncode", [1, -9, None, True])
+def test_provisioning_never_releases_leases_without_normal_owned_worker_exit(server, tmp_path, returncode):
+    fake = ProvisionWorker()
+    fake.process.poll = lambda: returncode
+    result, fake, calls = execute(server, tmp_path, fake=fake)
+    assert result["status"] == "failed" and result["lease_retained"] and not result["worker_closed"]
+    assert fake.closed and [kind for kind, _ in calls] == ["create", "login", "create", "login"]
+    assert fake.commands == ["login", "logout", "close", "remove"] * 2
+    assert len(list((tmp_path / "leases").glob("*.lock"))) == 2
+    assert result["worker_exit"]["process_exit_observed"] is (type(returncode) is int)
+    assert "provisioning_binding" not in result
+
+
+def test_worker_constructor_failure_stays_unobserved_and_retains_provisioning_leases(server, tmp_path):
+    output, artifacts = tmp_path / "private.json", tmp_path / "artifacts"
+    def fail(*_):
+        raise RuntimeError("private constructor failure")
+    result = provision_development.run(server, output, artifacts, confirmed=True,
+        worker_factory=fail, lease_root=tmp_path / "leases")
+    assert result["status"] == "failed" and result["credential_profile_saved"]
+    assert result["lease_retained"] and result["worker_exit"] == {
+        "context_entered": False, "context_exit_attempted": False,
+        "context_exit_completed": False, "process_exit_observed": False}
+    assert len(list((tmp_path / "leases").glob("*.lock"))) == 2
+    assert "private constructor failure" not in json.dumps(result)
 
 
 def test_profile_conflict_stops_before_worker_or_network(server, tmp_path):

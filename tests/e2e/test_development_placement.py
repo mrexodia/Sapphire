@@ -19,6 +19,10 @@ def preparation(tmp_path, monkeypatch):
                            "worker": str(worker), "api_port": 5000, "lobby_port": 54994, "territory": 130})
     report = {"scope": "shared-development-provisioning-not-gameplay", "status": "provisioned",
               "lease_retained": False, "worker_closed": True, "credential_profile_saved": True,
+              "worker_exit": {"scope": "owned-native-worker-exit-not-server-session-closure",
+                              "context_entered": True, "context_exit_attempted": True,
+                              "context_exit_completed": True, "process_exit_observed": True,
+                              "process_id": 12345, "returncode": 0},
               "accounts": [{"slot": index, "character": account["character"], "entity_id": index + 1,
                             "character_id": index + 100, "gm_rank": 0,
                             "account_creation": "fresh_login_verified",
@@ -42,10 +46,23 @@ def test_registry_binds_exact_observed_characters_and_source_destination(prepara
 
 
 @pytest.mark.parametrize("patch", [{"status": "failed"}, {"lease_retained": True},
-    {"worker_closed": False}, {"credential_profile_saved": False}, {"scope": "headless-live-not-real-client"}])
+    {"worker_closed": False}, {"worker_exit": None}, {"credential_profile_saved": False},
+    {"scope": "headless-live-not-real-client"}])
 def test_registry_requires_complete_provisioning(preparation, patch):
     private, report = preparation
     report.update(patch)
+    with pytest.raises(DevelopmentError):
+        prepare_development.placement_registry(private, report)
+
+
+@pytest.mark.parametrize("field,value", [
+    ("context_entered", False), ("context_exit_attempted", False),
+    ("context_exit_completed", False), ("process_exit_observed", False),
+    ("process_id", 0), ("process_id", True), ("returncode", 1), ("returncode", True),
+    ("scope", "server-session-closed")])
+def test_registry_rejects_malformed_or_failed_worker_exit(preparation, field, value):
+    private, report = preparation
+    report["worker_exit"][field] = value
     with pytest.raises(DevelopmentError):
         prepare_development.placement_registry(private, report)
 

@@ -18,6 +18,7 @@ from .support.development import (AccountLease, DevelopmentError, Timings, authe
                                   create_account, received_character_identity, validate_profile, check_managed_host)
 from .support.worker import Bot, Worker
 from .support.development_binding import provisioning_binding
+from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -76,6 +77,7 @@ def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Wo
               "server_processes_owned": False, "database_access": False,
               "administrative_placement_performed": False, "lease_retained": False,
               "credential_profile_saved": False, "worker_closed": False,
+              "worker_exit": unobserved_worker_exit(),
               "worker_sha256": hashlib.sha256(Path(profile["worker"]).read_bytes()).hexdigest(),
               "accounts": []}
     acquired = False
@@ -90,7 +92,8 @@ def run(server, output_profile, artifacts, *, confirmed=False, worker_factory=Wo
             acquired = True
             report["lease_retained"] = True
         with timings.phase("worker_session_including_close"):
-            with worker_factory(Path(profile["worker"]), artifacts / "worker") as worker:
+            with ObservedWorker(worker_factory(Path(profile["worker"]), artifacts / "worker"),
+                                report["worker_exit"]) as worker:
                 for index, account in enumerate(profile["accounts"]):
                     row = {"slot": index, "character": account["character"],
                            "account_creation": "not_started", "character_creation": "not_started"}

@@ -7,6 +7,7 @@ import uuid
 
 from .support.development import DevelopmentError, movement_route, validate_profile
 from .support.development_binding import require_provisioning_binding
+from .support.development_worker_exit import require_normal_worker_exit
 from .provision_development import reserve_private_profile
 
 
@@ -22,6 +23,7 @@ def placement_registry(profile, provisioning):
             or provisioning.get("credential_profile_saved") is not True):
         raise DevelopmentError("a completed clean provisioning report is required")
     require_provisioning_binding(profile, provisioning)
+    require_normal_worker_exit(provisioning)
     rows = provisioning.get("accounts", [])
     if not isinstance(rows, list) or len(rows) != 2:
         raise DevelopmentError("exactly two provisioned accounts are required")
