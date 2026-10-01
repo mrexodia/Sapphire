@@ -152,11 +152,13 @@ separate evidence that its binaries came from the checkout.
   provenance or signatures.
 - Only `.e2e-ci-summary.json` is uploaded: fixed schema, allowlisted case identities
   and booleans, checkout identity, component hashes and cleanup/collection results.
-  It also carries exactly 15 ordered `{case, manifest_sha256, lifecycle_sha256}`
-  rows plus SHA-256 values for private `gate-diagnostics.json`, `pytest.log` and
+  It also carries exactly 15 ordered
+  `{case, manifest_sha256, lifecycle_sha256, artifact_tree_sha256}` rows plus
+  SHA-256 values for private `gate-diagnostics.json`, `pytest.log` and
   `live.xml`. These bind each public case to exact private staged-manifest/process-
-  lifecycle bytes, phase reports and private test artifacts without publishing
-  paths, ports, database names, PIDs, return codes, captured output or credentials;
+  lifecycle bytes, the complete bounded private environment artifact tree, phase
+  reports and private test artifacts without publishing filenames, paths, ports,
+  database names, PIDs, return codes, captured output or credentials;
   hashes are correlation, not independent content proof.
   The upload step requires the current gameplay step to create the report. It
   does not reuse a stale report after an earlier step fails.

@@ -88,10 +88,13 @@ def inspect_ci_result(summary_path, expected_revision):
     if (not isinstance(evidence, list) or len(evidence) != len(EXPECTED_CASES)
             or [row.get("case") if isinstance(row, dict) else None for row in evidence]
                != list(EXPECTED_CASES)
-            or any(set(row) != {"case","manifest_sha256","lifecycle_sha256"}
+            or any(set(row) != {"case","manifest_sha256","lifecycle_sha256",
+                                "artifact_tree_sha256"}
                    or not _hex(row.get("manifest_sha256"))
-                   or not _hex(row.get("lifecycle_sha256")) for row in evidence)
-            or len({row["manifest_sha256"] for row in evidence}) != len(EXPECTED_CASES)):
+                   or not _hex(row.get("lifecycle_sha256"))
+                   or not _hex(row.get("artifact_tree_sha256")) for row in evidence)
+            or len({row["manifest_sha256"] for row in evidence}) != len(EXPECTED_CASES)
+            or len({row["artifact_tree_sha256"] for row in evidence}) != len(EXPECTED_CASES)):
         raise SetupError("isolated-gate per-case evidence identities are malformed")
     identities = report.get("identities")
     if (not isinstance(identities, dict)

@@ -14,7 +14,7 @@ from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
                                 SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
 from .support.ci_private_result import (SCOPE as CI_PRIVATE_SCOPE,
                                         inspect_ci_private_evidence)
-from .support.environment import SetupError
+from .support.environment import SetupError, artifact_tree_sha256
 
 
 @pytest.fixture
@@ -514,7 +514,8 @@ def current_public_summary(revision="a" * 40):
         "meshes":{"w1t1":"e" * 64,"w1f2":"f" * 64},
         "script_modules":["0" * 64,"a" * 64]}
     evidence = [{"case":case,"manifest_sha256":format(index + 1,"064x"),
-                 "lifecycle_sha256":"f" * 64}
+                 "lifecycle_sha256":"f" * 64,
+                 "artifact_tree_sha256":format(index + 32,"064x")}
                 for index,case in enumerate(run_ci.CASES)]
     return {"version":1,"status":"passed","stage":"verified",
         "scope":"headless-live-not-real-client","revision":revision,"source_dirty":False,
@@ -553,7 +554,8 @@ def private_gate_evidence(tmp_path, report):
         (directory / "process-lifecycle.json").write_text(json.dumps(lifecycle, indent=2))
         rows.append({"case":case,
             "manifest_sha256":hashlib.sha256((directory / "manifest.json").read_bytes()).hexdigest(),
-            "lifecycle_sha256":hashlib.sha256((directory / "process-lifecycle.json").read_bytes()).hexdigest()})
+            "lifecycle_sha256":hashlib.sha256((directory / "process-lifecycle.json").read_bytes()).hexdigest(),
+            "artifact_tree_sha256":artifact_tree_sha256(directory)})
     report["environment_evidence"] = rows
     diagnostics = {"collected":list(run_ci.CASES),
         "reports":{case:{phase:["passed"] for phase in ("setup","call","teardown")}
@@ -576,7 +578,8 @@ def private_gate_evidence(tmp_path, report):
 def rehash_private_row(report, directory, index):
     report["environment_evidence"][index].update(
         manifest_sha256=hashlib.sha256((directory / "manifest.json").read_bytes()).hexdigest(),
-        lifecycle_sha256=hashlib.sha256((directory / "process-lifecycle.json").read_bytes()).hexdigest())
+        lifecycle_sha256=hashlib.sha256((directory / "process-lifecycle.json").read_bytes()).hexdigest(),
+        artifact_tree_sha256=artifact_tree_sha256(directory))
 
 
 def test_public_result_consumer_allowlists_require_explicit_producer_sync():
@@ -671,8 +674,11 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
     lambda report:report["environment_evidence"].pop(),
     lambda report:report["environment_evidence"].reverse(),
     lambda report:report["environment_evidence"][0].update(manifest_sha256="g" * 64),
+    lambda report:report["environment_evidence"][0].update(artifact_tree_sha256="g" * 64),
     lambda report:report["environment_evidence"][1].update(
         manifest_sha256=report["environment_evidence"][0]["manifest_sha256"]),
+    lambda report:report["environment_evidence"][1].update(
+        artifact_tree_sha256=report["environment_evidence"][0]["artifact_tree_sha256"]),
     lambda report:report.update(cleanup_verified=False),
     lambda report:report.update(deadline_scale=True),
     lambda report:report["cases"].pop(run_ci.CASES[0]),

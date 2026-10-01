@@ -19,7 +19,8 @@ import traceback
 from .support.catalog import (load_combat_catalog, load_opening_quest_catalog,
                               load_pursuit_catalog, load_quest_catalog, load_respawn_catalog,
                               load_shop_catalog, load_transition_catalog)
-from .support.environment import REPO, SetupError, require_process_teardowns, sha256
+from .support.environment import (REPO, SetupError, artifact_tree_sha256,
+                                  require_process_teardowns, sha256)
 
 VERSION = "2016.07.05.0000.0001"
 CASES = (
@@ -211,7 +212,8 @@ class EvidenceGate:
                     environment_evidence.append({
                         "case":case,
                         "manifest_sha256":sha256(environment.artifacts / "manifest.json"),
-                        "lifecycle_sha256":sha256(environment.artifacts / "process-lifecycle.json")})
+                        "lifecycle_sha256":sha256(environment.artifacts / "process-lifecycle.json"),
+                        "artifact_tree_sha256":artifact_tree_sha256(environment.artifacts)})
             except (AttributeError, OSError):
                 environment_evidence = []
         environment_evidence_ok = len(environment_evidence) == len(CASES)

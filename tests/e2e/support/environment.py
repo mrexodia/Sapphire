@@ -77,6 +77,38 @@ def sha256(path):
     return h.hexdigest()
 
 
+def artifact_tree_sha256(root):
+    """Hash exact private artifact names/sizes/bytes without disclosing names."""
+    root = Path(root)
+    if root.is_symlink() or not root.is_dir():
+        raise SetupError("private artifact tree is missing or unsafe")
+    paths = sorted(root.rglob("*"), key=lambda path:path.relative_to(root).as_posix())
+    if len(paths) > 16384:
+        raise SetupError("private artifact tree contains too many entries")
+    digest, file_count, total = hashlib.sha256(), 0, 0
+    for path in paths:
+        if path.is_symlink():
+            raise SetupError("private artifact tree contains a symlink")
+        relative = path.relative_to(root).as_posix().encode("utf-8")
+        if path.is_dir():
+            digest.update(b"D"); digest.update(len(relative).to_bytes(4, "big")); digest.update(relative)
+            continue
+        if not path.is_file():
+            raise SetupError("private artifact tree contains a non-file entry")
+        size = path.stat().st_size
+        if size > 512 * 1024 * 1024:
+            raise SetupError("private artifact file exceeds evidence bound")
+        total += size
+        if total > 2 * 1024 * 1024 * 1024:
+            raise SetupError("private artifact tree exceeds evidence bound")
+        digest.update(b"F"); digest.update(len(relative).to_bytes(4, "big")); digest.update(relative)
+        digest.update(size.to_bytes(8, "big")); digest.update(bytes.fromhex(sha256(path)))
+        file_count += 1
+    if not file_count:
+        raise SetupError("private artifact tree is empty")
+    return digest.hexdigest()
+
+
 def redact_runtime_log(text, secrets=()):
     for value in sorted((value for value in secrets if value), key=len, reverse=True):
         text = text.replace(value, "<redacted>")

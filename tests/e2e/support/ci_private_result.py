@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 from ..run_ci import inputs_match
 from .ci_result import EXPECTED_CASES, inspect_ci_result
-from .environment import SetupError, require_process_teardowns
+from .environment import SetupError, artifact_tree_sha256, require_process_teardowns
 
 SCOPE = "current-isolated-public-summary-to-private-per-case-evidence-correlation"
 
@@ -86,14 +86,15 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
             or any(path.is_symlink() or not path.is_dir()
                    or not path.name.startswith("sapphire-e2e-") for path in children)):
         raise SetupError("private isolated environment evidence set is incomplete or foreign")
-    expected = {(row["manifest_sha256"],row["lifecycle_sha256"]):row["case"]
+    expected = {(row["manifest_sha256"],row["lifecycle_sha256"],
+                 row["artifact_tree_sha256"]):row["case"]
                 for row in public["environment_evidence"]}
     found, databases, runtimes = {}, set(), set()
     for child in children:
         manifest_raw, manifest = _read(child / "manifest.json", 1024 * 1024, "manifest")
         lifecycle_raw, lifecycle = _read(child / "process-lifecycle.json", 256 * 1024, "lifecycle")
         pair = (hashlib.sha256(manifest_raw).hexdigest(),
-                hashlib.sha256(lifecycle_raw).hexdigest())
+                hashlib.sha256(lifecycle_raw).hexdigest(), artifact_tree_sha256(child))
         case = expected.get(pair)
         if case is None or case in found:
             raise SetupError("private isolated evidence hash is foreign or duplicated")
@@ -125,7 +126,8 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
     if set(found) != set(EXPECTED_CASES):
         raise SetupError("private isolated case evidence mapping is incomplete")
     rows = [{"case":case,"manifest_sha256":found[case][0],
-             "lifecycle_sha256":found[case][1]} for case in EXPECTED_CASES]
+             "lifecycle_sha256":found[case][1],"artifact_tree_sha256":found[case][2]}
+            for case in EXPECTED_CASES]
     if rows != public["environment_evidence"]:
         raise SetupError("private isolated evidence order or identity differs from public summary")
     return {"version":1,"status":"accepted","scope":SCOPE,
