@@ -92,12 +92,13 @@ Tell, reconnect and the two exact viewer checkpoints. No GM action, reset or
 viewer UI control is performed. Fixture placement is administrative setup only.
 
 `development_check` in the graphical result references the exact normal-runner
-summary and requires every requested subcheck, released leases, a strict normal
-exit receipt for the exact owned native worker, and the same non-GM graphical
-fixture identity at both checkpoints. Legacy summaries with only
-`worker_closed:true`, malformed/nonzero receipts and local process exit without the
-separate server-lifecycle observations fail closed; older graphical evidence is
-not retroactively upgraded. The original
+summary and requires every requested subcheck, released leases, the exact versioned
+`clear` terminal lease snapshot, a strict normal exit receipt for the exact owned
+native worker, and the same non-GM graphical fixture identity at both checkpoints.
+Legacy summaries without the terminal snapshot or with only `worker_closed:true`,
+malformed/nonzero receipts and local process exit without the separate server-
+lifecycle observations fail closed; older graphical evidence is not retroactively
+upgraded. The original
 witness then authenticates afresh to verify the graphical client's ordinary
 logout. The existing twenty-minute activity budget remains in use: native RPC
 and observation waits are capped by its remainder; late successes fail. Bounded

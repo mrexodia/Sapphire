@@ -1,4 +1,5 @@
 """Offline exact-lease inspection contracts; never server/offline evidence."""
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -8,7 +9,8 @@ import pytest
 from . import inspect_development_leases, provision_development, run_development
 from .support.development import AccountLease, DevelopmentError, validate_profile
 from .support import development_lease
-from .support.development_lease import inspect_account_leases, terminal_account_lease_snapshot
+from .support.development_lease import (inspect_account_leases, require_clear_terminal_account_leases,
+                                        terminal_account_lease_snapshot)
 from .test_development import FakeWorker, profile
 from .test_development_provisioning import ProvisionWorker, server
 
@@ -105,6 +107,39 @@ def test_unrelated_entries_are_neither_inspected_nor_changed(profile, tmp_path):
     report = inspect_account_leases(profile, root)
     assert report["state"] == "clear" and not report["unrelated_entries_inspected"]
     assert hashlib.sha256(foreign.read_bytes()).hexdigest() == digest
+
+
+@pytest.mark.parametrize("mutation", ["missing", "top_false", "extra", "boolean_version",
+                                      "boolean_count", "records_reordered", "retained",
+                                      "contact_claim", "integer_false", "match_claim"])
+def test_clear_terminal_snapshot_validator_is_exact(profile, tmp_path, mutation):
+    report = {"lease_snapshot": terminal_account_lease_snapshot(
+                  profile, tmp_path / "absent", "a" * 32),
+              "lease_snapshot_matches_run_state": True}
+    require_clear_terminal_account_leases(report)
+    wrong = copy.deepcopy(report)
+    if mutation == "missing":
+        wrong.pop("lease_snapshot")
+    elif mutation == "top_false":
+        wrong["lease_snapshot_matches_run_state"] = False
+    elif mutation == "extra":
+        wrong["lease_snapshot"]["unexpected"] = False
+    elif mutation == "boolean_version":
+        wrong["lease_snapshot"]["version"] = True
+    elif mutation == "boolean_count":
+        wrong["lease_snapshot"]["present_lease_count"] = False
+    elif mutation == "records_reordered":
+        wrong["lease_snapshot"]["records"].reverse()
+    elif mutation == "retained":
+        wrong["lease_snapshot"]["state"] = "retained"
+    elif mutation == "contact_claim":
+        wrong["lease_snapshot"]["server_or_database_contacted"] = True
+    elif mutation == "integer_false":
+        wrong["lease_snapshot"]["offline_verified"] = 0
+    else:
+        wrong["lease_snapshot"]["retained_receipts_match_run"] = True
+    with pytest.raises(DevelopmentError):
+        require_clear_terminal_account_leases(wrong)
 
 
 def test_terminal_snapshot_sanitizes_inspection_failure(profile, tmp_path, monkeypatch):

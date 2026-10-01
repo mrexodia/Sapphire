@@ -159,7 +159,8 @@ requires a normal zero exit from the exact owned native worker before releasing
 account leases and emits the same sanitized `worker_exit` receipt as the shared
 runner. Nonzero, unknown, unbound or constructor-failed exits retain leases and
 cannot produce a provisioning association. The placement planner rejects legacy
-or malformed provisioning reports without that receipt.
+or malformed provisioning reports without that receipt and the exact versioned
+`clear` terminal lease snapshot.
 
 The CLI's single cooperative provisioning budget is `--max-seconds 1..900`
 (default 300). It starts before local profile/managed-host validation and spans
@@ -247,8 +248,9 @@ It does not grant items/levels/quest completion or reset enemies/other players.
    `development-provisioning-association-v1` digest matches the configured
    API/lobby endpoint, optional managed-host session, ordered account names and
    received character/entity IDs. Mixed-profile, edited-identity and legacy
-   receipts without this binding are rejected; do not synthesize approval for
-   old reports. Passwords, authentication sessions and server secrets are excluded. Worker and
+   receipts without this binding or without exact `clear` terminal lease evidence
+   are rejected; do not synthesize approval for old reports. Passwords,
+   authentication sessions and server secrets are excluded. Worker and
    catalog changes/password rotation do not select another account and retain
    their separate validation. This is accidental-artifact association, **not** a
    signature, current authentication, server fingerprint, offline proof or lock.

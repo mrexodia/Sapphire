@@ -4,6 +4,7 @@ import time
 from .development import (DevelopmentError, validate_profile, movement_route,
                           require_normal_worker_exit)
 from .worker import Worker, WorkerError
+from .development_lease import require_clear_terminal_account_leases
 
 
 class ActivityWorker(Worker):
@@ -56,6 +57,7 @@ def require_graphical_check(result, viewer_name, entity):
             or result.get('database_access') is not False or result.get('world_restart_performed') is not False
             or result.get('movement_waypoints_per_cycle', 0) < 2):
         raise DevelopmentError('normal development check did not complete cleanly')
+    require_clear_terminal_account_leases(result)
     require_normal_worker_exit(result)
     for key in ('party_verification', 'tell_verification', 'reconnect_verification', 'viewer_verification'):
         value = result.get(key, {})

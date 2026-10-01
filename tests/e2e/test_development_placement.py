@@ -23,6 +23,18 @@ def preparation(tmp_path, monkeypatch):
                               "context_entered": True, "context_exit_attempted": True,
                               "context_exit_completed": True, "process_exit_observed": True,
                               "process_id": 12345, "returncode": 0},
+              "lease_snapshot": {"version": 1,
+                  "scope": "exact-local-account-lease-snapshot-not-server-session-or-offline-proof",
+                  "state": "clear", "expected_lease_count": 2, "present_lease_count": 0,
+                  "records": [{"lease_index": 0, "state": "absent"},
+                              {"lease_index": 1, "state": "absent"}],
+                  "retained_run_id": None, "profile_or_account_values_disclosed": False,
+                  "lease_paths_or_keys_disclosed": False, "unrelated_entries_inspected": False,
+                  "filesystem_mutation_performed": False, "server_or_database_contacted": False,
+                  "active_session_checked": False, "offline_verified": False,
+                  "release_authorized": False, "cross_file_snapshot_atomic": False,
+                  "retained_receipts_match_run": False},
+              "lease_snapshot_matches_run_state": True,
               "accounts": [{"slot": index, "character": account["character"], "entity_id": index + 1,
                             "character_id": index + 100, "gm_rank": 0,
                             "account_creation": "fresh_login_verified",
@@ -47,6 +59,7 @@ def test_registry_binds_exact_observed_characters_and_source_destination(prepara
 
 @pytest.mark.parametrize("patch", [{"status": "failed"}, {"lease_retained": True},
     {"worker_closed": False}, {"worker_exit": None}, {"credential_profile_saved": False},
+    {"lease_snapshot": None}, {"lease_snapshot_matches_run_state": False},
     {"scope": "headless-live-not-real-client"}])
 def test_registry_requires_complete_provisioning(preparation, patch):
     private, report = preparation

@@ -41,6 +41,16 @@ def completed():
                            'context_entered':True,'context_exit_attempted':True,
                            'context_exit_completed':True,'process_exit_observed':True,
                            'process_id':12345,'returncode':0},
+            'lease_snapshot':{'version':1,
+                'scope':'exact-local-account-lease-snapshot-not-server-session-or-offline-proof',
+                'state':'clear','expected_lease_count':2,'present_lease_count':0,
+                'records':[{'lease_index':0,'state':'absent'},{'lease_index':1,'state':'absent'}],
+                'retained_run_id':None,'profile_or_account_values_disclosed':False,
+                'lease_paths_or_keys_disclosed':False,'unrelated_entries_inspected':False,
+                'filesystem_mutation_performed':False,'server_or_database_contacted':False,
+                'active_session_checked':False,'offline_verified':False,'release_authorized':False,
+                'cross_file_snapshot_atomic':False,'retained_receipts_match_run':False},
+            'lease_snapshot_matches_run_state':True,
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
             **{key:{'requested':True,'verified':True} for key in ('party_verification','tell_verification','reconnect_verification')},
@@ -60,7 +70,8 @@ def test_report_requires_all_subchecks_and_same_non_gm_viewer():
 
 
 @pytest.mark.parametrize('field,value',[('status','failed'),('lease_retained',True),('worker_closed',False),
-    ('worker_exit',None),('administrative_preparation_wait_enabled',True),('database_access',True),
+    ('worker_exit',None),('lease_snapshot',None),('lease_snapshot_matches_run_state',False),
+    ('administrative_preparation_wait_enabled',True),('database_access',True),
     ('world_restart_performed',True),('movement_waypoints_per_cycle',0)])
 def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
     report=completed(); report[field]=value

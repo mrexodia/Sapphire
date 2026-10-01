@@ -106,6 +106,50 @@ def inspect_account_leases(profile, root=None):
     return report
 
 
+def require_clear_terminal_account_leases(report):
+    """Reject legacy, malformed or non-clear terminal lease evidence."""
+    expected = {
+        "version": 1,
+        "scope": _SCOPE,
+        "state": "clear",
+        "expected_lease_count": 2,
+        "present_lease_count": 0,
+        "records": [{"lease_index": 0, "state": "absent"},
+                    {"lease_index": 1, "state": "absent"}],
+        "retained_run_id": None,
+        "profile_or_account_values_disclosed": False,
+        "lease_paths_or_keys_disclosed": False,
+        "unrelated_entries_inspected": False,
+        "filesystem_mutation_performed": False,
+        "server_or_database_contacted": False,
+        "active_session_checked": False,
+        "offline_verified": False,
+        "release_authorized": False,
+        "cross_file_snapshot_atomic": False,
+        "retained_receipts_match_run": False,
+    }
+    snapshot = report.get("lease_snapshot")
+    if not isinstance(snapshot, dict):
+        raise DevelopmentError("exact clear terminal account-lease evidence is required")
+    records = snapshot.get("records")
+    false_fields = ("profile_or_account_values_disclosed", "lease_paths_or_keys_disclosed",
+                    "unrelated_entries_inspected", "filesystem_mutation_performed",
+                    "server_or_database_contacted", "active_session_checked",
+                    "offline_verified", "release_authorized", "cross_file_snapshot_atomic",
+                    "retained_receipts_match_run")
+    if (type(snapshot.get("version")) is not int
+            or type(snapshot.get("expected_lease_count")) is not int
+            or type(snapshot.get("present_lease_count")) is not int
+            or not isinstance(records, list)
+            or any(not isinstance(row, dict) or type(row.get("lease_index")) is not int
+                   for row in records)
+            or any(snapshot.get(key) is not False for key in false_fields)
+            or snapshot != expected
+            or report.get("lease_snapshot_matches_run_state") is not True):
+        raise DevelopmentError("exact clear terminal account-lease evidence is required")
+    return report["lease_snapshot"]
+
+
 def terminal_account_lease_snapshot(profile, root, expected_run_id):
     """Return sanitized terminal evidence even if inspection itself fails."""
     try:
