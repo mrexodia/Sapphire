@@ -242,6 +242,53 @@ only at its original coordinator version; current-code graphical execution and
 operator disposal evidence are pending. No full gate, soak or platform sweep ran;
 overall goal remains incomplete.
 
+## Retained bot leases have a read-only fail-closed inspector
+
+Feature **`33adadfea`** adds `inspect_development_leases.py` and
+`support/development_lease.py`. Given a private two-account profile, the command
+derives only those two exact per-user cooperating-runner lease paths. It never
+lists unrelated entries, emits account values/path hashes/paths, contacts a server
+or database, or mutates/releases any file. Recovery inspection still validates the
+full profile schema but does not require the historical worker executable to remain
+installed.
+
+Each receipt is limited to 4KiB, must be a regular non-symlink file, retain the
+exact current `{run_id,recovery}` schema and one lowercase 32-hex run ID, and pass
+before/open/after file-identity checks. These checks reject ordinary replacement
+races but are explicitly not a cross-file lock. The result is `clear` only when both
+exact paths are absent, `retained` only when both valid receipts identify the same
+run, and otherwise `ambiguous`; ambiguous CLI results exit nonzero. Root/final
+symlinks, non-directory roots, partial pairs, mixed runs, malformed/oversized files
+and unreadable/changed snapshots all fail closed. Foreign directory entries are
+untouched and uninspected.
+
+The summary always says active sessions were not checked, offline state was not
+verified, release was not authorized and the snapshot is not atomic. Therefore even
+a `clear` result cannot authorize reuse/reset, and `retained` is correlation rather
+than permission to remove either file. `DEVELOPMENT.md` directs operators to verify
+both bots independently offline before narrowly reviewed manual recovery and never
+to steal a lease.
+
+The new focused file passed **16 tests**. Combined lease/shared runner/deadline/
+provisioning/worker-exit/host/binding/placement contracts passed **231 tests,
+2.32s** in the feature worktree. A detached clean exact
+`33adadfeacd7ff0af43dc20c98bf9a02dc9119bb` selection passed **231 tests, 2.84s**;
+the worktree was clean before/after and harness wall time was **6.313s**. Artifact:
+`.e2e-artifacts/development-lease-inspection-clean-001.json`; test-log SHA-256
+`53495481963dc1283e843eae2de4866e17f8c401b0a838dcf4ded2c26d907736`.
+
+The first product profile check, `profile-check-001`, accidentally resolved modules
+from the main checkout rather than the detached worktree. Its identical local
+`clear` snapshot is retained but not used as frozen-source evidence. Fresh
+**`development-lease-inspection-profile-check-002`** explicitly ran the product CLI
+from detached `33adadfea` against live-002's retained private profile. It observed
+both exact local paths absent and wrote `state:clear`; summary SHA-256 is
+`80fe439731c6d41db4ed1adac4b91ca50656d75252d0ee70af3af7488955a21a`.
+No server/process/database operation or lease release occurred. This is current
+local filesystem evidence only, not proof those characters are offline or safe to
+reset/reprovision. No full gate, soak or platform sweep ran; overall goal remains
+incomplete.
+
 ## Dedicated provisioning has one cooperative success deadline
 
 Feature **`86caebe3a`** applies the existing `RunDeadline`/`DeadlineWorker`
@@ -722,7 +769,7 @@ or completion audit. The original plan checklist below still applies.
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
 | Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current nested/outer exit-receipt policy | Historical narrow owned-guest bridge verified at its version; current validator/coordinator require fresh nested and outer worker receipts pending graphical execution; neither proves user's existing shared deployment or continuous/rendered-action agreement |
 | Short meaningful scenarios and timing | Movement/party/Tell/reconnect/viewer checks; exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live evidence recorded above; new decline/inventory flags have headless, not graphical, live coverage |
-| Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results | Verified for implemented operations; not a substitute for the missing reset/session fence |
+| Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies lifecycle/position, not the inventory contents |
 | Preserve viewer, private inputs, historical failures and unrelated experiments | Separate viewer profiles; private artifact hashes; failed graphical 001–003 retained; seven experimental paths remain separate | No all-state viewer invariance, shared-world cleanliness or crash-consistency claim |
 | Separate shared development from isolated acceptance | `DEVELOPMENT.md`, `REAL_CLIENT.md`, summaries with explicit scope; original requirement checklist below | Full gate/soak/platform sweeps remain unauthorized for this iteration; Linux/hosted/broader gameplay gaps remain open |
@@ -1810,7 +1857,7 @@ a nearby passing test does not close them.
 | Scheduled exploration/soak tier | local workload commands and artifacts | **Partial:** no authorized hosted scheduled execution |
 | Manual/scheduled real-client tier | policy plus completed isolated manual Sandbox lane | Verified once locally; no scheduled breadth |
 | Untrusted-code isolation/approval | `CI.md` requires workflow-scoped ephemeral VM, protected environment and disposal | Documented; **hosted enforcement unverified** |
-| Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit and bounded state dumps | Verified |
+| Failure identity, expectation/action/timing and versions | manifests, action plans/outcomes, pytest/JUnit, bounded state dumps and sanitized exact-lease snapshots | Verified for implemented paths; lease snapshots do not establish server session state |
 | Correlated logs/journals/crash diagnostics | redacted API/lobby/world/DB/worker logs, bounded decoded journals and structured unexpected-process-exit metadata are retained | **Partial:** one owned-world termination is verified, but platform crash dumps are only retained where externally produced |
 | Fixture/persistence evidence, redaction, JUnit and summary | scenario JSON snapshots, restart state, redaction contracts, `live.xml` and CI JSON summary | Verified |
 | Bounded soak logs and generator saturation | capped plans/journals, checkpoints, action percentiles and API/lobby/world/DB/worker/runner resource samples | Verified; scenario coverage remains reported separately from concurrency |
