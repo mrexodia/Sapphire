@@ -2057,6 +2057,22 @@ One fresh-root correction with the exact revision passed; receipt SHA-256:
 `79b2a2a4a06f998432251c4a69da40ec244ad7fb1a631d36baa945de62a207d4`.
 No process/service/database/account/gameplay operation ran in either attempt.
 
+Fix **`985cd9d75`** closes the corresponding constructor-failure cleanup hole in the
+shared isolated `Environment`: port/identity/HTTP setup now completes before a temp
+root exists, while runtime/artifact directory setup has guarded rollback. Rollback
+removes only the constructor-owned temp root and a newly created empty artifact
+directory; an exact pre-existing collision remains untouched and fails closed.
+Failure injections cover pre-root port failure, runtime-directory failure and a
+foreign artifact collision.
+
+Frozen, remote-free source **`985cd9d758b5744184de271c9b0655ebfb55bb19`**
+passed **190 focused contracts with 14 declared worker skips in 14.19s**. Test-log
+SHA-256: `955990a0b5da064e16fe35e4eccfa0576553ecf499d27afa2f7aaff58e92ccc5`.
+The exact frozen revision then passed service-free staging with receipt SHA-256
+`ed6dd6d8ff62f159cdc2a2e312ec2dc0ebc9d9336dc23dff36e8864fac13641d`.
+No process/service/database/account/gameplay operation ran. Constructor rollback is
+bounded local cleanup evidence, not secure erasure or process-leak evidence.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
