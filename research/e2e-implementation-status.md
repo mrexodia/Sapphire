@@ -1578,6 +1578,24 @@ hosted execution, gameplay truth, graceful shutdown or VM disposal. No gate,
 service or gameplay operation ran; current positive public/private evidence awaits
 a new authorized gate.
 
+Feature **`1417b25bc`** adds the remaining private gate-diagnostics binding. The
+producer includes the exact ordered environment-evidence rows in private
+`gate-diagnostics.json` and publishes only that file's SHA-256. Public inspection
+requires the hash. Private inspection rehashes the file and requires the exact 15
+collected case IDs, exact report-key order, one and only one `passed` setup/call/
+teardown outcome for every case, zero unexpected reports, both environment counts
+15, and exact equality with the public evidence rows. Captured output, longrepr,
+paths and runtime identities remain excluded.
+
+Frozen, remote-free source **`1417b25bc369609019516992587c5af387495f9f`**
+passed **100 CI/workflow-policy tests in 3.03s**. A negative changes a private call
+outcome while recomputing the public diagnostics hash, proving semantic validation
+rather than hash equality alone. Test-log SHA-256:
+`fa4006a0635eb9970172beef544040b20dbbe427d8077fd689885111863c0433`.
+This preserves exact private phase-report identity for a future run but does not
+prove the reported gameplay observations independently. Historical evidence still
+lacks all current fields. No gate, service or gameplay operation ran.
+
 ## Current graphical results bind exact private service teardown
 
 Fix **`9046367cc`** consumes the preceding isolated lifecycle evidence in the
@@ -3856,7 +3874,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Semantic replay | Versioned allowlisted plans, route hash, logical roles and all recorded execution limits | v1 exploration and v2 paced soak replay verified; scheduling is not deterministic |
 | Failure minimization | `run_minimize.py`: bounded fresh-environment delta reduction with exact normalized action-failure equivalence, semantic revalidation and cleanup evidence | Verified for an unpaced deterministic deadline failure; paced plans deliberately excluded |
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
-| Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds one ordered manifest/lifecycle hash pair per exact case while keeping paths/PIDs private, with a read-only private-byte/process/input correlation inspector | Implemented at contract level; current public/private per-case correlation awaits a new gate, and hashes do not prove gameplay, hosted execution or independent compatibility |
+| Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds one ordered manifest/lifecycle hash pair per exact case plus private gate-diagnostics hash while keeping paths/PIDs private, with a read-only private-byte/process/input/phase-report correlation inspector | Implemented at contract level; current public/private per-case correlation awaits a new gate, and hashes/reported phases do not independently prove gameplay, hosted execution or compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, `run_ci.py`, `inspect_ci_result.py`, `CI.md`; strict workflow/process-policy and public-summary receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy the exact current sanitized result/revision contract before upload, and private dispatch remains protected/serialized in YAML; every historical summary predates public exact process-generation cleanup and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
