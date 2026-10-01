@@ -290,6 +290,24 @@ def test_private_profile_inspector_rejects_unsafe_or_incomplete_input(profile, t
         assert "PRIVATE_MARKER" not in str(raised.value)
 
 
+def test_private_profile_inspector_rejects_duplicate_keys(tmp_path):
+    path = tmp_path / "profile.json"
+    path.write_text('{"worker":"first","worker":"second"}')
+    with pytest.raises(SetupError, match="cannot read"):
+        inspect_ci_profile(path, suffix=".exe")
+
+
+def test_private_profile_inspector_rejects_symlink(profile, tmp_path):
+    target = tmp_path / "target.json"; target.write_text(json.dumps(profile))
+    link = tmp_path / "profile.json"
+    try:
+        link.symlink_to(target)
+    except OSError:
+        pytest.skip("profile symlinks are unavailable on this host")
+    with pytest.raises(SetupError, match="cannot read"):
+        inspect_ci_profile(link, suffix=".exe")
+
+
 @pytest.mark.parametrize("scale", [True, 0, 4, 1.5])
 def test_preflight_rejects_unbounded_deadline_scale(profile, scale):
     profile["deadline_scale"] = scale

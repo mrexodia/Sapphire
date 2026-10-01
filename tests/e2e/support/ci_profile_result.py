@@ -11,14 +11,28 @@ from .environment import SetupError
 SCOPE = "isolated-gate-private-profile-availability-and-byte-identities-only"
 
 
+def _unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON key")
+        result[key] = value
+    return result
+
+
 def inspect_ci_profile(profile_path, *, worker=None, binaries=None, suffix=None):
-    path = Path(profile_path).resolve()
+    requested = Path(profile_path)
     try:
-        if path.is_symlink() or not path.is_file() or not 0 < path.stat().st_size <= 1024 * 1024:
+        if requested.is_symlink():
+            raise OSError()
+        path = requested.resolve()
+        if not path.is_file() or not 0 < path.stat().st_size <= 1024 * 1024:
             raise OSError()
         raw = path.read_bytes()
-        profile = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        if not 0 < len(raw) <= 1024 * 1024:
+            raise OSError()
+        profile = json.loads(raw.decode("utf-8"), object_pairs_hook=_unique_object)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
         raise SetupError("cannot read isolated-gate private profile") from error
     if not isinstance(profile, dict):
         raise SetupError("isolated-gate private profile is not an object")
