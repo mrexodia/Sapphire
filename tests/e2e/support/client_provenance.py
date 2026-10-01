@@ -103,3 +103,36 @@ def require_prepared_source(prepared, expected_revision, report_manifest_sha256=
     return {"verified": True, "scope": BINDING_SCOPE,
             "revision": source["revision"], "source_manifest_sha256": source_hash,
             "tracked_source_files": len(files), "unmaterialized_gitlinks": len(links)}
+
+
+def require_prepared_inputs(prepared, expected_revision, report_manifest_sha256=None):
+    """Rehash every exact staged input; external readonly mappings remain out of scope."""
+    prepared = Path(prepared).resolve()
+    source = require_prepared_source(
+        prepared, expected_revision, report_manifest_sha256)
+    inputs_manifest = _read(prepared / "inputs.json", "input manifest")
+    expected = inputs_manifest["inputs"]  # Already shape/path/digest validated above.
+    input_root = prepared / "input"
+    actual = {}
+    try:
+        entries = list(input_root.rglob("*"))
+    except OSError as error:
+        raise DevelopmentError("cannot enumerate prepared graphical inputs") from error
+    for path in entries:
+        if path.is_symlink():
+            raise DevelopmentError("prepared graphical input contains a symbolic link")
+        if path.is_dir():
+            continue
+        if not path.is_file():
+            raise DevelopmentError("prepared graphical input is not a regular file")
+        relative = path.relative_to(input_root).as_posix()
+        try:
+            actual[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError as error:
+            raise DevelopmentError("cannot hash prepared graphical input") from error
+    if actual != expected:
+        raise DevelopmentError("prepared graphical input files differ from inputs.json")
+    return {"verified": True,
+            "scope": "all-exact-staged-graphical-input-files-match-preparation-manifest",
+            "file_count": len(actual), "source": source,
+            "note": "External readonly mappings and native-build provenance are out of scope."}

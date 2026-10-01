@@ -30,11 +30,14 @@ def prepared_root(tmp_path, monkeypatch):
         "submodule_fetch_performed":False,"remote_configured":False}
     source_path = root / "input/source.json"; write(source_path, source)
     source_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
+    profile_path = root / "input/profile.json"; write(profile_path, {"synthetic":True})
+    profile_hash = hashlib.sha256(profile_path.read_bytes()).hexdigest()
     write(root / "inputs.json", {"version":1,"status":"prepared_not_executed",
         "client_sha256":CLIENT_SHA256,
         "config_sha256":hashlib.sha256(config.read_bytes()).hexdigest(),
         "source_revision":"1" * 40,"source_manifest_sha256":source_hash,
-        "working_tree_changes_included":False,"inputs":{"source.json":source_hash}})
+        "working_tree_changes_included":False,
+        "inputs":{"profile.json":profile_hash,"source.json":source_hash}})
     write(root / "output/result.json", {"run":"a"*32,"status":"passed"})
     executable = tmp_path / "WindowsSandbox.exe"; executable.write_bytes(b"synthetic")
     return root, executable
@@ -92,6 +95,8 @@ def test_exact_prepared_launch_absence_and_manual_confirmation(tmp_path, monkeyp
     lambda root: json_file(root / "input/source.json", lambda value:
         value["gitlinks"].append({"path":"deps/example","revision":True,
                                   "materialized":False})),
+    lambda root: (root / "input/profile.json").write_bytes(b"changed"),
+    lambda root: (root / "input/foreign.bin").write_bytes(b"untracked"),
 ])
 def test_prepared_source_mismatch_fails_before_sandbox_launch(tmp_path, monkeypatch, mutation):
     root, executable = prepared_root(tmp_path, monkeypatch)

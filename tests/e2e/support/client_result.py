@@ -13,7 +13,7 @@ from pathlib import Path, PurePosixPath
 
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
-from .client_provenance import require_prepared_source
+from .client_provenance import require_prepared_inputs
 from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                            LOGOUT_CAPTURE_SCOPE, other_player,
                            real_logout_baseline, real_movement_baseline,
@@ -303,7 +303,7 @@ def inspect_client_development_result(output, expected_source_revision):
             or report.get("sandbox_disposal") != "operator_required"
             or report.get("runtime_removed") is not True):
         raise DevelopmentError("graphical result is not a current successful pre-disposal result")
-    prepared_source = require_prepared_source(
+    prepared_inputs = require_prepared_inputs(
         output.parent, expected_source_revision, report.get("source_manifest_sha256"))
     fixture = report.get("fixture")
     if (not isinstance(fixture, dict)
@@ -419,7 +419,7 @@ def inspect_client_development_result(output, expected_source_revision):
 
     return {"version": 1, "status": "accepted", "scope": RESULT_SCOPE,
             "run": run_id, "source_revision": expected_source_revision,
-            "source_manifest": prepared_source,
+            "prepared_inputs": prepared_inputs,
             "result_sha256": _sha256(result_path),
             "development_summary_sha256": main_hash,
             "decline_summary_sha256": decline_hash,

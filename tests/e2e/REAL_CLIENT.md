@@ -52,9 +52,11 @@ current **committed HEAD**, without host working-tree/staged/untracked changes,
 submodule fetches, hardlink/alternate dependencies or a configured remote.
 `input/source.json` records the revision and materialized source-file hashes;
 `inputs.json` binds that manifest. Before launch and during disposal inspection,
-the host rejects malformed/type-confused source manifests and requires the exact
-source-manifest bytes/revision/hash linkage in `inputs.json`; the current result
-must repeat that exact hash. The guest maps this private snapshot read-only
+the host rejects malformed/type-confused source manifests, requires the exact
+source-manifest bytes/revision/hash linkage in `inputs.json`, and re-enumerates and
+rehashes every regular file under `input/`; missing, changed, extra or symbolic
+inputs fail before launch and during inspection. The current result must repeat the
+exact source-manifest hash. The guest maps this private snapshot read-only
 and checks its revision, cleanliness and hashes before fixture/process setup.
 Ignored extra files and unexpected materialized submodules are also rejected.
 
@@ -333,7 +335,8 @@ are absent, not passing. On completion or failure, `status.json` changes to
    ```
 
    It first binds the result's recorded source-manifest SHA-256 and revision to the
-   exact private `input/source.json` bytes through strict `inputs.json`, then
+   exact private `input/source.json` bytes through strict `inputs.json`, requires
+   every staged input file and no extras to match that manifest, then
    revalidates the empty pre-launch baseline, fresh exact-name received spawn,
    fresh sequence-bound bounded displacement, fresh sequence-bound Say, review
    presence and fresh post-phase logout absence;

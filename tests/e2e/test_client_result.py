@@ -49,11 +49,14 @@ def build_output(root, source_revision="1" * 40):
     source_path = root.parent / "input/source.json"
     write_json(source_path, source_manifest)
     source_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
+    profile_path = root.parent / "input/profile.json"
+    write_json(profile_path, {"synthetic":True})
+    profile_hash = hashlib.sha256(profile_path.read_bytes()).hexdigest()
     write_json(root.parent / "inputs.json", {"version":1,
         "status":"prepared_not_executed","client_sha256":CLIENT_SHA256,
         "config_sha256":"e" * 64,"source_revision":source_revision,
         "source_manifest_sha256":source_hash,"working_tree_changes_included":False,
-        "inputs":{"source.json":source_hash}})
+        "inputs":{"profile.json":profile_hash,"source.json":source_hash}})
     main, decline = completed(), declined()
     main["elapsed_seconds"], decline["elapsed_seconds"] = 12.5, 4.5
     decline["run_id"] = "b" * 32
@@ -225,10 +228,14 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
              for path in root.rglob("*") if path.is_file()}
     assert before == after
     assert proof["status"] == "accepted" and proof["scope"] == RESULT_SCOPE
-    assert proof["source_manifest"] == {"verified":True,
-        "scope":"exact-prepared-source-manifest-bytes-and-revision-not-native-build-attestation",
-        "revision":"1" * 40,"source_manifest_sha256":report_source_hash(root),
-        "tracked_source_files":1,"unmaterialized_gitlinks":0}
+    assert proof["prepared_inputs"] == {"verified":True,
+        "scope":"all-exact-staged-graphical-input-files-match-preparation-manifest",
+        "file_count":2,
+        "source":{"verified":True,
+            "scope":"exact-prepared-source-manifest-bytes-and-revision-not-native-build-attestation",
+            "revision":"1" * 40,"source_manifest_sha256":report_source_hash(root),
+            "tracked_source_files":1,"unmaterialized_gitlinks":0},
+        "note":"External readonly mappings and native-build provenance are out of scope."}
     assert proof["sandbox_disposal_verified"] is False
     assert proof["bot_interaction_review"] == {"verified":True,
         "frame_sha256":hashlib.sha256((root / "interaction.png").read_bytes()).hexdigest(),
@@ -262,6 +269,8 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
         lambda value:value["inputs"].update({"source.json":"0" * 64})),
     lambda root, report: json_file(root.parent / "input/source.json",
         lambda value:value.update(dirty=True)),
+    lambda root, report: (root.parent / "input/profile.json").write_bytes(b"changed"),
+    lambda root, report: (root.parent / "input/extra.bin").write_bytes(b"untracked input"),
     lambda root, report: report.update(runtime_removed=False),
     lambda root, report: report.update(sandbox_disposal="verified"),
     lambda root, report: report.update(client_pid=True),

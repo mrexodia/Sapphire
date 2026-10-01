@@ -549,8 +549,10 @@ manually confirming the exact owned discard dialog, use `approve-disposal` and
 bind the current result to exact launcher/process-absence evidence. Both current
 inspectors also require the result, strict `inputs.json`, and exact private
 `input/source.json` bytes to agree on the committed coordinator revision and
-manifest SHA-256; this is source identity, not native-build attestation or a
-signature. This does not prove server-side exclusion. Exact artifacts and limitations are in the
+manifest SHA-256, and require exact enumeration/hash equality for every staged
+`input/` file with no symlinks or extras. This covers only staged inputs; external
+read-only mappings remain separately identified. It is not native-build
+attestation or a signature. This does not prove server-side exclusion. Exact artifacts and limitations are in the
 implementation audit.
 
 ### Optional owned two-bot party check
