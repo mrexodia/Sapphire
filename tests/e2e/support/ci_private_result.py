@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-from ..run_ci import inputs_match
+from ..run_ci import PATH_KEYS, inputs_match
 from .ci_result import EXPECTED_CASES, inspect_ci_result
 from .environment import SetupError, artifact_tree_sha256, require_process_teardowns
 
@@ -102,12 +102,23 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
     if supplied_root.is_symlink() or not supplied_root.is_dir():
         raise SetupError("private isolated run root is missing or unsafe")
     root = supplied_root.resolve()
+    profile_raw, profile = _read(root / "profile.json", 1024 * 1024, "run profile")
     pytest_raw = _raw(root / "pytest.log", 16 * 1024 * 1024, "pytest log")
     junit_raw = _raw(root / "live.xml", 16 * 1024 * 1024, "JUnit report")
     private_artifacts = public["private_test_artifacts"]
-    if (hashlib.sha256(pytest_raw).hexdigest() != private_artifacts["pytest_log_sha256"]
+    if (hashlib.sha256(profile_raw).hexdigest() != private_artifacts["profile_sha256"]
+            or hashlib.sha256(pytest_raw).hexdigest() != private_artifacts["pytest_log_sha256"]
             or hashlib.sha256(junit_raw).hexdigest() != private_artifacts["junit_sha256"]):
-        raise SetupError("private isolated test artifact hash differs from public result")
+        raise SetupError("private isolated test/input artifact hash differs from public result")
+    required_profile = set(PATH_KEYS) | {"artifacts"}
+    if (set(profile) not in (required_profile, required_profile | {"deadline_scale"})
+            or type(profile.get("deadline_scale", 1)) is not int
+            or profile.get("deadline_scale", 1) != public["deadline_scale"]
+            or any(not isinstance(profile.get(key), str) or not Path(profile[key]).is_absolute()
+                   or str(Path(profile[key]).resolve()) != profile[key] for key in PATH_KEYS)
+            or not isinstance(profile.get("artifacts"), str)
+            or Path(profile["artifacts"]).resolve() != root / "artifacts"):
+        raise SetupError("private isolated run profile is foreign or malformed")
     try:
         junit = ET.fromstring(junit_raw)
     except ET.ParseError as error:
@@ -201,6 +212,7 @@ def inspect_ci_private_evidence(summary_path, private_run_dir, expected_revision
             "private_lifecycle_count":len(rows),
             "gate_diagnostics_sha256":public["gate_diagnostics_sha256"],
             "private_test_artifacts":private_artifacts,
+            "profile_schema_verified":True,
             "environment_evidence":rows,
             "process_generations_verified":True,"fault_evidence_verified":True,
             "runtime_absence_verified":True,"staged_inputs_verified":True,

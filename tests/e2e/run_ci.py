@@ -305,6 +305,7 @@ def run(profile_path, private_root, summary_path, *, worker=None, binaries=None,
                 }, indent=2), encoding="utf-8")
                 report["gate_diagnostics_sha256"] = sha256(diagnostics_path)
                 report["private_test_artifacts"] = {
+                    "profile_sha256":sha256(local_profile),
                     "pytest_log_sha256":sha256(private / "pytest.log"),
                     "junit_sha256":sha256(private / "live.xml")}
                 environments = gate.environments or ([gate.environment] if gate.environment is not None else [])

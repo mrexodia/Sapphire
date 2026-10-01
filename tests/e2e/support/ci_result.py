@@ -82,7 +82,7 @@ def inspect_ci_result(summary_path, expected_revision):
         raise SetupError("isolated-gate public summary is incomplete, foreign or failed")
     test_artifacts = report.get("private_test_artifacts")
     if (not isinstance(test_artifacts, dict)
-            or set(test_artifacts) != {"pytest_log_sha256","junit_sha256"}
+            or set(test_artifacts) != {"profile_sha256","pytest_log_sha256","junit_sha256"}
             or any(not _hex(value) for value in test_artifacts.values())):
         raise SetupError("isolated-gate private test artifact identities are malformed")
     evidence = report.get("environment_evidence")

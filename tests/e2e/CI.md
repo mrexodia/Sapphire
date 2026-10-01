@@ -114,8 +114,9 @@ PID/generation records deleted with disposable fixtures,
 prove hosted execution, or replace an actual current gate run. When the authorized
 private run directory is retained, the second inspector matches every public hash
 pair one-to-one to exactly 16 safe private environment directories, revalidates all
-service generations and staged source/input identities, requires every manifest-
-declared disposable root/runtime to be absent and non-overlapping with retained
+service generations and staged source/input identities, requires the exact private
+profile hash, allowlisted path-only schema, deadline and artifact-root binding,
+requires every manifest-declared disposable root/runtime to be absent and non-overlapping with retained
 artifacts, requires exact private collection plus one passed setup/call/teardown per
 case, and requires exactly 16 JUnit
 testcases with no failure/error/skip element, and correlates the fault case's private
@@ -164,8 +165,8 @@ separate evidence that its binaries came from the checkout.
   and booleans, checkout identity, component hashes and cleanup/collection results.
   It also carries exactly 16 ordered
   `{case, manifest_sha256, lifecycle_sha256, artifact_tree_sha256}` rows plus
-  SHA-256 values for private `gate-diagnostics.json`, `pytest.log` and
-  `live.xml`. These bind each public case to exact private staged-manifest/process-
+  SHA-256 values for private `profile.json`, `gate-diagnostics.json`, `pytest.log`
+  and `live.xml`. These bind the exact private invocation profile and each public case to exact private staged-manifest/process-
   lifecycle bytes, the complete bounded private environment artifact tree, phase
   reports and private test artifacts without publishing filenames, paths, ports,
   database names, PIDs, return codes, captured output or credentials;
