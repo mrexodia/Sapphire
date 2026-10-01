@@ -2068,6 +2068,12 @@ foreign artifact collision.
 Frozen, remote-free source **`985cd9d758b5744184de271c9b0655ebfb55bb19`**
 passed **190 focused contracts with 14 declared worker skips in 14.19s**. Test-log
 SHA-256: `955990a0b5da064e16fe35e4eccfa0576553ecf499d27afa2f7aaff58e92ccc5`.
+An exact source-path comparison confirmed no worker/protocol/Crypt source changed
+from the clean-built worker revision; supplying that worker
+(`d155c0229c733bf965bc3c3b630cd0374e0f90e8b1f8a7b8152bcd88f0fc978b`)
+then exercised all previously skipped synthetic loopback contracts: **204 passed
+with no skips in 17.22s**. No-skip log SHA-256:
+`92657bf29aa0c7e0929b98b89dcbcb76c505c210497fbeb583c3917e2eabda71`.
 The exact frozen revision then passed service-free staging with receipt SHA-256
 `ed6dd6d8ff62f159cdc2a2e312ec2dc0ebc9d9336dc23dff36e8864fac13641d`.
 No process/service/database/account/gameplay operation ran. Constructor rollback is
