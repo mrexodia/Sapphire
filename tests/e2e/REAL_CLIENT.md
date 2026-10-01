@@ -344,8 +344,9 @@ are absent, not passing. On completion or failure, `status.json` changes to
    revalidates the empty pre-launch baseline, fresh exact-name received spawn,
    fresh sequence-bound bounded displacement, fresh sequence-bound Say, review
    presence and fresh post-phase logout absence;
-   both nested summaries/hashes and
-   strict consumers; pair/handoff/restoration receipts; run-bound Say challenge,
+   both nested summaries/hashes, their distinct run-bound complete `worker/`
+   artifact-tree identities and strict consumers; pair/handoff/restoration receipts;
+   run-bound Say challenge,
    initial review-frame binding, the final nested challenge-bound dedicated-bot
    interaction frame/manual receipt and the separately approved exact title-screen frame,
    retirements, outer deadline/worker exit, exact graphical-client teardown, all

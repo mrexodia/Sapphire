@@ -202,7 +202,10 @@ login, refreshed-lobby/world confirmation and logout stages. Successful setup ha
 status **`provisioned`** (CLI exit zero), not gameplay status `passed`. It also
 requires a normal zero exit from the exact owned native worker before releasing
 account leases and emits the same sanitized `worker_exit` receipt as the shared
-runner. Nonzero, unknown, unbound or constructor-failed exits retain leases and
+runner. Its exact `worker/` directory contains a run-bound non-secret ownership
+record and a bounded complete-tree SHA-256 covering all retained journals; managed
+provisioning inspection recomputes both ownership and bytes. Nonzero, unknown,
+unbound or constructor-failed exits retain leases and
 cannot produce a provisioning association. The placement planner rejects legacy
 or malformed provisioning reports without that receipt and the exact versioned
 `clear` terminal lease snapshot.
@@ -271,7 +274,8 @@ python -m tests.e2e.inspect_managed_development_provisioning `
 The inspector emits no usernames or passwords. It requires the exact managed-host
 start/end identity, bounded deadline, two distinct GM0 received identities, fresh
 HTTP/lobby/world outcomes, both server-close receipts, provisioning association,
-normal worker exit, clear leases and terminal four-service teardown. This is
+normal worker exit, exact run-bound worker artifact tree, clear leases and terminal
+four-service teardown. This is
 retained setup/lifecycle correlation, not gameplay, offline/reset authority or
 permission to retry uncertain creation.
 
@@ -888,7 +892,8 @@ see the audit for the exact scope and `.e2e-artifacts/development-viewer-live-00
 
 ## Evidence and limitations
 
-`development-summary.json` records worker/catalog hashes, entities, scope,
+`development-summary.json` records worker/catalog hashes, an exact run-bound
+complete-tree identity for the owned `worker/` journals, entities, scope,
 completion/error stage, lease disposition, elapsed time and phase durations:
 HTTP login, lobby/world entry, initial witness checks, Say, optional movement,
 logout/despawn and account release. `worker_session_including_close` is an

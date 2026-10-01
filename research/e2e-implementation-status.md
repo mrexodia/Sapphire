@@ -2264,6 +2264,24 @@ hard-link and directory-symlink rejection; reparse/cross-device checks remain po
 branches, not a platform sweep. This does not prove race-free snapshots, durable
 storage, secure erasure or external-root completeness.
 
+Feature **`beb846b4d`** binds shared-run/provisioning worker journals without a
+self-referential summary hash. Each new exact `worker/` subtree is exclusively
+created before worker construction with a non-secret version/scope/run-ID ownership
+record; after exact worker context exit the producer records its bounded complete-
+tree SHA-256. Managed run/provisioning and graphical nested-run consumers independently
+require ownership and recompute the tree. Changed/foreign journals, duplicate-key or
+wrong-run ownership, links and terminal cleanup markers fail. A final provisioning
+identity-write failure converts `provisioned` to failed after exactly two synthetic
+creation/login attempts and does not retry either mutation.
+
+Frozen, remote-free source **`beb846b4d29bd123f85015928bee05e4cf2ce7dd`**
+passed **915 focused contracts with no skips in 38.05s**. Test-log SHA-256:
+`a5ebdb8cd960a1a78ded01a0f2cb6f933e5b7f59a526efdaff953c49cee534bf`.
+Earlier retained shared/provisioning/graphical summaries lack this required field and
+are historical under current consumers. These are synthetic policy/control contracts;
+no accounts, services, gameplay or graphical client ran, and journal byte identity
+is not independent semantic, server, rendering or compatibility proof.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
