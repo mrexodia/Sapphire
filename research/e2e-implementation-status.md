@@ -5013,6 +5013,24 @@ direct synthetic dispatch does not exercise framing, sockets, encrypted sessions
 server traffic, Linux scheduling or performance, and still does not establish that
 the expanded failures are corrected.
 
+Artifact-only controls at `48fce7a12` then ran the same seams against exact
+committed baseline sources. A deterministic baseline controller stream forced one
+snapshot after each of 16 generic events and observed 18 total snapshots (initial,
+16 generic wakeups and one semantic wakeup); the dirty controller probe retained
+128 generic diagnostics but observed only its initial and semantic snapshots. The
+baseline native client emitted `heartbeat` and `packet` for the same synthetic
+segments and advanced the explicit semantic event to sequence 3, while the dirty
+client emitted neither generic event and left that semantic event at sequence 1.
+Different Python event counts make this a behavior control, not a throughput ratio.
+
+The comparative receipt is
+`.e2e-artifacts/linux-control-amplification-isolated-001/baseline-comparison-receipt.json`
+(SHA-256 `2d9b57b1bd652ef2bd899b925bf884e797a28de3172188358b65b891a8820697`).
+It proves that the preserved diffs cause the intended local filtering and wakeup
+changes rather than the probes passing independently of source. It still does not
+prove operating-system/server causation, production traffic behavior, timing or a
+corrected gameplay outcome; both diffs remain unstaged and uncommitted.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
