@@ -88,6 +88,9 @@ python -m tests.e2e.run_ci --profile .e2e-local.json \
   --private-root .e2e-artifacts/ci --summary build-e2e/ci-summary.json --require-clean
 python -m tests.e2e.inspect_ci_result --summary build-e2e/ci-summary.json \
   --expected-revision <exact-40-hex-checked-out-revision>
+python -m tests.e2e.inspect_ci_private_evidence --summary build-e2e/ci-summary.json \
+  --private-run-dir .e2e-artifacts/ci/gameplay-ci-<private-id> \
+  --expected-revision <exact-40-hex-checked-out-revision>
 ```
 
 The summary destination must not already exist. Without `--require-clean`, local
@@ -103,7 +106,11 @@ after a passing gate and before marking that summary publishable; failed gate
 summaries retain their separate fixed-schema diagnostic upload path. This verifies
 the sanitized public result's current contract. It cannot reconstruct the private
 PID/generation records deleted with disposable fixtures,
-prove hosted execution, or replace an actual current gate run. `run_ci` does not itself compile
+prove hosted execution, or replace an actual current gate run. When the authorized
+private run directory is retained, the second inspector matches every public hash
+pair one-to-one to exactly 15 safe private environment directories, revalidates all
+service generations and staged source/input identities, and emits no private path,
+database, runtime, port or PID. It never makes absent private bytes recoverable. `run_ci` does not itself compile
 binaries, so running it against an external profile does not prove build provenance.
 Component hashes identify the actual tested inputs; the workflow's build step is
 separate evidence that its binaries came from the checkout.

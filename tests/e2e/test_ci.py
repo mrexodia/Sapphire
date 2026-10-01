@@ -1,4 +1,5 @@
 """CI gate contracts use synthetic files/reports, not gameplay evidence."""
+import hashlib
 import json
 from pathlib import Path
 import struct
@@ -8,8 +9,11 @@ import pytest
 
 from . import run_ci
 from .inspect_ci_result import main as inspect_ci_main
+from .inspect_ci_private_evidence import main as inspect_ci_private_main
 from .support.ci_result import (EXPECTED_CASES, EXPECTED_CATALOGS,
                                 SCOPE as CI_RESULT_SCOPE, inspect_ci_result)
+from .support.ci_private_result import (SCOPE as CI_PRIVATE_SCOPE,
+                                        inspect_ci_private_evidence)
 from .support.environment import SetupError
 
 
@@ -518,6 +522,43 @@ def current_public_summary(revision="a" * 40):
         "inputs_verified":True}
 
 
+def private_gate_evidence(tmp_path, report):
+    root = tmp_path / "private-run"; artifacts = root / "artifacts"; artifacts.mkdir(parents=True)
+    rows, directories = [], []
+    for index, case in enumerate(run_ci.CASES):
+        directory = artifacts / f"sapphire-e2e-{index:02d}"; directory.mkdir(); directories.append(directory)
+        manifest = {"revision":report["revision"],"dirty":False,"profile":"sapphire-3.3",
+            "fixture_version":2,"deadline_scale":report["deadline_scale"],
+            "database":"sapphire_e2e_" + format(index,"032x"),
+            "runtime":str((tmp_path / f"runtime-{index}").resolve()),
+            "ports":{"database":10000 + index*4,"api":10001 + index*4,
+                     "lobby":10002 + index*4,"world":10003 + index*4},
+            "worker_sha256":report["identities"]["worker"],
+            "binaries":report["identities"]["binaries"],
+            "scripts":{f"module-{offset}":digest for offset,digest in enumerate(
+                report["identities"]["script_modules"])},
+            "server_navigation":{f"{name}/{name}.nav":digest
+                for name,digest in report["identities"]["meshes"].items()},
+            **{key:{"sha256":digest} for key,digest in report["identities"]["catalogs"].items()}}
+        starts, teardowns = lifecycle_rows()
+        lifecycle = {"version":1,
+            "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
+            "starts":starts,"teardowns":teardowns}
+        (directory / "manifest.json").write_text(json.dumps(manifest, indent=2))
+        (directory / "process-lifecycle.json").write_text(json.dumps(lifecycle, indent=2))
+        rows.append({"case":case,
+            "manifest_sha256":hashlib.sha256((directory / "manifest.json").read_bytes()).hexdigest(),
+            "lifecycle_sha256":hashlib.sha256((directory / "process-lifecycle.json").read_bytes()).hexdigest()})
+    report["environment_evidence"] = rows
+    return root, directories
+
+
+def rehash_private_row(report, directory, index):
+    report["environment_evidence"][index].update(
+        manifest_sha256=hashlib.sha256((directory / "manifest.json").read_bytes()).hexdigest(),
+        lifecycle_sha256=hashlib.sha256((directory / "process-lifecycle.json").read_bytes()).hexdigest())
+
+
 def test_public_result_consumer_allowlists_require_explicit_producer_sync():
     assert EXPECTED_CASES == run_ci.CASES
     assert EXPECTED_CATALOGS == run_ci.CATALOGS
@@ -533,6 +574,54 @@ def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp
     assert proof["scope"] == CI_RESULT_SCOPE and proof["case_count"] == len(run_ci.CASES)
     assert inspect_ci_main(["--summary",str(path),"--expected-revision",revision]) == 0
     assert json.loads(capsys.readouterr().out) == proof
+
+
+def test_private_gate_evidence_inspector_correlates_all_cases_read_only(tmp_path, capsys):
+    revision = "a" * 40
+    report = current_public_summary(revision)
+    private, directories = private_gate_evidence(tmp_path, report)
+    summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report, indent=2))
+    files = [summary, *[path / name for path in directories
+                        for name in ("manifest.json","process-lifecycle.json")]]
+    before = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
+    proof = inspect_ci_private_evidence(summary, private, revision)
+    assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
+    assert proof["scope"] == CI_PRIVATE_SCOPE and proof["case_count"] == len(run_ci.CASES)
+    text = json.dumps(proof)
+    assert str(private) not in text and "sapphire_e2e_" not in text
+    assert inspect_ci_private_main(["--summary",str(summary),"--private-run-dir",str(private),
+                                    "--expected-revision",revision]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutation", ["changed-bytes","missing","lifecycle","inputs","database"])
+def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_private_bytes(
+        tmp_path, mutation):
+    report = current_public_summary(); private, directories = private_gate_evidence(tmp_path, report)
+    target = directories[0]
+    if mutation == "changed-bytes":
+        with (target / "manifest.json").open("a") as stream: stream.write(" ")
+    elif mutation == "missing":
+        import shutil; shutil.rmtree(target)
+    elif mutation == "lifecycle":
+        value = json.loads((target / "process-lifecycle.json").read_text())
+        value["teardowns"][0]["returncode"] = True
+        (target / "process-lifecycle.json").write_text(json.dumps(value))
+        rehash_private_row(report, target, 0)
+    elif mutation == "inputs":
+        value = json.loads((target / "manifest.json").read_text())
+        value["worker_sha256"] = "0" * 64
+        (target / "manifest.json").write_text(json.dumps(value))
+        rehash_private_row(report, target, 0)
+    else:
+        first = json.loads((directories[0] / "manifest.json").read_text())
+        second = json.loads((directories[1] / "manifest.json").read_text())
+        second["database"] = first["database"]
+        (directories[1] / "manifest.json").write_text(json.dumps(second))
+        rehash_private_row(report, directories[1], 1)
+    summary = tmp_path / "summary.json"; summary.write_text(json.dumps(report))
+    with pytest.raises(SetupError):
+        inspect_ci_private_evidence(summary, private, "a" * 40)
 
 
 @pytest.mark.parametrize("mutate", [
