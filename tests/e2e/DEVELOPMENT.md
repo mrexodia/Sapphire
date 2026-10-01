@@ -764,8 +764,11 @@ causes the persistent witness to receive a despawn/respawn, the continuity check
 fails even if the viewer remained logged in; this is deliberately received
 visibility evidence, not a server-side session oracle. With `--verify-reconnect`,
 the finish reply must reach the newly authenticated mover as well as the original
-witness. The summary records both checkpoints and the unchanged witness token under
-`viewer_verification`.
+witness. The summary records both checkpoints, each observer's baseline/received
+sequence, exact run-bound Say text, received viewer position/spawn token and the
+unchanged witness token under `viewer_verification`. The viewer must retain each
+observer's baseline spawn token while that checkpoint waits for its reply; a
+received despawn/respawn during either reply window fails.
 
 **Scope:** this proves endpoint liveness plus absence of any received viewer
 despawn/respawn on one continuously connected witness between them. It does not

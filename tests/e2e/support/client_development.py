@@ -7,7 +7,7 @@ from .development import (DevelopmentError, MOVEMENT_SCOPE, validate_profile, mo
 from .worker import Worker, WorkerError
 from .development_lease import require_clear_terminal_account_leases
 from .development_inventory import CONTAINERS, SCOPE as INVENTORY_SCOPE
-from .development_viewer import CONTINUITY_SCOPE
+from .development_viewer import CONTINUITY_SCOPE, VIEWER_SCOPE
 from .development_sprint import HISTORIES as SPRINT_HISTORIES, SCOPE as SPRINT_SCOPE
 from .development_equipment import BODY, BAG, SCOPE as EQUIPMENT_SCOPE
 from .development_tell import SCOPE as TELL_SCOPE
@@ -169,6 +169,63 @@ def require_sprint_receipt(value, entities):
             raise DevelopmentError('invalid graphical Sprint start metadata')
     if receipts[0]['effect'] != receipts[1]['effect']:
         raise DevelopmentError('graphical Sprint observers disagree')
+    return value
+
+
+def require_viewer_checkpoint(value, stage, expected_identity, run_id, observers, continuity=None):
+    fields = {'verified', 'stage', 'identity', 'presence_tokens',
+              'initial_observations', 'received_replies'}
+    if continuity is not None:
+        fields.add('continuous_presence')
+    if (not isinstance(value, dict) or set(value) != fields
+            or value.get('verified') is not True or value.get('stage') != stage
+            or value.get('identity') != expected_identity
+            or (stage == 'finish') != (continuity is not None)
+            or (continuity is not None and value.get('continuous_presence') != continuity)):
+        raise DevelopmentError('invalid graphical viewer checkpoint')
+    tokens = value.get('presence_tokens')
+    observations, replies = value.get('initial_observations'), value.get('received_replies')
+    if (not isinstance(tokens, dict) or set(tokens) != set(observers)
+            or any(type(tokens.get(observer)) is not int
+                   or not 0 <= tokens[observer] < 2**64 for observer in observers)
+            or not isinstance(observations, list) or len(observations) != 2
+            or not isinstance(replies, list) or len(replies) != 2):
+        raise DevelopmentError('invalid graphical viewer checkpoint observations')
+    messages = []
+    for observer, observation, reply in zip(observers, observations, replies):
+        if (not isinstance(observation, dict)
+                or set(observation) != {'entity_id', 'name', 'gm_rank', 'position', 'presence_token'}
+                or {key: observation.get(key) for key in ('entity_id', 'name', 'gm_rank')} != expected_identity
+                or type(observation.get('entity_id')) is not int
+                or type(observation.get('gm_rank')) is not int
+                or not position(observation.get('position'))
+                or type(observation.get('presence_token')) is not int
+                or observation['presence_token'] != tokens[observer]
+                or not isinstance(reply, dict)
+                or set(reply) != {'observer', 'viewer', 'message',
+                                  'received_sequence', 'baseline_sequence'}
+                or reply.get('observer') != observer
+                or type(reply.get('baseline_sequence')) is not int
+                or type(reply.get('received_sequence')) is not int
+                or not tokens[observer] <= reply['baseline_sequence'] < reply['received_sequence'] < 2**64):
+            raise DevelopmentError('invalid graphical viewer endpoint observation')
+        viewer = reply.get('viewer')
+        if (not isinstance(viewer, dict)
+                or set(viewer) != {'entity_id', 'name', 'gm_rank', 'position', 'presence_token'}
+                or {key: viewer.get(key) for key in ('entity_id', 'name', 'gm_rank')} != expected_identity
+                or type(viewer.get('entity_id')) is not int or type(viewer.get('gm_rank')) is not int
+                or not position(viewer.get('position'))
+                or type(viewer.get('presence_token')) is not int
+                or viewer['presence_token'] != tokens[observer]):
+            raise DevelopmentError('invalid graphical viewer reply identity')
+        message = reply.get('message')
+        prefix = f'Sapphire viewer {run_id[:8]} {stage} '
+        nonce = message[len(prefix):] if isinstance(message, str) and message.startswith(prefix) else ''
+        if len(nonce) != 32 or any(char not in '0123456789abcdef' for char in nonce):
+            raise DevelopmentError('graphical viewer reply is not a fresh run-bound challenge')
+        messages.append(message)
+    if messages[0] != messages[1]:
+        raise DevelopmentError('graphical viewer reply was not received by both bots')
     return value
 
 
@@ -468,11 +525,14 @@ def require_graphical_check(result, viewer_name, entity):
     if math.dist(movement['authored_route'][0], reconnect['expected_position']) > 0.15:
         raise DevelopmentError('graphical movement and reconnect origins disagree')
     viewer = result['viewer_verification']
-    if viewer.get('viewer_login_or_control_performed') is not False:
-        raise DevelopmentError('runner must not control the graphical viewer')
     expected = {'entity_id':entity, 'name':viewer_name, 'gm_rank':0}
-    if any(viewer.get(stage, {}).get('identity') != expected for stage in ('start','finish')):
-        raise DevelopmentError('development checkpoints do not bind the same graphical fixture')
+    if (not isinstance(viewer, dict)
+            or set(viewer) != {'requested', 'verified', 'scope', 'viewer_login_or_control_performed',
+                               'start', 'finish', 'continuous_presence'}
+            or viewer.get('requested') is not True or viewer.get('verified') is not True
+            or viewer.get('scope') != VIEWER_SCOPE
+            or viewer.get('viewer_login_or_control_performed') is not False):
+        raise DevelopmentError('runner must retain exact no-control graphical viewer evidence')
     continuity = viewer.get('continuous_presence')
     if (not isinstance(continuity, dict)
             or set(continuity) != {'verified', 'scope', 'observer', 'observer_entity_id',
@@ -484,8 +544,14 @@ def require_graphical_check(result, viewer_name, entity):
             or continuity.get('viewer_entity_id') != entity
             or type(continuity.get('presence_token')) is not int
             or continuity['presence_token'] < 0
-            or viewer.get('finish', {}).get('continuous_presence') != continuity):
+            or not isinstance(viewer.get('finish'), dict)
+            or viewer['finish'].get('continuous_presence') != continuity):
         raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
+    require_viewer_checkpoint(
+        viewer.get('start'), 'start', expected, run_id, ('mover', 'witness'))
+    require_viewer_checkpoint(
+        viewer.get('finish'), 'finish', expected, run_id,
+        ('mover-equipment-reequipped', 'witness'), continuity)
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
             'movement_scope':movement['scope'], 'inventory_scope':INVENTORY_SCOPE,

@@ -12,6 +12,7 @@ import uuid
 from .development import DevelopmentError, idle_state, position
 
 
+VIEWER_SCOPE = "two-endpoint-say-and-persistent-witness-presence-not-rendering"
 CONTINUITY_SCOPE = "unchanged-received-spawn-token-on-persistent-observer-not-server-session-proof"
 
 
@@ -121,6 +122,7 @@ def viewer_checkpoint(worker, bots, bot_actors, territory, name, run_id, stage, 
                 row = observe_viewer(state, name, territory, actor, bot_actors)
                 return (row is not None
                         and {key: row[key] for key in ("entity_id", "name", "gm_rank")} == identity
+                        and row["presence_token"] == presence_tokens[observer]
                         and (continuity is None
                              or row["presence_token"] == continuity["presence_token"])
                         and type(state.get("seq")) is int

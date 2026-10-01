@@ -120,6 +120,13 @@ def test_received_despawn_or_respawn_generation_breaks_continuity(tmp_path):
     assert not (tmp_path / "viewer-finish.json").exists()
 
 
+def test_presence_interruption_during_start_reply_wait_is_rejected(tmp_path):
+    worker = ViewerWorker(tmp_path)
+    worker.presence_token_override = 9
+    with pytest.raises(DevelopmentError):
+        checkpoint(worker, tmp_path)
+
+
 def test_presence_interruption_during_finish_reply_wait_is_rejected(tmp_path):
     worker = ViewerWorker(tmp_path)
     start = checkpoint(worker, tmp_path)

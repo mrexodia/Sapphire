@@ -117,6 +117,21 @@ def completed():
                          'received_position':[1,0,0],'witness_sequence':6},
                         {'cycle':0,'step':1,'target':[0,0,0],
                          'received_position':[0,0,0],'witness_sequence':7}]}
+    def viewer_checkpoint(stage, mover_name, mover_token, witness_token, continuous=None):
+        observers=(mover_name,'witness');tokens={mover_name:mover_token,'witness':witness_token}
+        message=f'Sapphire viewer {run_id[:8]} {stage} '+('1' if stage=='start' else '2')*32
+        rows=[{'entity_id':3,'name':'Tester Viewer','gm_rank':0,
+               'position':[0,0,0],'presence_token':tokens[observer]} for observer in observers]
+        result={'verified':True,'stage':stage,'identity':copy.deepcopy(identity),
+            'presence_tokens':tokens,'initial_observations':copy.deepcopy(rows),
+            'received_replies':[{'observer':observer,'viewer':copy.deepcopy(row),
+                'message':message,'baseline_sequence':200+index*2,
+                'received_sequence':201+index*2}
+                for index,(observer,row) in enumerate(zip(observers,rows))]}
+        if continuous is not None: result['continuous_presence']=copy.deepcopy(continuous)
+        return result
+    viewer_start=viewer_checkpoint('start','mover',104,105)
+    viewer_finish=viewer_checkpoint('finish','mover-equipment-reequipped',7,105,continuity)
     return {'status':'passed','scope':'shared-development-not-acceptance','lease_retained':False,
             'entities':[1,2],'territory':130,'run_id':run_id,'cycles':1,
             'catalog_sha256':'c'*64,
@@ -147,11 +162,11 @@ def completed():
                 'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
                 'before':projection(unequipped_rows,120),'after':projection(unequipped_rows,118),
                 'changed_slots':[]},
-            'viewer_verification':{'requested':True,'verified':True,'viewer_login_or_control_performed':False,
+            'viewer_verification':{'requested':True,'verified':True,
+                'scope':'two-endpoint-say-and-persistent-witness-presence-not-rendering',
+                'viewer_login_or_control_performed':False,
                 'continuous_presence':copy.deepcopy(continuity),
-                'start':{'identity':copy.deepcopy(identity)},
-                'finish':{'identity':copy.deepcopy(identity),
-                          'continuous_presence':copy.deepcopy(continuity)}}}
+                'start':viewer_start,'finish':viewer_finish}}
 
 
 def test_report_requires_all_subchecks_and_same_non_gm_viewer():
@@ -350,6 +365,30 @@ def test_graphical_bridge_rejects_malformed_sprint_receipt():
         lambda report: report['sprint_verification']['receipts'][0].update(start=None),
         lambda report: report['sprint_verification']['receipts'][1].update(received_seq=11),
         lambda report: report['sprint_verification'].update(extra=True),
+    )
+    for mutate in mutations:
+        report=completed();mutate(report)
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_graphical_bridge_rejects_malformed_viewer_checkpoints():
+    mutations=(
+        lambda report: report['viewer_verification'].update(scope='graphical-rendering-proof'),
+        lambda report: report['viewer_verification']['start'].update(stage='finish'),
+        lambda report: report['viewer_verification']['start']['presence_tokens'].update(mover=True),
+        lambda report: report['viewer_verification']['start']['initial_observations'].pop(),
+        lambda report: report['viewer_verification']['start']['initial_observations'][0].update(presence_token=999),
+        lambda report: report['viewer_verification']['start']['received_replies'].pop(),
+        lambda report: report['viewer_verification']['start']['received_replies'][0].update(observer='foreign'),
+        lambda report: report['viewer_verification']['start']['received_replies'][0].update(baseline_sequence=True),
+        lambda report: report['viewer_verification']['start']['received_replies'][0].update(received_sequence=20),
+        lambda report: report['viewer_verification']['start']['received_replies'][0]['viewer'].update(gm_rank=False),
+        lambda report: report['viewer_verification']['start']['received_replies'][0].update(message='stale'),
+        lambda report: report['viewer_verification']['start'].update(extra=True),
+        lambda report: report['viewer_verification']['finish']['received_replies'][0].update(
+            observer='mover-reconnected'),
+        lambda report: report['viewer_verification'].update(extra=True),
     )
     for mutate in mutations:
         report=completed();mutate(report)

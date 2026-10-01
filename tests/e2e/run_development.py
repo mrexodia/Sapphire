@@ -20,7 +20,7 @@ from .support.development_worker_exit import ObservedWorker
 from .support.development_lease import terminal_account_lease_snapshot
 from .support.development_reconnect import verify_position_reconnect
 from .support.development_party import require_bound_party_worker, verify_two_bot_party
-from .support.development_viewer import validate_viewer_name, viewer_checkpoint
+from .support.development_viewer import VIEWER_SCOPE, validate_viewer_name, viewer_checkpoint
 from .support.development_tell import require_visible_tell_worker, verify_visible_tells
 from .support.development_decline import require_decline_worker, verify_party_decline
 from .support.development_sprint import require_sprint_worker, verify_sprint as verify_self_sprint
@@ -78,7 +78,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
               "sprint_verification": {"requested": verify_sprint, "verified": False},
               "equipment_verification": {"requested": verify_equipment, "verified": False},
               "viewer_verification": {"requested": viewer_name is not None, "verified": False,
-                                      "scope": "two-checkpoint-presence-not-graphical-attestation",
+                                      "scope": VIEWER_SCOPE,
                                       "viewer_login_or_control_performed": False},
               "world_restart_performed": False,
               "protocol": profile["protocol"], "territory": profile["territory"],

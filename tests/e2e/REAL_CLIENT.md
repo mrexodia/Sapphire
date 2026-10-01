@@ -116,7 +116,10 @@ independent despawn/respawn and fresh Say), an exact unchanged read-only reconne
 receipt, released leases, the exact versioned
 `clear` terminal lease snapshot, a strict normal exit receipt for the exact owned
 native worker, and the same non-GM graphical fixture identity at both checkpoints.
-The original continuously connected witness must retain the same received viewer
+Each checkpoint must contain both exact ordered observer rows, stable received
+spawn tokens through the reply wait, advancing baseline/received sequences and one
+shared fresh run/stage-bound ordinary Say challenge. The original continuously
+connected witness must retain the same received viewer
 spawn-generation token from start through finish; any viewer despawn/zone loss/
 respawn observed by that witness fails before the finish challenge. Legacy
 summaries without this continuity evidence, without the terminal snapshot, or with
