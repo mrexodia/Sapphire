@@ -1963,9 +1963,29 @@ SHA-256: `b7116dd40de7457d1654d975d0f0965f68115882e0f6eaf1c85509be4d60338e`;
 private profile SHA-256:
 `c2ba6a258169ac21bb4589509d564e6cd04282a3b020c8763dc1cdb2b8363bb4`.
 This removes reliance on the older local service/worker executables for a future
-current gate configuration. It remains a build/preflight receipt—not execution,
-service startup, isolated-fixture, gameplay, compiler-trust or compatibility proof;
-the 16-case gate still requires explicit renewed authorization.
+current gate configuration. It remains a build/preflight receipt—not service
+startup, isolated-fixture, gameplay, compiler-trust or compatibility proof; the
+16-case gate still requires explicit renewed authorization.
+
+A bounded execution check then sent the clean-built worker exactly one stdin-only
+`capabilities` request and EOF. The exact owned process returned integer zero with
+empty stderr, one response, profile `sapphire-3.3`, loopback-only control scope, 58
+unique methods (ordered-list SHA-256
+`f39c5536beff93a969e6b48a88c7b84e45eb8923b8a5264c7687a42aa05cabe1`), and the
+exact unsupported list `compressed_frames`, `scene_yield`, `general_navigation`,
+`general_combat`. Receipt SHA-256:
+`0e2e4f5ca4ffbd68eb81bd05f13966d8d4a1e3d3ff16634c0bec1bbbae35bc0a`.
+No login/network/account/gameplay request was made. This proves only current worker
+startup, control response and normal EOF exit—not lobby/world compatibility or
+cleanup after a network session.
+
+Seven focused current-frozen-source native contracts also passed in **0.33s**:
+development-placement ownership, item-ID allocation, prepared-statement binding,
+protocol, rewards, combat and navigation. The dependency-wide test target was not
+run. Build/test log SHA-256 values are respectively
+`28480cdb3513cf4ceabcb6d6b07e74568f9c229f8928c533f62ebfd41630f005` and
+`1871ba2ee1561da0c2639a8c4e6171bd633335149c30a66cb10cd6ffbcffae29`.
+These are native semantic/unit contracts, not external gameplay or service evidence.
 
 Feature **`1506d5b85`** strengthens retained JUnit semantics from a count-only check
 to the exact ordered projection of all 16 allowlisted pytest node IDs. Private
