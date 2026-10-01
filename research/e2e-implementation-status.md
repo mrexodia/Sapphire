@@ -1504,6 +1504,49 @@ review or disposal operation ran. A fresh current manually attended run must
 produce all three explicit reviews and composite disposal evidence. No full gate,
 soak or platform sweep ran.
 
+## Current graphical evidence binds exact prepared source-manifest bytes
+
+Fix **`86e5451ea`** closes an unconsumed provenance edge between preparation,
+guest result and host inspection. New `support/client_provenance.py` accepts only
+the exact current `inputs.json` and `input/source.json` schemas, strict lowercase
+revision/digest fields, false dirty/submodule-fetch/remote/working-tree flags,
+canonical safe relative file/gitlink paths, non-boolean version fields, distinct
+unmaterialized gitlinks, and valid tracked-source/input hash maps. It requires the
+source-manifest bytes' SHA-256 and revision to agree with all of:
+
+1. `input/source.json` itself;
+2. `inputs.json` top-level source fields;
+3. its exact `inputs["source.json"]` entry;
+4. current committed HEAD supplied to the inspector; and
+5. `result.json`'s guest-recorded `source_manifest_sha256`.
+
+The Sandbox launch/disposal path now performs the prepared-source validation before
+launch publication as well. The current graphical-result inspector repeats it
+read-only and emits only revision/hash/count provenance. This identifies the
+committed coordinator manifest consumed by the guest; it remains neither a
+signature nor native binary/client/game-data source attestation. Guest-side
+`verify_source` remains the separate check of materialized committed files before
+fixture/process setup.
+
+Frozen, remote-free source **`86e5451ea06e28cd150b6466e49e2307fb8073ba`**
+passed **568 tests in 23.21s**. Contracts cover changed/missing result hash,
+inputs revision/hash, source bytes/boundary flags, unsafe relative paths, malformed
+gitlinks, and rejection before Sandbox launch, alongside the source snapshot,
+graphical result and disposal chains. Test-log SHA-256:
+`294d1131388e3f3c4777322246cf4bdbf81ba855eddfef9545aaafa6a661296b`.
+Artifacts: `client-prepared-source-binding-clean-{source.json,python.log}`.
+
+Current exact-schema policy rejects historical `client-development-live-004`.
+Its result/top-level source revision and manifest digest agree, but its older
+`inputs.json` retains the obsolete extra `operator_control` field, so it is not
+upgraded to current evidence. Read-only rejection artifact SHA-256:
+`0b47820c5991d8815d3b0b2cb3f1a9a6b4cc7f4eeaa381f972f1cbd8104b4dda`.
+The historical run retains only its original source-isolation scope.
+
+No preparation, service, account, worker, client, Sandbox, gameplay, screenshot,
+remote or disposal operation ran. Current attended graphical execution and all
+broader blocked requirements remain pending.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -3388,7 +3431,7 @@ a nearby passing test does not close them.
 | Independent scenarios and no cached reset | each case creates/removes its owned environment; world is stopped before preserved-DB restart | Verified |
 | Observation hierarchy | acting-client messages, independent observers, reconnect/restart and diagnostic-only DB checks are separated in scenarios/artifacts | Verified |
 | Monotonic waits and application readiness | condition/event waits; world binds only after data/territory/script setup and clients require received world-ready | Verified |
-| Record build/script/fixture/protocol/data/nav identities | gate manifest and summary hashes; game assets remain private | Verified; hashes identify inputs but do not prove compatibility |
+| Record build/script/fixture/protocol/data/nav identities | gate manifest and summary hashes; current graphical result additionally binds exact prepared source-manifest bytes/revision through strict input and guest-result hashes; game assets remain private | Verified; hashes identify inputs but do not prove compatibility, signatures, or native build provenance |
 | Step/run timeout and failure cleanup | worker, action, pytest/workload budgets; cleanup-fault matrix and `cleanup_verified` gate | Verified for tested failure modes; host-kill behavior remains infrastructure-owned |
 | No ambiguous retry of gameplay mutations | timeout marks worker failed; no automatic gameplay retry; receipts are not mutation proof | Verified |
 | Regression versus recovery behavior | strict gate rejects process loss/skips; reconnect occurs only in explicitly authored scenarios/plans | Verified |
