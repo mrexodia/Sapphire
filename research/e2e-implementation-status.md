@@ -1790,6 +1790,23 @@ cover a foreign case, changed/failing JUnit, retained runtime, malformed lifecyc
 changed revision and missing pytest log. Test-log SHA-256:
 `7c0f28124ff6f74c31a1c573aa694e0aec339f01ce552108ff9301cde2a98933`.
 
+Fix **`851cc105b`** makes that runner binding mandatory inside the specialized fault
+inspector rather than requiring operators to compose two commands correctly. The
+current command requires `--artifact-dir`, `--junit`, `--pytest-log` and
+`--expected-revision`; its sanitized result includes exact case identity and
+JUnit/log hashes alongside independently checked fault semantics. New negatives
+reject foreign/failing JUnit and missing pytest logs in addition to semantic fault
+tampering.
+
+Frozen, remote-free source **`851cc105b4c7975c71c862215f138b6880c5d833`**
+passed **155 CI/workflow-policy/inspector tests in 7.99s**. Test-log SHA-256:
+`6a06f2b55d97a3e3f1bc55148d6d5493d7e9d626060cda40d0ae59fda60a4daa`.
+The strengthened command accepted the current clean-built retained fault run with
+receipt SHA-256
+`8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`.
+This removes a verifier-composition gap; it does not broaden the standalone case's
+intentional-fault scope or turn runner evidence into independent gameplay truth.
+
 The same clean source then ran only the non-mutating, no-account
 `test_rejected_credentials` against the configured private local profile. The first
 24.39s pass intentionally remains incompatible evidence: without explicit frozen
