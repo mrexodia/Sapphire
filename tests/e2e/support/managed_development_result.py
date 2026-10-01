@@ -47,8 +47,11 @@ def _hex(value, length):
             and all(char in "0123456789abcdef" for char in value))
 
 
-def _validate_requested_checks(report):
-    require_shared_runner_metadata(report, catalog_required=True)
+def validate_requested_checks(report):
+    movement_value = report.get("movement_verification")
+    movement_requested = (isinstance(movement_value, dict)
+                          and movement_value.get("requested") is True)
+    require_shared_runner_metadata(report, catalog_required=movement_requested)
     deadline = report.get("run_deadline")
     if (not isinstance(deadline, dict)
             or set(deadline) != {"enabled","limit_seconds","expired",
@@ -173,7 +176,7 @@ def inspect_managed_development_run(session_dir, summary_path):
         raise DevelopmentError("managed development run worker/session differs from host evidence")
     require_normal_worker_exit(report)
     lease = require_clear_terminal_account_leases(report)
-    checks = _validate_requested_checks(report)
+    checks = validate_requested_checks(report)
     if not checks:
         raise DevelopmentError("managed development run has no received scenario evidence")
     return {"version":1,"status":"accepted","scope":SCOPE,

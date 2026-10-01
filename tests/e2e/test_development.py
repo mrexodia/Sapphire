@@ -1,15 +1,19 @@
 """Synthetic policy/control-flow checks. No shared or disposable server is started."""
 import copy
+import hashlib
 import json
 from types import SimpleNamespace
 
 import pytest
 
 from . import run_development
+from .inspect_development_result import main as inspect_development_main
 from .support.development import (AccountLease, DevelopmentError, NoRedirect, Timings,
                                   authenticate, idle_state, movement_route, validate_profile, witnessed)
 from .support.timing import PhaseTiming
 from .support.environment import artifact_tree_sha256
+from .support.development_result import (SCOPE as DEVELOPMENT_RESULT_SCOPE,
+                                         inspect_development_result)
 
 
 @pytest.fixture
@@ -132,6 +136,51 @@ def execute(profile, tmp_path, fake=None, **kwargs):
         worker_factory=lambda *args: fake, login=lambda *_: {"lobbyHost": "127.0.0.1", "lobbyPort": 54994, "sId": "secret-session"},
         lease_root=tmp_path / "leases", **kwargs)
     return report, fake
+
+
+def test_external_shared_result_inspector_is_strict_sanitized_and_read_only(
+        profile, tmp_path, capsys, monkeypatch):
+    catalog = tmp_path / "catalog.json"; catalog.write_text("synthetic catalog")
+    profile["quest_catalog"] = str(catalog)
+    monkeypatch.setattr("tests.e2e.support.development.load_quest_catalog",
+                        lambda _: {"quest":65686,"route":[[0,0,0],[1,0,0]]})
+    report, _ = execute(profile, tmp_path, cycles=1, max_seconds=60)
+    summary = tmp_path / "run/development-summary.json"
+    before = {path:hashlib.sha256(path.read_bytes()).hexdigest()
+              for path in (summary, tmp_path / "run/worker/ownership.json")}
+    proof = inspect_development_result(summary)
+    assert proof["scope"] == DEVELOPMENT_RESULT_SCOPE
+    assert proof["managed_host"] is False
+    assert proof["worker_artifacts"]["sha256"] == report["worker_artifact_tree_sha256"]
+    assert "movement" in proof["verified_checks"]
+    assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
+    rendered = json.dumps(proof)
+    assert "private-one" not in rendered and str(tmp_path) not in rendered
+    assert inspect_development_main(["--summary",str(summary)]) == 0
+    assert json.loads(capsys.readouterr().out) == proof
+
+
+@pytest.mark.parametrize("mutation", ["status","managed","deadline","worker-tree","duplicate"])
+def test_external_shared_result_inspector_rejects_foreign_or_incomplete_evidence(
+        profile, tmp_path, mutation, monkeypatch):
+    catalog = tmp_path / "catalog.json"; catalog.write_text("synthetic catalog")
+    profile["quest_catalog"] = str(catalog)
+    monkeypatch.setattr("tests.e2e.support.development.load_quest_catalog",
+                        lambda _: {"quest":65686,"route":[[0,0,0],[1,0,0]]})
+    execute(profile, tmp_path, cycles=1, max_seconds=60)
+    summary = tmp_path / "run/development-summary.json"
+    report = json.loads(summary.read_text())
+    if mutation == "status": report["status"] = "failed"
+    elif mutation == "managed": report["managed_host_binding"]["requested"] = True
+    elif mutation == "deadline": report["run_deadline"]["expired"] = True
+    elif mutation == "worker-tree": (tmp_path / "run/worker/foreign.json").write_text("{}")
+    else:
+        summary.write_text(summary.read_text().replace(
+            '{\n  "version": 1,', '{\n  "version": 1,\n  "version": 1,', 1))
+    if mutation not in {"worker-tree","duplicate"}:
+        summary.write_text(json.dumps(report))
+    with pytest.raises(DevelopmentError):
+        inspect_development_result(summary)
 
 
 def test_shared_smoke_lifecycle_and_timings(profile, tmp_path):
