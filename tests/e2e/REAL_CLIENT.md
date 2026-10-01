@@ -165,8 +165,14 @@ records its exact lobby/
 world identity, idle nonparty state, and a newly received spawn-generation token
 for the exact non-GM viewer. This is dedicated-character/presence provenance, not
 a server-offline, reset, cache-quiescence, uninterrupted-viewer or exclusive-
-session claim. The two normal handoff/restoration receipts still do not authorize
-character reset or prove server-side exclusion. Each nested runner
+session claim. The guest also retains a strict private
+`development-account-association.json` containing only the normalized dedicated
+usernames, character names, loopback ports and optional owned-host identity—never
+passwords or worker paths. The current-result inspector recomputes both nested
+summary bindings from that one retained input and requires them to agree. This is
+editable byte correlation, not credential validity, authentication freshness or
+account exclusivity. The two normal handoff/restoration receipts still do not
+authorize character reset or prove server-side exclusion. Each nested runner
 receives an integer cooperative deadline strictly inside the remaining graphical
 activity budget (maximum 900 seconds); bridge success requires both exact enabled,
 unexpired, completed deadline receipts. Each nested run also retains and revalidates
@@ -347,8 +353,9 @@ are absent, not passing. On completion or failure, `status.json` changes to
    fresh sequence-bound bounded displacement, fresh sequence-bound Say, review
    presence and fresh post-phase logout absence;
    both nested summaries/hashes, their distinct run-bound complete `worker/`
-   artifact-tree identities and strict consumers; pair/handoff/restoration receipts;
-   run-bound Say challenge,
+   artifact-tree identities and strict consumers; the bounded single-link,
+   duplicate-free, password-free dedicated-account association and both recomputed
+   nested run bindings; pair/handoff/restoration receipts; run-bound Say challenge,
    initial review-frame binding, the final nested challenge-bound dedicated-bot
    interaction frame/manual receipt and the separately approved exact title-screen frame,
    retirements, outer deadline/worker exit, exact graphical-client teardown, all

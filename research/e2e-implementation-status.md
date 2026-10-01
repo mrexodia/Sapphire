@@ -2484,6 +2484,25 @@ matching digest is editable correlation, not a signature, current authentication
 credential validity, account exclusivity, server identity, offline exclusion,
 reset authority or acceptance evidence.
 
+Feature **`5e3feada1`** closes the same account-association boundary for current
+attended graphical evidence. Before either nested bot run, the guest exclusively
+publishes private `development-account-association.json` with only normalized
+usernames, character names, loopback endpoint fields and optional owned-host
+identity; passwords and worker paths are never retained there. The strict current-
+result consumer requires a bounded duplicate-free single-link regular file,
+recomputes both nested run bindings from it, requires identical account/received-
+identity association across comprehensive and decline runs, and emits only the
+input SHA-256 and password-free binding digest. Changed usernames, malformed or
+duplicate JSON, hard-link aliases and mismatched nested identities fail closed.
+
+Frozen, remote-free source **`5e3feada154fc1cf093a1ae61179f1feee61ae2d`**
+passed **1078 focused contracts with no skips in 39.14s**. Test-log SHA-256:
+`53d31828cdbd41616e798795301f84711bee37e4599122e34c824b478b7e62dc`.
+No client, Sandbox, service, endpoint, account, session or gameplay operation ran.
+Current graphical execution/manual review/disposal remain pending; this digest is
+not a signature, credential-validity check, server identity, account exclusivity,
+offline exclusion, rendering, compatibility, reset or disposal proof.
+
 CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
 service-free staging command against `${{ github.sha }}` and the just-built worker/
 binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
