@@ -73,25 +73,30 @@ settings to get a failed run to pass. Do not overlap runs in a reused guest.
 
 Add `--development-check` to the **prepare** command to opt into one normal
 shared-development scenario inside the same owned guest runtime. Use a worker
-supporting bound party methods and `tell_visible`; no older-worker fallback is
-provided. The default smoke procedure is unchanged when this flag is absent.
+supporting bound party/decline methods and `tell_visible`; no older-worker fallback
+is provided. The default smoke procedure is unchanged when this flag is absent.
 
 After the usual movement/Say/manual-rendering review, status enters
 `development`. Keep the graphical character in-world. Read the host-visible
-`output/development/viewer-start.json` and later `viewer-finish.json`, and send
-each exact `reply_in_say` through the real client's ordinary Say UI when it
-appears. Each checkpoint has the normal runner's **60-second** reply window.
-Do not pre-send a finish reply or logout before the coordinator requests it.
+`output/development/viewer-start.json` and later `viewer-finish.json`, then the
+corresponding two files under `output/development-decline/`. Send each exact
+`reply_in_say` through the real client's ordinary Say UI when it appears. Each
+checkpoint has the normal runner's **60-second** reply window. Do not pre-send a
+finish reply or logout before the coordinator requests it.
 
 The coordinator normally logs out/closes its original headless witness before
 reusing that dedicated account as a bot. It creates a second separate non-GM
 pre-connection fixture on a validated corridor point, never an invented offset.
 The viewer's account/credentials are excluded from the two-account runner profile.
-The normal runner performs source-bound movement, an exact owned two-bot
-party/chat/disband lifecycle, two reciprocal visible-only Tell messages, one ordinary self-Sprint, a starter-body
-unequip/re-equip round trip, reconnect, a read-only complete received inventory
-projection comparison, and the two exact
-viewer checkpoints. Sprint must produce matching fresh self-target action3/status50
+The first normal runner performs source-bound movement, an exact owned two-bot
+party/chat/disband lifecycle, two reciprocal visible-only Tell messages, one
+ordinary self-Sprint, a starter-body unequip/re-equip round trip, reconnect, a
+read-only complete received inventory projection comparison, and two exact viewer
+checkpoints. A **second fresh runner session**, after normal first-run cleanup,
+omits the route and performs one exact dedicated-peer invitation decline plus its
+own viewer checkpoints. Party creation and decline are never weakened into one
+session or combined by clearing received history. Sprint must produce matching
+fresh self-target action3/status50
 effects and zero-TP updates on both ordinary bot sessions plus the mover's fresh
 group56/recast start; its acknowledgement alone cannot pass. This proves neither
 speed nor rendering, status expiry, exact net TP debit, persistence or cooldown
@@ -104,8 +109,8 @@ quality/durability, other containers or world-restart persistence. No GM action,
 reset, resource grant/restoration or viewer UI control is performed. Fixture
 placement is administrative setup only.
 
-`development_check` in the graphical result references the exact normal-runner
-summary and requires every requested subcheck, including the exact bounded authored
+`development_check` in the graphical result references the exact comprehensive
+normal-runner summary and requires every requested subcheck, including the exact bounded authored
 out-and-back route with an advancing independent-witness receipt at every waypoint,
 exact two-member party, bound channel/chat and empty-after-disband evidence, two exact reciprocal received
 Tell rows bound to the run/peer identities, and strict internally
@@ -125,12 +130,15 @@ respawn observed by that witness fails before the finish challenge. Legacy
 summaries without this continuity evidence, without the terminal snapshot, or with
 only `worker_closed:true`,
 malformed/nonzero receipts and local process exit without the separate server-
-lifecycle observations fail closed. The nested normal-bot scenario also receives
-an integer cooperative deadline strictly inside the remaining graphical activity
-budget (maximum 900 seconds); bridge success requires its exact enabled,
-unexpired, completed deadline receipt. Older graphical evidence without these
-receipts is not retroactively upgraded. The original witness then authenticates afresh to verify the graphical client's ordinary
-logout. The existing twenty-minute activity budget remains in use: native RPC
+lifecycle observations fail closed. `decline_check` separately binds exact peer
+identities, invitation result, recipient reply, inviter rejection, advancing
+sequences, empty final parties, its own viewer receipts, exact worker exit and
+clear leases; all unrelated subscenarios must remain disabled. Each nested runner
+receives an integer cooperative deadline strictly inside the remaining graphical
+activity budget (maximum 900 seconds); bridge success requires both exact enabled,
+unexpired, completed deadline receipts. Older graphical evidence without these
+receipts is not retroactively upgraded. The original witness then authenticates
+afresh to verify the graphical client's ordinary logout. The existing twenty-minute activity budget remains in use: native RPC
 and observation waits are capped by its remainder; late successes fail. The nested
 runner budget is cooperative rather than hard preemption, and its final cleanup
 may exceed that nested success budget while still remaining subject to the outer

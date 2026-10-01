@@ -20,7 +20,8 @@ from .support.client_lifecycle import retire_witness
 from .support.worker import Worker, Bot
 from .support.development_worker_exit import ObservedWorker, unobserved_worker_exit
 from .support.client_development import (development_profile, require_graphical_check,
-                                         run_graphical_development)
+                                         require_graphical_decline_check,
+                                         run_graphical_development, run_graphical_decline)
 from .support.development import authenticate, movement_route
 from .run_development import run as run_development
 
@@ -94,6 +95,7 @@ def run():
         report["artifacts"] = str(env.artifacts)
         report["fixture"] = fixture
         report["development_check"] = {"requested": development_enabled, "status": "not_run"}
+        report["decline_check"] = {"requested": development_enabled, "status": "not_run"}
         with ObservedWorker(Worker(env.worker, env.artifacts / "observer", env.deadline_scale),
                             report["observer_worker_exit"]) as worker:
             witness = env.fresh_character(fixture["position"])
@@ -170,7 +172,7 @@ def run():
 
             wait(reviewed)
             if development_enabled:
-                phase("development", "Keep this graphical character in-world. Read development/viewer-start.json and viewer-finish.json; send each reply_in_say manually when it appears. Do not logout until instructed.")
+                phase("development", "Keep this graphical character in-world. For development and then development-decline, read each viewer-start.json/viewer-finish.json and send its reply_in_say manually. Do not logout until instructed.")
                 if client.poll() is not None or time.monotonic() >= deadline:
                     raise RuntimeError("graphical process/activity unavailable before bot scenario")
                 # Reuse only the owned headless witness account, after ordinary closure.
@@ -199,6 +201,17 @@ def run():
                 if client.poll() is not None or time.monotonic() >= deadline:
                     raise RuntimeError("graphical process/activity unavailable after bot scenario")
                 report["development_check"]["evidence"] = proof
+                decline = run_graphical_decline(
+                    run_development, shared, OUTPUT / "development-decline",
+                    viewer_name=real["name"], activity_deadline=deadline, login=bounded_login)
+                report["decline_check"] = {"requested": True, "status": decline["status"],
+                    "summary_sha256": sha256(OUTPUT / "development-decline/development-summary.json"),
+                    "elapsed_seconds": decline["elapsed_seconds"]}
+                decline_proof = require_graphical_decline_check(
+                    decline, real["name"], entity)
+                if client.poll() is not None or time.monotonic() >= deadline:
+                    raise RuntimeError("graphical process/activity unavailable after decline scenario")
+                report["decline_check"]["evidence"] = decline_proof
                 # Restore an independent witness for the original manual logout check.
                 bot = Bot(worker, "witness-after-development")
                 state = bot.login_via_lobby(bounded_login(shared, shared["accounts"][0]), witness["name"])

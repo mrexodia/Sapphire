@@ -5,6 +5,7 @@ from .development import DevelopmentError, idle_state, received_character_identi
 from .development_party import EMPTY_PARTY, bound_request
 
 METHODS = {"invite_party_bound", "decline_party_bound"}
+SCOPE = "dedicated-peer-decline-not-general-social"
 
 
 def require_decline_worker(worker):
@@ -79,7 +80,7 @@ def verify_party_decline(profile, worker, inviter, recipient, baseline_states, t
                              and s.get("pending_party_invite") is None
                              and s.get("party_invite_result") == invitation_result,
                              "inviter independently received exact rejection")
-    return {"requested": True, "verified": True, "scope": "dedicated-peer-decline-not-general-social",
+    return {"requested": True, "verified": True, "scope": SCOPE,
             "identities": identities, "invitation_result": invitation_result,
             "received_reply": recipient_after["party_invite_reply"],
             "received_rejection": inviter_after["party_invite_update"],

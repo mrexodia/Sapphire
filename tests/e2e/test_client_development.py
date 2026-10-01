@@ -156,7 +156,9 @@ def completed():
                 'cleanup_may_exceed_deadline':True},
             'administrative_preparation_wait_enabled':False,'database_access':False,
             'world_restart_performed':False,'movement_waypoints_per_cycle':2,
-            'movement_verification':movement,'party_verification':party,'reconnect_verification':copy.deepcopy(reconnect),
+            'movement_verification':movement,'party_verification':party,
+            'decline_verification':{'requested':False,'verified':False},
+            'reconnect_verification':copy.deepcopy(reconnect),
             'tell_verification':tell,'sprint_verification':sprint,'equipment_verification':equipment,
             'inventory_verification':{'requested':True,'verified':True,
                 'scope':'fresh-login-slot-catalog-counts-not-item-instances-or-world-restart',
@@ -167,6 +169,29 @@ def completed():
                 'viewer_login_or_control_performed':False,
                 'continuous_presence':copy.deepcopy(continuity),
                 'start':viewer_start,'finish':viewer_finish}}
+
+
+def declined():
+    report=completed()
+    report['catalog_sha256']=None
+    report['movement_waypoints_per_cycle']=0
+    report['movement_verification']={'requested':False,'verified':False}
+    for key in ('reconnect_verification','inventory_verification','party_verification',
+                'tell_verification','sprint_verification','equipment_verification'):
+        report[key]={'requested':False,'verified':False}
+    identities=[{'name':'bot mover','entity_id':1,'character_id':11},
+                {'name':'bot witness','entity_id':2,'character_id':12}]
+    report['decline_verification']={'requested':True,'verified':True,
+        'scope':'dedicated-peer-decline-not-general-social','identities':identities,
+        'invitation_result':{'result':0,'target':'bot witness'},
+        'received_reply':{'result':0,'auth_type':1,'answer':0,'name':'bot mover'},
+        'received_rejection':{'character_id':12,'auth_type':1,'result':5,'name':'bot witness'},
+        'baseline_sequences':[10,11],'received_sequences':[14,13],
+        'both_empty_after_decline':True}
+    finish=report['viewer_verification']['finish']
+    finish['presence_tokens']['mover']=finish['presence_tokens'].pop('mover-equipment-reequipped')
+    finish['received_replies'][0]['observer']='mover'
+    return report
 
 
 def test_report_requires_all_subchecks_and_same_non_gm_viewer():
@@ -237,6 +262,43 @@ def test_graphical_bridge_rejects_malformed_inventory_receipt():
         report=completed();mutate(report['inventory_verification'])
         with pytest.raises(DevelopmentError):
             bridge.require_graphical_check(report,'Tester Viewer',3)
+
+
+def test_separate_graphical_decline_receipt_passes_without_foreign_scenarios():
+    report=declined(); proof=bridge.require_graphical_decline_check(report,'Tester Viewer',3)
+    assert proof['status']=='passed' and proof['decline_scope']==report['decline_verification']['scope']
+    assert proof['rendered_bot_actions_verified'] is False
+
+
+def test_graphical_decline_rejects_malformed_or_mixed_receipts():
+    mutations=(
+        lambda report: report.update(status='failed'),
+        lambda report: report.update(lease_retained=True),
+        lambda report: report.update(movement_waypoints_per_cycle=2),
+        lambda report: report['movement_verification'].update(requested=True),
+        lambda report: report['party_verification'].update(requested=True),
+        lambda report: report['decline_verification'].update(scope='general-social-proof'),
+        lambda report: report['decline_verification'].update(both_empty_after_decline=False),
+        lambda report: report['decline_verification']['identities'][0].update(entity_id=2),
+        lambda report: report['decline_verification']['invitation_result'].update(target='foreign'),
+        lambda report: report['decline_verification']['received_reply'].update(answer=True),
+        lambda report: report['decline_verification']['received_rejection'].update(result=0),
+        lambda report: report['decline_verification']['baseline_sequences'].__setitem__(0,True),
+        lambda report: report['decline_verification']['received_sequences'].__setitem__(1,11),
+        lambda report: report['decline_verification'].update(extra=True),
+        lambda report: report['viewer_verification']['finish']['received_replies'][0].update(
+            observer='mover-equipment-reequipped'),
+    )
+    for mutate in mutations:
+        report=declined();mutate(report)
+        with pytest.raises(DevelopmentError):
+            bridge.require_graphical_decline_check(report,'Tester Viewer',3)
+
+
+def test_comprehensive_graphical_run_rejects_embedded_decline():
+    report=completed();report['decline_verification']=declined()['decline_verification']
+    with pytest.raises(DevelopmentError):
+        bridge.require_graphical_check(report,'Tester Viewer',3)
 
 
 def test_graphical_bridge_rejects_malformed_movement_receipt():
@@ -451,6 +513,23 @@ def test_graphical_scenario_forwards_nested_deadline_and_exact_flags(monkeypatch
             and kwargs['verify_equipment'] is True)
     assert kwargs['viewer_name']=='Tester Viewer' and kwargs['login'] is login
     assert kwargs['max_seconds']==399 and callable(kwargs['worker_factory'])
+
+
+def test_graphical_decline_is_a_separate_fresh_bounded_run(monkeypatch,tmp_path):
+    monkeypatch.setattr(bridge.time,'monotonic',lambda:100.0)
+    calls=[];login=object();profile={'quest_catalog':'private-catalog','keep':'binding'}
+    def runner(*args,**kwargs):
+        calls.append((args,kwargs));return {'status':'synthetic'}
+    result=bridge.run_graphical_decline(
+        runner,profile,tmp_path/'decline',viewer_name='Tester Viewer',
+        activity_deadline=500.8,login=login)
+    assert result=={'status':'synthetic'} and profile['quest_catalog']=='private-catalog'
+    args,kwargs=calls[0]
+    assert args[0]=={'keep':'binding'} and args[1]==tmp_path/'decline'
+    assert kwargs['confirmed'] is True and kwargs['verify_decline'] is True
+    assert kwargs['viewer_name']=='Tester Viewer' and kwargs['login'] is login
+    assert kwargs['max_seconds']==399 and callable(kwargs['worker_factory'])
+    assert all(key not in kwargs for key in ('verify_party','verify_reconnect','verify_sprint'))
 
 
 def test_activity_budget_caps_calls_and_rejects_late_success(monkeypatch):

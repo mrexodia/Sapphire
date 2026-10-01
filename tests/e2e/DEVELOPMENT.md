@@ -516,7 +516,10 @@ combine them. Movement, Tell, reconnect and viewer checkpoints remain optional;
 the viewer is never invited. This is a narrow rejection check, not general social
 or reset coverage. One owned-runtime CLI check verified the two received rejection
 endpoints in 0.046s within an 11.828s normal login/Say/logout check. Its separate
-headless observer received no invitation; this new option has no graphical live
+headless observer received no invitation. Current graphical-coordinator policy now
+requires this option in a second route-free fresh bot run after the comprehensive
+party run, with separate viewer checkpoints, deadline, worker-exit and lease
+evidence. That policy has focused contracts but still has no current graphical live
 attestation. Exact artifacts and limitations are in the implementation audit.
 
 ### Optional owned two-bot party check

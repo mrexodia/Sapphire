@@ -73,7 +73,8 @@ def test_exact_decline_requires_both_received_endpoints_and_empty_parties(profil
     assert result['status']=='passed' and result['worker_closed'] and not result['lease_retained']
     proof=result['decline_verification']
     assert proof['verified'] and proof['both_empty_after_decline']
-    assert proof['baseline_sequences']==[10,10] and proof['received_sequences']==[12,12]
+    # The normal reciprocal Say advances each synthetic session before the decline baseline.
+    assert proof['baseline_sequences']==[11,11] and proof['received_sequences']==[13,13]
     assert worker.published==['invite_party_bound','decline_party_bound']
     assert all(0<x<=10 for x in worker.wait_budgets)
 

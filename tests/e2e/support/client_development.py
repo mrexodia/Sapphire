@@ -12,6 +12,7 @@ from .development_sprint import HISTORIES as SPRINT_HISTORIES, SCOPE as SPRINT_S
 from .development_equipment import BODY, BAG, SCOPE as EQUIPMENT_SCOPE
 from .development_tell import SCOPE as TELL_SCOPE
 from .development_party import SCOPE as PARTY_SCOPE
+from .development_decline import SCOPE as DECLINE_SCOPE
 
 
 def development_run_budget(activity_deadline):
@@ -55,6 +56,18 @@ def run_graphical_development(runner, profile, artifacts, *, viewer_name, activi
     return runner(profile, artifacts, confirmed=True, verify_party=True, verify_tell=True,
                   verify_sprint=True, verify_reconnect=True, verify_inventory=True,
                   verify_equipment=True, viewer_name=viewer_name,
+                  worker_factory=lambda executable, output: ActivityWorker(
+                      executable, output, deadline=activity_deadline),
+                  login=login, max_seconds=budget)
+
+
+def run_graphical_decline(runner, profile, artifacts, *, viewer_name, activity_deadline, login):
+    """Run the mutually exclusive exact-peer decline in a second fresh bot session."""
+    short_profile = dict(profile)
+    short_profile.pop('quest_catalog', None)  # No repeated movement; decline is a distinct fresh run.
+    budget = development_run_budget(activity_deadline)
+    return runner(short_profile, artifacts, confirmed=True, verify_decline=True,
+                  viewer_name=viewer_name,
                   worker_factory=lambda executable, output: ActivityWorker(
                       executable, output, deadline=activity_deadline),
                   login=login, max_seconds=budget)
@@ -467,6 +480,127 @@ def require_equipment_receipt(value, entities, territory, normal_inventory):
     return value
 
 
+def require_decline_receipt(value, entities):
+    fields = {'requested', 'verified', 'scope', 'identities', 'invitation_result',
+              'received_reply', 'received_rejection', 'baseline_sequences',
+              'received_sequences', 'both_empty_after_decline'}
+    if (not isinstance(value, dict) or set(value) != fields
+            or value.get('requested') is not True or value.get('verified') is not True
+            or value.get('scope') != DECLINE_SCOPE
+            or value.get('both_empty_after_decline') is not True
+            or not isinstance(value.get('identities'), list) or len(value['identities']) != 2):
+        raise DevelopmentError('invalid graphical party-decline receipt')
+    identities = value['identities']
+    for index, identity in enumerate(identities):
+        if (not isinstance(identity, dict)
+                or set(identity) != {'name', 'entity_id', 'character_id'}
+                or not isinstance(identity.get('name'), str) or not 1 <= len(identity['name']) <= 31
+                or type(identity.get('entity_id')) is not int or identity['entity_id'] != entities[index]
+                or type(identity.get('character_id')) is not int
+                or not 0 < identity['character_id'] < 2**64):
+            raise DevelopmentError('invalid graphical party-decline identity')
+    if (identities[0]['name'] == identities[1]['name']
+            or identities[0]['character_id'] == identities[1]['character_id']):
+        raise DevelopmentError('graphical party-decline identities are not distinct')
+    invitation = value.get('invitation_result')
+    reply, rejection = value.get('received_reply'), value.get('received_rejection')
+    if (not isinstance(invitation, dict) or set(invitation) != {'result', 'target'}
+            or type(invitation.get('result')) is not int or invitation['result'] != 0
+            or invitation.get('target') != identities[1]['name']
+            or reply != {'result': 0, 'auth_type': 1, 'answer': 0,
+                         'name': identities[0]['name']}
+            or not isinstance(reply, dict)
+            or any(type(reply.get(key)) is not int for key in ('result', 'auth_type', 'answer'))
+            or rejection != {'character_id': identities[1]['character_id'], 'auth_type': 1,
+                             'result': 5, 'name': identities[1]['name']}
+            or not isinstance(rejection, dict)
+            or any(type(rejection.get(key)) is not int
+                   for key in ('character_id', 'auth_type', 'result'))):
+        raise DevelopmentError('invalid graphical party-decline outcome')
+    baselines, received = value.get('baseline_sequences'), value.get('received_sequences')
+    if (not isinstance(baselines, list) or not isinstance(received, list)
+            or len(baselines) != 2 or len(received) != 2
+            or any(type(sequence) is not int for sequence in [*baselines, *received])
+            or any(not 0 <= baseline < sequence < 2**64
+                   for baseline, sequence in zip(baselines, received))):
+        raise DevelopmentError('invalid graphical party-decline sequence evidence')
+    return value
+
+
+def require_graphical_viewer_receipt(viewer, viewer_name, entity, entities, run_id, finish_mover):
+    expected = {'entity_id':entity, 'name':viewer_name, 'gm_rank':0}
+    if (not isinstance(viewer, dict)
+            or set(viewer) != {'requested', 'verified', 'scope', 'viewer_login_or_control_performed',
+                               'start', 'finish', 'continuous_presence'}
+            or viewer.get('requested') is not True or viewer.get('verified') is not True
+            or viewer.get('scope') != VIEWER_SCOPE
+            or viewer.get('viewer_login_or_control_performed') is not False):
+        raise DevelopmentError('runner must retain exact no-control graphical viewer evidence')
+    continuity = viewer.get('continuous_presence')
+    if (not isinstance(continuity, dict)
+            or set(continuity) != {'verified', 'scope', 'observer', 'observer_entity_id',
+                                   'viewer_entity_id', 'presence_token'}
+            or continuity.get('verified') is not True
+            or continuity.get('scope') != CONTINUITY_SCOPE
+            or continuity.get('observer') != 'witness'
+            or continuity.get('observer_entity_id') != entities[1]
+            or continuity.get('viewer_entity_id') != entity
+            or type(continuity.get('presence_token')) is not int
+            or continuity['presence_token'] < 0
+            or not isinstance(viewer.get('finish'), dict)
+            or viewer['finish'].get('continuous_presence') != continuity):
+        raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
+    require_viewer_checkpoint(
+        viewer.get('start'), 'start', expected, run_id, ('mover', 'witness'))
+    require_viewer_checkpoint(
+        viewer.get('finish'), 'finish', expected, run_id, (finish_mover, 'witness'), continuity)
+    return expected, continuity
+
+
+def require_graphical_decline_check(result, viewer_name, entity):
+    """Require a separate fresh-session decline; never conflate it with party creation."""
+    if (result.get('status') != 'passed' or result.get('scope') != 'shared-development-not-acceptance'
+            or result.get('lease_retained') is not False or result.get('worker_closed') is not True
+            or result.get('administrative_preparation_wait_enabled') is not False
+            or result.get('database_access') is not False or result.get('world_restart_performed') is not False
+            or result.get('movement_waypoints_per_cycle') != 0
+            or result.get('movement_verification') != {'requested': False, 'verified': False}):
+        raise DevelopmentError('graphical decline run did not complete cleanly')
+    require_clear_terminal_account_leases(result)
+    require_normal_worker_exit(result)
+    deadline = result.get('run_deadline')
+    if (not isinstance(deadline, dict)
+            or set(deadline) != {'enabled', 'limit_seconds', 'expired',
+                                 'session_work_completed_within_budget', 'scope',
+                                 'cleanup_may_exceed_deadline'}
+            or deadline.get('enabled') is not True
+            or type(deadline.get('limit_seconds')) is not int
+            or not 1 <= deadline['limit_seconds'] <= 900
+            or deadline.get('expired') is not False
+            or deadline.get('session_work_completed_within_budget') is not True
+            or deadline.get('scope') != 'cooperative-success-deadline-not-hard-process-limit'
+            or deadline.get('cleanup_may_exceed_deadline') is not True):
+        raise DevelopmentError('bounded graphical decline receipt missing or failed')
+    entities, territory, run_id = result.get('entities'), result.get('territory'), result.get('run_id')
+    if (not isinstance(entities, list) or len(entities) != 2
+            or any(type(value) is not int or value <= 0 for value in entities)
+            or len(set(entities)) != 2 or type(territory) is not int or territory != 130
+            or not isinstance(run_id, str) or len(run_id) != 32
+            or any(char not in '0123456789abcdef' for char in run_id)):
+        raise DevelopmentError('graphical decline entities/territory missing or invalid')
+    for key in ('reconnect_verification', 'inventory_verification', 'party_verification',
+                'tell_verification', 'sprint_verification', 'equipment_verification'):
+        if result.get(key) != {'requested': False, 'verified': False}:
+            raise DevelopmentError('graphical decline run included a foreign subscenario')
+    decline = require_decline_receipt(result.get('decline_verification'), entities)
+    expected, continuity = require_graphical_viewer_receipt(
+        result.get('viewer_verification'), viewer_name, entity, entities, run_id, 'mover')
+    return {'status':'passed', 'scope':'graphical-fixture-with-separate-fresh-party-decline',
+            'viewer':expected, 'run_deadline':deadline, 'decline_scope':decline['scope'],
+            'continuous_presence':continuity, 'rendered_bot_actions_verified':False,
+            'note':'Received decline/viewer evidence is not general social or rendered-action proof.'}
+
+
 def require_graphical_check(result, viewer_name, entity):
     """No acknowledgement-only or foreign-viewer result can close this bridge."""
     if (result.get('status') != 'passed' or result.get('scope') != 'shared-development-not-acceptance'
@@ -504,6 +638,8 @@ def require_graphical_check(result, viewer_name, entity):
         if (not isinstance(value, dict) or value.get('requested') is not True
                 or value.get('verified') is not True):
             raise DevelopmentError('required development subcheck missing or failed')
+    if result.get('decline_verification') != {'requested': False, 'verified': False}:
+        raise DevelopmentError('party creation and decline must remain separate fresh runs')
     movement = require_movement_receipt(
         result['movement_verification'], entities, result.get('cycles'),
         result.get('movement_waypoints_per_cycle'), result.get('catalog_sha256'))
@@ -524,34 +660,9 @@ def require_graphical_check(result, viewer_name, entity):
         result['reconnect_verification'], equipment['identity'], territory)
     if math.dist(movement['authored_route'][0], reconnect['expected_position']) > 0.15:
         raise DevelopmentError('graphical movement and reconnect origins disagree')
-    viewer = result['viewer_verification']
-    expected = {'entity_id':entity, 'name':viewer_name, 'gm_rank':0}
-    if (not isinstance(viewer, dict)
-            or set(viewer) != {'requested', 'verified', 'scope', 'viewer_login_or_control_performed',
-                               'start', 'finish', 'continuous_presence'}
-            or viewer.get('requested') is not True or viewer.get('verified') is not True
-            or viewer.get('scope') != VIEWER_SCOPE
-            or viewer.get('viewer_login_or_control_performed') is not False):
-        raise DevelopmentError('runner must retain exact no-control graphical viewer evidence')
-    continuity = viewer.get('continuous_presence')
-    if (not isinstance(continuity, dict)
-            or set(continuity) != {'verified', 'scope', 'observer', 'observer_entity_id',
-                                   'viewer_entity_id', 'presence_token'}
-            or continuity.get('verified') is not True
-            or continuity.get('scope') != CONTINUITY_SCOPE
-            or continuity.get('observer') != 'witness'
-            or continuity.get('observer_entity_id') != entities[1]
-            or continuity.get('viewer_entity_id') != entity
-            or type(continuity.get('presence_token')) is not int
-            or continuity['presence_token'] < 0
-            or not isinstance(viewer.get('finish'), dict)
-            or viewer['finish'].get('continuous_presence') != continuity):
-        raise DevelopmentError('continuous received graphical-viewer presence evidence missing or changed')
-    require_viewer_checkpoint(
-        viewer.get('start'), 'start', expected, run_id, ('mover', 'witness'))
-    require_viewer_checkpoint(
-        viewer.get('finish'), 'finish', expected, run_id,
-        ('mover-equipment-reequipped', 'witness'), continuity)
+    expected, continuity = require_graphical_viewer_receipt(
+        result['viewer_verification'], viewer_name, entity, entities, run_id,
+        'mover-equipment-reequipped')
     return {'status':'passed', 'scope':'graphical-fixture-checkpoints-with-normal-bot-scenario',
             'viewer':expected, 'run_deadline':deadline,
             'movement_scope':movement['scope'], 'inventory_scope':INVENTORY_SCOPE,
