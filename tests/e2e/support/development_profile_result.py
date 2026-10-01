@@ -7,7 +7,8 @@ from pathlib import Path
 import stat
 
 from .development import DevelopmentError, validate_profile
-from .development_binding import require_development_run_binding
+from .development_binding import (require_development_run_binding,
+                                  validate_development_run_account_association)
 from .development_result import validate_development_evidence
 
 SCOPE = "external-shared-run-private-profile-association-not-authentication-or-exclusion"
@@ -22,7 +23,7 @@ def _pairs(pairs):
     return value
 
 
-def _read_profile(path):
+def read_development_profile(path, *, require_worker=True):
     try:
         path = Path(path)
         metadata = path.lstat()
@@ -37,13 +38,31 @@ def _read_profile(path):
         profile = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs)
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise DevelopmentError("cannot read private development profile") from error
-    validate_profile(profile)
+    validate_profile(profile, require_worker=require_worker)
     return raw, profile
+
+
+def read_development_account_association(path):
+    try:
+        path = Path(path)
+        metadata = path.lstat()
+        reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        if (path.is_symlink() or not stat.S_ISREG(metadata.st_mode)
+                or getattr(metadata, "st_file_attributes", 0) & reparse
+                or metadata.st_nlink != 1 or not 0 < metadata.st_size <= 64 * 1024):
+            raise OSError()
+        raw = path.read_bytes()
+        if not 0 < len(raw) <= 64 * 1024:
+            raise OSError()
+        value = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs)
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise DevelopmentError("cannot read private development account association") from error
+    return raw, validate_development_run_account_association(value)
 
 
 def inspect_development_profile_result(summary_path, profile_path):
     evidence = validate_development_evidence(summary_path)
-    profile_raw, profile = _read_profile(profile_path)
+    profile_raw, profile = read_development_profile(profile_path)
     identities, binding = require_development_run_binding(evidence["report"], profile)
     return {"version":1,"status":"accepted","scope":SCOPE,
             "run_id":evidence["run_id"],

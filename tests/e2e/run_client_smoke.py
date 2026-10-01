@@ -33,6 +33,7 @@ from .support.client_development import (development_profile, require_graphical_
                                          require_graphical_witness_handoff,
                                          run_graphical_development, run_graphical_decline)
 from .support.development import authenticate, movement_route
+from .support.development_binding import development_run_account_association
 from .run_development import run as run_development
 
 INPUT = Path("C:/e2e-input")
@@ -222,6 +223,13 @@ def run():
                     raise TimeoutError("graphical activity expired before peer fixture setup")
                 peer = env.fresh_character(route[-1])  # Administrative pre-connection fixture, not progression.
                 shared = development_profile(env, witness, peer, real, profile["quest_catalog"])
+                # Private retained input: required to recompute both nested run bindings.
+                # Passwords and worker paths are deliberately omitted.
+                association = development_run_account_association(shared)
+                with (OUTPUT / "development-account-association.json").open(
+                        "x", encoding="utf-8") as handle:
+                    json.dump(association, handle, indent=2)
+                    handle.write("\n")
                 def bounded_login(config, account):
                     if time.monotonic() >= deadline:
                         raise TimeoutError("graphical activity expired before authentication")

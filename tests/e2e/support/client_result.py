@@ -27,6 +27,8 @@ from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
 from .development import (DevelopmentError, position, received_character_identity,
                           require_normal_worker_exit)
 from .development_artifact import RUN_SCOPE, require_worker_artifacts
+from .development_binding import require_development_run_binding
+from .development_profile_result import read_development_account_association
 from .environment import (SetupError, artifact_tree_sha256,
                           has_cleanup_failure_marker, require_process_teardowns)
 
@@ -356,6 +358,14 @@ def inspect_client_development_result(output, expected_source_revision):
     decline_path = output / "development-decline" / "development-summary.json"
     main, decline = _read_json(main_path), _read_json(decline_path)
     main_hash, decline_hash = _sha256(main_path), _sha256(decline_path)
+    association_raw, account_association = read_development_account_association(
+        output / "development-account-association.json")
+    main_identities, main_binding = require_development_run_binding(
+        main, account_association=account_association)
+    decline_identities, decline_binding = require_development_run_binding(
+        decline, account_association=account_association)
+    if main_identities != decline_identities or main_binding != decline_binding:
+        raise DevelopmentError("graphical nested runs differ from retained bot profile")
     main_worker_artifacts = require_worker_artifacts(main_path, main, RUN_SCOPE)
     decline_worker_artifacts = require_worker_artifacts(decline_path, decline, RUN_SCOPE)
     main_proof = require_graphical_check(main, viewer_name, viewer_entity)
@@ -475,6 +485,9 @@ def inspect_client_development_result(output, expected_source_revision):
             "result_sha256": _sha256(result_path),
             "development_summary_sha256": main_hash,
             "decline_summary_sha256": decline_hash,
+            "development_profile_association":{"verified":True,
+                "account_input_sha256":hashlib.sha256(association_raw).hexdigest(),
+                "binding":main_binding,"credentials_disclosed":False},
             "worker_sha256": pair["worker_sha256"],
             "development_worker_artifacts":main_worker_artifacts,
             "decline_worker_artifacts":decline_worker_artifacts,

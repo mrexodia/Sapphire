@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import json
+import os
 
 import pytest
 
@@ -16,6 +17,8 @@ from .support.client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                                    witness_say_challenge)
 from .support.client_snapshot import git
 from .support.development import DevelopmentError
+from .support.development_binding import (development_run_account_association,
+                                          development_run_binding)
 from .support.development_artifact import (RUN_SCOPE, bind_worker_artifacts,
                                             initialize_worker_artifacts)
 from .support.environment import REPO, artifact_tree_sha256
@@ -82,6 +85,17 @@ def build_output(root, source_revision="1" * 40):
         "source_manifest_sha256":source_hash,"working_tree_changes_included":False,
         "inputs":input_hashes})
     main, decline = completed(), declined()
+    bot_profile = {"version":1,"mode":"shared-development","protocol":"sapphire-3.3",
+        "worker":"C:/e2e-input/bin/sapphire_test_client.exe","api_port":54996,
+        "lobby_port":54994,"territory":130,"quest_catalog":"C:/e2e-input/quest_catalog.json",
+        "accounts":[
+            {"username":"e2e_graphical_one","password":"private-one","character":"bot mover"},
+            {"username":"e2e_graphical_two","password":"private-two","character":"bot witness"}]}
+    write_json(root / "development-account-association.json",
+               development_run_account_association(bot_profile, require_worker=False))
+    for nested in (main, decline):
+        nested["development_profile_binding"] = development_run_binding(
+            bot_profile, nested["received_identities"], require_worker=False)
     main["worker_sha256"] = decline["worker_sha256"] = input_hashes["bin/sapphire_test_client.exe"]
     main["catalog_sha256"] = input_hashes["quest_catalog.json"]
     main["elapsed_seconds"], decline["elapsed_seconds"] = 12.5, 4.5
@@ -293,6 +307,10 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
             "tracked_source_files":4,"unmaterialized_gitlinks":0},
         "note":"External readonly mappings and native-build provenance are out of scope."}
     assert proof["sandbox_disposal_verified"] is False
+    assert proof["development_profile_association"]["verified"] is True
+    assert proof["development_profile_association"]["binding"]["schema"] == \
+        "development-run-profile-association-v1"
+    assert "private-one" not in json.dumps(proof) and "e2e_graphical_one" not in json.dumps(proof)
     assert proof["bot_interaction_review"] == {"verified":True,
         "frame_sha256":hashlib.sha256((root / "interaction.png").read_bytes()).hexdigest(),
         "scope":INTERACTION_CAPTURE_SCOPE, "development_run":"b" * 32,
@@ -310,6 +328,13 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
     assert proof["environment_artifact_tree_sha256"] == artifact_tree_sha256(
         root / "artifacts/sapphire-e2e-synthetic")
     assert proof["activity_deadline"]["activity_and_worker_exit_completed_within_budget"] is True
+
+
+def test_graphical_result_rejects_hardlinked_private_bot_profile(tmp_path):
+    root = tmp_path / "output"; root.mkdir(); build_output(root)
+    os.link(root / "development-account-association.json", root / "profile-alias.json")
+    with pytest.raises(DevelopmentError):
+        inspect_client_development_result(root, "1" * 40)
 
 
 def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
@@ -375,6 +400,10 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
         "artifacts/sapphire-e2e-synthetic/retained/Cleanup-Failure.JSON", {}),
     lambda root, report: report["fixture"].update(catalog_sha256="e" * 64),
     lambda root, report: report["development_check"].update(summary_sha256="0" * 64),
+    lambda root, report: json_file(root / "development-account-association.json",
+        lambda value:value["accounts"][0].update(username="e2e_foreign")),
+    lambda root, report: (root / "development-account-association.json").write_text(
+        '{"version":1,"version":1}', encoding="utf-8"),
     lambda root, report: report["development_run_pair"]["identities"][0].update(entity_id=True),
     lambda root, report: report["development_run_pair"]["identities"][0].update(character_id=99),
     lambda root, report: report["development_check"].update(elapsed_seconds=True),
