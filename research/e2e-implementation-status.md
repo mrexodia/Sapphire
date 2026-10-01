@@ -2041,6 +2041,24 @@ and `39cd7374a3935d811dab69357f477175e5f647900bf3a53fa0644cbb3f4adb5f`.
 No executable/service/database/account/gameplay operation ran. This reusable short
 feedback lane remains staging evidence only, not a service or database rehearsal.
 
+CI policy **`80ce1a4f9`** now requires the protected private workflow to run this
+service-free staging command against `${{ github.sha }}` and the just-built worker/
+binaries before `run_ci`. The stage evidence uses a fresh run-ID/attempt-ID sibling
+under `RUNNER_TEMP`; the gate's independently fresh root remains absent until its
+own runner starts, preserving the exactly-one-gate-run publication check. Policy
+contracts reject a non-fresh/foreign stage root, wrong revision/build overrides, or
+weakened exit guard and expose `service_free_staging_required:true` only for the
+private workflow.
+
+Frozen, remote-free source **`80ce1a4f96140961490e4f9b9ebfc18c8ca3a0b7`**
+passed **160 CI/workflow-policy/staging tests in 11.17s** and its strict policy
+inspection accepted the authored files. Combined test/policy log SHA-256:
+`37812b05dd1f9815e675ef23aa9a3b65bffa3bc70f715bbf51c9a74310368b1b`;
+private workflow SHA-256:
+`58e45467c5c963e953c5ce638aa624464edf3181a798276a50c6ab6a38179434`.
+This is static authored-workflow enforcement, not hosted execution, runner-group
+policy, asset approval, VM disposal or gate evidence.
+
 The smallest non-account current-profile live check then ran only
 `test_rejected_credentials` from the same frozen source: **1 passed in 24.78s**.
 The committed standalone inspector accepted the exact single JUnit identity, clean
@@ -4378,7 +4396,7 @@ the existing Linux, hosted-CI and real-client blockers are unchanged.
 | Deadlines / cancellation / cleanup | Timers, shared runner/provisioner cooperative whole-session budgets, graphical bridge nested aggregate/outer activity budgets, exact-owned process and isolated service-generation teardown receipts, including strict terminal owned-warm-host lifecycle inspection, redaction, Windows sharing retries; bounded profile deadline scale 1..3 is recorded and adds no retry/sleep; final movement publication waits for its asynchronous zone-socket write; workload cleanup precedes diagnostics and survives sampler/write exceptions | Synthetic faults, positive bounded provisioner/runner sessions, control-only zero/nonzero native exits, exact database/API/lobby/world lifecycle contracts, a controlled live diagnostic-write failure, one intentional owned-world termination, and an older clean scale-1 Windows gate verified; exact current process receipts await a new gate, and neither process exit nor runtime removal is server-offline proof |
 | Action/event/server logs / hashes / JUnit | Bounded sanitized journals; runtime/module/worker/catalog/mesh identities; current public gate schema adds ordered manifest/lifecycle/complete-bounded-artifact-tree hashes per exact case plus private profile/diagnostics/pytest/JUnit hashes while keeping names/contents/paths/PIDs private, with a read-only private-byte/process/input/phase/JUnit correlation inspector | Implemented at contract level; current public/private per-case correlation awaits a new gate, and hashes/reported outcomes do not independently prove gameplay, hosted execution or compatibility |
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
-| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, profile/public/private/fail-only inspectors and `CI.md`; strict workflow/process-policy and evidence receipts | Authored repository controls are pinned/read-only/bounded; a passing gate must satisfy both exact current public result/revision and retained private-byte semantic contracts before upload, while failed summaries require a separate sanitized fail-only contract that never accepts success evidence; private dispatch remains protected/serialized in YAML; every historical summary predates current evidence fields and is rejected, so current gate execution is pending; the existing local profile also lacks four now-required catalogs; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
+| Provisioned gameplay CI | `gameplay-e2e.yml`, `sapphire_gameplay_ci` build target, service-free profile staging, public/private/fail-only inspectors and `CI.md`; strict workflow/process-policy and evidence receipts | Authored repository controls are pinned/read-only/bounded; the private workflow must stage/verify the just-built inputs without services before allocating its distinct gate root; a passing gate must then satisfy both exact current public result/revision and retained private-byte semantic contracts before upload, while failed summaries require a separate sanitized fail-only contract that never accepts success evidence; private dispatch remains protected/serialized in YAML; every historical summary predates current evidence fields and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
 | Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
 
