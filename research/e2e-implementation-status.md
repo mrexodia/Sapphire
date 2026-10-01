@@ -796,6 +796,47 @@ server ownership, database isolation, absence of hidden external mutation, worke
 correctness or current graphical compatibility. A fresh attended graphical run
 remains pending; no full gate, soak or platform sweep ran.
 
+## Graphical comprehensive/decline runs bind one dedicated bot pair
+
+Fix **`8afb8a301`** closes cross-run substitution after the two individual strict
+consumers pass. `development_run_pair` now requires two distinct lower-case 32-hex
+runner IDs while both summaries carry the exact current staged-worker SHA-256, the
+same ordered positive distinct entity IDs, and byte-for-byte equal strict
+name/entity/character identity rows. The ordered names must also equal the two
+validated dedicated character names in the graphical runner profile. A second
+internally valid run for foreign characters, swapped entities, a different worker,
+a duplicated run ID, malformed identity, or changed character ID cannot complete
+the outer bridge.
+
+The result scope is
+`same-dedicated-bot-identities-across-distinct-runs-not-offline-or-reset-proof`.
+It deliberately does not infer that the first server session was offline, that
+cached state was quiescent, or that either character could be reset/adopted. Each
+run's normal server closures, worker exit and clear cooperating-runner leases remain
+separate evidence. The graphical viewer remains excluded from both bot profiles.
+
+Frozen, remote-free source **`8afb8a301b3d5c1c546fe79c10baf76545aee502`**
+passed **458 tests in 3.94s** across graphical/decline policy and all coupled
+movement/social/inventory/lifecycle contracts. Negatives cover duplicate run ID,
+foreign worker, reordered entities, changed character ID/name, duplicate entities
+and a profile-name mismatch. Test-log SHA-256:
+`bba70ed3e9c30c545ab20bdb06f9d877cef7d64506b043637d79119a1bffb6f2`.
+Artifacts: `client-graphical-run-pair-clean-{source.json,python.log}`.
+
+No retained artifacts are falsely upgraded to a paired current pass. The consumer
+correctly rejected unrelated historical `client-development-live-004` and
+`development-decline-live-001` summaries (different workers/characters and the
+older comprehensive schema); evidence SHA-256:
+`a495fd6c0620a27250bfe259772a292f2a593d9c5dd3f11c5371161f4cd60354`.
+The first read-only verifier attempt itself failed with `KeyError` because it tried
+to extract Sprint names from that pre-Sprint summary before calling the consumer;
+that failed verifier is retained with SHA-256
+`46d9c9bfb6ae696eae7be2a2ed158fb242058da80425164142a13a587d07f517`
+and was not relabelled. The corrected probe used its historical party identities
+only as expected input and still required consumer rejection. No gameplay,
+mutation, server, Sandbox or graphical operation ran. A current attended graphical
+execution remains pending; no full gate, soak or platform sweep ran.
+
 ## Retained bot leases have a read-only fail-closed inspector
 
 Feature **`33adadfea`** adds `inspect_development_leases.py` and
@@ -1602,7 +1643,7 @@ or completion audit. The original plan checklist below still applies.
 | Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
-| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines, clear leases and exact worker exits pending current graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
+| Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines, clear leases and exact worker exits pending current graphical execution; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
 | Short meaningful scenarios and timing | Strict per-waypoint independent movement receipts plus party/Tell/Sprint/equipment/reconnect/viewer checks; separate exact-peer decline and read-only reconnect inventory increments | Bounded CLI/live headless evidence recorded above; decline has headless-only live coverage but is now required as a separate fresh current graphical-policy run; all current graphical execution awaits manual approval/assets |
 | Reject ambiguous/foreign state, no uncertain mutation retries or foreign cleanup | Native bound party/Tell/placement methods; focused ownership/lifecycle contracts; retained failed leases/results; exact read-only lease inspector | Verified for implemented operations; local clear/retained lease snapshots provide neither server offline proof nor the missing reset/session fence |
 | Genuine received evidence and independent observations | Native actions/events, exact peer receipts, strict advancing per-waypoint movement observations, respawn/Say, inventory snapshot reconstruction | Inventory is private acting-client evidence; peer verifies movement/lifecycle/position, not the inventory contents |
