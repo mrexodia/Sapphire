@@ -119,6 +119,7 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
                 "version":1,
                 "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
                 "starts":self.process_starts,"teardowns":self.process_teardowns}))
+            (self.artifacts / "manifest.json").write_text(json.dumps({"synthetic":True}))
             cleanup.append("environment")
 
     class Worker:
@@ -241,6 +242,10 @@ def test_guest_terminal_status_depends_on_final_witness_retirement(tmp_path, mon
     assert cleanup == (["worker", "environment"] if failure == "client_exit_before_cleanup"
                        else ["worker", "client", "environment"])
     assert report["runtime_removed"] is True
+    assert report["environment_manifest"] == {"verified":True,
+        "scope":"exact-graphical-environment-input-identities-not-native-build-provenance",
+        "relative_path":"artifacts/sapphire-e2e-synthetic/manifest.json",
+        "sha256":guest.CLIENT_SHA256}
     assert report["environment_process_teardown"] == {"verified":True,
         "scope":"exact-graphical-isolated-service-teardown-before-result-publication",
         "relative_path":"artifacts/sapphire-e2e-synthetic/process-lifecycle.json",

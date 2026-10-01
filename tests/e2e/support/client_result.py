@@ -13,6 +13,8 @@ from pathlib import Path, PurePosixPath
 
 from .client_development import (require_graphical_check, require_graphical_decline_check,
                                  require_graphical_run_pair)
+from .client_environment import (SCOPE as ENVIRONMENT_IDENTITY_SCOPE,
+                                 require_graphical_environment_manifest)
 from .client_provenance import require_prepared_inputs
 from .client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                            LOGOUT_CAPTURE_SCOPE, other_player,
@@ -111,6 +113,34 @@ def _client_teardown(value, expected_pid):
             or value.get("scope") != CLIENT_TEARDOWN_SCOPE):
         raise DevelopmentError("invalid exact graphical-client teardown receipt")
     return value
+
+
+def _environment_identity(output, value):
+    if (not isinstance(value, dict)
+            or set(value) != {"verified", "scope", "relative_path", "sha256"}
+            or value.get("verified") is not True
+            or value.get("scope") != ENVIRONMENT_IDENTITY_SCOPE
+            or not _hex(value.get("sha256"), 64)):
+        raise DevelopmentError("graphical environment identity receipt is malformed")
+    relative = value.get("relative_path")
+    try:
+        pure = PurePosixPath(relative)
+    except TypeError as error:
+        raise DevelopmentError("graphical environment manifest path is malformed") from error
+    if (pure.is_absolute() or pure.as_posix() != relative
+            or len(pure.parts) != 3 or pure.parts[0] != "artifacts"
+            or not pure.parts[1].startswith("sapphire-e2e-")
+            or len(pure.parts[1]) <= len("sapphire-e2e-")
+            or pure.parts[2] != "manifest.json" or "\\" in relative):
+        raise DevelopmentError("graphical environment manifest path is foreign")
+    path = output.joinpath(*pure.parts)
+    manifest = _read_json(path)
+    if _sha256(path) != value["sha256"]:
+        raise DevelopmentError("graphical environment manifest hash differs")
+    inputs = _read_json(output.parent / "inputs.json")
+    source = _read_json(output.parent / "input/source.json")
+    proof = require_graphical_environment_manifest(manifest, inputs, source)
+    return {**value, "evidence": proof}
 
 
 def _environment_teardown(output, value):
@@ -356,6 +386,10 @@ def inspect_client_development_result(output, expected_source_revision):
     deadline = _activity_deadline(report.get("activity_deadline"))
     timing = _timing(report.get("timing"))
     client_teardown = _client_teardown(report.get("client_teardown"), report["client_pid"])
+    environment_identity = _environment_identity(output, report.get("environment_manifest"))
+    if (environment_identity["evidence"]["worker_sha256"] != pair["worker_sha256"]
+            or environment_identity["evidence"]["quest_catalog_sha256"] != fixture["catalog_sha256"]):
+        raise DevelopmentError("graphical environment identities differ from nested runs")
     environment_teardown = _environment_teardown(
         output, report.get("environment_process_teardown"))
 
@@ -433,6 +467,7 @@ def inspect_client_development_result(output, expected_source_revision):
                                     "scope": LOGOUT_CAPTURE_SCOPE},
             "activity_deadline": deadline, "timing": timing,
             "client_teardown": client_teardown,
+            "environment_manifest": environment_identity,
             "environment_process_teardown": environment_teardown,
             "runtime_removed": True, "sandbox_disposal_verified": False,
             "note": "Structured current guest evidence only; inspect rendering and dispose the owned Sandbox separately."}

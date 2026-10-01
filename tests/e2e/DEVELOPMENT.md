@@ -541,7 +541,9 @@ rendered dedicated bot characters and the fresh nested viewer Say. Use
 not evidence that earlier bot actions rendered. The inspector also requires a
 separate exact-frame manual title-screen review receipt and an exact PID-bound observed teardown of the owned
 title-screen client plus every database/API/lobby/world generation during guest
-cleanup, binds the private process-lifecycle file hash, and revalidates all nested
+cleanup, binds the private process-lifecycle file hash, strictly cross-checks the
+private environment manifest's server/worker/script/catalog/combat identities
+against preparation/source evidence, and revalidates all nested
 host-visible evidence read-only before disposal. Launch current owned guests through
 `python -m tests.e2e.run_client_sandbox launch --prepared <prepared>`; after
 manually confirming the exact owned discard dialog, use `approve-disposal` and

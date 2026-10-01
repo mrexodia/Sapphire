@@ -20,6 +20,7 @@ from .support.client_smoke import (CLIENT_SHA256, INTERACTION_CAPTURE_SCOPE,
                                    witness_say_challenge)
 from .support.environment import Environment, require_process_teardowns, sha256, REPO
 from .support.client_snapshot import verify_source
+from .support.client_environment import SCOPE as ENVIRONMENT_IDENTITY_SCOPE
 from .support.client_timing import ClientPhaseTiming
 from .support.client_lifecycle import retire_witness
 from .support.worker import Worker, Bot
@@ -382,6 +383,11 @@ def run():
                     raise RuntimeError("isolated process lifecycle artifact differs from cleanup")
                 process_proof = require_process_teardowns(
                     lifecycle["starts"], lifecycle["teardowns"])
+                manifest_path = env.artifacts / "manifest.json"
+                report["environment_manifest"] = {"verified":True,
+                    "scope":ENVIRONMENT_IDENTITY_SCOPE,
+                    "relative_path":manifest_path.relative_to(OUTPUT).as_posix(),
+                    "sha256":sha256(manifest_path)}
                 report["environment_process_teardown"] = {
                     "verified": True,
                     "scope": "exact-graphical-isolated-service-teardown-before-result-publication",

@@ -324,7 +324,11 @@ are absent, not passing. On completion or failure, `status.json` changes to
    cleanup error changes the result to failed, not a passing gameplay run with a
    warning. The same applies if `process-lifecycle.json` differs from the in-memory
    cleanup rows or any exact service generation lacks a running-before-cleanup,
-   terminate-request and observed integer-return-code receipt. This forced owned
+   terminate-request and observed integer-return-code receipt. The private
+   environment manifest must also hash-match the result and strictly agree with
+   staged executable/worker/script/catalog/navigation inputs and committed combat
+   data; external navigation hashes identify only files enumerated by the server
+   environment, not completeness of that host asset root. This forced owned
    cleanup is not graceful server shutdown or offline exclusion. For a
    current development-enabled run, execute this read-only host-side verifier from
    the same clean source revision before disposal:
@@ -346,7 +350,10 @@ are absent, not passing. On completion or failure, `status.json` changes to
    interaction frame/manual receipt and the separately approved exact title-screen frame,
    retirements, outer deadline/worker exit, exact graphical-client teardown, all
    exact isolated database/API/lobby/world process generations and their private
-   lifecycle-file hash, terminal status and reported runtime removal. `accepted` explicitly leaves
+   lifecycle-file hash; the environment manifest's exact staged server/worker/
+   script/catalog/combat-data identities against preparation/source plus the
+   recorded external navigation digest set; terminal status and reported runtime
+   removal. `accepted` explicitly leaves
    `sandbox_disposal_verified=false`; it neither inspects pixels nor replaces the
    next manual step. Older/incomplete results fail closed.
 8. **Close the owned Sandbox window and confirm its discard dialog.** Guest

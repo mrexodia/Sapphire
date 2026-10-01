@@ -31,6 +31,12 @@ def json_file(path, mutate):
     write_json(path, value)
 
 
+def environment_file(root, report, mutate):
+    path = root / "artifacts/sapphire-e2e-synthetic/manifest.json"
+    json_file(path, mutate)
+    report["environment_manifest"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def outer_state(position, sequence, chat=None, *, viewer=True):
     actors = ({"3":{"kind":1,"name":"Tester Viewer","gm_rank":0,"level":1,
                     "hp":94,"position":position}} if viewer else {})
@@ -41,23 +47,41 @@ def outer_state(position, sequence, chat=None, *, viewer=True):
 
 
 def build_output(root, source_revision="1" * 40):
+    combat_hashes = {"data/actions/player.json":"1" * 64,
+        "data/bnpcs/w1f2/w1f2.json":"2" * 64,
+        "data/bnpcs/w1f2/w1f2_paths.json":"3" * 64}
     source_manifest = {"version":1,
         "scope":"committed-coordinator-source-not-native-build-attestation",
         "revision":source_revision,"dirty":False,
-        "sha256":{"tests/e2e/synthetic.py":"a" * 64},"gitlinks":[],
+        "sha256":{"tests/e2e/synthetic.py":"a" * 64, **combat_hashes},"gitlinks":[],
         "submodule_fetch_performed":False,"remote_configured":False}
-    source_path = root.parent / "input/source.json"
+    input_root = root.parent / "input"
+    source_path = input_root / "source.json"
     write_json(source_path, source_manifest)
+    staged = {
+        "profile.json":b'{"synthetic":true}',
+        "bin/api.exe":b"synthetic api", "bin/lobby.exe":b"synthetic lobby",
+        "bin/server.exe":b"synthetic world", "bin/dbm.exe":b"synthetic dbm",
+        "bin/sapphire_test_client.exe":b"synthetic worker",
+        "bin/compiledscripts/script.dll":b"synthetic script",
+        "quest_catalog.json":b'{"synthetic":"catalog"}',
+        "catalog-mesh.nav":b"synthetic navigation",
+    }
+    for relative, contents in staged.items():
+        path = input_root / relative; path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(contents)
+    input_hashes = {relative:hashlib.sha256((input_root / relative).read_bytes()).hexdigest()
+                    for relative in staged}
     source_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()
-    profile_path = root.parent / "input/profile.json"
-    write_json(profile_path, {"synthetic":True})
-    profile_hash = hashlib.sha256(profile_path.read_bytes()).hexdigest()
+    input_hashes["source.json"] = source_hash
     write_json(root.parent / "inputs.json", {"version":1,
         "status":"prepared_not_executed","client_sha256":CLIENT_SHA256,
         "config_sha256":"e" * 64,"source_revision":source_revision,
         "source_manifest_sha256":source_hash,"working_tree_changes_included":False,
-        "inputs":{"profile.json":profile_hash,"source.json":source_hash}})
+        "inputs":input_hashes})
     main, decline = completed(), declined()
+    main["worker_sha256"] = decline["worker_sha256"] = input_hashes["bin/sapphire_test_client.exe"]
+    main["catalog_sha256"] = input_hashes["quest_catalog.json"]
     main["elapsed_seconds"], decline["elapsed_seconds"] = 12.5, 4.5
     decline["run_id"] = "b" * 32
     for stage in ("start", "finish"):
@@ -72,7 +96,7 @@ def build_output(root, source_revision="1" * 40):
     main_proof = require_graphical_check(main, "Tester Viewer", 3)
     decline_proof = require_graphical_decline_check(decline, "Tester Viewer", 3)
     pair = require_graphical_run_pair(
-        main, decline, ["bot mover", "bot witness"], "d" * 64)
+        main, decline, ["bot mover", "bot witness"], main["worker_sha256"])
     run_id = "f" * 32
     frame = b"synthetic frame bytes, not reviewed pixels"
     (root / "review.png").write_bytes(frame)
@@ -111,6 +135,24 @@ def build_output(root, source_revision="1" * 40):
         "scope":"exact-owned-isolated-process-teardown-not-graceful-server-exit",
         "starts":starts,"teardowns":teardowns})
     lifecycle_hash = hashlib.sha256(lifecycle_path.read_bytes()).hexdigest()
+    environment_path = root / "artifacts/sapphire-e2e-synthetic/manifest.json"
+    write_json(environment_path, {"revision":source_revision,"dirty":False,
+        "profile":"sapphire-3.3","fixture_version":2,"deadline_scale":1,
+        "database":"sapphire_e2e_" + "a" * 32,"runtime":"C:/synthetic-runtime",
+        "game_data":"C:/e2e-sqpack","navmesh":"C:/e2e-navigation",
+        "ports":{"database":3307,"api":8081,"lobby":54994,"world":55000},
+        "binaries":{name:input_hashes[f"bin/{name}.exe"]
+                    for name in ("api","lobby","server","dbm")},
+        "worker_sha256":input_hashes["bin/sapphire_test_client.exe"],
+        "scripts":{"script.dll":input_hashes["bin/compiledscripts/script.dll"]},
+        "server_navigation":{"w1t1/w1t1.nav":"4" * 64},
+        "combat_data":{relative.removeprefix("data/"):digest
+                       for relative,digest in combat_hashes.items()},
+        "quest_catalog":{"path":"C:/e2e-input/quest_catalog.json",
+                         "sha256":input_hashes["quest_catalog.json"]},
+        "quest_catalog_navigation":{"path":"C:/e2e-input/catalog-mesh.nav",
+                                    "sha256":input_hashes["catalog-mesh.nav"]}})
+    environment_hash = hashlib.sha256(environment_path.read_bytes()).hexdigest()
     retire = {"server_close_observed": True, "native_bot_removed": True,
               "scope": "normal-witness-session-retirement-not-offline-exclusion"}
     phases = ["setup", "spawn", "movement", "say", "review", "development",
@@ -126,6 +168,10 @@ def build_output(root, source_revision="1" * 40):
             "was_running_before_cleanup":True,"forced_termination_requested":True,
             "exit_observed":True,"returncode":1,
             "scope":"exact-owned-title-screen-client-forced-cleanup-not-ui-exit-proof"},
+        "environment_manifest":{"verified":True,
+            "scope":"exact-graphical-environment-input-identities-not-native-build-provenance",
+            "relative_path":"artifacts/sapphire-e2e-synthetic/manifest.json",
+            "sha256":environment_hash},
         "environment_process_teardown": {"verified":True,
             "scope":"exact-graphical-isolated-service-teardown-before-result-publication",
             "relative_path":"artifacts/sapphire-e2e-synthetic/process-lifecycle.json",
@@ -135,7 +181,7 @@ def build_output(root, source_revision="1" * 40):
                 "generations":{"api":1,"database":1,"lobby":1,"world":1}}},
         "sandbox_disposal": "operator_required", "runtime_removed": True,
         "fixture": {"position": [0, 0, 0], "territory": 130,
-                    "catalog_sha256": "c" * 64, "placement_is_travel": False,
+                    "catalog_sha256": input_hashes["quest_catalog.json"], "placement_is_travel": False,
                     "development_check": True},
         "development_check": {"requested": True, "status": "passed",
             "summary_sha256": main_hash, "elapsed_seconds": 12.5,
@@ -230,11 +276,11 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
     assert proof["status"] == "accepted" and proof["scope"] == RESULT_SCOPE
     assert proof["prepared_inputs"] == {"verified":True,
         "scope":"all-exact-staged-graphical-input-files-match-preparation-manifest",
-        "file_count":2,
+        "file_count":10,
         "source":{"verified":True,
             "scope":"exact-prepared-source-manifest-bytes-and-revision-not-native-build-attestation",
             "revision":"1" * 40,"source_manifest_sha256":report_source_hash(root),
-            "tracked_source_files":1,"unmaterialized_gitlinks":0},
+            "tracked_source_files":4,"unmaterialized_gitlinks":0},
         "note":"External readonly mappings and native-build provenance are out of scope."}
     assert proof["sandbox_disposal_verified"] is False
     assert proof["bot_interaction_review"] == {"verified":True,
@@ -245,6 +291,9 @@ def test_read_only_inspector_revalidates_current_nested_and_outer_evidence(tmp_p
     assert proof["title_screen_review"] == {"verified":True,
         "frame_sha256":hashlib.sha256((root / "logout.png").read_bytes()).hexdigest(),
         "scope":LOGOUT_CAPTURE_SCOPE}
+    assert proof["environment_manifest"]["evidence"]["script_count"] == 1
+    assert proof["environment_manifest"]["evidence"]["server_navigation_file_count"] == 1
+    assert proof["environment_manifest"]["evidence"]["worker_sha256"] == proof["worker_sha256"]
     assert proof["environment_process_teardown"]["evidence"]["process_count"] == 4
     assert proof["activity_deadline"]["activity_and_worker_exit_completed_within_budget"] is True
 
@@ -279,6 +328,21 @@ def test_inspector_cli_prints_summary_without_writing_output(tmp_path, capsys):
     lambda root, report: report["client_teardown"].update(forced_termination_requested=False),
     lambda root, report: report["client_teardown"].update(exit_observed=False),
     lambda root, report: report["client_teardown"].update(returncode=True),
+    lambda root, report: report["environment_manifest"].update(
+        relative_path="../foreign/manifest.json"),
+    lambda root, report: report["environment_manifest"].update(sha256="0" * 64),
+    lambda root, report: environment_file(root, report,
+        lambda value:value.update(dirty=True)),
+    lambda root, report: environment_file(root, report,
+        lambda value:value["binaries"].update(api=True)),
+    lambda root, report: environment_file(root, report,
+        lambda value:value["scripts"].update({"script.dll":"0" * 64})),
+    lambda root, report: environment_file(root, report,
+        lambda value:value["server_navigation"].update({"../foreign.nav":"0" * 64})),
+    lambda root, report: environment_file(root, report,
+        lambda value:value["combat_data"].update({"actions/player.json":"0" * 64})),
+    lambda root, report: environment_file(root, report,
+        lambda value:value["quest_catalog"].update(sha256="0" * 64)),
     lambda root, report: report["environment_process_teardown"].update(
         relative_path="../foreign/process-lifecycle.json"),
     lambda root, report: report["environment_process_teardown"].update(sha256="0" * 64),
