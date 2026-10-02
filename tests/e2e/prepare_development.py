@@ -19,6 +19,7 @@ def placement_registry(profile, provisioning):
     if not route:
         raise DevelopmentError("placement requires a validated Motivational Speaking quest_catalog")
     if (provisioning.get("scope") != "shared-development-provisioning-not-gameplay"
+            or provisioning.get("execution_authorized") is not True
             or provisioning.get("status") != "provisioned"
             or provisioning.get("lease_retained") is not False
             or provisioning.get("worker_closed") is not True
