@@ -5472,6 +5472,32 @@ Both profile and staging commands had already returned zero and written the byte
 reported above. The wrapper failure remains failed diagnostic evidence and is not
 upgraded into, or confused with, profile/staging success.
 
+### Complete non-live controller selection is current (`a59b5f556` checkpoint)
+
+The first complete top-level non-live E2E contract run deliberately selected all
+39 `tests/e2e/test_*.py` modules except every `test_live*.py` module. It retained a
+real failed result: **1417 passed, 3 failed, 14 skipped**. Two shared-run deadline
+CLI tests omitted newly mandatory `--allow-shared-development`; one graphical
+startup-failure test incorrectly treated a returned close call as complete cleanup
+even though no exact four-service lifecycle proof existed. The latter now models
+an empty lifecycle artifact and correctly requires terminal cleanup failure.
+Authorization forwarding is exact in both deadline CLI cases.
+
+Commit `a59b5f556` contains only those contract corrections. A detached clean
+worktree at `a59b5f556d1499a50e571a74cd1defa398aaf579` reported zero status
+entries, and the same exact 39-file selection then passed **1420 contracts with 14
+skips in 56.22s**, plugin autoload disabled. Receipt SHA-256:
+`38b0624b321befcd16afc057cc652ccea52ec7085917bc7e2e0f2c94272dc749`.
+Clean log SHA-256:
+`44932e797e6b2bae6615547e73d5f086673356f1ba155370619c31c645a7f4c8`;
+pre-fix failed log SHA-256:
+`56d5b3f8adfcf0a1ce9b3c002980136aec12112cb23d92bf4a757c5e4f1f7133`.
+An initial receipt helper had a Python string-escaping `SyntaxError`; that remains
+classified in the final receipt and did not rerun tests or alter test evidence.
+No service, database, account or gameplay operation ran. Excluding all live modules
+means this is controller-contract evidence only, not protocol execution, rendering,
+compatibility, cleanup under real processes, hosted execution or acceptance.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
@@ -5505,7 +5531,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | Movement, scenes/quests/rewards/persistence, inventory/economy, zoning/discovery, social and representative combat | Exact historical scenarios and artifacts mapped in the detailed requirement and plan tables below | **Representative subset historically verified; breadth remains partial.** Current combined evidence is absent; instance entry, yield/resume, general triggers/doors, broader content/classes/cities/combat/social/economy remain missing or source-blocked as listed below. |
 | Seeded exploration, semantic replay, soak/load and minimization | explicitly authorized `run_workload.py`/`run_minimize.py`, `support/workload.py`, retained bounded plans/outcomes | **Narrow historical evidence only.** No newly authorized soak/platform run occurred; this is not capacity, deterministic scheduling or universal leak-freedom. |
 | Deadlines, cancellation, exact cleanup and complete artifact ownership | Shared cooperative budgets, `Environment` process generations, terminal cleanup markers, strict tree primitive and public/private/failure inspectors | **Contract-verified plus two current standalone fixtures.** A current 16-case receipt set, hard-kill/cancellation infrastructure behavior, crash consistency and server-side offline/cache exclusion remain unverified. |
-| Windows/Linux verification | Exact clean Windows ClangCL gameplay build, seven freshly built native contracts, 752 current changed-controller contracts and exact service-free profile staging at `f068151b3`; older Windows gates and Ubuntu evidence; retained expanded-Linux failures | **Partial.** Current clean build and selected contracts are green, with failed preparation attempts retained, but no Windows live gate occurred. The expanded Linux gate remains red under delayed scene/action/logout/zoning delivery. No platform sweep was authorized. |
+| Windows/Linux verification | Exact clean Windows ClangCL gameplay build and seven freshly built native contracts at `f068151b3`, 1420 complete non-live controller contracts at `a59b5f556`, and exact service-free profile staging; older Windows gates and Ubuntu evidence; retained expanded-Linux failures | **Partial.** Current clean build and selected contracts are green, with failed preparation attempts retained, but no Windows live gate occurred. The expanded Linux gate remains red under delayed scene/action/logout/zoning delivery. No platform sweep was authorized. |
 | Hosted CI controls and execution | `.github/workflows/{test-client,gameplay-e2e}.yml`, `inspect_workflow_policy`, exact checkout and hash-locked/plugin-isolated Python policy | **Static controls accepted; hosted execution blocked.** Current policy reports workflow SHA-256 values `bfbbe64fd4067162acde4b0dc3056988c40f32c06488d45c756dcc6e10a96732` and `df3683086e40e6bd98ed69592d93761b5387fdb4898172047f428f456a33c637`, while explicitly returning `hosted_execution_verified:false`, `runner_group_policy_verified:false`, and `ephemeral_vm_destruction_verified:false`. |
 | Independent packet/client compatibility and normalized traces | Byte fixtures and historical unmodified 3.3 DX11 pilot/manual evidence | **Partial.** No current three-review graphical run, graphical quest/scene agreement or independent normalized matching-client trace/exporter exists. |
 | Credentials/private assets untracked; historical failures preserved | Git status, ignored `.e2e-artifacts`, redacted inspectors and retained failed runs | **Verified for repository state inspected.** Hashes are correlation, not signatures, secure erasure, content truth or external-root completeness. |
