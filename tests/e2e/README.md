@@ -855,15 +855,21 @@ or real-client combat presentation.
 
 These modes use the same isolated environment and observed-state API. A validated
 local `quest_catalog` is required even though policies do not complete quests:
-movement stays on the first nine points of that known route.
+movement stays on the first nine points of that known route. Each invocation must
+explicitly acknowledge that it starts a disposable database/API/lobby/world stack
+and may create accounts and perform gameplay mutations. The acknowledgment is
+retained as invocation intent, not operator authentication.
 
 ```sh
 python -m tests.e2e.run_workload --profile .e2e-local.json \
-  --mode explore --seed 42 --bots 2 --steps 12 --duration 120
+  --mode explore --seed 42 --bots 2 --steps 12 --duration 120 \
+  --authorize-disposable-environment
 python -m tests.e2e.run_workload --profile .e2e-local.json \
-  --mode soak --seed 7 --bots 4 --steps 120 --duration 300
+  --mode soak --seed 7 --bots 4 --steps 120 --duration 300 \
+  --authorize-disposable-environment
 python -m tests.e2e.run_workload --profile .e2e-local.json \
-  --mode replay --plan .e2e-artifacts/<run>/plan.json
+  --mode replay --plan .e2e-artifacts/<run>/plan.json \
+  --authorize-disposable-environment
 ```
 
 - Exploration chooses seeded, allowlisted walk/Say/heartbeat/reconnect actions.
@@ -900,7 +906,8 @@ replays:
 ```sh
 python -m tests.e2e.run_minimize --profile .e2e-local.json \
   --plan .e2e-artifacts/<failed-run>/plan.json \
-  --output .e2e-artifacts/minimized-plan.json --max-attempts 32
+  --output .e2e-artifacts/minimized-plan.json --max-attempts 32 \
+  --authorize-disposable-environment
 ```
 
 The original plan is rerun as the baseline; historical failure artifacts alone
@@ -930,7 +937,8 @@ and a required **first-to-last successful action span**:
 ```sh
 python -m tests.e2e.run_workload --profile .e2e-local.json --mode soak \
   --seed 2026 --bots 8 --steps 488 --round-interval 30 \
-  --min-active-seconds 1800 --duration 2100
+  --min-active-seconds 1800 --duration 2100 \
+  --authorize-disposable-environment
 ```
 
 This schedules 61 full-population rounds across at least 30 minutes. All bots
@@ -987,7 +995,8 @@ work without weakening the independent observer assertions.
 ### Empty-server resource control
 
 ```sh
-python -m tests.e2e.run_idle_control --profile .e2e-local.json --duration 600
+python -m tests.e2e.run_idle_control --profile .e2e-local.json --duration 600 \
+  --authorize-disposable-environment
 ```
 
 This creates the same isolated server/database environment but no worker,

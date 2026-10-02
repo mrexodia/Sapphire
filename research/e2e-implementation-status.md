@@ -5295,6 +5295,26 @@ A detached clean worktree at
 No real service or account was started; this does not prove service cleanup,
 offline exclusion, reset safety or compatibility.
 
+### Explicit disposable workload authorization (`7381ecd82` checkpoint)
+
+Commit `7381ecd82` closes the corresponding accidental-start boundary for the
+isolated exploration/replay/soak, empty-server control and minimization entry
+points. Every invocation now requires `--authorize-disposable-environment` before
+profile access or `Environment` construction. Direct Python entry points reject
+absent and type-confused authorization. Workload and idle results retain
+`execution_authorized: true`; the minimizer requires one acknowledgment up front
+and forwards exact authorization to every bounded fresh candidate replay. This is
+invocation intent, not operator authentication, and does not authorize a shared
+server or remote infrastructure.
+
+A detached clean worktree at
+`7381ecd820c4c12fcf9230da2fe5092d0413ae62` reported zero status entries and
+**105 focused synthetic workload/idle/minimizer contracts passed in 0.86s**.
+Receipt: `.e2e-artifacts/workload-authorization-clean-source/receipt.json`
+(SHA-256 `866b24894cecf8b097ae31c1ecba75206c283dd9c139e663c4bdea22c0857e4d`).
+No service, account, gameplay workload or soak ran. The contracts do not prove
+live cleanup, capacity, compatibility, crash behavior or leak-freedom.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
@@ -5326,7 +5346,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |
 | Separate graphical viewer and current matching client | `run_client_smoke.py`, `support/client_result.py`, `REAL_CLIENT.md`, three exact manual review policies and Sandbox disposal inspector | **Pending current attended execution.** Historical `client-development-live-004` is revision `2a33024b6`, reports `rendered_bot_actions_verified:false`, and predates current interaction/account/input/environment/worker-tree policy. Its SHA-256 is `c044ae2f0288d3af48796189854dc6107e5d999b006bb22653e08446e77641d5`; it is not upgraded. |
 | Movement, scenes/quests/rewards/persistence, inventory/economy, zoning/discovery, social and representative combat | Exact historical scenarios and artifacts mapped in the detailed requirement and plan tables below | **Representative subset historically verified; breadth remains partial.** Current combined evidence is absent; instance entry, yield/resume, general triggers/doors, broader content/classes/cities/combat/social/economy remain missing or source-blocked as listed below. |
-| Seeded exploration, semantic replay, soak/load and minimization | `support/workload.py`, `run_workload.py`, `run_minimize.py`, retained bounded plans/outcomes | **Narrow historical evidence only.** No newly authorized soak/platform run occurred; this is not capacity, deterministic scheduling or universal leak-freedom. |
+| Seeded exploration, semantic replay, soak/load and minimization | explicitly authorized `run_workload.py`/`run_minimize.py`, `support/workload.py`, retained bounded plans/outcomes | **Narrow historical evidence only.** No newly authorized soak/platform run occurred; this is not capacity, deterministic scheduling or universal leak-freedom. |
 | Deadlines, cancellation, exact cleanup and complete artifact ownership | Shared cooperative budgets, `Environment` process generations, terminal cleanup markers, strict tree primitive and public/private/failure inspectors | **Contract-verified plus two current standalone fixtures.** A current 16-case receipt set, hard-kill/cancellation infrastructure behavior, crash consistency and server-side offline/cache exclusion remain unverified. |
 | Windows/Linux verification | Current clean Windows ClangCL gameplay build, seven native and 539 workflow/controller contracts, service-free profile staging; older Windows gates and Ubuntu evidence; retained expanded-Linux failures | **Partial.** Current `73f17c9d4` Windows build/readiness is green but no current Windows live gate ran; the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery. No platform sweep was authorized. |
 | Hosted CI controls and execution | `.github/workflows/{test-client,gameplay-e2e}.yml`, `inspect_workflow_policy`, exact checkout and hash-locked/plugin-isolated Python policy | **Static controls accepted; hosted execution blocked.** Current policy reports workflow SHA-256 values `bfbbe64fd4067162acde4b0dc3056988c40f32c06488d45c756dcc6e10a96732` and `df3683086e40e6bd98ed69592d93761b5387fdb4898172047f428f456a33c637`, while explicitly returning `hosted_execution_verified:false`, `runner_group_policy_verified:false`, and `ephemeral_vm_destruction_verified:false`. |
