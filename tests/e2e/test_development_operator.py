@@ -50,6 +50,7 @@ class OperatorWorker:
         path = self.artifacts / f"placement-request-{args['approval_id']}-{args['slot']}.json"
         intent = json.loads(path.read_text())
         assert intent["status"] == "publication_outcome_unknown" and not intent["placement_verified"]
+        assert intent["execution_authorized"] is True
         if self.fail: raise TimeoutError("uncertain publication")
         return {"scope": "administrative-preparation-not-gameplay", "publication": "local-only", "placement_verified": False}
 
@@ -70,17 +71,22 @@ def invoke(worker, registry, path, **kwargs):
 
 def test_explicit_setup_and_local_only_receipt(tmp_path, registry):
     worker = OperatorWorker(tmp_path)
-    with pytest.raises(DevelopmentError): invoke(worker, registry, tmp_path)
+    for value in (None, False, 0, 1, "true"):
+        with pytest.raises(DevelopmentError):
+            invoke(worker, registry, tmp_path, approved=value)
     assert not worker.requests and not list(tmp_path.iterdir())
     result = invoke(worker, registry, tmp_path, approved=True)
     assert not result["placement_verified"] and result["status"] == "local_publication_only"
+    assert result["execution_authorized"] is True
     assert result["provisioning_run_id"] == registry["provisioning_run_id"]
     intent = json.loads(next(tmp_path.glob("placement-request-*.json")).read_text())
     assert intent["provisioning_run_id"] == registry["provisioning_run_id"]
+    assert intent["execution_authorized"] is True
     assert worker.requests[0]["expected_operator"] == worker.identity
     assert worker.requests[0]["administrative_setup"] is True
     publication = json.loads(next(tmp_path.glob("placement-publication-*.json")).read_text())
     assert publication["status"] == "local_publication_only"
+    assert publication["execution_authorized"] is True
     assert publication["intent_sha256"]
     with pytest.raises(FileExistsError): invoke(worker, registry, tmp_path, approved=True)
     assert len(worker.requests) == 1
@@ -118,6 +124,7 @@ def test_operator_publication_inspector_is_sanitized_read_only_and_cli_matches(
     proof = inspect_development_operator_publications(registry_path, artifacts)
     assert proof["scope"] == OPERATOR_RESULT_SCOPE
     assert proof["status"] == "accepted_local_publication_only"
+    assert proof["execution_authorized"] is True
     assert not proof["server_acknowledgement_verified"] and not proof["placement_verified"]
     assert "Tester Operator" not in json.dumps(proof)
     assert before == {path:path.read_bytes() for path in before}
@@ -126,7 +133,8 @@ def test_operator_publication_inspector_is_sanitized_read_only_and_cli_matches(
     assert json.loads(capsys.readouterr().out) == proof
 
 
-@pytest.mark.parametrize("mutation", ["intent","receipt","operator","duplicate","hardlink","foreign"])
+@pytest.mark.parametrize("mutation", ["intent","authorization-missing","authorization",
+                                      "authorization-type","receipt","operator","duplicate","hardlink","foreign"])
 def test_operator_publication_inspector_rejects_foreign_or_incomplete_evidence(
         tmp_path, registry, mutation):
     artifacts = tmp_path / "operator"; artifacts.mkdir()
@@ -139,6 +147,15 @@ def test_operator_publication_inspector_rejects_foreign_or_incomplete_evidence(
     if mutation == "intent":
         value=json.loads(intent.read_text());value["operator_received_sequence"]+=1
         intent.write_text(json.dumps(value))
+    elif mutation == "authorization-missing":
+        value=json.loads(intent.read_text());value.pop("execution_authorized")
+        intent.write_text(json.dumps(value))
+    elif mutation == "authorization":
+        value=json.loads(intent.read_text());value["execution_authorized"]=False
+        intent.write_text(json.dumps(value))
+    elif mutation == "authorization-type":
+        value=json.loads(publication.read_text());value["execution_authorized"]=1
+        publication.write_text(json.dumps(value))
     elif mutation == "receipt":
         value=json.loads(publication.read_text());value["receipt"]["placement_verified"]=True
         publication.write_text(json.dumps(value))

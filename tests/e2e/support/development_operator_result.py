@@ -91,10 +91,12 @@ def inspect_development_operator_publications(registry_path, artifact_dir):
         raise DevelopmentError("cannot enumerate operator artifacts") from error
     if relevant != expected_names:
         raise DevelopmentError("operator artifact set is missing or foreign")
-    intent_fields = {"version","scope","approval_id","provisioning_run_id","slot",
+    intent_fields = {"version","scope","execution_authorized","approval_id",
+        "provisioning_run_id","slot",
         "operator","operator_gm_rank","operator_received_sequence","expected_target",
         "status","placement_verified","note"}
-    publication_fields = {"version","scope","approval_id","provisioning_run_id","slot",
+    publication_fields = {"version","scope","execution_authorized","approval_id",
+        "provisioning_run_id","slot",
         "intent_sha256","operator","operator_gm_rank","operator_received_sequence",
         "expected_target","status","receipt","placement_verified","note"}
     receipt = {"scope":"administrative-preparation-not-gameplay",
@@ -108,6 +110,7 @@ def inspect_development_operator_publications(registry_path, artifact_dir):
             artifact_dir / f"placement-publication-{approval}-{slot}.json", "publication")
         common = (intent.get("version") == 1
             and intent.get("scope") == "administrative-preparation-not-gameplay"
+            and intent.get("execution_authorized") is True
             and intent.get("approval_id") == approval
             and intent.get("provisioning_run_id") == registry["provisioning_run_id"]
             and type(intent.get("slot")) is int and intent["slot"] == slot
@@ -134,6 +137,7 @@ def inspect_development_operator_publications(registry_path, artifact_dir):
         if (set(publication) != publication_fields
                 or publication.get("version") != 1
                 or publication.get("scope") != intent["scope"]
+                or publication.get("execution_authorized") is not True
                 or publication.get("approval_id") != approval
                 or publication.get("provisioning_run_id") != registry["provisioning_run_id"]
                 or type(publication.get("slot")) is not int or publication["slot"] != slot
@@ -155,6 +159,7 @@ def inspect_development_operator_publications(registry_path, artifact_dir):
         raise DevelopmentError("operator received sequences moved backwards")
     encoded_operator = json.dumps(operator, sort_keys=True, separators=(",", ":")).encode()
     return {"version":1,"status":"accepted_local_publication_only","scope":SCOPE,
+            "execution_authorized":True,
             "approval_id":approval,"provisioning_run_id":registry["provisioning_run_id"],
             "registry_sha256":hashlib.sha256(registry_raw).hexdigest(),
             "operator_identity_sha256":hashlib.sha256(encoded_operator).hexdigest(),

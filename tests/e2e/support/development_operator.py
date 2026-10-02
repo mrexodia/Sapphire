@@ -137,6 +137,7 @@ def request_registered_placement(worker, operator, operator_name, registry, slot
     if type(sequence) is not int or not 0 <= sequence < 2**64:
         raise DevelopmentError("preparation operator lacks a received sequence")
     report = {"version":1,"scope": "administrative-preparation-not-gameplay",
+              "execution_authorized": True,
               "approval_id": registry["approval_id"],
               "provisioning_run_id": registry["provisioning_run_id"],
               "slot": slot, "operator": identity,
@@ -161,7 +162,7 @@ def request_registered_placement(worker, operator, operator_name, registry, slot
     # exclusive terminal file makes local publication auditable. Failure to write
     # it is uncertain and must never cause a second dispatch.
     publication = {"version":1,"scope":"administrative-preparation-not-gameplay",
-        "approval_id":registry["approval_id"],
+        "execution_authorized":True,"approval_id":registry["approval_id"],
         "provisioning_run_id":registry["provisioning_run_id"],"slot":slot,
         "intent_sha256":hashlib.sha256(intent_bytes).hexdigest(),
         "operator":identity,"operator_gm_rank":state["gm_rank"],

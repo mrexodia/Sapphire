@@ -209,6 +209,7 @@ def test_external_placement_chain_inspector_correlates_exact_private_artifacts(
         development_summary)
     assert composite["scope"] == SCRIPTED_PLACEMENT_SCOPE
     assert composite["local_publication_verified"] is True
+    assert composite["operator_execution_authorized"] is True
     assert composite["received_placement_verified"] is True
     assert composite["server_acknowledgement_verified"] is False
     assert composite["command_causation_verified"] is False
