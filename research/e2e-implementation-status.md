@@ -5315,6 +5315,27 @@ Receipt: `.e2e-artifacts/workload-authorization-clean-source/receipt.json`
 No service, account, gameplay workload or soak ran. The contracts do not prove
 live cleanup, capacity, compatibility, crash behavior or leak-freedom.
 
+### Explicit owned-Sandbox launch authorization (`ed6bcebfd` checkpoint)
+
+Commit `ed6bcebfd` closes an accidental graphical-execution boundary. The bounded
+prepared Windows Sandbox launcher now requires `--authorize-owned-sandbox` before
+prepared-input access. Its direct API rejects absent and type-confused values.
+Version-2 `sandbox-session.json` retains `execution_authorized: true`; the strict
+composite disposal consumer rejects missing/false authorization and carries the
+field into its accepted proof. Launch authorization remains distinct from the
+later manual owned-discard confirmation. It is invocation intent, not operator
+authentication or rendering evidence.
+
+A detached clean worktree at
+`ed6bcebfdf266f382ec6bb8515ddb75a94ac3f0f` reported zero status entries and
+**117 focused Sandbox disposal, graphical-result and client-lifecycle contracts
+passed in 5.50s**. Receipt:
+`.e2e-artifacts/client-sandbox-authorization-clean-source/receipt.json` (SHA-256
+`bfe7a9ae8561422a3547a2dd110ce99b2dd381cc5bb2d5df0b2d5d695b827b89`).
+No Sandbox, service, account, graphical client or gameplay operation ran. These
+contracts do not prove guest startup, rendering, manual review, disposal-dialog
+content, compatibility, VM destruction or secure erasure.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
@@ -5344,7 +5365,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | Intentional owned-process fault and cleanup diagnostics | Retained exact world-fault fixture, JUnit, pytest log, lifecycle and artifact tree | **Verified standalone only.** Current `inspect_isolated_fault` reinspection accepted it with SHA-256 `8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`; it is not gameplay, organic crash, dump, hosted cancellation or the combined sixteenth-case gate. |
 | Shared dedicated account/character provisioning and ordinary non-GM checks | explicitly authorized `serve_development.py`, `provision_development.py`, `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
 | Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |
-| Separate graphical viewer and current matching client | `run_client_smoke.py`, `support/client_result.py`, `REAL_CLIENT.md`, three exact manual review policies and Sandbox disposal inspector | **Pending current attended execution.** Historical `client-development-live-004` is revision `2a33024b6`, reports `rendered_bot_actions_verified:false`, and predates current interaction/account/input/environment/worker-tree policy. Its SHA-256 is `c044ae2f0288d3af48796189854dc6107e5d999b006bb22653e08446e77641d5`; it is not upgraded. |
+| Separate graphical viewer and current matching client | explicitly authorized `run_client_sandbox.py`, `run_client_smoke.py`, `support/client_result.py`, `REAL_CLIENT.md`, three exact manual review policies and Sandbox disposal inspector | **Pending current attended execution.** Historical `client-development-live-004` is revision `2a33024b6`, reports `rendered_bot_actions_verified:false`, and predates current interaction/account/input/environment/worker-tree policy. Its SHA-256 is `c044ae2f0288d3af48796189854dc6107e5d999b006bb22653e08446e77641d5`; it is not upgraded. |
 | Movement, scenes/quests/rewards/persistence, inventory/economy, zoning/discovery, social and representative combat | Exact historical scenarios and artifacts mapped in the detailed requirement and plan tables below | **Representative subset historically verified; breadth remains partial.** Current combined evidence is absent; instance entry, yield/resume, general triggers/doors, broader content/classes/cities/combat/social/economy remain missing or source-blocked as listed below. |
 | Seeded exploration, semantic replay, soak/load and minimization | explicitly authorized `run_workload.py`/`run_minimize.py`, `support/workload.py`, retained bounded plans/outcomes | **Narrow historical evidence only.** No newly authorized soak/platform run occurred; this is not capacity, deterministic scheduling or universal leak-freedom. |
 | Deadlines, cancellation, exact cleanup and complete artifact ownership | Shared cooperative budgets, `Environment` process generations, terminal cleanup markers, strict tree primitive and public/private/failure inspectors | **Contract-verified plus two current standalone fixtures.** A current 16-case receipt set, hard-kill/cancellation infrastructure behavior, crash consistency and server-side offline/cache exclusion remain unverified. |

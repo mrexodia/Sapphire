@@ -73,8 +73,17 @@ and inspection commands:
 
 ```sh
 python -m tests.e2e.run_client_sandbox launch \
-  --prepared .e2e-artifacts/<fresh-private-run> --timeout-seconds 1800
+  --prepared .e2e-artifacts/<fresh-private-run> --timeout-seconds 1800 \
+  --authorize-owned-sandbox
 ```
+
+Supply `--authorize-owned-sandbox` only when approving one launch of that exact
+prepared guest, including its disposable services, fixture accounts and graphical
+workflow. Absence or a non-boolean internal value fails before prepared-input
+access. The version-2 launch session retains the acknowledgment and the strict
+composite disposal consumer requires it. This records invocation intent; it does
+not authenticate the operator, certify rendered frames or replace the separate
+discard-dialog confirmation.
 
 The wrapper refuses any pre-existing Windows Sandbox UI process, records the exact
 launcher PID plus config/input hashes, never kills or retries it, and fails if the
