@@ -5424,36 +5424,47 @@ A new absolute private clean worktree at
 `f068151b37c7203b4b734bff751f4857c26acb89` advances the standalone readiness
 checkpoint without starting a fixture. The exact selected native input path set
 (`CMakeLists.txt`, `cmake/`, `config/`, `deps/`, `src/`) has zero committed changes
-since the previously built/tested `73f17c9d4` checkpoint. No native rebuild was
-performed. The 43 changed paths are coordinator tests, workflow and documentation.
-The exact current changed-test selection passed **752 contracts in 25.30s** with
-plugin autoload disabled. After staging, the seven selected Sapphire native
-contracts were freshly rerun from those unchanged retained binaries and all passed
-in **0.30s**; log SHA-256
-`4d804b30d4c3301d08af0849fc1a6cf92bf6a2e41a7f6011c00e68f58efbade0`.
-This is current execution evidence, not a rebuild or compiler/dependency attestation.
+since the previously built/tested `73f17c9d4` checkpoint. The 43 changed paths are
+coordinator tests, workflow and documentation. The exact current changed-test
+selection passed **752 contracts in 25.30s** with plugin autoload disabled.
 
-Private profile inspection again accepted profile SHA-256
-`71b7cad97004f6021e04229c019807549671f18cf861aa109358d8552687f373`
+A fresh Debug Ninja/ClangCL 22.1.3 configure and `sapphire_gameplay_ci` build then
+completed against the exact `f068151b3` clean source. The first configure failed
+after CMake auto-cloned FastLZ because Recast was not materialized. A subsequent
+`--no-fetch` submodule materialization also failed because the shared local object
+store lacked exact Recast tree `34f346b9`. Recovery copied only that object from
+the previous retained private clean worktree, checked out every exact gitlink, and
+then configured and built successfully. Both failures remain failed evidence;
+combined failure receipt SHA-256
+`d7e0d07e6240c5874ce8876721e3af79c3ff68d5dbac736463c8415d27932475`.
+This is not a no-network build claim. Successful configure/build log SHA-256 values
+are `47bec463906332b2273cf16f024de3d5c858db994c3cc78d8ef2bef97e6ab1e8`
+and `7a6e8f5e149f64ecc1324abdeacf503f647cceacac09372ac70b3d38d2e9e362`.
+The seven selected freshly built native contracts all passed in **0.36s**; log
+SHA-256 `a0c77eab85c0112cfb69031bccdca48db5db505d0765e898486ceef24a01cc12`.
+
+Private profile inspection accepted rebuilt profile SHA-256
+`4a66fbc775786a08035e57a92265a380295b930a120786dbb5e53305f7cc09cf`
 and worker SHA-256
-`24497747fe5148e0ae2fd40c7c5b76c62a5ddafba442d5e726cb94bf09b4a024`.
+`efea0a11f03c00214717b7e95fe068b4b9bf31578e9ed939581e4fcc179eb102`.
 A fresh loopback-only capability process returned 58 unique methods, exit zero and
 empty stderr. Current exact-revision service-free fixture-v2 staging accepted:
 manifest SHA-256
-`d2e00c74c2c659341d2f90b7bdee3b8157293064ae3bf0f9a6abd98083424807`,
+`7979f3726c45662ea8a784aa7da68b47884cad020ecb9f4820cbc48cdfc37d69`,
 lifecycle SHA-256
 `4f514a1337f622b936a1600e9b6ba1336fa520e51f6fb347a93a792f0018de46`,
 and complete artifact-tree SHA-256
-`55e6f355aa02b19e8eef7091c91608c8f213dc3f876537b307edd14d3bb4c8f5`.
+`be62b527fe753eaf810505d2cb544f0b0fb95343475f9e9b875eab88c9dc9351`.
 It observed zero process starts/teardowns and removed the disposable runtime.
 
 Private readiness receipt SHA-256:
-`b8487de04db394fe5ed40655b0bf3099e835d83664b2ffc75c9421f12fc37005`.
+`6f6facbf7e273618ee52f7d9f84591e12140e835237fcc4cb1c6dd43d4f1ebb8`.
 It explicitly records `authorization_granted_for_live_execution: false`,
-`native_rebuild_performed: false`, and `native_contracts_rerun: true`. No service,
-database, account, gameplay or hosted operation ran. Exact byte identity and
-service-free staging do not prove runtime compatibility, cleanup, Linux behavior,
-hosted policy or acceptance. A post-success display helper then failed because a
+`native_rebuild_performed: true`, and `native_contracts_rerun: true`. No service,
+database, account, gameplay or hosted operation ran. Build/test byte identity and
+service-free staging do not attest compiler/dependency trust or prove runtime
+compatibility, cleanup, Linux behavior, hosted policy or acceptance. A prior
+post-success display helper also failed because a
 Git-Bash `/c/...` path was passed directly to Windows `pathlib`; retained failure
 receipt SHA-256
 `206fe56922f110fde2b2427155682ca90f56693f616d3c5a3e74ccf561f49827`.
@@ -5486,7 +5497,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | --- | --- | --- |
 | External C++ worker, Python coordinator and normal public behavior | `src/test_client`, `tests/e2e/support/{worker,environment}.py`, native/protocol and Python contracts; detailed plan rows below | **Implemented for the supported subset.** The seven dirty experiments were not staged or treated as evidence. |
 | Genuine HTTP, encrypted lobby, world-ready/keepalive/logout sessions | Historical clean full-session gates plus current retained rejected-login receipt | **Partial/currently stale as a combined run.** Current read-only `inspect_isolated_case` accepted the exact `6dbd1380e` rejected-login fixture; receipt SHA-256 `f83c2a8919ec1dcee149889281f217ea23a6da5b151a22ee68e8f97c86258681`. It is one no-account case, not current full-session acceptance. |
-| Disposable isolated fixtures, one exact environment per case | explicitly authorized `run_ci.py`, strict explicitly authorized `run_isolated_case.py` short-feedback producer, independent success/fail-only publication consumers, protected exact-choice dispatch, combined public/private inspectors and exact 16-case contracts | **Pending live gate.** The strict one-case producer/consumers and dispatch policy are clean-source contract-verified. Current coordinator/profile service-free staging and a fresh seven-contract execution of the unchanged retained native binaries are retained at `f068151b3`, but no current live or hosted result exists and no current native rebuild is claimed. The invocation flag is not operator authentication; failure publication is diagnosis only. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
+| Disposable isolated fixtures, one exact environment per case | explicitly authorized `run_ci.py`, strict explicitly authorized `run_isolated_case.py` short-feedback producer, independent success/fail-only publication consumers, protected exact-choice dispatch, combined public/private inspectors and exact 16-case contracts | **Pending live gate.** The strict one-case producer/consumers and dispatch policy are clean-source contract-verified. Current exact-source build, seven native contracts, coordinator/profile inspection and service-free staging are retained at `f068151b3`, but no current live or hosted result exists. The invocation flag is not operator authentication; failure publication is diagnosis only. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
 | Intentional owned-process fault and cleanup diagnostics | Retained exact world-fault fixture, JUnit, pytest log, lifecycle and artifact tree | **Verified standalone only.** Current `inspect_isolated_fault` reinspection accepted it with SHA-256 `8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`; it is not gameplay, organic crash, dump, hosted cancellation or the combined sixteenth-case gate. |
 | Shared dedicated account/character provisioning and ordinary non-GM checks | exact authorized evidence from `serve_development.py`, `provision_development.py` and `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
 | Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |
@@ -5494,7 +5505,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | Movement, scenes/quests/rewards/persistence, inventory/economy, zoning/discovery, social and representative combat | Exact historical scenarios and artifacts mapped in the detailed requirement and plan tables below | **Representative subset historically verified; breadth remains partial.** Current combined evidence is absent; instance entry, yield/resume, general triggers/doors, broader content/classes/cities/combat/social/economy remain missing or source-blocked as listed below. |
 | Seeded exploration, semantic replay, soak/load and minimization | explicitly authorized `run_workload.py`/`run_minimize.py`, `support/workload.py`, retained bounded plans/outcomes | **Narrow historical evidence only.** No newly authorized soak/platform run occurred; this is not capacity, deterministic scheduling or universal leak-freedom. |
 | Deadlines, cancellation, exact cleanup and complete artifact ownership | Shared cooperative budgets, `Environment` process generations, terminal cleanup markers, strict tree primitive and public/private/failure inspectors | **Contract-verified plus two current standalone fixtures.** A current 16-case receipt set, hard-kill/cancellation infrastructure behavior, crash consistency and server-side offline/cache exclusion remain unverified. |
-| Windows/Linux verification | Clean Windows ClangCL gameplay build, freshly rerun seven native contracts, 752 current changed-controller contracts and exact service-free profile staging at `f068151b3`; older Windows gates and Ubuntu evidence; retained expanded-Linux failures | **Partial.** Native bytes have no committed input changes since the `73f17c9d4` build and the selected contracts were freshly rerun, but no current rebuild or Windows live gate occurred. The expanded Linux gate remains red under delayed scene/action/logout/zoning delivery. No platform sweep was authorized. |
+| Windows/Linux verification | Exact clean Windows ClangCL gameplay build, seven freshly built native contracts, 752 current changed-controller contracts and exact service-free profile staging at `f068151b3`; older Windows gates and Ubuntu evidence; retained expanded-Linux failures | **Partial.** Current clean build and selected contracts are green, with failed preparation attempts retained, but no Windows live gate occurred. The expanded Linux gate remains red under delayed scene/action/logout/zoning delivery. No platform sweep was authorized. |
 | Hosted CI controls and execution | `.github/workflows/{test-client,gameplay-e2e}.yml`, `inspect_workflow_policy`, exact checkout and hash-locked/plugin-isolated Python policy | **Static controls accepted; hosted execution blocked.** Current policy reports workflow SHA-256 values `bfbbe64fd4067162acde4b0dc3056988c40f32c06488d45c756dcc6e10a96732` and `df3683086e40e6bd98ed69592d93761b5387fdb4898172047f428f456a33c637`, while explicitly returning `hosted_execution_verified:false`, `runner_group_policy_verified:false`, and `ephemeral_vm_destruction_verified:false`. |
 | Independent packet/client compatibility and normalized traces | Byte fixtures and historical unmodified 3.3 DX11 pilot/manual evidence | **Partial.** No current three-review graphical run, graphical quest/scene agreement or independent normalized matching-client trace/exporter exists. |
 | Credentials/private assets untracked; historical failures preserved | Git status, ignored `.e2e-artifacts`, redacted inspectors and retained failed runs | **Verified for repository state inspected.** Hashes are correlation, not signatures, secure erasure, content truth or external-root completeness. |
