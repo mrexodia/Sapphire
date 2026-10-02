@@ -54,6 +54,14 @@ python -m tests.e2e.run_development `
   --verify-party --verify-reconnect
 ```
 
+Supply `--allow-shared-development` only after approving one bounded normal-login
+run against the named dedicated accounts. The CLI rejects absence before profile
+access; the direct API requires exact Boolean `True` before profile validation or
+artifact creation. Successful summaries, external/managed consumers and nested
+graphical bridge metadata retain `execution_authorized: true`. This is invocation
+intent, not operator authentication, server identity, session exclusivity or reset
+authority.
+
 Repeat with a **new artifact directory**, not a new host. Each invocation still
 performs genuine fresh authentication, independent observations and normal
 logout. This reuses infrastructure and characters, not authenticated sessions.
