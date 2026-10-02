@@ -120,10 +120,35 @@ def run_host(assets, tmp_path, *, on_ready=None, probe=Probe, maximum=60):
             on_ready(env, session, clock)
         else:
             (session / "stop").touch()
-    report = serve_development.serve(assets, session, maximum_seconds=maximum,
-        environment_factory=lambda _: env, worker_factory=probe,
+    report = serve_development.serve(assets, session, authorized=True,
+        maximum_seconds=maximum, environment_factory=lambda _: env, worker_factory=probe,
         clock=clock, sleeper=clock.sleep, on_ready=ready)
     return report, env, session
+
+
+def test_host_requires_exact_authorization_before_session_creation(assets, tmp_path):
+    session = tmp_path / "session"
+    with pytest.raises(DevelopmentError, match="explicit service/account authorization"):
+        serve_development.serve(assets, session)
+    with pytest.raises(DevelopmentError, match="explicit service/account authorization"):
+        serve_development.serve(assets, session, authorized=1)
+    assert not session.exists()
+
+
+def test_host_cli_forwards_only_explicit_authorization(tmp_path, monkeypatch):
+    profile = tmp_path / "profile.json"
+    profile.write_text("{}")
+    calls = []
+    def invoke(*args, **kwargs):
+        calls.append(kwargs["authorized"])
+        if not kwargs["authorized"]:
+            raise DevelopmentError("authorization absent")
+        return {"status":"stopped", "cleanup_verified":True}
+    monkeypatch.setattr(serve_development, "serve", invoke)
+    base = ["--profile", str(profile), "--session-dir", str(tmp_path / "session")]
+    assert serve_development.main(base) == 1 and calls == [False]
+    assert serve_development.main(base + ["--authorize-owned-warm-host"]) == 0
+    assert calls == [False, True]
 
 
 def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(assets, tmp_path):
@@ -165,6 +190,7 @@ def test_host_exports_three_distinct_accounts_and_stops_only_owned_runtime(asset
     assert not report["existing_database_access"] and not report["graphical_client_started"]
     proof = inspect_owned_development_host(session)
     assert proof["status"] == "accepted" and proof["scope"] == HOST_RESULT_SCOPE
+    assert proof["execution_authorized"] is True
     assert proof["process_teardown"]["process_count"] == 4
     assert proof["environment_artifact_tree_sha256"] == report["environment_artifact_tree_sha256"]
     assert proof["account_association_sha256"] == report["account_association"]["sha256"]
@@ -487,6 +513,7 @@ def test_composite_managed_run_inspector_rejects_terminal_identity_mismatch(
 
 @pytest.mark.parametrize("mutate", [
     lambda status:status.update(status="failed"),
+    lambda status:status.update(execution_authorized=False),
     lambda status:status.update(process_cleanup_verified=1),
     lambda status:status.update(private_profiles_removed=False),
     lambda status:status["owned_pids"].update(world=True),
@@ -651,7 +678,7 @@ def test_existing_session_directory_is_never_reused(assets, tmp_path):
     session.mkdir()
     (session / "status.json").write_text("retained evidence")
     with pytest.raises(FileExistsError):
-        serve_development.serve(assets, session)
+        serve_development.serve(assets, session, authorized=True)
     assert (session / "status.json").read_text() == "retained evidence"
 
 
@@ -760,7 +787,8 @@ def test_status_write_failure_does_not_skip_owned_cleanup(assets, tmp_path, monk
 @pytest.mark.parametrize("value", [True, 59, 14401, 1.5])
 def test_lifetime_invalid_before_resources(assets, tmp_path, value):
     with pytest.raises(DevelopmentError):
-        serve_development.serve(assets, tmp_path / "session", maximum_seconds=value)
+        serve_development.serve(
+            assets, tmp_path / "session", authorized=True, maximum_seconds=value)
     assert not (tmp_path / "session").exists()
 
 
@@ -770,7 +798,8 @@ def managed_profile(tmp_path):
     worker.write_bytes(b"synthetic-worker")
     status_path = tmp_path / "status.json"
     process = psutil.Process()
-    status = {"version": 1, "kind": "owned-development-host", "status": "ready", "session_id": "a" * 32,
+    status = {"version": 1, "kind": "owned-development-host", "status": "ready",
+              "execution_authorized": True, "session_id": "a" * 32,
               "owner_pid": process.pid, "owner_created": process.create_time(),
               "deadline_monotonic": time.monotonic() + 60, "api_port": 5000, "lobby_port": 54994,
               "protocol": "sapphire-3.3", "worker_sha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
@@ -821,7 +850,8 @@ def test_retained_managed_host_pair_rejects_type_confusion_or_changed_finish(man
             require_managed_host_binding(invalid, True)
 
 
-@pytest.mark.parametrize("patch", [{"status": "stopped"}, {"status": "failed"}, {"session_id": "b" * 32},
+@pytest.mark.parametrize("patch", [{"status": "stopped"}, {"status": "failed"},
+    {"execution_authorized": False}, {"session_id": "b" * 32},
     {"api_port": 5001}, {"lobby_port": 1}, {"protocol": "wrong"}, {"version": True},
     {"deadline_monotonic": -1}, {"deadline_monotonic": float("nan")}, {"owner_pid": -1},
     {"owner_created": -1}, {"worker_sha256": "b" * 64}, {"worker_preflight_exit": None}])

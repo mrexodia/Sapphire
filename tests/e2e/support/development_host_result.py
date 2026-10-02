@@ -81,7 +81,7 @@ def inspect_owned_development_host(session_dir):
     except SetupError as error:
         raise DevelopmentError("cannot inspect owned-host cleanup-failure markers") from error
     status = _read(session_dir / "status.json", "terminal status", 64 * 1024)
-    fields = {"version", "kind", "session_id", "status", "scope", "protocol",
+    fields = {"version", "kind", "session_id", "status", "scope", "execution_authorized", "protocol",
               "maximum_seconds", "owner_pid", "owner_created", "existing_database_access",
               "graphical_client_started", "fixture_setup", "normal_lobby_creation_verified",
               "cleanup_verified", "process_cleanup_verified", "worker_preflight_exit",
@@ -94,6 +94,7 @@ def inspect_owned_development_host(session_dir):
             or not _hex(status.get("session_id"), 32)
             or status.get("status") != "stopped"
             or status.get("scope") != "owned-private-warm-world-not-acceptance"
+            or status.get("execution_authorized") is not True
             or status.get("protocol") != "sapphire-3.3"
             or type(status.get("maximum_seconds")) is not int
             or not 60 <= status["maximum_seconds"] <= 14400
@@ -213,6 +214,7 @@ def inspect_owned_development_host(session_dir):
                                 separators=(",", ":")).encode("utf-8")
     return {"version":1,"status":"accepted","scope":SCOPE,
             "session_id":status["session_id"],"stop_reason":status["stop_reason"],
+            "execution_authorized":True,
             "worker_sha256":status["worker_sha256"],
             "lifecycle_sha256":receipt["sha256"],
             "environment_artifact_tree_sha256":status["environment_artifact_tree_sha256"],

@@ -37,8 +37,11 @@ def publish_status(path, report):
         temporary.unlink(missing_ok=True)
 
 
-def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Environment,
-          worker_factory=Worker, clock=time.monotonic, sleeper=time.sleep, on_ready=None):
+def serve(profile, session_dir, *, authorized=False, maximum_seconds=3600,
+          environment_factory=Environment, worker_factory=Worker,
+          clock=time.monotonic, sleeper=time.sleep, on_ready=None):
+    if authorized is not True:
+        raise DevelopmentError("owned warm host requires explicit service/account authorization")
     if type(maximum_seconds) is not int or not 60 <= maximum_seconds <= 14400:
         raise DevelopmentError("host lifetime must be an integer in 60..14400 seconds")
     catalog_path = Path(profile["quest_catalog"]).resolve()
@@ -52,6 +55,7 @@ def serve(profile, session_dir, *, maximum_seconds=3600, environment_factory=Env
     timings = Timings()
     report = {"version": 1, "kind": "owned-development-host", "session_id": uuid.uuid4().hex,
               "status": "starting", "scope": "owned-private-warm-world-not-acceptance",
+              "execution_authorized": True,
               "protocol": "sapphire-3.3", "maximum_seconds": maximum_seconds,
               "owner_pid": owner.pid, "owner_created": owner.create_time(),
               "existing_database_access": False, "graphical_client_started": False,
@@ -201,12 +205,15 @@ def main(argv=None):
     parser.add_argument("--session-dir", required=True, help="NEW private/ignored control and credential directory")
     parser.add_argument("--worker", help="Optional rebuilt headless worker override")
     parser.add_argument("--max-seconds", type=int, default=3600)
+    parser.add_argument("--authorize-owned-warm-host", action="store_true")
     args = parser.parse_args(argv)
     try:
         profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
         if args.worker:
             profile["worker"] = args.worker
-        report = serve(profile, args.session_dir, maximum_seconds=args.max_seconds,
+        report = serve(profile, args.session_dir,
+                       authorized=args.authorize_owned_warm_host,
+                       maximum_seconds=args.max_seconds,
                        on_ready=lambda status: print(json.dumps(status), flush=True))
     except (Exception, KeyboardInterrupt) as error:
         print(json.dumps({"status": "failed", "error_type": type(error).__name__}), flush=True)

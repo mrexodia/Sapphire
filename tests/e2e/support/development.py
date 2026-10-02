@@ -117,6 +117,7 @@ def check_managed_host(profile, *, clock=time.monotonic, process=psutil.Process)
         owner = process(pid)
         if (type(status.get("version")) is not int or status["version"] != 1
                 or status.get("kind") != "owned-development-host"
+                or status.get("execution_authorized") is not True
                 or status.get("session_id") != binding["id"] or status.get("status") != "ready"
                 or type(pid) is not int or pid <= 0
                 or type(created) not in (int, float) or not math.isfinite(created)
