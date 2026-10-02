@@ -142,8 +142,10 @@ def test_cli_default_and_explicit_budget(profile, tmp_path, monkeypatch, argumen
     private = tmp_path / 'profile.json'; private.write_text(json.dumps(profile))
     received = []
     def run(*args, **kwargs):
+        assert kwargs['confirmed'] is True
         received.append(kwargs['max_seconds'])
         return {'status': 'passed', 'scope': 'synthetic', 'elapsed_seconds': 0}
     monkeypatch.setattr(run_development, 'run', run)
-    assert run_development.main(['--profile', str(private), '--artifacts', str(tmp_path / 'unused'), *arguments]) == 0
+    assert run_development.main(['--profile', str(private), '--artifacts', str(tmp_path / 'unused'),
+                                 '--allow-shared-development', *arguments]) == 0
     assert received == [expected]

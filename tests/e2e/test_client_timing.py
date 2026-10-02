@@ -54,8 +54,11 @@ def test_guest_startup_failure_records_cleanup_time_and_terminal_status(tmp_path
     class Environment:
         redactions = []
         root = tmp_path / "removed-runtime"
+        process_starts = []
+        process_teardowns = []
         def __init__(self, profile):
-            pass
+            self.artifacts = output / "environment"
+            self.artifacts.mkdir()
         def start(self):
             now[0] = 105
             raise RuntimeError("synthetic startup failure")
@@ -64,6 +67,10 @@ def test_guest_startup_failure_records_cleanup_time_and_terminal_status(tmp_path
             now[0] = 108
             if cleanup_failure:
                 raise RuntimeError("synthetic cleanup failure")
+            (self.artifacts / "process-lifecycle.json").write_text(json.dumps({
+                "version": 1,
+                "scope": "exact-owned-isolated-process-teardown-not-graceful-server-exit",
+                "starts": [], "teardowns": []}))
     monkeypatch.setattr(guest, "INPUT", inputs); monkeypatch.setattr(guest, "OUTPUT", output)
     monkeypatch.setattr(guest, "require_guest", lambda: "synthetic guest")
     monkeypatch.setattr(guest, "verify_source", lambda *args: "synthetic revision")
@@ -83,6 +90,8 @@ def test_guest_startup_failure_records_cleanup_time_and_terminal_status(tmp_path
     assert result["failure_stage"] == "setup" and result["status"] == "failed"
     assert result["timing"]["phases"] == [dict(phase="setup", seconds=5), dict(phase="cleanup", seconds=3)]
     assert result["timing"]["elapsed_seconds"] == 8
-    assert ("cleanup_errors" in result) == cleanup_failure
+    # A setup failure before all four exact process starts has no complete teardown
+    # proof, even when the synthetic close call itself returns normally.
+    assert result["cleanup_errors"] == ["isolated environment cleanup failed"]
     assert status["phase"] == "finished" and status["status"] == "failed"
     assert status["run"] == result["run"]
