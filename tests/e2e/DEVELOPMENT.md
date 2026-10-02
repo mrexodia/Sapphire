@@ -505,8 +505,13 @@ persistence, or general reset/reprovisioning coverage.
 reviewed registry slot from an **already-authorized separate GM session**. It does
 not authenticate, create/promote an operator, adopt a viewer account, or discover
 targets. The caller supplies the reviewed registry, slot 0/1, a private artifact
-directory and explicit `approved=True` while the normal bots are waiting in
-`--await-placement` mode. A graphical GM can still use the documented commands
+directory and exact Boolean `approved=True` while the normal bots are waiting in
+`--await-placement` mode. Absent or truthy type-confused approval fails before
+intent publication or dispatch. Immutable intent and terminal publication files
+retain `execution_authorized:true`; strict local-publication and correlation
+consumers require and report it. This records invocation intent, not operator
+authentication, command delivery, server execution or placement causation. A
+graphical GM can still use the documented commands
 instead; this helper is optional.
 
 For scripted preparation, `DevelopmentOperator.login_for_preparation(auth, name,
@@ -544,7 +549,7 @@ python -m tests.e2e.inspect_development_operator `
 ```
 
 The sanitized inspector requires exactly two duplicate-free, single-link intent/
-publication pairs, one unchanged authorized GM identity distinct from both targets,
+publication pairs, exact retained execution authorization, one unchanged authorized GM identity distinct from both targets,
 nondecreasing received sequences, exact intent hashes and only the fixed local-only
 receipt. It never exposes the operator identity. The result is explicitly **local
 publication only**, with `server_acknowledgement_verified:false`,

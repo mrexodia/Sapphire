@@ -3932,7 +3932,7 @@ or completion audit. The original plan checklist below still applies.
 | Updated requirement | Concrete artifact/evidence | Current boundary |
 | --- | --- | --- |
 | Dedicated account/character provisioning through ordinary sessions | `provision_development.py`, `support/development_binding.py`, exact-owned-worker exit/deadline receipts, strict producer/consumer terminal exact-lease snapshots, exact managed-host start/end bindings, and separate strict provisioning/run terminal-host composite inspectors; bounded planner-only and placement-chain live audits | Current v2 producer→planner→registered-placement path is live-verified on a fresh owned runtime; one managed runner's structured movement/party/inventory/reconnect receipts and terminal host are current, while managed provisioning correlation is contract-only because live provisioning predates host binding; expiry/no-retry paths remain synthetic; worker exit, host status, server closure and local lease state grant no adoption/reset authority |
-| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, `support/development_operator.py`; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
+| Targeted preparation, explicitly authorized and auditable | `prepare_development.py`, `DevelopmentBotPlacement.h`, exact authorization in `support/development_operator.py` intent/publication evidence; `development-placement-v2-live-001` | Current v2 binds the provisioning run ID through planner, immutable intents and exact server diagnostics, with ordinary non-GM received arrival; the operator now rejects the complete malformed schema before intent/dispatch; setup is not progression or general reset |
 | Safe targeted reprovisioning of existing characters | `research/development-reset-boundary.md`, inspected lobby/API/session paths | **Pending:** offline/session exclusion spanning the mutation is not implemented |
 | Reset only explicitly owned world actors | Committed creation/task/lifetime review above | **Pending:** dedicated creation registration and lifecycle/work fence are not implemented; no reset command offered |
 | Normal non-GM bots with separate graphical viewer | `run_development.py`, `run_client_smoke.py`, `support/client_development.py`; client-development-live-004 plus current party/decline/Tell/Sprint/equipment/reconnect/viewer/deadline/inventory/lease/exit policy | Historical narrow owned-guest bridge verified at its version; current coordinator requires a comprehensive party run plus a separate fresh route-free exact-peer decline run, distinct run IDs with exact same ordered dedicated name/entity/character identities and staged-worker digest, exact original-witness identity plus normal closure before reuse, a fresh exact paired-mover final logout witness with newly received non-GM viewer presence, an empty pre-launch baseline plus fresh exact-name graphical spawn, sequence-bound ordinary movement and Say receipts, a run-bound rendered-witness Say challenge, strict outer review plus fresh post-phase logout consumers, and a separate exact-frame manual title-screen review receipt, exact shared-runner protocol/version/hash/no-admin-or-reset metadata, strict reciprocal Tell/Sprint/equipment/reconnect, both ordered run-bound viewer Say checkpoints with stable per-observer spawn tokens and persistent-witness continuity, exact inventory, nested deadlines plus an outer 1200-second receipt that includes final observer-worker exit, a PID-bound observed forced teardown of the still-running title-screen client plus every private database/API/lobby/world generation and lifecycle-file hash, clear leases and exact worker exits, followed by a committed read-only current-result inspector and an exact no-preexisting-Sandbox launch/process-absence/manual-confirmation composite disposal verifier; current graphical execution and disposal remain pending; neither proves the user's existing shared deployment, server-side viewer continuity or rendered-action agreement |
@@ -5377,6 +5377,27 @@ passed in 9.96s**. Receipt:
 No service was contacted, no account authenticated and no gameplay mutation ran.
 Synthetic evidence does not prove live received gameplay, viewer presence or
 rendering, shared-world cleanliness, offline exclusion, reset safety or cleanup.
+
+### Placement publication authorization is retained (`8901e0d52` checkpoint)
+
+Commit `8901e0d52` binds the already exact one-shot administrative placement
+approval into immutable evidence. Absent, false or truthy type-confused approval
+fails before intent publication or worker dispatch. Both pre-dispatch intent and
+terminal local-publication files retain `execution_authorized: true`; the strict
+publication consumer rejects missing, false or type-confused values. Sanitized
+local-publication and later received-placement correlation proofs carry the
+administrative authorization while continuing to report no server acknowledgment,
+command causation or retry authority.
+
+A detached clean worktree at
+`8901e0d524e6f8dfd688dbdaf723975819757202` reported zero status entries and
+**97 focused administrative publication/provisioning contracts passed in 1.46s**.
+Receipt:
+`.e2e-artifacts/placement-publication-authorization-clean-source/receipt.json`
+(SHA-256 `699a81692d99998d73623dd5540c240bb948f9d558b6afa5edd778c62d77cb34`).
+No operator login, worker dispatch, server request or gameplay mutation ran. This
+does not prove command delivery, server execution, placement mutation, causation,
+offline exclusion, reset safety or retry authority.
 
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
