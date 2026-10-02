@@ -19,6 +19,8 @@ def test_e2e_workflow_inspector_emits_narrow_structured_receipt(capsys):
     import json
     receipt = json.loads(capsys.readouterr().out)
     assert receipt["status"] == "accepted" and len(receipt["workflows"]) == 2
+    assert receipt["protected_environment_selector_authored"] is True
+    assert receipt["runner_group_selector_authored"] is True
     assert receipt["hosted_execution_verified"] is False
     assert receipt["runner_group_policy_verified"] is False
     assert receipt["ephemeral_vm_destruction_verified"] is False
@@ -47,6 +49,10 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     assert private["standalone_dispatch_required"] is True
     assert private["standalone_private_evidence_inspection_required"] is True
     assert private["standalone_failure_sanitization_required"] is True
+    assert private["protected_environment_selector_authored"] is True
+    assert private["runner_group_selector_authored"] is True
+    assert public["protected_environment_selector_authored"] is False
+    assert public["runner_group_selector_authored"] is False
     assert private["explicit_execution_authorization_required"] is True
     assert public["standalone_dispatch_required"] is False
     assert inspect_dependency_lock(DEPENDENCIES)["package_count"] == 7
@@ -82,8 +88,12 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
     (PRIVATE, " tests/e2e/test_isolated_case_run_result.py", ""),
     (PRIVATE, " tests/e2e/test_isolated_case_run_failure_result.py", ""),
     (PRIVATE, "--only-binary=:all: --no-deps", "--only-binary=:all:"),
-    (PRIVATE, "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
-              "    runs-on: ubuntu-latest"),
+    (PRIVATE, "    environment: sapphire-private-e2e",
+              "    environment: foreign-environment"),
+    (PRIVATE, "      group: sapphire-private-e2e",
+              "      group: foreign-runner-group"),
+    (PRIVATE, "      labels: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
+              "      labels: [ubuntu-latest]"),
     (PRIVATE, "  workflow_dispatch:", "  pull_request:\n  workflow_dispatch:"),
     (PRIVATE, "          ref: ${{ github.sha }}", "          ref: ${{ github.ref }}"),
     (PRIVATE, "$head -ne $env:EXPECTED_SHA", "$head -ne $head"),

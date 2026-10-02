@@ -69,7 +69,9 @@ jobs:
     needs: authorize
     # Configure required reviewers and default-branch deployment restrictions BEFORE enabling.
     environment: sapphire-private-e2e
-    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]
+    runs-on:
+      group: sapphire-private-e2e
+      labels: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]
     timeout-minutes: 120
     env:
       PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'

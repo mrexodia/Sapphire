@@ -187,7 +187,9 @@ def inspect_workflow(path, *, private):
             raise DevelopmentError("private workflow execution choices differ from the exact gate allowlist")
         required = ("  cancel-in-progress: false",
                     "    environment: sapphire-private-e2e",
-                    "    runs-on: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
+                    "    runs-on:",
+                    "      group: sapphire-private-e2e",
+                    "      labels: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
                     "    needs: authorize",
                     "        type: boolean",
                     "        default: false",
@@ -218,6 +220,14 @@ def inspect_workflow(path, *, private):
         stage_root = "          $stageRoot = Join-Path $env:RUNNER_TEMP \"sapphire-private-e2e-stage-${{ github.run_id }}-${{ github.run_attempt }}\""
         stage_absent = "          if (Test-Path $stageRoot) { throw 'Private staging root must start absent' }"
         stage_guard = "          if ($LASTEXITCODE -ne 0) { throw 'Service-free private profile staging failed' }"
+        runner_selector = (
+            "    runs-on:",
+            "      group: sapphire-private-e2e",
+            "      labels: [self-hosted, Windows, X64, sapphire-e2e-ephemeral]",
+        )
+        selector_start = next((index for index, line in enumerate(lines)
+                               if line == runner_selector[0]
+                               and lines[index:index + len(runner_selector)] == list(runner_selector)), None)
         checkout = next((index for index, line in enumerate(lines)
                          if line.startswith("      - uses: actions/checkout@")), None)
         checkout_ref = "          ref: ${{ github.sha }}"
@@ -228,6 +238,9 @@ def inspect_workflow(path, *, private):
         build = next((index for index, line in enumerate(lines)
                       if line.startswith("          cmake -S . -B build-e2e-ci ")), None)
         if (any(value not in lines for value in required)
+                or selector_start is None
+                or any(lines.count(value) != 1 for value in runner_selector)
+                or lines.index("    environment: sapphire-private-e2e") >= selector_start
                 or checkout is None or build is None
                 or not checkout < lines.index(checkout_ref) < lines.index(checkout_verify) \
                     < lines.index(head_guard) < lines.index(clean_guard) \
@@ -332,6 +345,8 @@ def inspect_workflow(path, *, private):
             "standalone_dispatch_required":private,
             "standalone_private_evidence_inspection_required":private,
             "standalone_failure_sanitization_required":private,
+            "protected_environment_selector_authored":private,
+            "runner_group_selector_authored":private,
             "explicit_execution_authorization_required":private,
             "service_free_staging_required":private,
             "exact_clean_checkout_required":private,

@@ -14,6 +14,9 @@ def inspect():
     return {"version": 1, "status": "accepted",
             "scope": "repository-workflow-controls-not-hosted-execution-or-runner-policy",
             "workflows": [public, private], "dependency_lock":dependencies,
+            "protected_environment_selector_authored":
+                private["protected_environment_selector_authored"],
+            "runner_group_selector_authored": private["runner_group_selector_authored"],
             "hosted_execution_verified": False,
             "runner_group_policy_verified": False,
             "ephemeral_vm_destruction_verified": False}
