@@ -64,7 +64,7 @@ def produce(tmp_path, monkeypatch):
     states = iter([[], [row], [], []])
     launched = []
     receipt = policy.run_prepared_sandbox(
-        root, 60, snapshot=lambda: copy.deepcopy(next(states)),
+        root, 60, authorized=True, snapshot=lambda: copy.deepcopy(next(states)),
         launch=lambda args: launched.append(args) or FakeProcess(),
         monotonic=Clock(), wall_time=lambda:1000.0, sleep=lambda value:None,
         executable=executable)
@@ -75,6 +75,32 @@ def produce(tmp_path, monkeypatch):
     return root
 
 
+def test_sandbox_launch_requires_exact_authorization_before_prepared_access(tmp_path, monkeypatch):
+    root, executable = prepared_root(tmp_path, monkeypatch)
+    called = []
+    for value in (False, None, 1, "true"):
+        with pytest.raises(DevelopmentError, match="explicit owned-Sandbox authorization"):
+            policy.run_prepared_sandbox(
+                root, 60, authorized=value,
+                launch=lambda args: called.append(args), executable=executable)
+    assert called == [] and not (root / "sandbox-session.json").exists()
+
+
+def test_sandbox_cli_requires_and_forwards_launch_authorization(monkeypatch, capsys):
+    from . import run_client_sandbox as cli
+    calls = []
+    monkeypatch.setattr(cli, "run_prepared_sandbox",
+        lambda prepared, timeout, authorized: calls.append((prepared, timeout, authorized))
+        or {"status":"disposed"})
+    with pytest.raises(SystemExit):
+        cli.main(["launch", "--prepared", "missing"])
+    assert calls == []
+    assert cli.main(["launch", "--prepared", "prepared", "--timeout-seconds", "60",
+                     "--authorize-owned-sandbox"]) == 0
+    assert calls == [("prepared", 60, True)]
+    assert json.loads(capsys.readouterr().out) == {"status":"disposed"}
+
+
 def test_exact_prepared_launch_absence_and_manual_confirmation(tmp_path, monkeypatch):
     root = produce(tmp_path, monkeypatch)
     proof = policy.require_disposal(root)
@@ -82,6 +108,7 @@ def test_exact_prepared_launch_absence_and_manual_confirmation(tmp_path, monkeyp
         "session":json.loads((root / "sandbox-session.json").read_text())["session"],
         "run":"a"*32,"launcher_pid":77,"launcher_returncode":0,
         "result_sha256":hashlib.sha256((root / "output/result.json").read_bytes()).hexdigest(),
+        "execution_authorized":True,
         "operator_confirmation":True,"sandbox_disposal_verified":True}
 
 
@@ -103,7 +130,7 @@ def test_prepared_source_mismatch_fails_before_sandbox_launch(tmp_path, monkeypa
     mutation(root)
     called = []
     with pytest.raises(DevelopmentError):
-        policy.run_prepared_sandbox(root, 60, snapshot=lambda:[],
+        policy.run_prepared_sandbox(root, 60, authorized=True, snapshot=lambda:[],
             launch=lambda args:called.append(args), executable=executable)
     assert called == [] and not (root / "sandbox-session.json").exists()
 
@@ -112,7 +139,7 @@ def test_preexisting_sandbox_fails_before_launch_or_publication(tmp_path, monkey
     root, executable = prepared_root(tmp_path, monkeypatch)
     called = []
     with pytest.raises(DevelopmentError, match="while any Sandbox"):
-        policy.run_prepared_sandbox(root, 60,
+        policy.run_prepared_sandbox(root, 60, authorized=True,
             snapshot=lambda:[{"pid":9,"name":"windowssandbox.exe","create_time":1.0}],
             launch=lambda args: called.append(args), executable=executable)
     assert called == [] and not (root / "sandbox-session.json").exists()
@@ -123,7 +150,7 @@ def test_unobserved_launcher_times_out_without_kill_or_retry(tmp_path, monkeypat
     values = iter([0.0, 0.0, 61.0])
     process = FakeProcess()
     with pytest.raises(TimeoutError, match="PID was not observed"):
-        policy.run_prepared_sandbox(root, 60, snapshot=lambda:[],
+        policy.run_prepared_sandbox(root, 60, authorized=True, snapshot=lambda:[],
             launch=lambda args:process, monotonic=lambda:next(values),
             wall_time=lambda:1.0, sleep=lambda value:None, executable=executable)
     failure = json.loads((root / "sandbox-disposal-failure.json").read_text())
@@ -134,6 +161,8 @@ def test_unobserved_launcher_times_out_without_kill_or_retry(tmp_path, monkeypat
 
 @pytest.mark.parametrize("mutation", [
     lambda root: json_file(root / "sandbox-session.json", lambda v:v.update(launcher_pid=True)),
+    lambda root: json_file(root / "sandbox-session.json",
+        lambda v:v.update(execution_authorized=False)),
     lambda root: json_file(root / "sandbox-disposal.json",
         lambda v:v["observed_processes"][0].update(name="foreign.exe")),
     lambda root: json_file(root / "sandbox-disposal.json",

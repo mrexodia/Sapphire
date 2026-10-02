@@ -13,12 +13,16 @@ def main(argv=None):
     launch = modes.add_parser("launch", help="Launch exact run.wsb; close and confirm discard before timeout")
     launch.add_argument("--prepared", required=True)
     launch.add_argument("--timeout-seconds", type=int, default=1800)
+    launch.add_argument("--authorize-owned-sandbox", action="store_true")
     approve = modes.add_parser("approve-disposal", help="ONLY after confirming the owned discard dialog")
     approve.add_argument("--prepared", required=True)
     approve.add_argument("--confirmed-owned-discard", action="store_true", required=True)
     args = parser.parse_args(argv)
-    value = (run_prepared_sandbox(args.prepared, args.timeout_seconds)
-             if args.mode == "launch" else approve_disposal(args.prepared))
+    if args.mode == "launch" and not args.authorize_owned_sandbox:
+        parser.error("explicit owned-Sandbox authorization is required")
+    value = (run_prepared_sandbox(
+        args.prepared, args.timeout_seconds, authorized=True)
+        if args.mode == "launch" else approve_disposal(args.prepared))
     print(json.dumps(value, indent=2))
     return 0
 

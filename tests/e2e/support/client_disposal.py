@@ -92,15 +92,18 @@ def _prepared(prepared):
     return prepared, config, inputs
 
 
-def run_prepared_sandbox(prepared, timeout_seconds=1800, *, snapshot=sandbox_processes,
-                         launch=subprocess.Popen, monotonic=time.monotonic,
-                         wall_time=time.time, sleep=time.sleep, executable=None):
+def run_prepared_sandbox(prepared, timeout_seconds=1800, *, authorized=False,
+                         snapshot=sandbox_processes, launch=subprocess.Popen,
+                         monotonic=time.monotonic, wall_time=time.time,
+                         sleep=time.sleep, executable=None):
     """Launch exactly one prepared Sandbox and record bounded host-side disposal.
 
     The operator must close the owned window and confirm its discard dialog. On a
     timeout this function records failure but deliberately leaves the Sandbox for
     explicit operator handling; it never retries or kills the process.
     """
+    if authorized is not True:
+        raise DevelopmentError("Sandbox launch requires explicit owned-Sandbox authorization")
     if type(timeout_seconds) is not int or not 60 <= timeout_seconds <= 7200:
         raise DevelopmentError("Sandbox disposal timeout must be an integer from 60 to 7200")
     prepared, config, inputs = _prepared(prepared)
@@ -124,7 +127,8 @@ def run_prepared_sandbox(prepared, timeout_seconds=1800, *, snapshot=sandbox_pro
     if type(getattr(process, "pid", None)) is not int or process.pid <= 0:
         raise DevelopmentError("Windows Sandbox launcher PID is invalid")
     observed = {}
-    session = {"version": 1, "session": session_id, "scope": SESSION_SCOPE,
+    session = {"version": 2, "session": session_id, "scope": SESSION_SCOPE,
+               "execution_authorized": True,
                "config_sha256": _sha256(config), "inputs_sha256": _sha256(inputs),
                "launcher_pid": process.pid, "timeout_seconds": timeout_seconds,
                "started_at_unix": started_at}
@@ -216,9 +220,11 @@ def require_disposal(prepared):
                                    prepared / "sandbox-disposal.json")
     session, disposal = _read(session_path), _read(disposal_path)
     confirmation = _read(prepared / "sandbox-disposal-review.json")
-    if (set(session) != {"version", "session", "scope", "config_sha256", "inputs_sha256",
-                         "launcher_pid", "timeout_seconds", "started_at_unix"}
-            or type(session.get("version")) is not int or session["version"] != 1
+    if (set(session) != {"version", "session", "scope", "execution_authorized",
+                         "config_sha256", "inputs_sha256", "launcher_pid",
+                         "timeout_seconds", "started_at_unix"}
+            or type(session.get("version")) is not int or session["version"] != 2
+            or session.get("execution_authorized") is not True
             or not isinstance(session.get("session"), str) or len(session["session"]) != 32
             or any(char not in "0123456789abcdef" for char in session["session"])
             or session.get("scope") != SESSION_SCOPE
@@ -283,6 +289,7 @@ def require_disposal(prepared):
             "session": session["session"], "run": result["run"],
             "launcher_pid": session["launcher_pid"],
             "launcher_returncode": disposal["launcher_returncode"],
+            "execution_authorized": True,
             "result_sha256": result["result_sha256"],
             "operator_confirmation": True, "sandbox_disposal_verified": True}
 
