@@ -5444,12 +5444,18 @@ and complete artifact-tree SHA-256
 It observed zero process starts/teardowns and removed the disposable runtime.
 
 Private readiness receipt SHA-256:
-`c459811b316373ba473ac6df58ab4dac7513962cb6110b43d2ebefd09f2816aa`.
+`6b4ac8824fc615eea87c2afefa53b04d00844a242ef15032f57cff03c8d2da8e`.
 It explicitly records `authorization_granted_for_live_execution: false`,
 `native_rebuild_performed: false`, and `native_contracts_rerun: false`. No service,
 database, account, gameplay or hosted operation ran. Exact byte identity and
 service-free staging do not prove runtime compatibility, cleanup, Linux behavior,
-hosted policy or acceptance.
+hosted policy or acceptance. A post-success display helper then failed because a
+Git-Bash `/c/...` path was passed directly to Windows `pathlib`; retained failure
+receipt SHA-256
+`206fe56922f110fde2b2427155682ca90f56693f616d3c5a3e74ccf561f49827`.
+Both profile and staging commands had already returned zero and written the bytes
+reported above. The wrapper failure remains failed diagnostic evidence and is not
+upgraded into, or confused with, profile/staging success.
 
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
