@@ -5418,6 +5418,39 @@ No registry was written, operator logged in, request dispatched or gameplay
 mutation run. Offline planning does not prove operator review, command delivery,
 placement mutation, causation, reset safety or gameplay.
 
+### Current service-free Windows readiness advanced (`f068151b3` checkpoint)
+
+A new absolute private clean worktree at
+`f068151b37c7203b4b734bff751f4857c26acb89` advances the standalone readiness
+checkpoint without starting a fixture. The exact selected native input path set
+(`CMakeLists.txt`, `cmake/`, `config/`, `deps/`, `src/`) has zero committed changes
+since the previously built/tested `73f17c9d4` checkpoint. Therefore no native
+rebuild or native retest was claimed. The 43 changed paths are coordinator tests,
+workflow and documentation. The exact current changed-test selection passed
+**752 contracts in 25.30s** with plugin autoload disabled.
+
+Private profile inspection again accepted profile SHA-256
+`71b7cad97004f6021e04229c019807549671f18cf861aa109358d8552687f373`
+and worker SHA-256
+`24497747fe5148e0ae2fd40c7c5b76c62a5ddafba442d5e726cb94bf09b4a024`.
+A fresh loopback-only capability process returned 58 unique methods, exit zero and
+empty stderr. Current exact-revision service-free fixture-v2 staging accepted:
+manifest SHA-256
+`d2e00c74c2c659341d2f90b7bdee3b8157293064ae3bf0f9a6abd98083424807`,
+lifecycle SHA-256
+`4f514a1337f622b936a1600e9b6ba1336fa520e51f6fb347a93a792f0018de46`,
+and complete artifact-tree SHA-256
+`55e6f355aa02b19e8eef7091c91608c8f213dc3f876537b307edd14d3bb4c8f5`.
+It observed zero process starts/teardowns and removed the disposable runtime.
+
+Private readiness receipt SHA-256:
+`c459811b316373ba473ac6df58ab4dac7513962cb6110b43d2ebefd09f2816aa`.
+It explicitly records `authorization_granted_for_live_execution: false`,
+`native_rebuild_performed: false`, and `native_contracts_rerun: false`. No service,
+database, account, gameplay or hosted operation ran. Exact byte identity and
+service-free staging do not prove runtime compatibility, cleanup, Linux behavior,
+hosted policy or acceptance.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
