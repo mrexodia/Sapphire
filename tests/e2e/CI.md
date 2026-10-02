@@ -11,8 +11,9 @@ self-hosted runners (checked through the read-only Actions runners API).
 1. Use a dedicated disposable Windows x64 VM, not a developer workstation or a
    shared runner accepting untrusted jobs. Install Git, Python 3.11, CMake >=3.22,
    Ninja, VS C++/Windows SDK with clang-cl, MariaDB development libraries and a
-   MariaDB server installation. Register with the `sapphire-e2e-ephemeral` label.
-   Restrict its runner group to this exact workflow on the reviewed default ref.
+   MariaDB server installation. Register with the `sapphire-e2e-ephemeral` label
+   in the exact `sapphire-private-e2e` runner group selected by the workflow.
+   Restrict that runner group to this exact workflow on the reviewed default ref.
    **Labels and checks inside YAML are not runner access controls:** other workflow
    code must not be able to select this VM. If workflow-scoped runner restrictions
    are unavailable, use a separate private automation repository accessible only
@@ -63,8 +64,10 @@ job to 120 minutes, and limits the isolated gate step to 75 minutes. These ceili
 cover the previously observed roughly 56-minute 15-case gate plus build/contracts;
 they remain bounds, not capacity or hosted-execution evidence. Repository controls can
 be checked read-only with
-`python -m tests.e2e.inspect_workflow_policy`; its receipt explicitly leaves hosted
-execution, runner-group restrictions and ephemeral VM destruction unverified.
+`python -m tests.e2e.inspect_workflow_policy`; its receipt verifies that the exact
+protected-environment and runner-group selectors are authored while explicitly
+leaving their existence/access enforcement, hosted execution and ephemeral VM
+destruction unverified.
 Before any repository build command, the private workflow passes `${{ github.sha }}`
 explicitly to checkout, verifies `HEAD` equals that exact SHA, requires an empty
 tracked/untracked worktree, and rejects missing, changed or conflicted recursive
