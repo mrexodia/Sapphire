@@ -38,7 +38,7 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
         verify_inventory=False, verify_sprint=False, verify_equipment=False, viewer_name=None, max_seconds=None,
         worker_factory=Worker, login=authenticate, lease_root=None,
         viewer_finish_callback=None):
-    if not confirmed:
+    if confirmed is not True:
         raise DevelopmentError("explicit --allow-shared-development opt-in is required")
     validate_profile(profile)
     host_start = check_managed_host(profile)
@@ -77,7 +77,8 @@ def run(profile, artifacts, *, confirmed=False, cycles=1, await_placement=False,
             return deadline.call(original_login, config, account)
     lease = AccountLease(profile, run_id, lease_root)
     report = {"version": 1, "run_id": run_id, "status": "failed",
-              "scope": "shared-development-not-acceptance", "server_identity_verified": False,
+              "scope": "shared-development-not-acceptance", "execution_authorized": True,
+              "server_identity_verified": False,
               "server_processes_owned": False, "database_access": False,
               "account_reset_performed_by_runner": False, "cycles": cycles,
               "administrative_preparation_wait_enabled": await_placement,
@@ -436,6 +437,8 @@ def main(argv=None):
                         help="Starter-body round trip with three normal reconnects; also requires both inventory/reconnect flags")
     parser.add_argument("--viewer-name", help="Exact separate visible player name; requires unique Say replies at start/finish")
     args = parser.parse_args(argv)
+    if not args.allow_shared_development:
+        parser.error("explicit shared-development authorization is required")
     try:
         profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
         result = run(profile, args.artifacts, confirmed=args.allow_shared_development, cycles=args.cycles,

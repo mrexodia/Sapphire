@@ -143,6 +143,7 @@ def completed():
              for sender,sender_id,receiver,receiver_id in
              (('mover',1,'witness',2),('witness',2,'mover',1))]}
     return {'version':1,'status':'passed','scope':'shared-development-not-acceptance',
+            'execution_authorized':True,
             'server_identity_verified':False,'server_processes_owned':False,
             'database_access':False,'account_reset_performed_by_runner':False,
             'administrative_command_execution_attested':False,'protocol':'sapphire-3.3',
@@ -255,6 +256,7 @@ def test_partial_or_wrong_scope_is_not_graphical_bridge_success(field,value):
 
 
 @pytest.mark.parametrize('field,value',[('version',True),('protocol','other'),('cycles',True),
+    ('execution_authorized',False),('execution_authorized',1),
     ('server_identity_verified',True),('server_processes_owned',True),
     ('account_reset_performed_by_runner',True),('administrative_command_execution_attested',True),
     ('worker_sha256','bad'),('catalog_sha256','bad')])

@@ -180,6 +180,7 @@ def inspect_managed_development_run(session_dir, summary_path):
     if (type(report.get("version")) is not int or report["version"] != 1
             or report.get("status") != "passed"
             or report.get("scope") != "shared-development-not-acceptance"
+            or report.get("execution_authorized") is not True
             or not _hex(run_id, 32)
             or report.get("server_identity_verified") is not False
             or report.get("server_processes_owned") is not False
@@ -220,7 +221,8 @@ def inspect_managed_development_run(session_dir, summary_path):
     if not checks:
         raise DevelopmentError("managed development run has no received scenario evidence")
     return {"version":1,"status":"accepted","scope":SCOPE,
-            "run_id":run_id,"summary_sha256":_sha256(summary_path),
+            "run_id":run_id,"execution_authorized":True,
+            "summary_sha256":_sha256(summary_path),
             "host_session_id":host["session_id"],
             "ready_status_sha256":receipt["status_sha256"],
             "worker_sha256":receipt["worker_sha256"],

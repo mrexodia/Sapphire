@@ -58,6 +58,7 @@ def validate_development_evidence(summary_path):
     if (type(report.get("version")) is not int or report["version"] != 1
             or report.get("status") != "passed"
             or report.get("scope") != "shared-development-not-acceptance"
+            or report.get("execution_authorized") is not True
             or not _hex(run_id, 32)
             or report.get("server_identity_verified") is not False
             or report.get("server_processes_owned") is not False
@@ -76,7 +77,7 @@ def validate_development_evidence(summary_path):
     if not checks:
         raise DevelopmentError("external shared-development result has no received scenario evidence")
     return {"summary_path":summary_path,"raw":raw,"report":report,"run_id":run_id,
-            "binding":binding,"worker_artifacts":worker_artifacts,
+            "execution_authorized":True,"binding":binding,"worker_artifacts":worker_artifacts,
             "lease":lease,"checks":checks}
 
 
@@ -84,6 +85,7 @@ def inspect_development_result(summary_path):
     evidence = validate_development_evidence(summary_path)
     report = evidence["report"]
     return {"version":1,"status":"accepted","scope":SCOPE,"run_id":evidence["run_id"],
+            "execution_authorized":evidence["execution_authorized"],
             "summary_sha256":hashlib.sha256(evidence["raw"]).hexdigest(),
             "worker_sha256":report["worker_sha256"],
             "worker_artifacts":evidence["worker_artifacts"],

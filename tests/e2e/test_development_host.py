@@ -227,7 +227,8 @@ def managed_summary(path, receipt, worker_sha256, session_dir=None):
             for sender,sender_id,receiver,receiver_id in
             (("mover",1,"witness",2),("witness",2,"mover",1))]}
     report = {"version":1,"run_id":"b" * 32,"status":"passed",
-        "scope":"shared-development-not-acceptance","protocol":"sapphire-3.3",
+        "scope":"shared-development-not-acceptance","execution_authorized":True,
+        "protocol":"sapphire-3.3",
         "cycles":1,"entities":[1,2],"territory":130,"catalog_sha256":"d" * 64,
         "received_identities":[
             {"slot":0,"name":"Tester AAAAAAAAAAAA","entity_id":1,"character_id":11},
@@ -337,6 +338,7 @@ def test_composite_managed_run_inspector_correlates_terminal_host_read_only(
     proof = inspect_managed_development_run(session, summary)
     after = {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
     assert before == after and proof["scope"] == MANAGED_RESULT_SCOPE
+    assert proof["execution_authorized"] is True
     assert proof["host_session_id"] == host_report["session_id"]
     assert proof["worker_artifacts"]["scope"] == RUN_SCOPE
     assert proof["account_association_sha256"] == host_report["account_association"]["sha256"]
@@ -387,6 +389,9 @@ def test_composite_managed_run_rejects_changed_worker_artifact_tree(assets, tmp_
 
 @pytest.mark.parametrize("mutate", [
     lambda report:report.update(status="failed"),
+    lambda report:report.pop("execution_authorized"),
+    lambda report:report.update(execution_authorized=False),
+    lambda report:report.update(execution_authorized=1),
     lambda report:report.update(server_processes_owned=True),
     lambda report:report["managed_host_binding"]["finish"].update(owner_pid=True),
     lambda report:report.update(worker_sha256="0" * 64),

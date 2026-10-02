@@ -156,6 +156,7 @@ def test_external_shared_result_inspector_is_strict_sanitized_and_read_only(
               for path in (summary, tmp_path / "run/worker/ownership.json")}
     proof = inspect_development_result(summary)
     assert proof["scope"] == DEVELOPMENT_RESULT_SCOPE
+    assert proof["execution_authorized"] is True
     assert proof["managed_host"] is False
     assert proof["worker_artifacts"]["sha256"] == report["worker_artifact_tree_sha256"]
     assert set(proof["verified_checks"]) == {"say","movement"}
@@ -206,7 +207,8 @@ def test_external_shared_result_inspector_accepts_base_received_say(
     assert len(report["say_verification"]["observations"]) == 2
 
 
-@pytest.mark.parametrize("mutation", ["status","managed","deadline","say","worker-tree",
+@pytest.mark.parametrize("mutation", ["status","authorization-missing","authorization",
+                                      "authorization-type","managed","deadline","say","worker-tree",
                                       "duplicate","oversized","hardlink"])
 def test_external_shared_result_inspector_rejects_foreign_or_incomplete_evidence(
         profile, tmp_path, mutation, monkeypatch):
@@ -218,6 +220,9 @@ def test_external_shared_result_inspector_rejects_foreign_or_incomplete_evidence
     summary = tmp_path / "run/development-summary.json"
     report = json.loads(summary.read_text())
     if mutation == "status": report["status"] = "failed"
+    elif mutation == "authorization-missing": report.pop("execution_authorized")
+    elif mutation == "authorization": report["execution_authorized"] = False
+    elif mutation == "authorization-type": report["execution_authorized"] = 1
     elif mutation == "managed": report["managed_host_binding"]["requested"] = True
     elif mutation == "deadline": report["run_deadline"]["expired"] = True
     elif mutation == "say":
@@ -237,10 +242,27 @@ def test_external_shared_result_inspector_rejects_foreign_or_incomplete_evidence
         inspect_development_result(summary)
 
 
+def test_shared_runner_cli_requires_authorization_before_profile_read(tmp_path):
+    with pytest.raises(SystemExit):
+        run_development.main([
+            "--profile", str(tmp_path / "missing-profile.json"),
+            "--artifacts", str(tmp_path / "run")])
+    assert not (tmp_path / "run").exists()
+
+
+@pytest.mark.parametrize("confirmed", [None, False, 0, 1, "true"])
+def test_shared_runner_requires_exact_authorization_before_artifacts(
+        profile, tmp_path, confirmed):
+    with pytest.raises(DevelopmentError, match="allow-shared-development"):
+        run_development.run(profile, tmp_path / "run", confirmed=confirmed)
+    assert not (tmp_path / "run").exists()
+
+
 def test_shared_smoke_lifecycle_and_timings(profile, tmp_path):
     report, fake = execute(profile, tmp_path, cycles=2)
     assert report["status"] == "passed"
     assert report["scope"] == "shared-development-not-acceptance"
+    assert report["execution_authorized"] is True
     assert report["managed_host_binding"] == {"requested":False,"verified":False,
         "start":{"managed":False,"verified":False,
                  "scope":"external-shared-server-without-owned-host-binding"},

@@ -613,6 +613,7 @@ def require_shared_runner_metadata(result, *, catalog_required,
     worker_hash, catalog_hash = result.get('worker_sha256'), result.get('catalog_sha256')
     if (type(result.get('version')) is not int or result['version'] != 1
             or result.get('protocol') != 'sapphire-3.3'
+            or result.get('execution_authorized') is not True
             or type(result.get('cycles')) is not int or result['cycles'] != 1
             or result.get('server_identity_verified') is not False
             or result.get('server_processes_owned') is not False
