@@ -66,7 +66,7 @@ def reserve_private_profile(path, profile):
 
 def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
         worker_factory=Worker, register=create_account, login=authenticate, lease_root=None):
-    if not confirmed:
+    if confirmed is not True:
         raise DevelopmentError("explicit --create-new-bot-accounts opt-in is required")
     deadline = RunDeadline(max_seconds) if max_seconds is not None else None
     profile = new_profile(server)
@@ -82,6 +82,7 @@ def run(server, output_profile, artifacts, *, confirmed=False, max_seconds=None,
     lease = AccountLease(profile, run_id, lease_root)
     report = {"version": 1, "run_id": run_id, "status": "failed",
               "scope": "shared-development-provisioning-not-gameplay",
+              "execution_authorized": True,
               "ready_for_shared_checks": False, "server_identity_verified": False,
               "server_processes_owned": False, "database_access": False,
               "administrative_placement_performed": False, "lease_retained": False,
@@ -216,6 +217,8 @@ def main(argv=None):
     parser.add_argument("--max-seconds", type=int, default=300,
                         help="Cooperative provisioning budget 1..900 seconds (default 300); final lease/report cleanup excluded")
     args = parser.parse_args(argv)
+    if not args.create_new_bot_accounts:
+        parser.error("explicit account-creation authorization is required")
     try:
         server = json.loads(Path(args.server_profile).read_text(encoding="utf-8"))
         report = run(server, args.output_profile, args.artifacts,

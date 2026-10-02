@@ -69,7 +69,8 @@ def validate_provisioning_evidence(summary_path, profile_path, *, managed):
     if managed is None:
         managed = profile.get("host_session") is not None
     run_id = report.get("run_id")
-    fields = {"version","run_id","status","scope","ready_for_shared_checks",
+    fields = {"version","run_id","status","scope","execution_authorized",
+              "ready_for_shared_checks",
               "server_identity_verified","server_processes_owned","database_access",
               "administrative_placement_performed","lease_retained","credential_profile_saved",
               "worker_closed","worker_exit","managed_host_binding","worker_sha256",
@@ -96,6 +97,7 @@ def validate_provisioning_evidence(summary_path, profile_path, *, managed):
             or type(report.get("version")) is not int or report["version"] != 1
             or not _hex(run_id, 32) or report.get("status") != "provisioned"
             or report.get("scope") != "shared-development-provisioning-not-gameplay"
+            or report.get("execution_authorized") is not True
             or report.get("ready_for_shared_checks") is not False
             or report.get("server_identity_verified") is not False
             or report.get("server_processes_owned") is not False
@@ -147,7 +149,8 @@ def validate_provisioning_evidence(summary_path, profile_path, *, managed):
     require_normal_worker_exit(report)
     lease = require_clear_terminal_account_leases(report)
     return {"summary_raw":summary_raw,"report":report,"profile":profile,
-            "run_id":run_id,"worker_artifacts":worker_artifacts,"deadline":deadline,
+            "run_id":run_id,"execution_authorized":True,
+            "worker_artifacts":worker_artifacts,"deadline":deadline,
             "binding":binding,"accounts":accounts,"lease":lease}
 
 
@@ -181,6 +184,7 @@ def inspect_managed_provisioning(session_dir, summary_path, profile_path):
         raise DevelopmentError("managed provisioning profile/worker/session differs from host evidence")
     accounts = evidence["accounts"]
     return {"version":1,"status":"accepted","scope":SCOPE,"run_id":evidence["run_id"],
+            "execution_authorized":evidence["execution_authorized"],
             "summary_sha256":hashlib.sha256(evidence["summary_raw"]).hexdigest(),
             "host_session_id":host["session_id"],"ready_status_sha256":receipt["status_sha256"],
             "worker_sha256":receipt["worker_sha256"],"run_deadline":evidence["deadline"],

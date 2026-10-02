@@ -161,6 +161,7 @@ def test_cli_default_and_explicit_budget(server, tmp_path, monkeypatch, argument
     profile = tmp_path / "server.json"; profile.write_text(json.dumps(server))
     received = []
     def run(*args, **kwargs):
+        assert kwargs["confirmed"] is True
         received.append(kwargs["max_seconds"])
         return {"status":"provisioned", "scope":"synthetic", "elapsed_seconds":0}
     monkeypatch.setattr(provision_development, "run", run)

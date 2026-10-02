@@ -13,6 +13,7 @@ def inspect_development_provisioning(summary_path, profile_path):
     report, accounts = evidence["report"], evidence["accounts"]
     return {"version":1,"status":"accepted","scope":SCOPE,
             "run_id":evidence["run_id"],
+            "execution_authorized":evidence["execution_authorized"],
             "summary_sha256":hashlib.sha256(evidence["summary_raw"]).hexdigest(),
             "worker_sha256":report["worker_sha256"],
             "worker_artifacts":evidence["worker_artifacts"],

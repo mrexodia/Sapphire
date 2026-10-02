@@ -285,6 +285,7 @@ def managed_provisioning_summary(path, profile, receipt, worker_sha256):
             "gm_rank":0,"logout_server_close_verified":True})
     report = {"version":1,"run_id":"c" * 32,"status":"provisioned",
         "scope":"shared-development-provisioning-not-gameplay",
+        "execution_authorized":True,
         "ready_for_shared_checks":False,"server_identity_verified":False,
         "server_processes_owned":False,"database_access":False,
         "administrative_placement_performed":False,"credential_profile_saved":True,
@@ -432,6 +433,7 @@ def test_composite_managed_provisioning_inspector_is_read_only_and_redacted(
     proof = inspect_managed_provisioning(session, summary, profile_path)
     assert before == {path:hashlib.sha256(path.read_bytes()).hexdigest() for path in before}
     assert proof["scope"] == MANAGED_PROVISIONING_SCOPE
+    assert proof["execution_authorized"] is True
     assert proof["worker_artifacts"]["scope"] == PROVISIONING_SCOPE
     assert proof["host_fixture_identity_count"] == 3
     assert len(proof["host_viewer_identity_sha256"]) == 64

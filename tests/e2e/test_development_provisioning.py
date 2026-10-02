@@ -109,6 +109,7 @@ def test_external_provisioning_inspector_is_strict_sanitized_and_read_only(
     proof = inspect_development_provisioning(summary, profile_path)
     assert proof["scope"] == DEVELOPMENT_PROVISIONING_SCOPE
     assert proof["managed_host"] is False and proof["ready_for_shared_checks"] is False
+    assert proof["execution_authorized"] is True
     assert proof["worker_artifacts"]["sha256"] == result["worker_artifact_tree_sha256"]
     rendered = json.dumps(proof)
     profile = json.loads(profile_path.read_text())
@@ -229,8 +230,9 @@ def test_external_placement_chain_inspector_correlates_exact_private_artifacts(
             development_summary)
 
 
-@pytest.mark.parametrize("mutation", ["status","managed","worker-tree","profile","duplicate",
-                                      "oversized","summary-hardlink","profile-hardlink"])
+@pytest.mark.parametrize("mutation", ["status","authorization","authorization-type",
+                                      "managed","worker-tree","profile","duplicate","oversized","summary-hardlink",
+                                      "profile-hardlink"])
 def test_external_provisioning_inspector_rejects_foreign_or_incomplete_evidence(
         server, tmp_path, mutation):
     execute(server, tmp_path, max_seconds=60)
@@ -238,6 +240,8 @@ def test_external_provisioning_inspector_rejects_foreign_or_incomplete_evidence(
     profile_path = tmp_path / "private.json"
     report = json.loads(summary.read_text())
     if mutation == "status": report["status"] = "failed"
+    elif mutation == "authorization": report["execution_authorized"] = False
+    elif mutation == "authorization-type": report["execution_authorized"] = 1
     elif mutation == "managed": report["managed_host_binding"]["requested"] = True
     elif mutation == "worker-tree":
         (tmp_path / "artifacts/worker/foreign.json").write_text("{}")
@@ -286,9 +290,23 @@ def test_new_accounts_are_generated_and_not_adopted(server):
         provision_development.new_profile(first)
 
 
-def test_provisioning_requires_opt_in_before_any_artifacts(server, tmp_path):
+def test_provisioning_cli_requires_authorization_before_server_profile_read(tmp_path):
+    with pytest.raises(SystemExit):
+        provision_development.main([
+            "--server-profile", str(tmp_path / "missing-server.json"),
+            "--output-profile", str(tmp_path / "private.json"),
+            "--artifacts", str(tmp_path / "artifacts")])
+    assert not (tmp_path / "private.json").exists()
+    assert not (tmp_path / "artifacts").exists()
+
+
+@pytest.mark.parametrize("confirmed", [None, False, 0, 1, "true"])
+def test_provisioning_requires_exact_opt_in_before_any_artifacts(
+        server, tmp_path, confirmed):
     with pytest.raises(DevelopmentError):
-        provision_development.run(server, tmp_path / "private.json", tmp_path / "artifacts")
+        provision_development.run(
+            server, tmp_path / "private.json", tmp_path / "artifacts",
+            confirmed=confirmed)
     assert not (tmp_path / "private.json").exists()
     assert not (tmp_path / "artifacts").exists()
 
@@ -296,6 +314,7 @@ def test_provisioning_requires_opt_in_before_any_artifacts(server, tmp_path):
 def test_success_is_provisioning_not_public_world_ready(server, tmp_path):
     result, fake, calls = execute(server, tmp_path)
     assert result["status"] == "provisioned"
+    assert result["execution_authorized"] is True
     assert not result["ready_for_shared_checks"] and not result["administrative_placement_performed"]
     assert not result["database_access"] and not result["server_processes_owned"]
     assert result["credential_profile_saved"] and result["worker_closed"] and fake.closed
