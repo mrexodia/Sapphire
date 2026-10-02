@@ -1033,9 +1033,9 @@ This does not establish recovery from process hard kills, unresponsive OS calls,
 or every failure inside an individual process's teardown. The separate
 `test_live_fault_diagnostics.py` intentionally terminates one freshly provisioned
 owned world process and verifies classification, redacted log publication and
-whole-runtime removal. It is not in the gameplay allowlist and does not prove an
-organic crash, crash-dump retention, coordinator hard-kill cleanup or hosted
-cancellation behavior.
+whole-runtime removal. It is the strict gate's sixteenth fault/cleanup case, not a
+gameplay-semantic case, and does not prove an organic crash, crash-dump retention,
+coordinator hard-kill cleanup or hosted cancellation behavior.
 
 JUnit output goes to the path selected with `--junitxml`. Never upload the private
 runtime, raw database, game assets, local profiles or unredacted configs.
@@ -1043,8 +1043,13 @@ runtime, raw database, game assets, local profiles or unredacted configs.
 `.github/workflows/test-client.yml` builds and tests the asset-independent client
 on Linux and Windows. It does **not** provision game data, run gameplay tests, or
 claim real-client compatibility. The opt-in `gameplay-e2e.yml` workflow and
-`python -m tests.e2e.run_ci` entry point implement a separate fifteen-case gameplay
-gate, with strict preflight, no skips, staged-input identity and cleanup checks.
+`python -m tests.e2e.run_ci` entry point implement a separate sixteen-case combined
+gate (fifteen gameplay scenarios plus one owned-world fault/cleanup case), with
+strict preflight, no skips, staged-input identity and cleanup checks. Direct use
+requires `--authorize-combined-gate` and fails before summary/private-root creation
+without it. Supply that flag only after explicitly approving the complete account-
+creating and gameplay-mutating selection; it records invocation intent but does not
+authenticate the operator.
 Only an allowlisted summary is publishable; raw pytest/JUnit and gameplay logs
 stay private. See [CI.md](CI.md) for runner access restrictions, approval settings,
 VM disposal requirements and local rehearsal commands. Local rebuilt-binary

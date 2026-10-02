@@ -127,7 +127,8 @@ python -m tests.e2e.stage_ci_profile --profile .e2e-local.json \
   --expected-revision <exact-40-hex-checked-out-revision>
 python -m tests.e2e.run_ci --profile .e2e-local.json \
   --binaries build-e2e-ci/bin --worker build-e2e-ci/bin/sapphire_test_client.exe \
-  --private-root .e2e-artifacts/ci --summary build-e2e/ci-summary.json --require-clean
+  --private-root .e2e-artifacts/ci --summary build-e2e/ci-summary.json \
+  --require-clean --authorize-combined-gate
 python -m tests.e2e.inspect_ci_result --summary build-e2e/ci-summary.json \
   --expected-revision <exact-40-hex-checked-out-revision>
 python -m tests.e2e.inspect_ci_private_evidence --summary build-e2e/ci-summary.json \
@@ -163,8 +164,13 @@ neither build provenance nor compatibility. The optional staging command require
 clean exact revision and a new absolute private artifact directory, exercises the
 real fixture-v2 copy/config/manifest path, starts no process, removes its disposable
 runtime/root, and retains only private manifest/lifecycle evidence plus a sanitized
-receipt. It is not a service or database rehearsal. The summary destination must not already exist. Without `--require-clean`, local
-rehearsals may use a dirty checkout; the summary explicitly records that fact.
+receipt. It is not a service or database rehearsal. The combined producer requires
+`--authorize-combined-gate` and rejects absent/non-boolean authorization before
+creating the summary or private root. Supply it only after approving all sixteen
+cases and their account/gameplay mutations. The flag is retained in passing and
+fail-only summaries but is not operator authentication. The summary destination
+must not already exist. Without `--require-clean`, local rehearsals may use a dirty
+checkout; the summary explicitly records that fact.
 The workflow always requires a clean checkout. The read-only inspector owns an
 independent exact ordered copy of the current 16-case and eight-catalog allowlists;
 a contract requires explicit producer/consumer synchronization when either changes.
