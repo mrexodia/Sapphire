@@ -5336,6 +5336,27 @@ No Sandbox, service, account, graphical client or gameplay operation ran. These
 contracts do not prove guest startup, rendering, manual review, disposal-dialog
 content, compatibility, VM destruction or secure erasure.
 
+### Shared provisioner authorization is strict retained evidence (`8540e7b2b` checkpoint)
+
+Commit `8540e7b2b` strengthens the existing irreversible shared-development
+account-creation opt-in. `provision_development.run` now requires exact Boolean
+`True` before profile generation or artifact creation, rejecting truthy type
+confusion. The CLI rejects absent `--create-new-bot-accounts` before server-profile
+access. A successful summary retains `execution_authorized: true`; external and
+managed strict consumers reject missing, false or type-confused values and carry
+the field into sanitized accepted proofs. This is invocation intent, not operator
+authentication, retry authority or proof of account creation.
+
+A detached clean worktree at
+`8540e7b2b34fcc7f6abbf36f10b2e9d8a16698a3` reported zero status entries and
+**164 focused provisioning, deadline and managed-host contracts passed in
+5.85s**. Receipt:
+`.e2e-artifacts/provisioning-authorization-clean-source/receipt.json` (SHA-256
+`bdb61a5965dee46f5779f340d9253323f462bc3a7aaa4a6e15596e6ee852c4bb`).
+No service, account or gameplay operation ran. Synthetic evidence does not prove
+credential validity, server identity, offline exclusion, placement, reset safety,
+cleanup or retry authority.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
@@ -5363,7 +5384,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | Genuine HTTP, encrypted lobby, world-ready/keepalive/logout sessions | Historical clean full-session gates plus current retained rejected-login receipt | **Partial/currently stale as a combined run.** Current read-only `inspect_isolated_case` accepted the exact `6dbd1380e` rejected-login fixture; receipt SHA-256 `f83c2a8919ec1dcee149889281f217ea23a6da5b151a22ee68e8f97c86258681`. It is one no-account case, not current full-session acceptance. |
 | Disposable isolated fixtures, one exact environment per case | explicitly authorized `run_ci.py`, strict explicitly authorized `run_isolated_case.py` short-feedback producer, independent success/fail-only publication consumers, protected exact-choice dispatch, combined public/private inspectors and exact 16-case contracts | **Pending live gate.** The strict one-case producer/consumers and dispatch policy are clean-source contract-verified and a complete current clean Windows build/profile passes service-free staging at `73f17c9d4`, but no current live or hosted result exists. The invocation flag is not operator authentication; failure publication is diagnosis only. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
 | Intentional owned-process fault and cleanup diagnostics | Retained exact world-fault fixture, JUnit, pytest log, lifecycle and artifact tree | **Verified standalone only.** Current `inspect_isolated_fault` reinspection accepted it with SHA-256 `8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`; it is not gameplay, organic crash, dump, hosted cancellation or the combined sixteenth-case gate. |
-| Shared dedicated account/character provisioning and ordinary non-GM checks | explicitly authorized `serve_development.py`, `provision_development.py`, `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
+| Shared dedicated account/character provisioning and ordinary non-GM checks | exact authorized evidence from `serve_development.py` and `provision_development.py`, `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
 | Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |
 | Separate graphical viewer and current matching client | explicitly authorized `run_client_sandbox.py`, `run_client_smoke.py`, `support/client_result.py`, `REAL_CLIENT.md`, three exact manual review policies and Sandbox disposal inspector | **Pending current attended execution.** Historical `client-development-live-004` is revision `2a33024b6`, reports `rendered_bot_actions_verified:false`, and predates current interaction/account/input/environment/worker-tree policy. Its SHA-256 is `c044ae2f0288d3af48796189854dc6107e5d999b006bb22653e08446e77641d5`; it is not upgraded. |
 | Movement, scenes/quests/rewards/persistence, inventory/economy, zoning/discovery, social and representative combat | Exact historical scenarios and artifacts mapped in the detailed requirement and plan tables below | **Representative subset historically verified; breadth remains partial.** Current combined evidence is absent; instance entry, yield/resume, general triggers/doors, broader content/classes/cities/combat/social/economy remain missing or source-blocked as listed below. |

@@ -208,6 +208,13 @@ python -m tests.e2e.provision_development --server-profile .e2e-dev-server.json 
   --artifacts .e2e-artifacts/dev-provision-001 --max-seconds 300
 ```
 
+Supply `--create-new-bot-accounts` only after approving these two irreversible
+account-creation requests. The CLI rejects its absence before reading the server
+profile; the direct API requires exact Boolean `True` before profile generation or
+artifact creation. Successful summaries and both external/managed strict consumers
+retain `execution_authorized: true`. This records invocation intent and does not
+authenticate the operator or permit retry after an uncertain request.
+
 This explicitly creates **two NEW accounts and Gladiator characters** through
 normal HTTP `createAccount`, separate HTTP login, and encrypted lobby creation.
 It never adopts an existing username or uses the server secret/DB/API fixture
