@@ -55,7 +55,8 @@ def inspect_ci_result(summary_path, expected_revision):
         report = json.loads(raw.decode("utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise SetupError("cannot read isolated-gate public summary") from error
-    fields = {"version","status","stage","scope","revision","source_dirty","identities",
+    fields = {"version","status","stage","scope","execution_authorized",
+              "revision","source_dirty","identities",
               "deadline_scale","collection_verified","environment_isolation_verified",
               "environment_evidence","gate_diagnostics_sha256","private_test_artifacts",
               "cleanup_verified","process_cleanup_verified","cases","pytest_exit_code",
@@ -64,6 +65,7 @@ def inspect_ci_result(summary_path, expected_revision):
             or type(report.get("version")) is not int or report["version"] != 1
             or report.get("status") != "passed" or report.get("stage") != "verified"
             or report.get("scope") != "headless-live-not-real-client"
+            or report.get("execution_authorized") is not True
             or report.get("revision") != expected_revision
             or report.get("source_dirty") is not False
             or type(report.get("deadline_scale")) is not int
@@ -111,7 +113,8 @@ def inspect_ci_result(summary_path, expected_revision):
             or any(not _hex(value) for value in identities["script_modules"])):
         raise SetupError("isolated-gate input identities are malformed")
     return {"version":1,"status":"accepted","scope":SCOPE,
-            "revision":expected_revision,"summary_sha256":hashlib.sha256(raw).hexdigest(),
+            "revision":expected_revision,"execution_authorized":True,
+            "summary_sha256":hashlib.sha256(raw).hexdigest(),
             "case_count":len(EXPECTED_CASES),"deadline_scale":report["deadline_scale"],
             "collection_verified":True,"environment_isolation_verified":True,
             "environment_evidence":evidence,

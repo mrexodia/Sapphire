@@ -213,7 +213,8 @@ def inspect_workflow(path, *, private):
         staging = next((line for line in lines
                         if line.startswith("          python -m tests.e2e.stage_ci_profile ")), "")
         gate = next((line for line in lines if line.startswith("          python -m tests.e2e.run_ci ")
-                     and '--private-root "$privateRoot"' in line), "")
+                     and '--private-root "$privateRoot"' in line
+                     and '--authorize-combined-gate' in line), "")
         stage_root = "          $stageRoot = Join-Path $env:RUNNER_TEMP \"sapphire-private-e2e-stage-${{ github.run_id }}-${{ github.run_attempt }}\""
         stage_absent = "          if (Test-Path $stageRoot) { throw 'Private staging root must start absent' }"
         stage_guard = "          if ($LASTEXITCODE -ne 0) { throw 'Service-free private profile staging failed' }"

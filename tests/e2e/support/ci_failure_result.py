@@ -9,7 +9,7 @@ from .ci_result import EXPECTED_CASES, EXPECTED_CATALOGS
 from .environment import SetupError
 
 SCOPE = "failed-isolated-gate-sanitized-publication-not-success-evidence"
-_BASE = {"version","status","stage","scope"}
+_BASE = {"version","status","stage","scope","execution_authorized"}
 _SOURCE = {"revision","source_dirty","identities","deadline_scale"}
 _GATE = {"collection_verified","environment_isolation_verified","environment_evidence",
          "cleanup_verified","process_cleanup_verified","cases","pytest_exit_code"}
@@ -87,7 +87,8 @@ def inspect_ci_failure_result(summary_path, expected_revision):
     if (not isinstance(report, dict) or report.get("version") != 1
             or type(report.get("version")) is not int or report.get("status") != "failed"
             or report.get("stage") not in {"preflight","suite","verification"}
-            or report.get("scope") != "headless-live-not-real-client"):
+            or report.get("scope") != "headless-live-not-real-client"
+            or report.get("execution_authorized") is not True):
         raise SetupError("failed isolated-gate public summary is foreign or malformed")
     keys, stage = set(report), report["stage"]
     if stage == "preflight":
@@ -128,5 +129,5 @@ def inspect_ci_failure_result(summary_path, expected_revision):
             if not failed:
                 raise SetupError("failed isolated-gate verification summary has no failed outcome")
     return {"version":1,"status":"accepted","scope":SCOPE,"gate_status":"failed",
-            "stage":stage,"summary_sha256":hashlib.sha256(raw).hexdigest(),
+            "stage":stage,"execution_authorized":True,"summary_sha256":hashlib.sha256(raw).hexdigest(),
             "success_evidence_accepted":False}

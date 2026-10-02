@@ -247,14 +247,18 @@ class EvidenceGate:
                 "cases": cases, "pytest_exit_code": int(exit_code)}
 
 
-def run(profile_path, private_root, summary_path, *, worker=None, binaries=None, require_clean=False):
+def run(profile_path, private_root, summary_path, *, authorized=False,
+        worker=None, binaries=None, require_clean=False):
+    if authorized is not True:
+        raise PreflightError("combined gate requires explicit account/gameplay authorization")
     summary_path = Path(summary_path).resolve()
     if summary_path.exists():
         raise PreflightError("summary destination must be fresh")
     # Reserve a NEW summary, never reuse evidence from an earlier job.
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     with summary_path.open("x", encoding="utf-8") as public:
-        report = {"version": 1, "status": "failed", "stage": "preflight", "scope": "headless-live-not-real-client"}
+        report = {"version": 1, "status": "failed", "stage": "preflight",
+                  "scope": "headless-live-not-real-client", "execution_authorized": True}
         private = None
         try:
             private_root = Path(private_root).resolve()
@@ -343,9 +347,11 @@ def main():
     parser.add_argument("--worker")
     parser.add_argument("--binaries")
     parser.add_argument("--require-clean", action="store_true")
+    parser.add_argument("--authorize-combined-gate", action="store_true")
     args = parser.parse_args()
     try:
-        code = run(args.profile, args.private_root, args.summary, worker=args.worker,
+        code = run(args.profile, args.private_root, args.summary,
+                   authorized=args.authorize_combined_gate, worker=args.worker,
                    binaries=args.binaries, require_clean=args.require_clean)
     except BaseException:
         code = 1

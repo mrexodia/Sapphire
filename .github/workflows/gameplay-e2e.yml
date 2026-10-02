@@ -152,7 +152,7 @@ jobs:
           $gateFailed = $false
           if ($env:EXECUTION_SCOPE -eq 'combined') {
           $summaryPath = '.e2e-ci-summary.json'
-          python -m tests.e2e.run_ci --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --summary .e2e-ci-summary.json --require-clean
+          python -m tests.e2e.run_ci --profile "$env:SAPPHIRE_E2E_PROFILE" --binaries "$pwd/build-e2e-ci/bin" --worker "$pwd/build-e2e-ci/bin/sapphire_test_client.exe" --private-root "$privateRoot" --summary .e2e-ci-summary.json --require-clean --authorize-combined-gate
           $gateExit = $LASTEXITCODE
           if ($gateExit -ne 0) {
           if (-not (Test-Path .e2e-ci-summary.json)) { throw 'Gameplay gate failed without a summary' }

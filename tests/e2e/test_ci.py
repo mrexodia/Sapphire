@@ -581,6 +581,29 @@ def test_green_exit_is_not_sufficient(tmp_path, mutation):
     assert "PRIVATE_MARKER" not in json.dumps(report)
 
 
+def test_combined_gate_requires_explicit_authorization_before_any_output(tmp_path):
+    private, public = tmp_path / "private", tmp_path / "summary.json"
+    with pytest.raises(run_ci.PreflightError, match="explicit account/gameplay authorization"):
+        run_ci.run(tmp_path / "missing-profile.json", private, public)
+    with pytest.raises(run_ci.PreflightError, match="explicit account/gameplay authorization"):
+        run_ci.run(tmp_path / "missing-profile.json", private, public, authorized=1)
+    assert not private.exists() and not public.exists()
+
+
+def test_combined_gate_cli_forwards_only_explicit_authorization(monkeypatch):
+    calls = []
+    def invoke(*args, **kwargs):
+        calls.append(kwargs["authorized"])
+        return 0 if kwargs["authorized"] else 1
+    monkeypatch.setattr(run_ci, "run", invoke)
+    base = ["run_ci", "--profile", "private.json", "--private-root", "C:/private/root",
+            "--summary", "C:/private/summary.json"]
+    monkeypatch.setattr(run_ci.sys, "argv", base)
+    assert run_ci.main() == 1 and calls == [False]
+    monkeypatch.setattr(run_ci.sys, "argv", base + ["--authorize-combined-gate"])
+    assert run_ci.main() == 0 and calls == [False, True]
+
+
 def test_entry_point_isolates_pytest_options_and_output(profile, tmp_path, monkeypatch):
     from pathlib import Path
     original = run_ci.preflight
@@ -622,13 +645,15 @@ def test_entry_point_isolates_pytest_options_and_output(profile, tmp_path, monke
     source.write_text(json.dumps(profile))
     public = tmp_path / "summary.json"
     cwd = Path.cwd()
-    assert run_ci.run(source, tmp_path / "private", public, require_clean=True) == 0
+    assert run_ci.run(source, tmp_path / "private", public,
+                      authorized=True, require_clean=True) == 0
     assert Path.cwd() == cwd
     assert run_ci.os.environ["PYTEST_ADDOPTS"] == "-k PRIVATE_MARKER"
     assert run_ci.os.environ["PYTEST_PLUGINS"] == "PRIVATE_MARKER"
     assert "PRIVATE_MARKER" not in public.read_text()
     assert "PRIVATE_MARKER" in next((tmp_path / "private").glob("*/pytest.log")).read_text()
-    assert json.loads(public.read_text())["inputs_verified"]
+    summary = json.loads(public.read_text())
+    assert summary["inputs_verified"] and summary["execution_authorized"] is True
 
 
 def test_preflight_exception_is_only_in_private_diagnostics(tmp_path, monkeypatch):
@@ -639,7 +664,7 @@ def test_preflight_exception_is_only_in_private_diagnostics(tmp_path, monkeypatc
     monkeypatch.setattr(run_ci, "preflight", fail)
     public = tmp_path / "summary.json"
     private = tmp_path / "private"
-    assert run_ci.run(source, private, public) == 1
+    assert run_ci.run(source, private, public, authorized=True) == 1
     assert "PRIVATE_MARKER" not in public.read_text()
     assert json.loads(public.read_text())["stage"] == "preflight"
     proof = inspect_ci_failure_result(public, "a" * 40)
@@ -647,7 +672,7 @@ def test_preflight_exception_is_only_in_private_diagnostics(tmp_path, monkeypatc
     assert "PRIVATE_MARKER" in next(private.glob("*/entry-error.log")).read_text()
     assert source.read_text() == '{"example": "PRIVATE_MARKER"}'
     with pytest.raises(run_ci.PreflightError, match="fresh"):
-        run_ci.run(source, private, public)
+        run_ci.run(source, private, public, authorized=True)
 
 
 def junit_document(cases, *, failing=False, foreign_first=False):
@@ -672,7 +697,8 @@ def current_public_summary(revision="a" * 40):
                  "artifact_tree_sha256":format(index + 32,"064x")}
                 for index,case in enumerate(run_ci.CASES)]
     return {"version":1,"status":"passed","stage":"verified",
-        "scope":"headless-live-not-real-client","revision":revision,"source_dirty":False,
+        "scope":"headless-live-not-real-client","execution_authorized":True,
+        "revision":revision,"source_dirty":False,
         "identities":identities,"deadline_scale":1,"collection_verified":True,
         "environment_isolation_verified":True,"environment_evidence":evidence,
         "gate_diagnostics_sha256":"e" * 64,
@@ -793,6 +819,7 @@ def test_current_public_result_inspector_is_strict_read_only_and_cli_matches(tmp
     proof = inspect_ci_result(path, revision)
     assert path.read_bytes() == before
     assert proof["scope"] == CI_RESULT_SCOPE and proof["case_count"] == len(run_ci.CASES)
+    assert proof["execution_authorized"] is True
     assert inspect_ci_main(["--summary",str(path),"--expected-revision",revision]) == 0
     assert json.loads(capsys.readouterr().out) == proof
 
@@ -806,26 +833,30 @@ def test_failed_publication_inspector_accepts_only_sanitized_failure_shapes(tmp_
         report = full
     elif shape == "suite":
         report = {key:full[key] for key in
-                  ("version","status","scope","revision","source_dirty","identities","deadline_scale")}
+                  ("version","status","scope","execution_authorized","revision",
+                   "source_dirty","identities","deadline_scale")}
         report["stage"] = "suite"
     elif shape == "preflight-source":
         report = {key:full[key] for key in
-                  ("version","status","scope","revision","source_dirty","identities","deadline_scale")}
+                  ("version","status","scope","execution_authorized","revision",
+                   "source_dirty","identities","deadline_scale")}
         report["stage"] = "preflight"
     else:
         report = {"version":1,"status":"failed","stage":"preflight",
-                  "scope":"headless-live-not-real-client"}
+                  "scope":"headless-live-not-real-client","execution_authorized":True}
     path = tmp_path / f"{shape}.json"; path.write_text(json.dumps(report))
     before = path.read_bytes()
     proof = inspect_ci_failure_result(path, revision)
     assert path.read_bytes() == before and proof["scope"] == CI_FAILURE_SCOPE
     assert proof["success_evidence_accepted"] is False and proof["gate_status"] == "failed"
+    assert proof["execution_authorized"] is True
     assert inspect_ci_failure_main(["--summary",str(path),"--expected-revision",revision]) == 0
     assert json.loads(capsys.readouterr().out) == proof
 
 
-@pytest.mark.parametrize("mutation", ["passed","foreign","secret","dirty","partial-gate",
-                                      "partial-artifacts","no-failed-outcome","bad-revision"])
+@pytest.mark.parametrize("mutation", ["passed","foreign","secret","dirty","unauthorized",
+                                      "partial-gate","partial-artifacts","no-failed-outcome",
+                                      "bad-revision"])
 def test_failed_publication_inspector_rejects_unsafe_or_success_shapes(tmp_path, mutation):
     report = current_public_summary(); report.update(status="failed", stage="verification",
                                                       cleanup_verified=False)
@@ -834,6 +865,7 @@ def test_failed_publication_inspector_rejects_unsafe_or_success_shapes(tmp_path,
     elif mutation == "foreign": report["stage"] = "unknown"
     elif mutation == "secret": report["private_path"] = "C:/private/credential"
     elif mutation == "dirty": report["source_dirty"] = True
+    elif mutation == "unauthorized": report["execution_authorized"] = False
     elif mutation == "partial-gate": report.pop("cases")
     elif mutation == "partial-artifacts": report["private_test_artifacts"].pop("profile_sha256")
     elif mutation == "no-failed-outcome": report["cleanup_verified"] = True
@@ -1153,6 +1185,7 @@ def test_private_gate_evidence_inspector_rejects_missing_foreign_or_invalid_priv
     lambda report:report.update(status="failed"),
     lambda report:report.update(stage="verification"),
     lambda report:report.update(source_dirty=0),
+    lambda report:report.update(execution_authorized=False),
     lambda report:report.update(process_cleanup_verified=1),
     lambda report:report.update(environment_isolation_verified=1),
     lambda report:report.update(gate_diagnostics_sha256="g" * 64),

@@ -110,6 +110,7 @@ def test_e2e_workflows_have_pinned_least_privilege_bounded_controls():
               "          test \"$EXECUTION_ACK\" = false"),
     (PRIVATE, '          - "tests/e2e/test_live.py::test_login_idle_logout"',
               '          - "tests/e2e/foreign.py::test_foreign"'),
+    (PRIVATE, " --authorize-combined-gate", ""),
     (PRIVATE, "python -m tests.e2e.run_isolated_case --profile",
               "python -m tests.e2e.run_ci --profile"),
     (PRIVATE, " --authorize-disposable-fixture", ""),
