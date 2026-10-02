@@ -5214,6 +5214,24 @@ also accepted. Receipt:
 `85caf2802d1b490ecdd7e6183ce188b1906d4e6ef1b554f911359864d269b79b`).
 No service, account, gameplay or hosted workflow ran.
 
+The retained clean Windows worktree/build was then advanced to documentation HEAD
+`73f17c9d436f1bf34232e08a120340f30831c461`. The intervening changes are confined
+to the workflow, Python producer/consumers/contracts and documentation; exact
+`CMakeLists.txt`, `cmake/`, `config/`, `src/` and gitlink inputs did not change.
+After explicit reconfiguration/incremental build, all seven Sapphire native tests
+passed in **0.37s** and the exact workflow controller selection passed **539 tests
+in 23.30s**. The same profile bytes remain SHA-256
+`71b7cad97004f6021e04229c019807549671f18cf861aa109358d8552687f373`;
+current service-free staging now binds revision `73f17c9d4`, manifest SHA-256
+`a1b7ff95fb0525a16faddf5edd52c767bc5ae3a538079e9c89bffb26be0e6843`, lifecycle
+SHA-256 `4f514a1337f622b936a1600e9b6ba1336fa520e51f6fb347a93a792f0018de46`
+and artifact-tree SHA-256
+`9104a1a4ec3b4bf5a722b753168eb3d46d79563568c811229f087ccb180f8384`.
+Private readiness receipt SHA-256:
+`e131001d9c49d5752681cf85b4782c7093e4f1b6a7924559ddb1cd470c579636`.
+It explicitly records `authorization_granted_for_live_execution: false`; readiness
+must not be treated as permission to start the fixture.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the
@@ -5239,7 +5257,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | --- | --- | --- |
 | External C++ worker, Python coordinator and normal public behavior | `src/test_client`, `tests/e2e/support/{worker,environment}.py`, native/protocol and Python contracts; detailed plan rows below | **Implemented for the supported subset.** The seven dirty experiments were not staged or treated as evidence. |
 | Genuine HTTP, encrypted lobby, world-ready/keepalive/logout sessions | Historical clean full-session gates plus current retained rejected-login receipt | **Partial/currently stale as a combined run.** Current read-only `inspect_isolated_case` accepted the exact `6dbd1380e` rejected-login fixture; receipt SHA-256 `f83c2a8919ec1dcee149889281f217ea23a6da5b151a22ee68e8f97c86258681`. It is one no-account case, not current full-session acceptance. |
-| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, strict explicitly authorized `run_isolated_case.py` short-feedback producer, independent success/fail-only publication consumers, protected exact-choice dispatch, combined public/private inspectors and exact 16-case contracts | **Pending live gate.** The strict one-case producer/consumers and dispatch policy are clean-source contract-verified and a complete current clean Windows build/profile passes service-free staging at `67c6e5b41`, but no current live or hosted result exists. The invocation flag is not operator authentication; failure publication is diagnosis only. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
+| Disposable isolated fixtures, one exact environment per case | `run_ci.py`, strict explicitly authorized `run_isolated_case.py` short-feedback producer, independent success/fail-only publication consumers, protected exact-choice dispatch, combined public/private inspectors and exact 16-case contracts | **Pending live gate.** The strict one-case producer/consumers and dispatch policy are clean-source contract-verified and a complete current clean Windows build/profile passes service-free staging at `73f17c9d4`, but no current live or hosted result exists. The invocation flag is not operator authentication; failure publication is diagnosis only. Retained `.e2e-artifacts/ci-current/.../gate-diagnostics.json` (SHA-256 `18b93604cc95270713efbf39157e2bddcac9a139dbe8ea008adddd2b77df9863`) contains only the older 15 passing cases and lacks current process/source/artifact/private fields. |
 | Intentional owned-process fault and cleanup diagnostics | Retained exact world-fault fixture, JUnit, pytest log, lifecycle and artifact tree | **Verified standalone only.** Current `inspect_isolated_fault` reinspection accepted it with SHA-256 `8802f82dc0e24b5f742e880eede06dd1e95b67a49ccda604081c0e7f504c2d38`; it is not gameplay, organic crash, dump, hosted cancellation or the combined sixteenth-case gate. |
 | Shared dedicated account/character provisioning and ordinary non-GM checks | `provision_development.py`, `run_development.py`, strict external/managed/profile/placement/operator inspectors, received bidirectional Say and optional movement/social/inventory receipts | **Implemented and historically live in narrower revisions; current execution pending.** Current summaries additionally require exact account/profile and complete worker-tree associations that all retained live shared runs predate. No account or shared mutation was replayed during this audit. |
 | Safe targeted reprovisioning and reset | `research/development-reset-boundary.md`; inspected API/lobby/session/BNPC/task paths | **Blocked, not implemented.** Character mutation lacks a cross-process admission fence. Owned actors lack explicit creation ownership plus lifecycle-scoped deferred/active task, action, AI/status and reward-work fencing. Placement is not reset authority. |
@@ -5247,7 +5265,7 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | Movement, scenes/quests/rewards/persistence, inventory/economy, zoning/discovery, social and representative combat | Exact historical scenarios and artifacts mapped in the detailed requirement and plan tables below | **Representative subset historically verified; breadth remains partial.** Current combined evidence is absent; instance entry, yield/resume, general triggers/doors, broader content/classes/cities/combat/social/economy remain missing or source-blocked as listed below. |
 | Seeded exploration, semantic replay, soak/load and minimization | `support/workload.py`, `run_workload.py`, `run_minimize.py`, retained bounded plans/outcomes | **Narrow historical evidence only.** No newly authorized soak/platform run occurred; this is not capacity, deterministic scheduling or universal leak-freedom. |
 | Deadlines, cancellation, exact cleanup and complete artifact ownership | Shared cooperative budgets, `Environment` process generations, terminal cleanup markers, strict tree primitive and public/private/failure inspectors | **Contract-verified plus two current standalone fixtures.** A current 16-case receipt set, hard-kill/cancellation infrastructure behavior, crash consistency and server-side offline/cache exclusion remain unverified. |
-| Windows/Linux verification | Current clean Windows ClangCL gameplay build, seven native and 534 workflow/controller contracts, service-free profile staging; older Windows gates and Ubuntu evidence; retained expanded-Linux failures | **Partial.** Current `67c6e5b41` Windows build/readiness is green but no current Windows live gate ran; the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery. No platform sweep was authorized. |
+| Windows/Linux verification | Current clean Windows ClangCL gameplay build, seven native and 539 workflow/controller contracts, service-free profile staging; older Windows gates and Ubuntu evidence; retained expanded-Linux failures | **Partial.** Current `73f17c9d4` Windows build/readiness is green but no current Windows live gate ran; the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery. No platform sweep was authorized. |
 | Hosted CI controls and execution | `.github/workflows/{test-client,gameplay-e2e}.yml`, `inspect_workflow_policy`, exact checkout and hash-locked/plugin-isolated Python policy | **Static controls accepted; hosted execution blocked.** Current policy reports workflow SHA-256 values `bfbbe64fd4067162acde4b0dc3056988c40f32c06488d45c756dcc6e10a96732` and `df3683086e40e6bd98ed69592d93761b5387fdb4898172047f428f456a33c637`, while explicitly returning `hosted_execution_verified:false`, `runner_group_policy_verified:false`, and `ephemeral_vm_destruction_verified:false`. |
 | Independent packet/client compatibility and normalized traces | Byte fixtures and historical unmodified 3.3 DX11 pilot/manual evidence | **Partial.** No current three-review graphical run, graphical quest/scene agreement or independent normalized matching-client trace/exporter exists. |
 | Credentials/private assets untracked; historical failures preserved | Git status, ignored `.e2e-artifacts`, redacted inspectors and retained failed runs | **Verified for repository state inspected.** Hashes are correlation, not signatures, secure erasure, content truth or external-root completeness. |
@@ -7440,7 +7458,7 @@ compatibility.
 4. Obtain explicit authorization for a fresh combined 16-case run: unlike the two
    current clean-built standalone no-account cases (rejected credentials and owned-
    world fault), the remaining cases create fixture accounts and/or perform gameplay
-   mutations. The retained `67c6e5b41` clean Windows build and complete private
+   mutations. The retained `73f17c9d4` clean Windows build and complete private
    profile now pass source-native catalog/binary correlation, static inspection and
    service-free fixture staging; those do not substitute for even one live case or
    the combined gate. The strict one-case CLI now additionally requires its explicit
