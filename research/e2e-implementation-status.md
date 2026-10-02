@@ -5399,6 +5399,25 @@ No operator login, worker dispatch, server request or gameplay mutation ran. Thi
 does not prove command delivery, server execution, placement mutation, causation,
 offline exclusion, reset safety or retry authority.
 
+### Placement planning cannot bypass provisioning authorization (`0ebe3de17` checkpoint)
+
+Commit `0ebe3de17` closes a direct-API chain-of-authority gap in the offline
+placement planner. Although the CLI already consumed the strict provisioner
+inspector, `placement_registry()` could previously accept an otherwise complete
+legacy object without the current authorization field. It now requires exact
+`execution_authorized: true` before minting a reviewed-placement registry;
+missing, false and truthy type-confused values fail alongside the existing exact
+profile association, worker-exit, lease, identity and source-route controls.
+
+A detached clean worktree at
+`0ebe3de17091300b69b2ae4d44205dce2cd61d48` reported zero status entries and
+**104 focused placement/provisioning/binding contracts passed in 1.61s**. Receipt:
+`.e2e-artifacts/placement-provisioning-authorization-clean-source/receipt.json`
+(SHA-256 `674531f0c5cb235c3e04f563470312394d7003d83c20590f46070e13260191b2`).
+No registry was written, operator logged in, request dispatched or gameplay
+mutation run. Offline planning does not prove operator review, command delivery,
+placement mutation, causation, reset safety or gameplay.
+
 ## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
 This audit was performed read-only before any completion decision. It restates the

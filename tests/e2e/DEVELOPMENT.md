@@ -383,10 +383,14 @@ It does not grant items/levels/quest completion or reset enemies/other players.
 
    This is an offline planner: it does not contact the server or execute a reset.
    Before writing a registry, the CLI now runs the same strict current provisioning
-   consumer as `inspect_development_provisioning`: exact unmanaged/managed mode,
-   bounded successful deadline, private-profile association, two GM0 outcomes,
+   consumer as `inspect_development_provisioning`: exact retained provisioning
+   authorization, unmanaged/managed mode, bounded successful deadline,
+   private-profile association, two GM0 outcomes,
    server-close receipts, normal exact worker exit, complete run-owned worker tree
-   and clear local leases are mandatory. A legacy/minimal object accepted only by a
+   and clear local leases are mandatory. The reusable planner itself also rejects
+   missing, false or truthy type-confused provisioning authorization, so direct API
+   use cannot mint a placement registry from an unauthorized creation record. A
+   legacy/minimal object accepted only by a
    unit-level schema helper cannot authorize CLI publication. It then requires the
    completed provisioning receipt's
    `development-provisioning-association-v1` digest to match the configured
