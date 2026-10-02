@@ -28,8 +28,16 @@ but does not restart or recreate fixtures between external development checks:
 ```powershell
 python -m tests.e2e.serve_development --profile .e2e-local.json `
   --worker build-e2e-msvc/Release/sapphire_test_client.exe `
-  --session-dir .e2e-dev-host/watch-001 --max-seconds 3600
+  --session-dir .e2e-dev-host/watch-001 --max-seconds 3600 `
+  --authorize-owned-warm-host
 ```
+
+Supply `--authorize-owned-warm-host` only after approving one disposable
+MariaDB/API/lobby/world environment and creation of its three new non-GM fixture
+accounts/characters. Absence or a non-boolean internal value fails before the
+session directory is created. The flag is retained in ready/terminal host evidence
+and required by managed-profile consumers, but it does not authenticate the
+operator.
 
 Use a rebuilt matching worker: bound-party capabilities and a normal zero exit
 from that exact owned preflight process are required **before** starting servers
