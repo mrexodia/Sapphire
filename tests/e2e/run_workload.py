@@ -1,6 +1,6 @@
 """Run bounded exploration/soak, or replay an allowlisted semantic action plan.
 
-python -m tests.e2e.run_workload --profile .e2e-local.json --mode explore --seed 42 --bots 2 --steps 12
+python -m tests.e2e.run_workload --profile .e2e-local.json --mode explore --seed 42 --bots 2 --steps 12 --authorize-disposable-environment
 """
 import argparse
 import json
@@ -16,13 +16,16 @@ from .support.worker import Worker
 from .support.workload import Workload, build_plan, resolve_plan, validate_plan
 
 
-def run(profile, catalog, plan, *, mode="replay"):
+def run(profile, catalog, plan, *, mode="replay", authorized=False):
+    if authorized is not True:
+        raise ValueError("workload requires explicit disposable-environment authorization")
     # Reject invalid semantics before allocating any private environment.
     plan = resolve_plan(plan, catalog)
     if mode not in {"explore", "soak", "replay"}:
         raise ValueError("unsupported workload mode")
     environment = Environment(profile)
     result = {"status": "failed", "mode": mode, "plan_mode": plan["mode"],
+              "execution_authorized": True,
               "bots": plan["bots"], "limits": plan["limits"]}
     stage = "setup"
     metrics, workload = None, None
@@ -145,7 +148,10 @@ def main(argv=None):
     parser.add_argument("--round-interval", type=float, help="minimum time between full soak round starts, 0..60s")
     parser.add_argument("--min-active-seconds", type=float, help="required first-to-last activity span, excluding setup/teardown")
     parser.add_argument("--plan", help="Recorded plan.json to replay (no raw packets or sessions)")
+    parser.add_argument("--authorize-disposable-environment", action="store_true")
     args = parser.parse_args(argv)
+    if not args.authorize_disposable_environment:
+        parser.error("explicit disposable-environment authorization is required")
     profile = json.loads(Path(args.profile).read_text(encoding="utf-8"))
     catalog = load_quest_catalog(profile["quest_catalog"])
     if args.mode == "replay":
@@ -159,7 +165,8 @@ def main(argv=None):
                             round_interval=args.round_interval, min_active_seconds=args.min_active_seconds)
     except ValueError as error:
         parser.error(str(error))
-    result, artifacts = run(profile, catalog, plan, mode=args.mode)
+    result, artifacts = run(
+        profile, catalog, plan, mode=args.mode, authorized=True)
     print(json.dumps({"result": result, "artifacts": str(artifacts)}, indent=2))
     return 0 if result["status"] == "passed" else 1
 

@@ -336,15 +336,33 @@ def test_empty_server_control_has_separate_evidence_and_always_cleans_up(monkeyp
             raise OSError("disk full")
         monkeypatch.setattr(control.Path, "write_text", fail_write)
         with pytest.raises(OSError, match="disk full"):
-            control.run({}, 10, clock=clock, sleeper=sleep)
+            control.run({}, 10, authorized=True, clock=clock, sleeper=sleep)
     else:
-        result, path = control.run({}, 10, clock=clock, sleeper=sleep)
+        result, path = control.run({}, 10, authorized=True, clock=clock, sleeper=sleep)
         assert result["status"] == ("observed" if fault is None else "failed")
         assert "not gameplay coverage" in result["note"]
+        assert result["execution_authorized"] is True
         assert (path / "control.json").exists()
         if fault is None:
             assert result["finished_monotonic"] - result["started_monotonic"] == 10
     assert flags == {"started": True, "closed": True}
+
+
+def test_empty_server_control_cli_requires_authorization_before_profile_read():
+    from . import run_idle_control as control
+    with pytest.raises(SystemExit):
+        control.main(["--profile", "missing.json", "--duration", "10"])
+
+
+def test_empty_server_control_requires_authorization_before_provisioning(monkeypatch):
+    from . import run_idle_control as control
+    calls = []
+    monkeypatch.setattr(control, "Environment", lambda profile: calls.append(profile))
+    with pytest.raises(ValueError, match="explicit disposable-environment authorization"):
+        control.run({}, 10)
+    with pytest.raises(ValueError, match="explicit disposable-environment authorization"):
+        control.run({}, 10, authorized=1)
+    assert calls == []
 
 
 @pytest.mark.parametrize("duration", [True, float("nan"), float("inf"), 9, 901])
@@ -354,7 +372,7 @@ def test_empty_server_control_rejects_invalid_duration_before_provisioning(monke
         raise AssertionError("must not provision")
     monkeypatch.setattr(control, "Environment", unexpected)
     with pytest.raises(ValueError, match="duration"):
-        control.run({}, duration)
+        control.run({}, duration, authorized=True)
 
 
 def test_population_claim_requires_all_distinct_actors():

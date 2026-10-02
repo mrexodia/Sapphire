@@ -114,10 +114,11 @@ class Harness:
             raise self.faults[event]
 
     def run(self):
-        return self.module.run({}, self.catalog, self.plan)[0]
+        return self.module.run({}, self.catalog, self.plan, authorized=True)[0]
 
     def main(self):
-        return self.module.main(["--profile", str(self.profile), "--bots", "2", "--steps", "4"])
+        return self.module.main(["--profile", str(self.profile), "--bots", "2", "--steps", "4",
+                                 "--authorize-disposable-environment"])
 
 
 @pytest.fixture
@@ -125,9 +126,24 @@ def harness(monkeypatch, tmp_path):
     return Harness(monkeypatch, tmp_path)
 
 
+def test_workload_requires_exact_authorization_before_environment(harness):
+    with pytest.raises(ValueError, match="explicit disposable-environment authorization"):
+        harness.module.run({}, harness.catalog, harness.plan)
+    with pytest.raises(ValueError, match="explicit disposable-environment authorization"):
+        harness.module.run({}, harness.catalog, harness.plan, authorized=1)
+    assert not harness.events
+
+
+def test_workload_cli_requires_authorization_before_profile_read(harness):
+    with pytest.raises(SystemExit):
+        harness.module.main(["--profile", "missing.json"])
+    assert not harness.events
+
+
 def test_success_closes_before_any_final_diagnostics(harness):
     result = harness.run()
     assert result["status"] == "passed" and result["runtime_removed"] is True
+    assert result["execution_authorized"] is True
     assert not harness.root.exists()
     events = harness.events
     assert events.index("worker.close") < events.index("metrics.stop") < events.index("environment.close")

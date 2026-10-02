@@ -140,7 +140,8 @@ def test_cli_publishes_new_plan_and_report_without_overwrite(monkeypatch, tmp_pa
     plan_path.write_text(json.dumps(exploration_plan()))
     monkeypatch.setattr(cli, "load_quest_catalog", lambda path: catalog())
     counter = {"value": 0}
-    def run(profile_data, loaded_catalog, candidate, mode):
+    def run(profile_data, loaded_catalog, candidate, mode, authorized):
+        assert authorized is True
         counter["value"] += 1
         artifacts = tmp_path / f"attempt-{counter['value']}"
         artifacts.mkdir()
@@ -148,10 +149,16 @@ def test_cli_publishes_new_plan_and_report_without_overwrite(monkeypatch, tmp_pa
         (artifacts / "outcomes.json").write_text(json.dumps(current["outcomes"]))
         return current["result"], artifacts
     monkeypatch.setattr(cli, "run", run)
+    with pytest.raises(SystemExit):
+        cli.main(["--profile", str(profile), "--plan", str(plan_path),
+                  "--output", str(output)])
+    assert counter["value"] == 0 and not output.exists()
     assert cli.main(["--profile", str(profile), "--plan", str(plan_path),
-                     "--output", str(output), "--max-attempts", "32"]) == 0
+                     "--output", str(output), "--max-attempts", "32",
+                     "--authorize-disposable-environment"]) == 0
     minimized = json.loads(output.read_text())
     report = json.loads((tmp_path / "minimized-report.json").read_text())
     assert validate_plan(minimized, catalog()) == minimized and report["one_minimal"]
     with pytest.raises(SystemExit):
-        cli.main(["--profile", str(profile), "--plan", str(plan_path), "--output", str(output)])
+        cli.main(["--profile", str(profile), "--plan", str(plan_path), "--output", str(output),
+                  "--authorize-disposable-environment"])

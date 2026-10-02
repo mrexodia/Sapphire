@@ -37,7 +37,10 @@ def main(argv=None):
     parser.add_argument("--plan", required=True, help="failed semantic plan.json, <=1MiB")
     parser.add_argument("--output", required=True, help="new minimized plan path; overwrite is refused")
     parser.add_argument("--max-attempts", type=int, default=32, help="isolated executions including baseline, 1..100")
+    parser.add_argument("--authorize-disposable-environment", action="store_true")
     args = parser.parse_args(argv)
+    if not args.authorize_disposable_environment:
+        parser.error("explicit disposable-environment authorization is required")
     try:
         profile = _load_json(args.profile)
         catalog = load_quest_catalog(profile["quest_catalog"])
@@ -48,7 +51,8 @@ def main(argv=None):
             raise ValueError("refusing to overwrite existing minimizer output/report")
 
         def evaluate(candidate):
-            result, artifacts = run(profile, catalog, candidate, mode="replay")
+            result, artifacts = run(
+                profile, catalog, candidate, mode="replay", authorized=True)
             outcomes_path = artifacts / "outcomes.json"
             outcomes = _load_json(outcomes_path, 16 * 1024 * 1024) if outcomes_path.exists() else []
             return {"result": result, "outcomes": outcomes, "artifacts": str(artifacts)}
