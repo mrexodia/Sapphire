@@ -430,7 +430,9 @@ namespace Sapphire::Testing
     {
       m_state["heartbeat_replies"] = m_state["heartbeat_replies"].get<uint64_t>() + 1;
       m_state["heartbeats"][name] = m_state["heartbeats"][name].get<uint64_t>() + 1;
-      event("heartbeat", {{"channel", name}}); return;
+      // Heartbeats are counted in snapshots; emitting every one would wake
+      // state predicates without a semantic state transition.
+      return;
     }
     if(segment.header.type == 2)
     {
@@ -448,7 +450,9 @@ namespace Sapphire::Testing
     }
     if(segment.header.type != 3) return;
     const auto h = readObject<Wire::FFXIVARR_IPC_HEADER>(segment.data);
-    event("packet", {{"channel", name}, {"opcode", h.type}, {"source", segment.header.source_actor}});
+    // Semantic handlers below emit bounded state events. A second generic
+    // event for every IPC frame doubles control-pipe traffic and can delay
+    // ordinary client commands during sustained combat.
     constexpr size_t off = sizeof(Wire::FFXIVARR_IPC_HEADER);
     if(name == "chat")
     {

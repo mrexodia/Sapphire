@@ -1,25 +1,68 @@
-# Fast shared-server development lane
+# Development bots on an existing local server
 
-This lane connects two normal non-GM bots to an **already-running local development
-server**. The runner does not create a disposable environment, install/migrate a
-database, change server/client configuration, restart a process, or issue
-administrative resets. Separate opt-in GM fixture placement is described below.
-Results are explicitly `shared-development-not-acceptance` evidence.
+This is the project's **primary current E2E workflow**. It connects two dedicated,
+normal non-GM bots to the developer's already-running local MariaDB/API/lobby/world
+stack. The runner does not create a disposable environment, install or migrate a
+database, change server/client configuration, restart a service, or issue an
+administrative reset. Results are deliberately scoped as development feedback,
+not universal acceptance evidence.
 
-A clean-source **owned warm-world rehearsal** has passed twice against the same
-server processes and accounts: **27.3s and 24.0s** for observed movement, party
-invite/chat/disband and fresh-login position verification. Setup was paid once
-(28.6s). This is a short development check, not equivalent coverage of the
-55-minute acceptance suite. It used pre-connection fixtures in a private database;
-normal provisioning, GM placement and an actual graphical viewer were not tested.
-See `research/e2e-implementation-status.md` for artifacts, hashes and limits.
+The current completion boundary and remaining work are defined in
+[`research/e2e-current-direction.md`](../../research/e2e-current-direction.md).
+The isolated environment, owned warm host, graphical Sandbox, hosted CI, soak, and
+broad acceptance material later in this document is optional advanced/historical
+material. It is not a prerequisite for using or completing the existing-stack
+bot workflow.
 
-Use this lane for short development feedback and watching bots from a graphical
-client. Keep the existing isolated pytest lane for clean regression/acceptance;
-do not point its `Environment` fixture at a shared database. No full acceptance
-run is required to use this lane.
+## What works today
 
-## Keep one owned warm world available for repeated runs
+`run_development.py` already performs one foreground, bounded two-bot run against
+the existing stack. It uses genuine HTTP authentication, encrypted lobby/world
+sessions, unique Say messages, received identity checks, independent movement
+observations when a route is configured, normal logout/despawn, private journals,
+and exact-owned worker exit. Optional reconnect, inventory, party, Tell, Sprint,
+and starter-equipment checks are available.
+
+Prepare the two dedicated bot accounts and private profile as described under
+[Prepare once](#prepare-once-existing-external-server), leave the Sapphire stack
+running, and invoke a new private artifact directory:
+
+```powershell
+python -m tests.e2e.run_development `
+  --profile .e2e-dev.json `
+  --artifacts .e2e-artifacts/dev-watch-001 `
+  --allow-shared-development `
+  --max-seconds 300 `
+  --viewer-name "Your Graphical Character"
+```
+
+`--viewer-name` does not log in, launch, or control the graphical client. It asks
+the bots to correlate the already-connected separate character through received
+world state. The human can watch ordinary bot spawn, movement, and Say in game.
+Use a new artifact directory for every run.
+
+The explicit flag confirms that this invocation may authenticate the named bot
+accounts and perform the selected normal actions. It is not a magic authorization
+phrase, operator authentication, server ownership, or permission to manage the
+stack.
+
+## Known operator-product gaps
+
+The command above is currently a foreground one-shot runner. Dedicated owned
+`start`, `status`, and `stop` commands are still to be added. The existing server
+ImGui UI shows generic logged-in players and live player details, but does not yet
+identify development bots or display their external scenario action/result state.
+A credential-free coordinator status contract and ImGui integration are therefore
+the principal remaining work. Until then, inspect
+`development-summary.json`, `worker/actions.jsonl`, and `worker/events.jsonl` in
+the private artifact directory.
+
+Do not work around those gaps by launching a replacement server stack or by
+reprovisioning accounts. Existing-stack endpoints, worker path, bot identities,
+route, and optional graphical character name must be supplied or inspected rather
+than guessed.
+
+## Optional: keep one owned warm world available for repeated runs
 
 When no existing development server is available, start a **bounded, disposable
 warm host** once. It uses the existing isolated-environment asset/binary profile,

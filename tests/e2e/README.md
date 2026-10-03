@@ -4,11 +4,19 @@ This is an external client, not an in-process server bot. Tests use normal HTTP,
 lobby, zone and chat connections. The current worker deliberately accepts only
 loopback endpoints and at most 64 bots per process.
 
-For fast feedback on an already-running local server and watching bots from your
-own character, see [the shared development lane](DEVELOPMENT.md). It is separate
-from isolated acceptance tests and does not own/reset the server or its database.
+The project's current priority is the
+[existing-stack development-bot workflow](DEVELOPMENT.md): connect dedicated
+non-GM bots to the already-running local services, watch them from a separate
+graphical character, and expose their identity/action/result state in the server
+ImGui administrator. It does not own or reset the server or database. The precise
+reduced completion boundary is in
+[`research/e2e-current-direction.md`](../../research/e2e-current-direction.md).
 
-## Verified scope
+The larger isolated acceptance, hosted CI, platform, soak, and graphical Sandbox
+lanes documented below remain optional regression infrastructure rather than
+blockers for that current deliverable.
+
+## Verified scope (historical and current capabilities)
 
 The Windows/3.3 implementation has been exercised against isolated local API,
 lobby, world and MariaDB processes with matching game data:

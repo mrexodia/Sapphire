@@ -72,8 +72,15 @@ class Worker:
                     elif message["type"] == "event":
                         message["received_monotonic"] = time.monotonic()
                         self._events.append(message)
-                        self._version += 1
-                        self._versions[message["bot"]] = self._version
+                        # Generic packet and heartbeat records carry no semantic
+                        # state transition. Treating each as a state wakeup makes
+                        # wait_state issue a full snapshot for every wire frame;
+                        # combat traffic then creates a feedback loop that can
+                        # starve the worker's single Asio thread and delay normal
+                        # client sends. Keep the raw diagnostics without polling.
+                        if message["event"] not in {"packet", "heartbeat"}:
+                            self._version += 1
+                            self._versions[message["bot"]] = self._version
                     else:
                         raise WorkerError("unexpected worker message type")
                     self._cv.notify_all()

@@ -1,9 +1,54 @@
 # E2E implementation checkpoint and requirement audit
 
-**Overall goal: not complete.** Green tests cover a supported subset, not the full
-rollout or general real-client compatibility. Branch: `feature/headless-e2e`.
+**Current product status: not complete, but substantially narrower than this
+historical audit.** The active completion boundary is
+[`e2e-current-direction.md`](e2e-current-direction.md): dedicated non-GM bots on
+the developer's already-running local stack, naturally visible to a separately
+controlled graphical character, with practical start/status/stop control and live
+identity/action/result visibility in the existing ImGui administrator.
 
-## Contract
+The thousands of lines below are the implementation/evidence history for the
+earlier broad program. Their isolated fixture, combined-gate, hosted CI,
+platform, soak, exhaustive gameplay, reset, and graphical-acceptance gaps are no
+longer blockers for the current deliverable. Historical artifacts retain only
+their stated scope; this change does not upgrade old evidence or weaken its
+verdicts.
+
+## Current reduced-scope assessment
+
+Already reusable:
+
+- the external C++ worker and Python coordinator;
+- genuine HTTP, encrypted lobby, zone, and chat sessions;
+- the existing-stack `run_development.py` path for two dedicated non-GM accounts;
+- received identity, mutual presence, Say, movement, logout/despawn, optional
+  reconnect/social/inventory checks, private journals, leases, and observed worker
+  exit; and
+- the server ImGui application's generic logged-in-player table and live player
+  details.
+
+Genuinely remaining:
+
+1. define and atomically publish a bounded, credential-free development-bot status
+   contract;
+2. add simple owned bot `start`, `status`, and `stop` operation without managing
+   MariaDB or any Sapphire service process;
+3. make the ImGui administrator correlate dedicated bots with live sessions and
+   display identity, lifecycle state, current/last action, and latest result;
+4. make a short visible two-bot scenario the documented default while keeping
+   broader checks optional;
+5. add focused lifecycle/status/UI-mapping/redaction contracts; and
+6. run one current bounded live demonstration against approved existing endpoints
+   and bot accounts while the user's separate graphical character remains logged
+   in.
+
+Exact endpoints, credentials, identities, route, viewer name, and status-file
+location must be inspected or supplied rather than guessed. No disposable stack,
+Docker database, destructive reset, combined acceptance run, hosted runner,
+platform sweep, soak, or Sandbox graphical run is required to close this reduced
+scope.
+
+## Historical contract (superseded as the completion boundary)
 
 Implement an external C++ headless client controlled by Python/pytest through
 normal authentication, lobby and world connections to disposable servers. Use
@@ -5517,11 +5562,12 @@ This binds current coordinator/contracts to the exact unchanged rebuilt inputs; 
 still records `authorization_granted_for_live_execution: false` and proves no live
 fixture, compatibility, hosted behavior or acceptance.
 
-## Current prompt-to-artifact completion audit (`43ac64c80` checkpoint)
+## Historical broad prompt-to-artifact completion audit (`43ac64c80` checkpoint)
 
-This audit was performed read-only before any completion decision. It restates the
-active objective as concrete success criteria and layers its current evidence over
-the exhaustive plan-area checklist immediately below. The inspected checkout was
+This audit was performed read-only under the former broad objective. It restated
+that objective as concrete success criteria and layered its evidence over the
+exhaustive plan-area checklist immediately below. It remains an accurate historical
+verdict for that scope, but it is not the current completion boundary. The inspected checkout was
 `feature/headless-e2e` at `43ac64c80e8f0a79c76305a834cb8da2a0400417`.
 `git status --short` showed exactly the seven preserved experiments and no other
 change: `deps/recastnavigation`, `src/server_console/mainGameServer.cpp`,
@@ -5554,9 +5600,9 @@ stated scopes and cannot be composed into an unperformed acceptance run.
 | Hosted CI controls and execution | `.github/workflows/{test-client,gameplay-e2e}.yml`, `inspect_workflow_policy`, exact checkout and hash-locked/plugin-isolated Python policy | **Static controls accepted; hosted execution blocked.** Current policy reports workflow SHA-256 values `bfbbe64fd4067162acde4b0dc3056988c40f32c06488d45c756dcc6e10a96732` and `df3683086e40e6bd98ed69592d93761b5387fdb4898172047f428f456a33c637`, while explicitly returning `hosted_execution_verified:false`, `runner_group_policy_verified:false`, and `ephemeral_vm_destruction_verified:false`. |
 | Independent packet/client compatibility and normalized traces | Byte fixtures and historical unmodified 3.3 DX11 pilot/manual evidence | **Partial.** No current three-review graphical run, graphical quest/scene agreement or independent normalized matching-client trace/exporter exists. |
 | Credentials/private assets untracked; historical failures preserved | Git status, ignored `.e2e-artifacts`, redacted inspectors and retained failed runs | **Verified for repository state inspected.** Hashes are correlation, not signatures, secure erasure, content truth or external-root completeness. |
-| Full objective and completion claim | This matrix plus the detailed requirement/plan checklists below | **NOT ACHIEVED. Do not call `update_goal`.** Missing live, platform, hosted, graphical, reset and breadth evidence is not waived. |
+| Former broad objective and completion claim | This matrix plus the detailed requirement/plan checklists below | **NOT ACHIEVED under that historical scope.** Missing live, platform, hosted, graphical, reset and breadth evidence is not waived for anyone explicitly selecting that optional scope; these items do not block `e2e-current-direction.md`. |
 
-### Exact next evidence needed
+### Exact next evidence identified for the former broad objective
 
 1. **Combined isolated gate:** renewed explicit authorization for one account- and
    gameplay-mutating 16-case run using the complete approved private profile and
@@ -5580,9 +5626,11 @@ Until one of those inputs is supplied, further credential/profile/provenance wra
 would not close a remaining acceptance requirement. The exact detailed mapping of
 all numbered architecture, protocol, state, action, scene, navigation, autonomy,
 fixture, assertion, reliability, compatibility, staged-gate, CI and artifact
-requirements follows and remains normative.
+requirements follows as a historical audit. It remains normative only when that
+broader optional objective is explicitly selected; it does not override
+`e2e-current-direction.md`.
 
-## Requirement audit
+## Historical broad requirement audit
 
 | Requirement | Evidence | Status |
 |---|---|---|
@@ -5613,9 +5661,9 @@ requirements follows and remains normative.
 | Asset-independent CI | `.github/workflows/test-client.yml`; strict workflow-policy receipt | Pinned/read-only/bounded repository controls verified; hosted run unverified |
 | Provisioned gameplay CI | `gameplay-e2e.yml`, exact protected-environment/runner-group selectors, `sapphire_gameplay_ci` build target, service-free profile staging, explicit standalone/combined invocation acknowledgments, public/private/fail-only inspectors and `CI.md`; strict workflow/process-policy and evidence receipts | Authored repository controls are pinned/read-only/bounded and now require the named group plus labels; the private workflow must stage/verify the just-built inputs without services before allocating its distinct gate root; a passing gate must then satisfy both exact current public result/revision and retained private-byte semantic contracts before upload, while failed summaries require a separate sanitized fail-only contract that never accepts success evidence; private dispatch remains protected/serialized in YAML; every historical summary predates current evidence fields and is rejected, so current gate execution is pending; the older nine-case Linux gate passed while the expanded Linux gate remains red under delayed scene/action/logout/zoning delivery; hosted execution, actual runner-group/environment policy and ephemeral destruction remain unverified, with no registered runners |
 | Independent real-client/golden trace compatibility | Unmodified 3.3 DX11 pilot and committed manual lane: world entry, received movement, bidirectional Say, ordinary logout, and exact-frame reviews; current policy also requires a separate final dedicated-bot co-presence/Say frame | Historical narrow lane live-verified; the new bot-interaction frame and current combined policy await a fresh run, while broader UI/quest compatibility and normalized golden traces remain uncovered |
-| Full objective | Missing rows above remain | **Not achieved; do not complete goal** |
+| Former broad objective | Missing rows above remain | **Not achieved under that historical scope; not the current completion boundary** |
 
-## Explicit plan-to-artifact closure checklist
+## Historical explicit plan-to-artifact closure checklist
 
 This checklist maps the normative implementation and acceptance statements in
 `autonomous-testing-plan.md`, including requirements that are easy to lose in the
@@ -7717,7 +7765,7 @@ deployment. It does not establish hosted runner execution, other distributions,
 capacity, multi-process safety, leak-freedom or independent graphical-client
 compatibility.
 
-## Next actions / boundaries
+## Historical broad next actions / boundaries
 
 1. Broaden supported-state policy coverage, including consuming item mutation, overflow merges and
    inventory operations beyond the verified ordinary-bag move/swap/split/merge, and add longer/higher-population

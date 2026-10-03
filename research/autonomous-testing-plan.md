@@ -1,8 +1,18 @@
 # Autonomous end-to-end testing for Sapphire
 
-Status: proposed design based on repository inspection, not an implemented or runtime-validated framework.
+Status: **historical broad design**. Much of this design was implemented and
+runtime-validated after it was written, so the original status and staged rollout
+below are no longer a current completion contract. The project now prioritizes the
+smaller existing-development-stack workflow defined in
+[`e2e-current-direction.md`](e2e-current-direction.md).
 
-## Recommendation
+Disposable fixtures, hosted CI, platform sweeps, soak/load, exhaustive gameplay
+breadth, and independent graphical acceptance remain useful optional lanes. They
+are not blockers for the current development-bot deliverable. Keep the principles
+about normal protocol use, received-state assertions, non-GM bots, bounded
+journals, and no retry of uncertain mutations.
+
+## Recommendation (historical design)
 
 Build an **external, headless test client** that talks to Sapphire through its normal HTTP and game connections. Give it a small, stateful client model and reusable gameplay actions. Run authored scenarios first; add constrained, seeded exploration after the basic actions are reliable.
 
@@ -240,7 +250,7 @@ Sharing packet definitions can reproduce the same mistake on both sides. Supplem
 
 Use traces to derive state transitions and validate message encoding. Do not blindly replay a saved session: identifiers, session data, and timing change between runs.
 
-## Staged delivery and acceptance gates
+## Staged delivery and acceptance gates (optional historical roadmap)
 
 | Stage | Deliverable | Acceptance gate |
 |---|---|---|
@@ -297,7 +307,7 @@ tests/protocol/             # Wire/layout and client-state tests
 
 Keep server gameplay scripts in `src/scripts/`; do not mix bot scenarios into native world modules.
 
-## Decisions to confirm before implementation
+## Decisions originally identified before implementation
 
 1. Are headless server E2E tests the primary target, with real-client/UI automation as a separate lane?
 2. Is Python acceptable for scenario authoring, or should the initial runner stay entirely in C++?
@@ -306,4 +316,9 @@ Keep server gameplay scripts in `src/scripts/`; do not mix bot scenarios into na
 5. Will full E2E run locally first, or is a suitably provisioned CI machine already available?
 6. Is the near-term priority regression confidence, long-running simulation, or load testing? The first three stages are common, but later priorities differ.
 
-Recommended next action: approve the external-client architecture, then do the single-bot login/world-ready feasibility slice before committing to general navigation or quest automation.
+Historical recommended next action: approve the external-client architecture,
+then do the single-bot login/world-ready feasibility slice before committing to
+general navigation or quest automation. That vertical slice and substantial
+additional coverage now exist. Current remaining work is tracked in
+[`e2e-current-direction.md`](e2e-current-direction.md), not by completing every
+stage in this roadmap.
