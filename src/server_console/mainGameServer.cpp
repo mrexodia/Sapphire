@@ -1,4 +1,6 @@
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 #include "WorldServer.h"
 
@@ -30,6 +32,12 @@ int main( int32_t argc, char* argv[] )
   {
     auto tickCount = Common::Util::getTimeMs();
     pServer->update( tickCount );
+
+    // Leave bounded CPU time for the network and database workers. Without a
+    // pause this loop busy-spins, which can starve encrypted session delivery
+    // on single-core and quota-constrained hosts without advancing millisecond
+    // based world state any faster.
+    std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
   }
 
   pServer->shutdown();

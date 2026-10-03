@@ -61,6 +61,7 @@ namespace Sapphire
     std::map< uint8_t, int32_t > m_weatherRateMap;
 
     uint64_t m_lastMobUpdate;
+    uint64_t m_lastNaviUpdate{};
     uint64_t m_lastUpdate{};
 
     uint64_t m_lastActivityTime{};

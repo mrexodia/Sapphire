@@ -10,7 +10,8 @@
 
 Sapphire::Cell::Cell() :
   m_bActive( false ),
-  m_playerCount( 0 )
+  m_playerCount( 0 ),
+  m_lastActiveTime( 0 )
 {
   m_bForcedActive = false;
 }

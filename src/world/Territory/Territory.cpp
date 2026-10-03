@@ -370,7 +370,9 @@ void Territory::pushActor( const Entity::GameObjectPtr& pActor )
     }
 
     m_bNpcMap[ pBNpc->getId() ] = pBNpc;
-    updateCellActivity( cx, cy, 1 );
+    // NPC population loading must not activate its own cells. Player entry is
+    // the activity source; activating every spawn at boot starts every roam
+    // FSM and leaves the shared Detour crowd saturated before anyone enters.
   }
   else if( pActor->isEventObj() )
   {
@@ -539,8 +541,10 @@ bool Territory::checkWeather()
 
 void Territory::updateBNpcs( uint64_t tickCount )
 {
-  //if( ( tickCount - m_lastMobUpdate ) <= 250 )
-  //  return;
+  // Cell discovery scans every populated grid cell. Running that scan on every
+  // unpaced world-loop iteration can starve queued actions and session updates.
+  if( ( tickCount - m_lastMobUpdate ) <= 250 )
+    return;
 
   m_lastMobUpdate = tickCount;
   uint64_t currTime = Common::Util::getTimeSeconds();
@@ -595,10 +599,23 @@ bool Territory::update( uint64_t tickCount )
   //TODO: this should be moved to a updateWeather call and pulled out of updateSessions
   bool changedWeather = checkWeather();
 
-  auto dt = static_cast< float >( std::difftime( tickCount, m_lastUpdate ) / 1000.f );
-
-  if( m_pNaviProvider )
-    m_pNaviProvider->update( dt );
+  // Detour crowd updates perform avoidance work for every active agent. The
+  // world loop is otherwise unpaced and often repeats within one millisecond,
+  // where a zero-delta crowd update cannot advance navigation but can starve
+  // sessions and queued actions. Integrate the full elapsed interval at 20 Hz.
+  const auto naviDelta = tickCount - m_lastNaviUpdate;
+  if( m_pNaviProvider && m_playerMap.empty() )
+  {
+    // Empty territories have no observer or player-driven active cell. Do not
+    // spend crowd-avoidance time advancing their idle navigation population,
+    // and do not accumulate a catch-up delta for the next entrant.
+    m_lastNaviUpdate = tickCount;
+  }
+  else if( m_pNaviProvider && naviDelta >= 50 )
+  {
+    m_pNaviProvider->update( static_cast< float >( naviDelta ) / 1000.f );
+    m_lastNaviUpdate = tickCount;
+  }
 
   updateSessions( tickCount, changedWeather );
   onUpdate( tickCount );
