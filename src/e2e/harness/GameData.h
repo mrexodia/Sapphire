@@ -66,6 +66,8 @@ namespace Sapphire::E2E
     // The navmesh the world uses for a territory ("w1t1" etc. from TerritoryType).
     Common::Navi::NaviProvider& navi( uint16_t territory );
     std::string internalName( uint16_t territory );
+    // The navmesh folder name for a territory, from its level path ("w1t1").
+    std::string meshName( uint16_t territory );
     // A complete walkable route; throws when the corridor is incomplete.
     std::vector< Point > route( uint16_t territory, const Point& from, const Point& to );
     double routeLength( const std::vector< Point >& route );

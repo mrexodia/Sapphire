@@ -201,12 +201,28 @@ namespace Sapphire::E2E
     return shops;
   }
 
+  std::string GameData::meshName( uint16_t territory )
+  {
+    // The world keys navmeshes by the geometry folder of the territory's level
+    // path ("ffxiv/wil_w1/twn/w1t1/level/w1t1" -> "w1t1"), so instanced copies
+    // such as the opening (internal name w1t1_opening) share the city's mesh.
+    auto row = m_exd.getRow< Excel::TerritoryType >( territory );
+    if( !row )
+      throw std::runtime_error( "territory " + std::to_string( territory ) + " has no TerritoryType row" );
+    const auto path = row->getString( row->data().LVB );
+    const auto level = path.find( "/level/" );
+    if( level == std::string::npos )
+      return internalName( territory );
+    const auto folder = path.rfind( '/', level - 1 );
+    return path.substr( folder == std::string::npos ? 0 : folder + 1, level - ( folder == std::string::npos ? 0 : folder + 1 ) );
+  }
+
   Common::Navi::NaviProvider& GameData::navi( uint16_t territory )
   {
     auto cached = m_navi.find( territory );
     if( cached != m_navi.end() )
       return *cached->second;
-    const auto name = internalName( territory );
+    const auto name = meshName( territory );
     auto provider = std::make_unique< Common::Navi::NaviProvider >( name );
     if( !provider->init( m_meshPath.string() ) )
       throw std::runtime_error( "no navmesh for " + name + " (territory " + std::to_string( territory ) + ") under " +

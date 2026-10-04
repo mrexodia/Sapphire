@@ -58,5 +58,19 @@ namespace Sapphire::E2E
   namespace CentralThanalan
   {
     constexpr uint16_t Territory = 141;
+    // The natural population the combat scenarios fight; layout ids are the
+    // world's own spawn records under data/bnpcs/w1f2 (see Combat.h).
+    constexpr uint32_t Marmot = 351;                 // level-1 star marmot (BNpcBase)
+    constexpr uint32_t FastBladeMarmotSpawn = 3746473;
+    constexpr uint32_t BootshineMarmotSpawn = 3746475;
+    constexpr uint32_t BlizzardMarmotSpawn = 3746477;
+    constexpr uint32_t LevelFourteenEnemy = 302;     // the level-14 kind fought in groups
+    constexpr uint32_t LevelFourteenSpawn = 3749193;
+    constexpr uint32_t ProximityEnemy = 735;         // level-6 active-vision enemy
+    constexpr uint32_t ProximitySpawn = 3746983;
+  }
+  namespace Homepoints
+  {
+    constexpr uint32_t Uldah = 9;   // Aetheryte row every fixture character starts bound to
   }
 }
