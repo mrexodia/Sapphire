@@ -145,3 +145,8 @@ bool Player::performResting()
   }
   return sendUpdate;
 }
+
+void Sapphire::Entity::Player::clearEvents()
+{
+  m_eventHandlerMap.clear();
+}

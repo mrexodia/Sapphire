@@ -69,6 +69,9 @@ namespace Sapphire::Entity
     /*! remove an event from the event array */
     void removeEvent( uint32_t eventId );
 
+    /// Drop every open event handler, e.g. when the session ends mid-event.
+    void clearEvents();
+
     /*! return the eventlist */
     std::map< uint32_t, Event::EventHandlerPtr >& getEventListRef();
 

@@ -263,6 +263,11 @@ void PlayerMgr::onLogin( Entity::Player &player )
 
 void PlayerMgr::onLogout( Entity::Player &player )
 {
+  // Player objects stay cached across sessions. An event left open at logout
+  // (a shop window, a dialogue) would otherwise survive into the next login,
+  // where EventMgr::eventFinish treats it as a nested parent and never finishes
+  // any later event, leaving the client stuck in whatever it opened.
+  player.clearEvents();
 }
 
 void PlayerMgr::onDeath( Entity::Player& player )
