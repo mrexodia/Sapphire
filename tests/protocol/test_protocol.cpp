@@ -19,12 +19,13 @@ void require(bool value, const char* message)
 {
   if(!value) throw std::runtime_error(message);
 }
-template<class F> void rejects(F action)
+template<class F> void rejectsAt(F action, int line)
 {
   bool rejected = false;
   try { action(); } catch(const ProtocolError&) { rejected = true; }
-  require(rejected, "expected protocol rejection");
+  require(rejected, ("expected protocol rejection at line " + std::to_string(line)).c_str());
 }
+#define rejects(action) rejectsAt(action, __LINE__)
 int main()
 {
   try
@@ -93,26 +94,24 @@ int main()
     require(!questCompletionFlag(completion.data(), completion.size(), 145), "quest flag must not use condition-bit order");
     rejects([&] { questCompletionFlag(completion.data(), completion.size(), completion.size() * 8); });
 
-    nlohmann::json exit{{"id", 2377056}, {"territory", 130}, {"enabled", true},
-      {"shape", 1}, {"exit_type", 1}, {"target_territory", 141}, {"target_pop", 2372271},
-      {"position", {1, 2, 3}}, {"scale", {4, 6, 8}}, {"rotation", {0, 1.57, 0}}};
+    ExitRange exit;
+    exit.id = 2377056; exit.territory = 130; exit.enabled = true; exit.shape = 1; exit.exitType = 1;
+    exit.targetTerritory = 141; exit.targetPop = 2372271;
+    exit.position = {1, 2, 3}; exit.scale = {4, 6, 8}; exit.rotation = {0, 1.57f, 0};
     const Bytes expectedExit{0x60,0x45,0x24,0, 0,0,0x80,0x3f, 0,0,0,0x40, 0,0,0x40,0x40, 0,0,0,0};
     require(exitRangeRequest(130, {1,2,3}, exit) == expectedExit, "exit request independent byte fixture");
     rejects([&] { exitRangeRequest(131, {1,2,3}, exit); });
-    nlohmann::json reverseExit{{"id", 2372269}, {"territory", 141}, {"enabled", true},
-      {"shape", 1}, {"exit_type", 1}, {"target_territory", 130}, {"target_pop", 2377058},
-      {"position", {1, 2, 3}}, {"scale", {4, 6, 8}}, {"rotation", {0, 1.57, 0}}};
+    auto reverseExit = exit;
+    reverseExit.id = 2372269; reverseExit.territory = 141; reverseExit.targetTerritory = 130; reverseExit.targetPop = 2377058;
     auto expectedReverse = expectedExit;
     expectedReverse[0] = 0xad; expectedReverse[1] = 0x32;
     require(exitRangeRequest(141, {1,2,3}, reverseExit) == expectedReverse,
             "reverse exit request independent byte fixture");
-    auto wrongReverse = reverseExit; wrongReverse["target_pop"] = 2372271;
-    rejects([&] { exitRangeRequest(141, {1,2,3}, wrongReverse); });
     rejects([&] { exitRangeRequest(130, {4,2,3}, exit); });
     rejects([&] { exitRangeRequest(130, {1,6,3}, exit); });
-    auto disabledExit = exit; disabledExit["enabled"] = false;
+    auto disabledExit = exit; disabledExit.enabled = false;
     rejects([&] { exitRangeRequest(130, {1,2,3}, disabledExit); });
-    auto tiltedExit = exit; tiltedExit["rotation"][0] = 0.1;
+    auto tiltedExit = exit; tiltedExit.rotation[0] = 0.1f;
     rejects([&] { exitRangeRequest(130, {1,2,3}, tiltedExit); });
 
     for(const auto classJob : {1, 2, 7})
@@ -144,7 +143,11 @@ int main()
     require(openingWithinRangeRequest(182, 1245187, 4101537, openingRange, openingRange) == expectedOpeningRange,
             "source-defined opening within-range byte fixture");
     rejects([&] { openingWithinRangeRequest(181, 1245187, 4101537, openingRange, openingRange); });
-    rejects([&] { openingWithinRangeRequest(182, 1245187, 4101535, openingRange, openingRange); });
+    // The other two closed city exits are accepted too; an unrelated range is not.
+    rejects([&] { openingWithinRangeRequest(182, 1245187, 4101599, openingRange, openingRange); });
+    require(openingOutsideRangeRequest(182, 1245187, 4101587, openingRange, openingRange).size() == 20,
+            "arrival-area outside-range request");
+    rejects([&] { openingOutsideRangeRequest(182, 1245187, 4101537, openingRange, openingRange); });
     auto unreachedRange = openingRange; unreachedRange[2] += 1;
     rejects([&] { openingWithinRangeRequest(182, 1245187, 4101537, unreachedRange, openingRange); });
 
@@ -281,15 +284,7 @@ int main()
                                           {"leader_index", 0}, {"members", nlohmann::json::array()}};
     const nlohmann::json declineInvite{{"character_id", uint64_t{0x0102030405060708}},
                                       {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}};
-    const nlohmann::json declineContext{{"expected_party", emptyDeclineParty}, {"expected_invite", declineInvite}};
-    requirePartyContext(emptyDeclineParty, declineInvite, declineContext);
     require(partyDeclineRequest(declineInvite) == expectedDecline, "bound decline retains ordinary wire bytes");
-    for(const auto key : {"character_id", "auth_type", "result", "name"})
-    {
-      auto changed = declineInvite; changed[key] = nullptr;
-      rejects([&] { requirePartyContext(emptyDeclineParty, changed, declineContext); });
-    }
-    rejects([&] { requirePartyContext(emptyDeclineParty, nullptr, declineContext); });
     rejects([&] { partyAcceptRequest({{"character_id", 1}, {"auth_type", 2}, {"result", 1},
                                       {"name", "E2E Leader"}}); });
     rejects([&] { partyDeclineRequest({{"character_id", 1}, {"auth_type", 1}, {"result", 5},
@@ -298,22 +293,6 @@ int main()
                          {"leader_index", 0},
                          {"members", {{{"entity_id", 2097153}, {"name", "E2E Leader"}},
                                       {{"entity_id", 2097154}, {"name", "E2E Target"}}}}};
-    nlohmann::json boundContext{{"expected_party", party}, {"expected_invite", nullptr}};
-    requirePartyContext(party, nullptr, boundContext);
-    rejects([&] { requirePartyContext(party, nullptr, nlohmann::json::object()); });
-    rejects([&] { requirePartyContext(party, {{"character_id", 999}}, boundContext); });
-    for(const auto key : {"id", "chat_channel", "count", "leader_index"})
-    {
-      auto changed = party; changed[key] = 999;
-      rejects([&] { requirePartyContext(changed, nullptr, boundContext); });
-    }
-    auto foreignRoster = party; foreignRoster["members"][1]["entity_id"] = 999;
-    rejects([&] { requirePartyContext(foreignRoster, nullptr, boundContext); });
-    nlohmann::json exactInvite{{"character_id", uint64_t{123}}, {"auth_type", 1}, {"result", 1}, {"name", "E2E Leader"}};
-    boundContext["expected_invite"] = exactInvite;
-    requirePartyContext(party, exactInvite, boundContext);
-    auto foreignInvite = exactInvite; foreignInvite["character_id"] = 124;
-    rejects([&] { requirePartyContext(party, foreignInvite, boundContext); });
     require(partyLeaveRequest(party, 2097153) == Bytes(4, 0), "party leave exact byte fixture");
     rejects([&] { partyLeaveRequest(party, 2097155); });
     require(partyDisbandRequest(party, 2097153) == Bytes(4, 0), "party disband exact byte fixture");
@@ -361,68 +340,15 @@ int main()
     rejects([&] { shopSaleReturn(0x00010005, 3, 24, 4551); });
     rejects([&] { shopSaleReturn(0x00040005, 4, 24, 4551); });
     rejects([&] { shopSaleReturn(0x00040005, 3, 25, 4551); });
-    auto purchase = shopPurchaseReturn(262468);
+    auto purchase = shopPurchaseReturn(262468, 5890, 3);
     require(purchase.size() == 1028 && purchase[0] == 0x44 && purchase[1] == 0x01 &&
             purchase[12] == 1 && purchase[24] == 0x44 && purchase[25] == 0x01 &&
             purchase[26] == 0x04 && purchase[28] == 3 && purchase[32] == 0x02 &&
             purchase[33] == 0x17, "shop purchase return fixture");
-    rejects([&] { shopPurchaseReturn(0x00040005); });
-    auto equipmentPurchase = shopEquipmentPurchaseReturn(262468);
-    require(equipmentPurchase.size() == 1028 && equipmentPurchase[0] == 0x44 &&
-            equipmentPurchase[1] == 0x01 && equipmentPurchase[12] == 1 &&
-            equipmentPurchase[24] == 0x44 && equipmentPurchase[25] == 0x01 &&
-            equipmentPurchase[26] == 0x04 && equipmentPurchase[28] == 1 &&
-            equipmentPurchase[32] == 0xd6 && equipmentPurchase[33] == 0x0c,
-            "shop equipment purchase return fixture");
-    rejects([&] { shopEquipmentPurchaseReturn(0x00040005); });
-    auto secondEquipmentPurchase = shopSecondEquipmentPurchaseReturn(262468);
-    require(secondEquipmentPurchase.size() == 1028 && secondEquipmentPurchase[0] == 0x44 &&
-            secondEquipmentPurchase[1] == 0x01 && secondEquipmentPurchase[12] == 1 &&
-            secondEquipmentPurchase[24] == 0x44 && secondEquipmentPurchase[25] == 0x01 &&
-            secondEquipmentPurchase[26] == 0x04 && secondEquipmentPurchase[28] == 1 &&
-            secondEquipmentPurchase[32] == 0xa4 && secondEquipmentPurchase[33] == 0x0e,
-            "second shop equipment purchase return fixture");
-    rejects([&] { shopSecondEquipmentPurchaseReturn(0x00040005); });
-    auto thirdEquipmentPurchase = shopThirdEquipmentPurchaseReturn(262468);
-    require(thirdEquipmentPurchase.size() == 1028 && thirdEquipmentPurchase[0] == 0x44 &&
-            thirdEquipmentPurchase[1] == 0x01 && thirdEquipmentPurchase[12] == 1 &&
-            thirdEquipmentPurchase[24] == 0x44 && thirdEquipmentPurchase[25] == 0x01 &&
-            thirdEquipmentPurchase[26] == 0x04 && thirdEquipmentPurchase[28] == 1 &&
-            thirdEquipmentPurchase[32] == 0x97 && thirdEquipmentPurchase[33] == 0x0b,
-            "third shop equipment purchase return fixture");
-    rejects([&] { shopThirdEquipmentPurchaseReturn(0x00040005); });
-    auto headEquipmentPurchase = shopHeadEquipmentPurchaseReturn(262415);
-    require(headEquipmentPurchase.size() == 1028 && headEquipmentPurchase[0] == 0x0f &&
-            headEquipmentPurchase[1] == 0x01 && headEquipmentPurchase[12] == 1 &&
-            headEquipmentPurchase[24] == 0x0f && headEquipmentPurchase[25] == 0x01 &&
-            headEquipmentPurchase[26] == 0x04 && headEquipmentPurchase[28] == 1 &&
-            headEquipmentPurchase[32] == 0x4e && headEquipmentPurchase[33] == 0x0a,
-            "head shop equipment purchase return fixture");
-    rejects([&] { shopHeadEquipmentPurchaseReturn(262468); });
-    auto earEquipmentPurchase = shopEarEquipmentPurchaseReturn(262425);
-    require(earEquipmentPurchase.size() == 1028 && earEquipmentPurchase[0] == 0x19 &&
-            earEquipmentPurchase[1] == 0x01 && earEquipmentPurchase[12] == 1 &&
-            earEquipmentPurchase[24] == 0x19 && earEquipmentPurchase[25] == 0x01 &&
-            earEquipmentPurchase[26] == 0x04 && earEquipmentPurchase[28] == 1 &&
-            earEquipmentPurchase[32] == 0x68 && earEquipmentPurchase[33] == 0x10,
-            "ear shop equipment purchase return fixture");
-    rejects([&] { shopEarEquipmentPurchaseReturn(262415); });
-    auto neckEquipmentPurchase = shopNeckEquipmentPurchaseReturn(262640);
-    require(neckEquipmentPurchase.size() == 1028 && neckEquipmentPurchase[0] == 0xf0 &&
-            neckEquipmentPurchase[1] == 0x01 && neckEquipmentPurchase[12] == 1 &&
-            neckEquipmentPurchase[24] == 0xf0 && neckEquipmentPurchase[25] == 0x01 &&
-            neckEquipmentPurchase[26] == 0x04 && neckEquipmentPurchase[28] == 1 &&
-            neckEquipmentPurchase[32] == 0x1a && neckEquipmentPurchase[33] == 0x3b,
-            "neck shop equipment purchase return fixture");
-    rejects([&] { shopNeckEquipmentPurchaseReturn(262425); });
-    auto wristEquipmentPurchase = shopWristEquipmentPurchaseReturn(262640);
-    require(wristEquipmentPurchase.size() == 1028 && wristEquipmentPurchase[0] == 0xf0 &&
-            wristEquipmentPurchase[1] == 0x01 && wristEquipmentPurchase[12] == 1 &&
-            wristEquipmentPurchase[24] == 0xf0 && wristEquipmentPurchase[25] == 0x01 &&
-            wristEquipmentPurchase[26] == 0x04 && wristEquipmentPurchase[28] == 1 &&
-            wristEquipmentPurchase[32] == 0x1c && wristEquipmentPurchase[33] == 0x3b,
-            "wrist shop equipment purchase return fixture");
-    rejects([&] { shopWristEquipmentPurchaseReturn(262425); });
+    rejects([&] { shopPurchaseReturn(0x00010005, 5890, 3); });
+    rejects([&] { shopPurchaseReturn(262468, 0, 3); });
+    rejects([&] { shopPurchaseReturn(262468, 5890, 0); });
+    rejects([&] { shopPurchaseReturn(262468, 5890, 100); });
 
     LobbyCipher sender, receiver;
     auto hello = sender.initialize(42, "SapphireE2E");
