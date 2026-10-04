@@ -14,7 +14,7 @@
 
 namespace Sapphire::E2E::QuestSteps
 {
-  // Scene answers as the real client sends them (tests/e2e/scene_catalog/*.json,
+  // Scene answers as the real client sends them (from the quest scripts,
   // derived from src/scripts/quest/subquest/uldah/SubWil001.cpp and SubWil002.cpp).
   namespace SpeakingScenes
   {

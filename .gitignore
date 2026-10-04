@@ -95,8 +95,6 @@ CTestTestfile.cmake
 !EasyLoad64.dll
 
 # Local E2E profiles/artifacts and Python caches
-.e2e-*/
-.e2e-*.json
 __pycache__/
 .pytest_cache/
 

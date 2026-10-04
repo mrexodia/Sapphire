@@ -1,2 +1,0 @@
-pytest>=8
-psutil>=5  # optional: world memory samples for the soak scenario

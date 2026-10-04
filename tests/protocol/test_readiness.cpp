@@ -1,4 +1,4 @@
-// Synthetic combat-readiness contracts (the former tests/e2e/test_combat_policy.py);
+// Synthetic combat-readiness contracts;
 // not real gameplay or client compatibility.
 #include "Readiness.h"
 #include <iostream>
