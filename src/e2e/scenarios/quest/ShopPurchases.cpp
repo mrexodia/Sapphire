@@ -203,7 +203,7 @@ class ShopPurchases : public Scenario
 
     // Split the two potions so one can be sold; the split is proven by a fresh login.
     auto state = m_bot->snapshot();
-    expect( state.at( "territory" ) == Uldah::Territory && dist( Bot::position( state ), plan.shop.route.front() ) < 0.15,
+    expect( state.at( "territory" ) == Uldah::Territory && dist( Bot::predicted( state ), plan.shop.route.front() ) < 0.15,
             "the shopper stands at the quest NPC the shop route starts from" );
     const auto potions = bagStacks( m_inventory, plan.saleItem );
     expect( potions.size() == 1 && potions[ 0 ].second.at( "count" ) == 2, "two potions in one stack" );

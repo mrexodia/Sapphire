@@ -46,7 +46,8 @@ class RewardInventory : public Scenario
       expectedInventory[ destination ] = swappedSource;
       expectedInventory[ source ] = swappedDestination;
       const auto entity = Bot::entity( state );
-      const auto position = Bot::position( state );
+      // The bot has walked since login: where it stands is its predicted position (own movement is not echoed).
+      const auto position = Bot::predicted( state );
       player->requestItemSwap( sourceItem.at( "storage" ), sourceItem.at( "slot" ), destinationItem.at( "storage" ),
                                destinationItem.at( "slot" ), sourceItem.at( "id" ), destinationItem.at( "id" ) );
       player = &relogin( ctx, *player, fixture, "inventory-swapped" );
@@ -87,7 +88,7 @@ class RewardInventory : public Scenario
       const auto& [ key, item ] = stacks[ 0 ];
       const auto actor = Bot::entity( state );
       CharacterOptions observerOptions;
-      observerOptions.position = Bot::position( state );
+      observerOptions.position = Bot::predicted( state );
       auto& observer = ctx.spawnCharacter( "inventory-observer", observerOptions );
       observer.waitState( [ & ]( const Json& s ) { return Bot::actor( s, actor ) != nullptr; }, "inventory subject visible" );
 

@@ -45,7 +45,7 @@ class FastBlade : public Scenario
 
     // Wandering is genuine server behaviour: the marmot roams up to 6m from
     // its spawn, so walk up to it, then wait for it in range with natural TP.
-    const auto nearby = waitHealthyEnemy( fighter, CentralThanalan::Marmot, 1, 20.0, 60 );
+    const auto nearby = waitHealthyEnemy( fighter, CentralThanalan::Marmot, 1, 60.0, 90 );
     approachTarget( fighter, nearby.first, 2.0, 6, 2.0f );
     auto candidates = [ & ]( const Json& s ) { return healthyEnemies( s, CentralThanalan::Marmot, 1, 2.0 ); };
     state = fighter.waitState( [ & ]( const Json& s ) {

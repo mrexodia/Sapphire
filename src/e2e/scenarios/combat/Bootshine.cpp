@@ -43,7 +43,7 @@ class Bootshine : public Scenario
     for( int leg = 0; leg < 6 && !reached; ++leg )
     {
       // Marmots respawn 15s after a kill; wait for one rather than failing.
-      const auto nearby = waitHealthyEnemy( pugilist, CentralThanalan::Marmot, 1, 20.0, 45 );
+      const auto nearby = waitHealthyEnemy( pugilist, CentralThanalan::Marmot, 1, 60.0, 90 );
       state = pugilist.snapshot();
       const auto position = nearby.second.at( "position" ).get< Point >();
       if( distance( position, Bot::predicted( state ) ) < 2 )
@@ -51,12 +51,14 @@ class Bootshine : public Scenario
         reached = true;
         break;
       }
+      // The nearest healthy marmot may be well down the slope; walk at running
+      // speed with time for a 60 m leg.
       const auto destination = beside( position );
-      pugilist.walkTo( destination, 2.0f, 15 );
+      pugilist.walkTo( destination, 6.0f, 30 );
       witness.waitState( [ & ]( const Json& s ) {
         const auto* own = Bot::actor( s, entity );
         return own && distance( own->at( "position" ).get< Point >(), destination ) < 0.15;
-      }, "witness sees bounded Pugilist approach", 15 );
+      }, "witness sees bounded Pugilist approach", 30 );
       approach.push_back( destination );
     }
     expect( reached, "bounded Pugilist approach did not reach a natural target" );

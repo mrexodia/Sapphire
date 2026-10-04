@@ -35,12 +35,15 @@ class Blizzard : public Scenario
     expect( state.at( "rewards" ).at( "class_job" ) == blizzard.at( "class_job" ), "the fixture is a Thaumaturge" );
 
     state = caster.waitState( [ & ]( const Json& s ) {
-      return !healthyEnemies( s, CentralThanalan::Marmot, 1, 20.0 ).empty() && Bot::actor( s, entity )->at( "mp" ).get< int >() >= 4;
-    }, "natural target and received Thaumaturge MP (respawn takes 15s)", 60 );
-    const auto nearest = healthyEnemies( state, CentralThanalan::Marmot, 1, 20.0 ).front();
+      return !healthyEnemies( s, CentralThanalan::Marmot, 1, 60.0 ).empty() && Bot::actor( s, entity )->at( "mp" ).get< int >() >= 4;
+    }, "natural target and received Thaumaturge MP (respawn takes 15s)", 90 );
+    const auto nearest = healthyEnemies( state, CentralThanalan::Marmot, 1, 60.0 ).front();
     const uint32_t target = nearest.first;
     const Json before = nearest.second;
     const auto mpBefore = Bot::actor( state, entity )->at( "mp" ).get< int >();
+    // Blizzard reaches 24.5 m; a marmot that wandered further off is approached
+    // first, using received positions only.
+    approachTarget( caster, target, 20.0, 6, 6.0f );
     witness.waitState( [ & ]( const Json& s ) {
       const auto* enemy = Bot::actor( s, target );
       const auto* own = Bot::actor( s, entity );

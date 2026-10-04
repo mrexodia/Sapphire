@@ -462,8 +462,11 @@ namespace Sapphire::E2E
 
   Json Bot::crossExit( const ExitRange& exit, uint16_t targetTerritory, Seconds timeout )
   {
+    // A busy world has taken over ten seconds each for the zone-in and the
+    // player spawn after a crossing; give it a minute before calling it stuck.
     auto client = m_client;
-    call( [ = ] { client->crossExit( exit, 30 ); } );
+    const auto deadline = static_cast< unsigned >( std::min( 90.0, std::max( 30.0, timeout ) ) );
+    call( [ = ] { client->crossExit( exit, deadline ); } );
     return waitState( [ & ]( const Json& s ) {
       return s.at( "phase" ) == "ready" && s.at( "territory" ) == targetTerritory && !s.at( "between_areas" ).get< bool >();
     }, "destination territory ready", timeout );

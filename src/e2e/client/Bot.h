@@ -115,7 +115,7 @@ namespace Sapphire::E2E
     Json waitWarp( const Point& position, Seconds timeout = 10 );
 
     // -- zoning -------------------------------------------------------------
-    Json crossExit( const ExitRange& exit, uint16_t targetTerritory, Seconds timeout = 30 );
+    Json crossExit( const ExitRange& exit, uint16_t targetTerritory, Seconds timeout = 60 );
     Json discoverCentralThanalan( uint32_t layoutId, uint32_t partId, const Point& receivedPosition, uint32_t mapId, Seconds timeout = 10 );
     Json returnHomepoint( uint16_t territory, const Point& position, Seconds timeout = 30 );
     struct ReturnCast { Json state; uint32_t request; Json cast; Json start; };
