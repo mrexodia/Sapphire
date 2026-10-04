@@ -51,7 +51,7 @@ def test_natural_multi_attacker_high_level_defeat(server, live_worker):
             "all ordinary clients visible", 30)
     # Any healthy level-14 enemy of this kind nearby will do; another scenario may
     # have just killed the one beside the spawn point, and respawn takes 60s.
-    target, _ = wait_healthy_enemy(live_worker, witness, 302, 14, 60.0, 90)
+    target, _ = wait_healthy_enemy(live_worker, witness, 302, 14, 60.0, 120, isolation=12.0)
     for bot in all_bots:
         approach_target(live_worker, bot, target)
     for bot in all_bots:

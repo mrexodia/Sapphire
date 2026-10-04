@@ -161,21 +161,31 @@ def combat_reward_delta(before, after, base_exp):
 # retreat to spawn, so scenarios wait for a healthy enemy instead of resetting
 # the world. Timeouts are generous enough to cover one respawn cycle.
 
-def healthy_enemies(state, base_id, level, maximum=60.0, origin=None):
-    """Full-HP enemies of one kind near the bot, nearest first."""
+def healthy_enemies(state, base_id, level, maximum=60.0, origin=None, isolation=0.0):
+    """Full-HP enemies of one kind near the bot, nearest first.
+
+    With `isolation` set, only enemies with no other living hostile within that
+    many metres qualify. Roaming enemies cluster, and fighting one next to its
+    neighbours pulls extra attackers onto low-level fighters."""
     origin = origin if origin is not None else state["predicted_position"]
-    rows = [(key, actor) for key, actor in state["actors"].items()
-            if actor["kind"] == 2 and actor["base_id"] == base_id and actor["level"] == level
-            and actor["hp"] == actor["hp_max"] > 0
-            and math.dist(actor["position"], origin) <= maximum]
+    hostiles = [actor["position"] for actor in state["actors"].values() if actor["kind"] == 2 and actor["hp"] > 0]
+    rows = []
+    for key, actor in state["actors"].items():
+        if not (actor["kind"] == 2 and actor["base_id"] == base_id and actor["level"] == level
+                and actor["hp"] == actor["hp_max"] > 0 and math.dist(actor["position"], origin) <= maximum):
+            continue
+        if isolation and sum(1 for p in hostiles if math.dist(p, actor["position"]) < isolation) > 1:
+            continue
+        rows.append((key, actor))
     return sorted(rows, key=lambda row: math.dist(row[1]["position"], origin))
 
 
-def wait_healthy_enemy(worker, bot, base_id, level, maximum=60.0, timeout=90):
+def wait_healthy_enemy(worker, bot, base_id, level, maximum=60.0, timeout=90, isolation=0.0):
     """Wait for a healthy enemy of one kind to be visible (covers one respawn)."""
-    state = worker.wait_state(bot.name, lambda s: bool(healthy_enemies(s, base_id, level, maximum)),
-                              f"healthy level-{level} enemy {base_id} within {maximum:.0f}m", timeout)
-    return healthy_enemies(state, base_id, level, maximum)[0]
+    state = worker.wait_state(bot.name, lambda s: bool(healthy_enemies(s, base_id, level, maximum, isolation=isolation)),
+                              f"healthy level-{level} enemy {base_id} within {maximum:.0f}m"
+                              + (f", none other within {isolation:.0f}m" if isolation else ""), timeout)
+    return healthy_enemies(state, base_id, level, maximum, isolation=isolation)[0]
 
 
 def approach_target(worker, bot, target, within=2.5, attempts=6, speed=6.0):

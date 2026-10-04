@@ -43,7 +43,7 @@ def test_natural_level_four_fast_blade_combo(server, live_worker):
     def choose_and_approach(bots, witness):
         # The witness picks the nearest healthy enemy; everyone walks beside it and
         # confirms the same healthy target before the first hit.
-        target, _ = wait_healthy_enemy(live_worker, witness, 302, 14, 60.0, 90)
+        target, _ = wait_healthy_enemy(live_worker, witness, 302, 14, 60.0, 120, isolation=12.0)
         for bot in bots:
             approach_target(live_worker, bot, target)
         for bot in bots:
