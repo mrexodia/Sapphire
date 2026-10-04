@@ -1,4 +1,5 @@
 #include "Bot.h"
+#include "Readiness.h"
 #include "../harness/Server.h"
 #include "../harness/Scenario.h"
 #include <algorithm>
@@ -820,88 +821,26 @@ namespace Sapphire::E2E
   }
 
   // -- readiness checks -------------------------------------------------------
-
-  static bool guardClear( const Json& state )
-  {
-    return state.at( "combat" ).at( "starting_action_guard_remaining_ms" ).get< uint32_t >() == 0;
-  }
-
-  static bool idle( const Json& state )
-  {
-    return state.at( "phase" ) == "ready" && !state.at( "moving" ).get< bool >() && state.at( "event_id" ).is_null() && state.at( "scene" ).is_null();
-  }
+  // The predicates live in the protocol library (client/Readiness.cpp) so a
+  // unit test can drive them with synthetic states; these keep the facade's names.
 
   bool sprintReady( const Json& state )
   {
-    if( !idle( state ) ) return false;
-    if( state.at( "gm_rank" ) != 0 ) throw Failure( "Sprint readiness requires a non-GM player" );
-    const auto* own = Bot::actor( state, Bot::entity( state ) );
-    if( !own ) return false;
-    if( own->at( "kind" ) != 1 || own->at( "hp" ).get< int >() <= 0 ) throw Failure( "player was defeated while waiting for Sprint readiness" );
-    return guardClear( state ) && own->at( "tp" ).get< int >() >= 50;
+    return Testing::sprintReady( state );
   }
 
   bool actionReady( const Json& state, StarterAction action, uint32_t target )
   {
-    if( !idle( state ) ) return false;
-    uint32_t classJob = 1, minimumLevel = 1; int cost = 60; double range = 2.5; bool usesMp = false; const char* name = "Gladiator";
-    switch( action )
-    {
-      case StarterAction::FastBlade: break;
-      case StarterAction::SavageBlade: minimumLevel = 4; break;
-      case StarterAction::Bootshine: classJob = 2; name = "Pugilist"; break;
-      case StarterAction::TrueStrike: classJob = 2; name = "Pugilist"; minimumLevel = 2; cost = 50; break;
-      case StarterAction::Blizzard: classJob = 7; name = "Thaumaturge"; usesMp = true; cost = 4; range = 24.5; break;
-    }
-    if( state.at( "gm_rank" ) != 0 || state.at( "rewards" ).at( "class_job" ) != classJob )
-      throw Failure( std::string( "readiness requires a non-GM " ) + name );
-    const auto* own = Bot::actor( state, Bot::entity( state ) );
-    const auto* enemy = Bot::actor( state, target );
-    if( !own || !enemy ) return false;
-    if( own->at( "hp" ).get< int >() <= 0 ) throw Failure( "fighter was defeated while waiting for combat readiness" );
-    if( enemy->at( "kind" ) != 2 || enemy->at( "hp" ).get< int >() <= 0 ) return false;
-    if( own->at( "level" ).get< uint32_t >() < minimumLevel ) throw Failure( std::string( name ) + " actor level does not satisfy the source action" );
-    const auto resource = own->at( usesMp ? "mp" : "tp" ).get< int >();
-    if( !guardClear( state ) || resource < cost || dist( Bot::predicted( state ), enemy->at( "position" ).get< Point >() ) > range )
-      return false;
-    if( action == StarterAction::SavageBlade )
-    {
-      // The latest own effect must be a Fast Blade on this target carrying the combo marker.
-      const auto& effects = state.at( "combat" ).at( "effects" );
-      for( auto it = effects.rbegin(); it != effects.rend(); ++it )
-      {
-        if( it->at( "source" ) != state.at( "entity_id" ) ) continue;
-        if( it->at( "target" ) != target || it->at( "action" ) != 9 ) return false;
-        for( const auto& effect : it->value( "source_effects", Json::array() ) )
-          if( effect == Json{ { "type", 29 }, { "value", 9 }, { "flag", 0x80 }, { "args", { 0, 0, 0 } } } ) return true;
-        return false;
-      }
-      return false;
-    }
-    return true;
+    return Testing::actionReady( state, static_cast< uint32_t >( action ), target );
   }
 
   uint32_t damageValue( const Json& effect )
   {
-    uint32_t total = 0;
-    for( const auto& row : effect.at( "effects" ) )
-      if( ( row.at( "type" ) == 3 || row.at( "type" ) == 5 ) && row.at( "flag" ) == 0 )
-        total += row.at( "value" ).get< uint32_t >();
-    return total;
+    return Testing::damageValue( effect );
   }
 
   bool committedDamage( const Json& state, const Json& effect, const Json& before )
   {
-    const auto damage = damageValue( effect );
-    if( damage == 0 ) return false;
-    bool present = false;
-    for( const auto& row : state.at( "combat" ).at( "effects" ) ) if( row == effect ) present = true;
-    if( !present ) return false;
-    const auto hpBefore = before.at( "hp" ).get< int64_t >();
-    for( const auto& row : state.at( "combat" ).at( "integrities" ) )
-      if( row.at( "target" ) == effect.at( "target" ) && row.at( "result" ) == effect.at( "result" ) &&
-          row.at( "hp_max" ) == before.at( "hp_max" ) && row.at( "hp" ).get< int64_t >() == std::max< int64_t >( 0, hpBefore - damage ) )
-        return true;
-    return false;
+    return Testing::committedDamage( state, effect, before );
   }
 }

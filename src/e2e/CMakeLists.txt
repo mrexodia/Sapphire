@@ -21,6 +21,7 @@ add_library(sapphire_e2e_protocol STATIC
   client/PartyActions.cpp
   client/ChatActions.cpp
   client/CombatState.cpp
+  client/Readiness.cpp
   "${SAPPHIRE_ROOT}/src/common/Crypt/blowfish.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/md5.cpp"
   "${SAPPHIRE_ROOT}/src/common/Crypt/Random.cpp")
@@ -99,6 +100,9 @@ if(BUILD_TESTING)
   add_executable(sapphire_combat_tests "${SAPPHIRE_ROOT}/tests/protocol/test_combat.cpp")
   target_link_libraries(sapphire_combat_tests PRIVATE sapphire_e2e_protocol)
   add_test(NAME sapphire_combat COMMAND sapphire_combat_tests)
+  add_executable(sapphire_readiness_tests "${SAPPHIRE_ROOT}/tests/protocol/test_readiness.cpp")
+  target_link_libraries(sapphire_readiness_tests PRIVATE sapphire_e2e_protocol)
+  add_test(NAME sapphire_readiness COMMAND sapphire_readiness_tests)
   add_executable(sapphire_navigation_tests harness/NavigationRoute.cpp "${SAPPHIRE_ROOT}/tests/protocol/test_navigation.cpp")
   target_compile_features(sapphire_navigation_tests PRIVATE cxx_std_17)
   target_include_directories(sapphire_navigation_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/harness")
