@@ -3,6 +3,7 @@
 
 #include <Manager/ShopMgr.h>
 #include <Service.h>
+#include <Logging/Logger.h>
 
 using namespace Sapphire;
 
@@ -50,8 +51,23 @@ private:
       return;
     }
 
-    // exit
-    eventMgr().eventFinish( player, result.eventId, 1 );
+    // exit: the client closes the window with a single result
+    if( result.numOfResults <= 1 )
+    {
+      eventMgr().eventFinish( player, result.eventId, 1 );
+      return;
+    }
+
+    // Anything else is a shop command this server does not implement yet, for
+    // example buyback (five results: 0, 3, slot, count, price). Finishing the
+    // event here closes the window under the player mid-action and leaves the
+    // client "occupied" until it relogs, so keep the shop open instead.
+    Logger::debug( "GilShop: unsupported shop command {} ({} results) from {}, re-listing",
+                   result.getResult( 1 ), result.numOfResults, player.getId() );
+    eventMgr().playGilShop( player, result.eventId, SCENE_FLAGS, 0, [ & ]( Entity::Player& player, const Event::SceneResult& result )
+    {
+      shopInteractionCallback( player, result );
+    });
   }
 
   void shopCallback( Entity::Player& player, const Event::SceneResult& result )
