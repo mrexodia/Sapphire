@@ -24,8 +24,8 @@ def walk_observed_route(worker, player, observer, actor, catalog):
     assert math.dist(catalog["route"][-1], catalog["recipient"]["position"]) <= 2
 
 
-def complete_follow_up(environment, worker, player, observer, fixture, previous, before):
-    path = environment.profile.get("follow_up_catalog")
+def complete_follow_up(server, worker, player, observer, fixture, previous, before):
+    path = server.profile.get("follow_up_catalog")
     assert path, "quest chain requires profile.follow_up_catalog for quest 65687"
     state = worker.snapshot(player.name)
     completed = {int(key) | 0x10000 for key, value in state["complete_quests"].items() if value is True}
@@ -55,7 +55,7 @@ def complete_follow_up(environment, worker, player, observer, fixture, previous,
     player.logout()
     worker.wait_state(observer.name, lambda s: actor not in s["actors"], "active quest session cleanup", 30)
     player.close()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     state = player.login_via_lobby(auth, fixture["name"])
     assert str(state["entity_id"]) == actor
     assert math.dist(state["observed_position"], catalog["route"][0]) < 0.15
@@ -86,7 +86,7 @@ def complete_follow_up(environment, worker, player, observer, fixture, previous,
     return quest, expected
 
 
-def move_reward_and_verify_reconnect(environment, worker, player, observer, fixture, expected, work_index, quests):
+def move_reward_and_verify_reconnect(server, worker, player, observer, fixture, expected, work_index, quests):
     state = player.expect_rewards(expected, work_index)
     before = deepcopy(state["rewards"]["inventory"])
     stacks = [(key, item) for key, item in before.items() if item["id"] == 4555 and item["storage"] in range(4)]
@@ -109,7 +109,7 @@ def move_reward_and_verify_reconnect(environment, worker, player, observer, fixt
     player.logout()
     worker.wait_state(observer.name, lambda s: actor not in s["actors"], "move session removed", 30)
     player.close()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     state = player.login_via_lobby(auth, fixture["name"])
     assert str(state["entity_id"]) == actor and math.dist(state["observed_position"], position) < 0.15
     worker.wait_state(observer.name,
@@ -124,7 +124,7 @@ def move_reward_and_verify_reconnect(environment, worker, player, observer, fixt
         "scope": "earned whole stack to empty ordinary bag; no swap/split/merge/equipment claim"}
 
 
-def swap_reward_and_verify_restart(environment, worker, player, fixture, expected, work_index, quests):
+def swap_reward_and_verify_relogin(server, worker, player, fixture, expected, work_index, quests):
     state = player.expect_rewards(expected, work_index)
     before = deepcopy(state["rewards"]["inventory"])
     sources = [(key, item) for key, item in before.items()
@@ -149,8 +149,7 @@ def swap_reward_and_verify_restart(environment, worker, player, fixture, expecte
     assert receipt["acknowledged"] and receipt["inventory_change_verified"] is False
     player.logout()
     player.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     state = player.login_via_lobby(auth, fixture["name"])
     assert state["entity_id"] == entity and math.dist(state["observed_position"], position) < 0.15
     state = player.expect_rewards(expected, work_index)
@@ -162,11 +161,11 @@ def swap_reward_and_verify_restart(environment, worker, player, fixture, expecte
         "receipt": receipt, "before": before,
         "after_restart": deepcopy(state["rewards"]["inventory"]),
         "scope": "two observed occupied ordinary bag slots; no equipment or arbitrary operation"}
-    (environment.artifacts / "inventory-swap.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
+    (server.artifacts / "inventory-swap.json").write_text(json.dumps(evidence, indent=2), encoding="utf-8")
     return player, expected_inventory, evidence
 
 
-def split_merge_reward_and_verify_restarts(environment, worker, player, fixture, expected, work_index, quests):
+def split_merge_reward_and_verify_relogins(server, worker, player, fixture, expected, work_index, quests):
     state = player.expect_rewards(expected, work_index)
     before = deepcopy(state["rewards"]["inventory"])
     stacks = [(key, item) for key, item in before.items()
@@ -186,8 +185,7 @@ def split_merge_reward_and_verify_restarts(environment, worker, player, fixture,
     assert split_receipt["acknowledged"] and split_receipt["inventory_change_verified"] is False
     player.logout()
     player.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     state = player.login_via_lobby(auth, fixture["name"])
     state = player.expect_rewards(expected, work_index)
     assert state["rewards"]["inventory"] == split_inventory
@@ -199,8 +197,7 @@ def split_merge_reward_and_verify_restarts(environment, worker, player, fixture,
     assert merge_receipt["acknowledged"] and merge_receipt["inventory_change_verified"] is False
     player.logout()
     player.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     state = player.login_via_lobby(auth, fixture["name"])
     state = player.expect_rewards(expected, work_index)
     assert state["rewards"]["inventory"] == before
@@ -210,12 +207,12 @@ def split_merge_reward_and_verify_restarts(environment, worker, player, fixture,
         "split_receipt": split_receipt, "merge_receipt": merge_receipt, "before": before,
         "after_split_restart": split_inventory, "after_merge_restart": deepcopy(state["rewards"]["inventory"]),
         "scope": "partial 3-to-2+1 split and whole 1+2 merge in observed ordinary bag slots"}
-    (environment.artifacts / "inventory-split-merge.json").write_text(
+    (server.artifacts / "inventory-split-merge.json").write_text(
         json.dumps(evidence, indent=2), encoding="utf-8")
     return player, before, evidence
 
 
-def discard_reward_and_verify_restart(environment, worker, player, fixture, expected, work_index, quests):
+def discard_reward_and_verify_relogin(server, worker, player, fixture, expected, work_index, quests):
     state = worker.snapshot(player.name)
     inventory = deepcopy(state["rewards"]["inventory"])
     stacks = [(key, item) for key, item in inventory.items() if item["id"] == 4555 and item["storage"] in range(4)]
@@ -223,7 +220,7 @@ def discard_reward_and_verify_restart(environment, worker, player, fixture, expe
     key, item = stacks[0]
     actor = str(state["entity_id"])
     # Fresh independent observer for this lifecycle slice, not a player-state edit.
-    observer_fixture = environment.fresh_character(state["observed_position"])
+    observer_fixture = server.fresh_character(state["observed_position"])
     observer = Bot(worker, "inventory-observer")
     observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
     worker.wait_state(observer.name, lambda s: actor in s["actors"], "inventory subject visible")
@@ -238,8 +235,7 @@ def discard_reward_and_verify_restart(environment, worker, player, fixture, expe
     player.close()
     observer.logout()
     observer.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     reloaded = Bot(worker, "inventory-reloaded")
     reloaded.login_via_lobby(auth, fixture["name"])
     state = reloaded.expect_rewards(remaining, work_index)
@@ -249,8 +245,8 @@ def discard_reward_and_verify_restart(environment, worker, player, fixture, expe
     return reloaded
 
 
-def sell_reward_and_verify_restart(environment, worker, player, fixture, work_index, quests):
-    path = environment.profile.get("shop_catalog")
+def sell_reward_and_verify_relogin(server, worker, player, fixture, work_index, quests):
+    path = server.profile.get("shop_catalog")
     assert path, "shop sale requires a source-bound private route catalog"
     catalog = load_shop_catalog(path)
     state = worker.snapshot(player.name)
@@ -274,13 +270,12 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert receipt["acknowledged"] and receipt["inventory_change_verified"] is False
     player.logout()
     player.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     state = player.login_via_lobby(auth, fixture["name"])
     state = player.expect_rewards(before_rewards, work_index)
     assert state["rewards"]["inventory"] == split_inventory
 
-    observer_fixture = environment.fresh_character(catalog["route"][-1])
+    observer_fixture = server.fresh_character(catalog["route"][-1])
     observer = Bot(worker, "shop-observer")
     observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
     actor = str(state["entity_id"])
@@ -339,8 +334,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     player.close()
     observer.logout()
     observer.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     reloaded = Bot(worker, "shop-reloaded")
     state = reloaded.login_via_lobby(auth, fixture["name"])
     state = reloaded.expect_rewards(purchased_rewards, work_index)
@@ -348,11 +342,10 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     for quest in quests:
         reloaded.expect_quest_complete(quest)
 
-    def restart_shop_bot(bot, name, expected_rewards, expected_inventory):
+    def relogin_shop_bot(bot, name, expected_rewards, expected_inventory):
         bot.logout()
         bot.close()
-        environment.restart_world()
-        auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+        auth = server.relogin(fixture)
         result = Bot(worker, name)
         state = result.login_via_lobby(auth, fixture["name"])
         state = result.expect_rewards(expected_rewards, work_index)
@@ -373,7 +366,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     first_split_inventory[added_key]["count"] = 2
     first_split_inventory[first_empty] = {"storage": first_storage, "slot": first_slot,
                                           "id": catalog["purchase"]["item"], "count": 1}
-    reloaded, state = restart_shop_bot(reloaded, "shop-stack-reloaded-1",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-stack-reloaded-1",
                                       purchased_rewards, first_split_inventory)
     second_empty = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
                                         for slot in reversed(range(25)))
@@ -385,7 +378,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     sale_inventory[added_key]["count"] = 1
     sale_inventory[second_empty] = {"storage": second_storage, "slot": second_slot,
                                     "id": catalog["purchase"]["item"], "count": 1}
-    reloaded, state = restart_shop_bot(reloaded, "shop-stack-reloaded-2",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-stack-reloaded-2",
                                       purchased_rewards, sale_inventory)
 
     reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
@@ -432,7 +425,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert equipment_inventory[equipment_key]["count"] == 1
     assert {key: value for key, value in equipment_inventory.items() if key != equipment_key} == expected_before_equipment
     reloaded.exit_gil_shop(catalog["shop"]["event_id"])
-    reloaded, state = restart_shop_bot(reloaded, "shop-equipment-reloaded",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-equipment-reloaded",
                                       equipment_rewards, equipment_inventory)
 
     gear_slot = catalog["equipment_purchase"]["gear_slot"]
@@ -451,7 +444,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                         "id": 3296, "count": 1}
     unequipped_rewards = deepcopy(equipment_rewards)
     unequipped_rewards["items"]["3296"] = 1
-    reloaded, state = restart_shop_bot(reloaded, "shop-gear-empty-reloaded",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-gear-empty-reloaded",
                                       unequipped_rewards, unequipped_inventory)
     purchased_item = unequipped_inventory[equipment_key]
     equip_receipt = reloaded.request_shop_item_equip(purchased_item["storage"], purchased_item["slot"],
@@ -462,7 +455,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                         "id": catalog["equipment_purchase"]["item"], "count": 1}
     equipped_rewards = deepcopy(unequipped_rewards)
     del equipped_rewards["items"][str(catalog["equipment_purchase"]["item"])]
-    reloaded, state = restart_shop_bot(reloaded, "shop-gear-equipped-reloaded",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-gear-equipped-reloaded",
                                       equipped_rewards, equipped_inventory)
 
     leg_sale_key = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
@@ -477,7 +470,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                         "id": catalog["equipment_purchase"]["item"], "count": 1}
     leg_sale_rewards = deepcopy(equipped_rewards)
     leg_sale_rewards["items"][str(catalog["equipment_purchase"]["item"])] = 1
-    reloaded, state = restart_shop_bot(reloaded, "shop-purchased-leg-unequipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-purchased-leg-unequipped",
                                       leg_sale_rewards, leg_sale_inventory)
     reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
     reloaded.sell_shop_item(leg_sale_storage, leg_sale_slot,
@@ -490,7 +483,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     resale_inventory["2000:0"]["count"] = resale_rewards["currencies"]["1"]
     state = reloaded.expect_rewards(resale_rewards, work_index)
     assert state["rewards"]["inventory"] == resale_inventory
-    reloaded, state = restart_shop_bot(reloaded, "shop-purchased-leg-sold",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-purchased-leg-sold",
                                       resale_rewards, resale_inventory)
     assert resale_rewards["currencies"]["1"] == 56
 
@@ -511,7 +504,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert second_inventory[second_key]["count"] == 1
     assert {key: value for key, value in second_inventory.items() if key != second_key} == second_expected
     reloaded.exit_gil_shop(catalog["shop"]["event_id"])
-    reloaded, state = restart_shop_bot(reloaded, "shop-second-equipment-purchased",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-second-equipment-purchased",
                                       second_rewards, second_inventory)
 
     second_gear_key = f"1000:{second['gear_slot']}"
@@ -529,7 +522,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "storage": second_empty_storage, "slot": second_empty_slot, "id": 3750, "count": 1}
     second_unequipped_rewards = deepcopy(second_rewards)
     second_unequipped_rewards["items"]["3750"] = 1
-    reloaded, state = restart_shop_bot(reloaded, "shop-second-gear-empty",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-second-gear-empty",
                                       second_unequipped_rewards, second_unequipped_inventory)
     second_item = second_unequipped_inventory[second_key]
     second_equip_receipt = reloaded.request_shop_item_equip(
@@ -540,7 +533,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                         "id": second["item"], "count": 1}
     final_rewards = deepcopy(second_unequipped_rewards)
     del final_rewards["items"][str(second["item"])]
-    reloaded, state = restart_shop_bot(reloaded, "shop-second-gear-equipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-second-gear-equipped",
                                       final_rewards, final_inventory)
 
     feet_sale_key = next(key for key in (f"{storage}:{slot}" for storage in reversed(range(4))
@@ -555,7 +548,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                           "id": second["item"], "count": 1}
     feet_sale_rewards = deepcopy(final_rewards)
     feet_sale_rewards["items"][str(second["item"])] = 1
-    reloaded, state = restart_shop_bot(reloaded, "shop-purchased-feet-unequipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-purchased-feet-unequipped",
                                       feet_sale_rewards, feet_sale_inventory)
     reloaded.open_gil_shop(catalog["shop"]["layout_id"], catalog["shop"]["event_id"])
     reloaded.sell_shop_item(feet_sale_storage, feet_sale_slot, second["item"])
@@ -567,7 +560,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     feet_resale_inventory["2000:0"]["count"] = feet_resale_rewards["currencies"]["1"]
     state = reloaded.expect_rewards(feet_resale_rewards, work_index)
     assert state["rewards"]["inventory"] == feet_resale_inventory
-    reloaded, state = restart_shop_bot(reloaded, "shop-purchased-feet-sold",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-purchased-feet-sold",
                                       feet_resale_rewards, feet_resale_inventory)
     assert feet_resale_rewards["currencies"]["1"] == 56
 
@@ -587,7 +580,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     third_funds_inventory["2000:0"]["count"] = third_funds_rewards["currencies"]["1"]
     state = reloaded.expect_rewards(third_funds_rewards, work_index)
     assert state["rewards"]["inventory"] == third_funds_inventory
-    reloaded, state = restart_shop_bot(reloaded, "shop-starter-leg-sold",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-starter-leg-sold",
                                       third_funds_rewards, third_funds_inventory)
     assert third_funds_rewards["currencies"]["1"] == 101
 
@@ -608,7 +601,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert third_inventory[third_key]["count"] == 1
     assert {key: value for key, value in third_inventory.items() if key != third_key} == third_expected
     reloaded.exit_gil_shop(catalog["shop"]["event_id"])
-    reloaded, state = restart_shop_bot(reloaded, "shop-third-equipment-purchased",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-third-equipment-purchased",
                                       third_rewards, third_inventory)
 
     third_gear_key = f"1000:{third['gear_slot']}"
@@ -626,7 +619,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         "storage": third_empty_storage, "slot": third_empty_slot, "id": 2983, "count": 1}
     third_unequipped_rewards = deepcopy(third_rewards)
     third_unequipped_rewards["items"]["2983"] = 1
-    reloaded, state = restart_shop_bot(reloaded, "shop-third-gear-empty",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-third-gear-empty",
                                       third_unequipped_rewards, third_unequipped_inventory)
     third_item = third_unequipped_inventory[third_key]
     third_equip_receipt = reloaded.request_shop_item_equip(
@@ -637,11 +630,11 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                              "id": third["item"], "count": 1}
     third_final_rewards = deepcopy(third_unequipped_rewards)
     del third_final_rewards["items"][str(third["item"])]
-    reloaded, state = restart_shop_bot(reloaded, "shop-third-gear-equipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-third-gear-equipped",
                                       third_final_rewards, third_final_inventory)
     currency_move_receipt = reloaded.request_currency_move_rejection(
         third_final_rewards["currencies"]["1"])
-    reloaded, state = restart_shop_bot(reloaded, "shop-currency-move-rejected",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-currency-move-rejected",
                                       third_final_rewards, third_final_inventory)
     currency_move_receipt["rejection_verified_after_restart"] = True
 
@@ -661,12 +654,12 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     head_funds_inventory["2000:0"]["count"] = head_funds_rewards["currencies"]["1"]
     state = reloaded.expect_rewards(head_funds_rewards, work_index)
     assert state["rewards"]["inventory"] == head_funds_inventory
-    reloaded, state = restart_shop_bot(reloaded, "shop-starter-body-sold",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-starter-body-sold",
                                       head_funds_rewards, head_funds_inventory)
     assert head_funds_rewards["currencies"]["1"] == 101
 
     head = catalog["head_purchase"]
-    head_observer_fixture = environment.fresh_character(head["route"][-1])
+    head_observer_fixture = server.fresh_character(head["route"][-1])
     head_observer = Bot(worker, "head-shop-observer")
     head_observer.login_via_lobby(head_observer_fixture["auth"], head_observer_fixture["name"])
     actor = str(state["entity_id"])
@@ -692,7 +685,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert head_inventory[head_key]["id"] == head["item"] and head_inventory[head_key]["count"] == 1
     assert {key: value for key, value in head_inventory.items() if key != head_key} == head_expected
     reloaded.exit_gil_shop(head["shop"]["event_id"])
-    reloaded, state = restart_shop_bot(reloaded, "shop-head-equipment-purchased",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-head-equipment-purchased",
                                       head_rewards, head_inventory)
     head_gear_key = f"1000:{head['gear_slot']}"
     assert head_gear_key not in head_inventory
@@ -705,7 +698,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                            "id": head["item"], "count": 1}
     head_final_rewards = deepcopy(head_rewards)
     del head_final_rewards["items"][str(head["item"])]
-    reloaded, state = restart_shop_bot(reloaded, "shop-head-equipment-equipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-head-equipment-equipped",
                                       head_final_rewards, head_final_inventory)
 
     starter_feet_sale = catalog["starter_feet_liquidation"]
@@ -724,12 +717,12 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     ear_funds_inventory["2000:0"]["count"] = ear_funds_rewards["currencies"]["1"]
     state = reloaded.expect_rewards(ear_funds_rewards, work_index)
     assert state["rewards"]["inventory"] == ear_funds_inventory
-    reloaded, state = restart_shop_bot(reloaded, "shop-starter-feet-sold",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-starter-feet-sold",
                                       ear_funds_rewards, ear_funds_inventory)
     assert ear_funds_rewards["currencies"]["1"] == 102
 
     ear = catalog["ear_purchase"]
-    ear_observer_fixture = environment.fresh_character(ear["route"][-1])
+    ear_observer_fixture = server.fresh_character(ear["route"][-1])
     ear_observer = Bot(worker, "ear-shop-observer")
     ear_observer.login_via_lobby(ear_observer_fixture["auth"], ear_observer_fixture["name"])
     actor = str(state["entity_id"])
@@ -755,7 +748,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert ear_inventory[ear_key]["id"] == ear["item"] and ear_inventory[ear_key]["count"] == 1
     assert {key: value for key, value in ear_inventory.items() if key != ear_key} == ear_expected
     reloaded.exit_gil_shop(ear["shop"]["event_id"])
-    reloaded, state = restart_shop_bot(reloaded, "shop-ear-equipment-purchased",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-ear-equipment-purchased",
                                       ear_rewards, ear_inventory)
     ear_gear_key = f"1000:{ear['gear_slot']}"
     assert ear_gear_key not in ear_inventory
@@ -768,7 +761,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                          "id": ear["item"], "count": 1}
     ear_final_rewards = deepcopy(ear_rewards)
     del ear_final_rewards["items"][str(ear["item"])]
-    reloaded, state = restart_shop_bot(reloaded, "shop-ear-equipment-equipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-ear-equipment-equipped",
                                       ear_final_rewards, ear_final_inventory)
 
     liquidation_rewards = deepcopy(ear_final_rewards)
@@ -786,7 +779,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         del liquidation_inventory[f"1000:{gear_slot}"]
         liquidation_inventory[f"1:{destination_slot}"] = {
             "storage": 1, "slot": destination_slot, "id": item_id, "count": 1}
-        reloaded, state = restart_shop_bot(
+        reloaded, state = relogin_shop_bot(
             reloaded, f"shop-liquidation-unequipped-{gear_slot}",
             liquidation_rewards, liquidation_inventory)
 
@@ -799,12 +792,12 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
         liquidation_inventory["2000:0"]["count"] = liquidation_rewards["currencies"]["1"]
         state = reloaded.expect_rewards(liquidation_rewards, work_index)
         assert state["rewards"]["inventory"] == liquidation_inventory
-    reloaded, state = restart_shop_bot(reloaded, "shop-later-equipment-sold",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-later-equipment-sold",
                                       liquidation_rewards, liquidation_inventory)
     assert liquidation_rewards["currencies"]["1"] == 208
 
     neck = catalog["neck_purchase"]
-    neck_observer_fixture = environment.fresh_character(neck["route"][-1])
+    neck_observer_fixture = server.fresh_character(neck["route"][-1])
     neck_observer = Bot(worker, "neck-shop-observer")
     neck_observer.login_via_lobby(neck_observer_fixture["auth"], neck_observer_fixture["name"])
     actor = str(state["entity_id"])
@@ -830,7 +823,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert neck_inventory[neck_key]["id"] == neck["item"] and neck_inventory[neck_key]["count"] == 1
     assert {key: value for key, value in neck_inventory.items() if key != neck_key} == neck_expected
     reloaded.exit_gil_shop(neck["shop"]["event_id"])
-    reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-purchased",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-neck-equipment-purchased",
                                       neck_rewards, neck_inventory)
     neck_gear_key = f"1000:{neck['gear_slot']}"
     assert neck_gear_key not in neck_inventory
@@ -843,7 +836,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                            "id": neck["item"], "count": 1}
     neck_final_rewards = deepcopy(neck_rewards)
     del neck_final_rewards["items"][str(neck["item"])]
-    reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-equipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-neck-equipment-equipped",
                                       neck_final_rewards, neck_final_inventory)
 
     neck_liquidation_slot = 21
@@ -855,7 +848,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     del wrist_funds_inventory[neck_gear_key]
     wrist_funds_inventory[f"1:{neck_liquidation_slot}"] = {
         "storage": 1, "slot": neck_liquidation_slot, "id": neck["item"], "count": 1}
-    reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-unequipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-neck-equipment-unequipped",
                                       wrist_funds_rewards, wrist_funds_inventory)
     reloaded.open_gil_shop(neck["shop"]["layout_id"], neck["shop"]["event_id"])
     reloaded.sell_shop_item(1, neck_liquidation_slot, neck["item"])
@@ -865,7 +858,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     wrist_funds_inventory["2000:0"]["count"] = wrist_funds_rewards["currencies"]["1"]
     state = reloaded.expect_rewards(wrist_funds_rewards, work_index)
     assert state["rewards"]["inventory"] == wrist_funds_inventory
-    reloaded, state = restart_shop_bot(reloaded, "shop-neck-equipment-sold",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-neck-equipment-sold",
                                       wrist_funds_rewards, wrist_funds_inventory)
     assert wrist_funds_rewards["currencies"]["1"] == 208
 
@@ -886,7 +879,7 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
     assert wrist_inventory[wrist_key]["id"] == wrist["item"] and wrist_inventory[wrist_key]["count"] == 1
     assert {key: value for key, value in wrist_inventory.items() if key != wrist_key} == wrist_expected
     reloaded.exit_gil_shop(wrist["shop_id"])
-    reloaded, state = restart_shop_bot(reloaded, "shop-wrist-equipment-purchased",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-wrist-equipment-purchased",
                                       wrist_rewards, wrist_inventory)
     wrist_gear_key = f"1000:{wrist['gear_slot']}"
     assert wrist_gear_key not in wrist_inventory
@@ -899,10 +892,10 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
                                              "id": wrist["item"], "count": 1}
     wrist_final_rewards = deepcopy(wrist_rewards)
     del wrist_final_rewards["items"][str(wrist["item"])]
-    reloaded, state = restart_shop_bot(reloaded, "shop-wrist-equipment-equipped",
+    reloaded, state = relogin_shop_bot(reloaded, "shop-wrist-equipment-equipped",
                                       wrist_final_rewards, wrist_final_inventory)
 
-    (environment.artifacts / "gil-shop-sale.json").write_text(json.dumps({
+    (server.artifacts / "gil-shop-sale.json").write_text(json.dumps({
         "shop": catalog["shop"], "route_length": catalog["route_length"],
         "split_receipt": receipt, "rewards_before": before_rewards,
         "inventory_after_split_restart": split_inventory,
@@ -998,10 +991,10 @@ def sell_reward_and_verify_restart(environment, worker, player, fixture, work_in
 
 
 @pytest.mark.parametrize("follow_up", [False, True], ids=["single", "chain"])
-def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, follow_up):
+def test_quest_cancel_complete_rewards_and_relogin(server, live_worker, follow_up):
     if follow_up:
-        assert environment.profile.get("follow_up_catalog"), "chain requires profile.follow_up_catalog for quest 65687"
-    path = environment.profile.get("quest_catalog")
+        assert server.profile.get("follow_up_catalog"), "chain requires profile.follow_up_catalog for quest 65687"
+    path = server.profile.get("quest_catalog")
     assert path, "quest suite requires profile.quest_catalog; generate a compatible local navigation catalog first"
     catalog = load_quest_catalog(path)
     quest = catalog["quest"]
@@ -1015,8 +1008,8 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
         assert catalog["exp"] == 50 and catalog["gil"] == 0
         assert catalog["items"] == [{"id": 4551, "count": 2}]
 
-    player_fixture = environment.fresh_character(catalog["route"][0])
-    observer_fixture = environment.fresh_character(catalog["route"][0])
+    player_fixture = server.fresh_character(catalog["route"][0])
+    observer_fixture = server.fresh_character(catalog["route"][0])
     player, observer = Bot(live_worker, "quester"), Bot(live_worker, "quest-observer")
     state = player.login_via_lobby(player_fixture["auth"], player_fixture["name"])
     observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
@@ -1059,11 +1052,11 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
     completed_quests = [quest]
     moved_inventory, move_evidence = None, None
     if follow_up:
-        next_quest, expected = complete_follow_up(environment, live_worker, player, observer,
+        next_quest, expected = complete_follow_up(server, live_worker, player, observer,
                                                 player_fixture, catalog, expected)
         completed_quests.append(next_quest)
         moved_inventory, move_evidence = move_reward_and_verify_reconnect(
-            environment, live_worker, player, observer, player_fixture, expected,
+            server, live_worker, player, observer, player_fixture, expected,
             catalog["work_index"], completed_quests)
 
     player.logout()
@@ -1071,8 +1064,7 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
     observer.logout()
     player.close()
     observer.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": player_fixture["username"], "pass": player_fixture["password"]})
+    auth = server.relogin(player_fixture)
     reloaded = Bot(live_worker, "quest-reloaded")
     reloaded.login_via_lobby(auth, player_fixture["name"])
     for completed_quest in completed_quests:
@@ -1083,18 +1075,18 @@ def test_quest_cancel_complete_rewards_and_restart(environment, live_worker, fol
     if follow_up:
         assert state["rewards"]["inventory"] == moved_inventory
         move_evidence["after_restart"] = deepcopy(state["rewards"]["inventory"])
-        (environment.artifacts / "inventory-move.json").write_text(json.dumps(move_evidence, indent=2), encoding="utf-8")
-        reloaded, swapped_inventory, _ = swap_reward_and_verify_restart(
-            environment, live_worker, reloaded, player_fixture, expected,
+        (server.artifacts / "inventory-move.json").write_text(json.dumps(move_evidence, indent=2), encoding="utf-8")
+        reloaded, swapped_inventory, _ = swap_reward_and_verify_relogin(
+            server, live_worker, reloaded, player_fixture, expected,
             catalog["work_index"], completed_quests)
         assert live_worker.snapshot(reloaded.name)["rewards"]["inventory"] == swapped_inventory
-        reloaded, merged_inventory, _ = split_merge_reward_and_verify_restarts(
-            environment, live_worker, reloaded, player_fixture, expected,
+        reloaded, merged_inventory, _ = split_merge_reward_and_verify_relogins(
+            server, live_worker, reloaded, player_fixture, expected,
             catalog["work_index"], completed_quests)
         assert live_worker.snapshot(reloaded.name)["rewards"]["inventory"] == merged_inventory
-        reloaded = discard_reward_and_verify_restart(environment, live_worker, reloaded, player_fixture,
+        reloaded = discard_reward_and_verify_relogin(server, live_worker, reloaded, player_fixture,
                                                     expected, catalog["work_index"], completed_quests)
-        reloaded = sell_reward_and_verify_restart(environment, live_worker, reloaded, player_fixture,
+        reloaded = sell_reward_and_verify_relogin(server, live_worker, reloaded, player_fixture,
                                                   catalog["work_index"], completed_quests)
     reloaded.logout()
     reloaded.close()

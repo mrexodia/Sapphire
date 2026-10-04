@@ -12,13 +12,14 @@ from .support.combat import damage_value, require_unchanged_death_state
 pytestmark = pytest.mark.live
 
 
-def test_natural_enemy_defeats_level_one_player(environment, live_worker):
-    path = environment.profile.get("respawn_catalog")
-    pursuit_path = environment.profile.get("pursuit_catalog")
+def test_natural_enemy_defeats_level_one_player(server, live_worker):
+    path = server.profile.get("respawn_catalog")
+    pursuit_path = server.profile.get("pursuit_catalog")
     assert path and pursuit_path, "player defeat requires source-bound homepoint and pursuit catalogs"
     respawn = load_respawn_catalog(path)
     pursuit = load_pursuit_catalog(pursuit_path)
-    population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    population = json.loads((server.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    server.require_navmesh(141, "w1f2")  # enemies cannot move without one
     candidates = []
     for group in population.values():
         for layout_id, row in group.get("bnpcs", {}).items():
@@ -33,9 +34,9 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     fighter_position[0] += 1.0
     observer_position = list(spawn["position"])
     observer_position[0] -= 30.0
-    fighter_fixture = environment.fresh_character(fighter_position, 141)
-    observer_fixture = environment.fresh_character(observer_position, 141)
-    return_observer_fixture = environment.fresh_character(respawn["pop_range"]["position"], respawn["territory"])
+    fighter_fixture = server.fresh_character(fighter_position, 141)
+    observer_fixture = server.fresh_character(observer_position, 141)
+    return_observer_fixture = server.fresh_character(respawn["pop_range"]["position"], respawn["territory"])
     observer = Bot(live_worker, "defeat-observer")
     observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
     return_observer = Bot(live_worker, "return-observer")
@@ -48,16 +49,20 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     before_inventory = initial["rewards"]["inventory"]
     assert before["hp"] == before["hp_max"] > 0 and before["level"] == 1
     live_worker.wait_state(observer.name, lambda s: str(entity) in s["actors"], "fighter visible", 20)
+    # The pursuit and leash routes are authored around this enemy's spawn, so the
+    # scenario keeps the exact spawn. With navigation active the enemy roams and
+    # may have been killed by an earlier scenario, so allow one respawn and a
+    # wider search; the opening approach below follows it using received positions.
     state = live_worker.wait_state(fighter.name,
         lambda s: any(actor["kind"] == 2 and actor["base_id"] == 302 and actor["level"] == 14
                       and actor["layout_id"] == int(layout_id) and actor["hp"] == actor["hp_max"] > 0
-                      and math.dist(actor["position"], s["observed_position"]) < 20
+                      and math.dist(actor["position"], s["observed_position"]) < 40
                       for actor in s["actors"].values()),
-        "bounded source-layout level-14 enemy and received state", 20)
+        "source-layout level-14 enemy healthy within 40m (allow one respawn)", 150)
     target = next(int(key) for key, actor in state["actors"].items()
                   if actor["kind"] == 2 and actor["base_id"] == 302 and actor["level"] == 14
                   and actor["layout_id"] == int(layout_id) and actor["hp"] == actor["hp_max"] > 0
-                  and math.dist(actor["position"], state["observed_position"]) < 20)
+                  and math.dist(actor["position"], state["observed_position"]) < 40)
     live_worker.wait_state(observer.name,
         lambda s: s["actors"].get(str(target), {}).get("layout_id") == int(layout_id)
                   and s["actors"][str(target)]["hp"] == s["actors"][str(target)]["hp_max"] > 0,
@@ -68,14 +73,14 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     # This population may roam while TP regenerates. Follow only bounded received
     # positions using normal movement, with every reached point witnessed.
     opening_approach = []
-    for _ in range(6):
+    for _ in range(8):
         state = live_worker.snapshot(fighter.name)
         current_enemy = state["actors"].get(str(target))
         assert current_enemy and current_enemy["hp"] == current_enemy["hp_max"] > 0
         distance = math.dist(current_enemy["position"], state["predicted_position"])
         if distance < 2.5:
             break
-        assert distance < 20, "natural opening target left bounded follow range"
+        assert distance < 45, "natural opening target left bounded follow range"
         destination = list(current_enemy["position"])
         fighter.walk_to(destination, 2.0, 15)
         live_worker.wait_state(observer.name,
@@ -238,8 +243,7 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
     observer.close()
     return_observer.logout()
     return_observer.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fighter_fixture["username"], "pass": fighter_fixture["password"]})
+    auth = server.relogin(fighter_fixture)
     reloaded = Bot(live_worker, "returned-reloaded")
     persisted = reloaded.login_via_lobby(auth, fighter_fixture["name"])
     persisted_self = persisted["actors"][str(persisted["entity_id"])]
@@ -251,7 +255,7 @@ def test_natural_enemy_defeats_level_one_player(environment, live_worker):
         reward_values(persisted["rewards"], 1), persisted["rewards"]["inventory"])
     reloaded.logout()
     reloaded.close()
-    (environment.artifacts / "combat-player-defeat.json").write_text(json.dumps({
+    (server.artifacts / "combat-player-defeat.json").write_text(json.dumps({
         "population_layout": int(layout_id), "enemy_base_id": 302, "enemy_level": 14,
         "fighter_hp_before": before["hp"], "opening_effect": opening_effect,
         "observed_opening_approach": opening_approach,

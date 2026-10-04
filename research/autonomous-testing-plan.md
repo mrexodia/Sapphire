@@ -1,16 +1,13 @@
 # Autonomous end-to-end testing for Sapphire
 
-Status: **historical broad design**. Much of this design was implemented and
-runtime-validated after it was written, so the original status and staged rollout
-below are no longer a current completion contract. The project now prioritizes the
-smaller existing-development-stack workflow defined in
-[`e2e-current-direction.md`](e2e-current-direction.md).
-
-Disposable fixtures, hosted CI, platform sweeps, soak/load, exhaustive gameplay
-breadth, and independent graphical acceptance remain useful optional lanes. They
-are not blockers for the current development-bot deliverable. Keep the principles
-about normal protocol use, received-state assertions, non-GM bots, bounded
-journals, and no retry of uncertain mutations.
+Status: **historical design document**. The headless client and most of the
+scenario machinery described here were built. The project then deliberately
+dropped the disposable-fixture, hosted-CI, soak, and graphical-acceptance lanes in
+favour of running the same bots against an ordinary local development server.
+The current, much shorter description of how the tests work is
+[`tests/e2e/README.md`](../tests/e2e/README.md). The principles below about normal
+protocol use, received-state assertions, non-GM bots, and never retrying an
+uncertain mutation still apply.
 
 ## Recommendation (historical design)
 

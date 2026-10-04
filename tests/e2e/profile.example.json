@@ -1,17 +1,16 @@
 {
-  "binaries": "C:/CodeBlocks/Sapphire/bin",
-  "game_data": "C:/path/to/matching/game/sqpack",
-  "mariadb_bin": "C:/path/to/mariadb/bin",
-  "worker": "C:/CodeBlocks/Sapphire/build-e2e/sapphire_test_client.exe",
-  "navigation": "C:/path/to/private/navigation-root",
-  "quest_catalog": "C:/path/to/motivational-speaking.json",
-  "follow_up_catalog": "C:/path/to/gil-for-gold.json",
-  "transition_catalog": "C:/path/to/transition.json",
-  "combat_catalog": "C:/path/to/combat-catalog.json",
-  "shop_catalog": "C:/path/to/shop.json",
-  "respawn_catalog": "C:/path/to/respawn.json",
-  "pursuit_catalog": "C:/path/to/pursuit.json",
-  "opening_quest_catalog": "C:/path/to/coming-to-uldah.json",
-  "deadline_scale": 1,
-  "artifacts": "C:/CodeBlocks/Sapphire/.e2e-artifacts"
+  "api": "http://127.0.0.1:6523",
+  "secret": "default",
+  "worker": "../../bin/sapphire_test_client.exe",
+  "server_dir": "../../bin",
+  "artifacts": "../../.e2e-artifacts",
+
+  "quest_catalog": "../../build-e2e/motivational-speaking.json",
+  "follow_up_catalog": "../../build-e2e/gil-for-gold.json",
+  "transition_catalog": "../../build-e2e/uldah-central-transition.json",
+  "combat_catalog": "../../build-e2e/combat-catalog.json",
+  "shop_catalog": "../../build-e2e/shop-catalog.json",
+  "respawn_catalog": "../../build-e2e/respawn-catalog.json",
+  "pursuit_catalog": "../../build-e2e/pursuit-catalog.json",
+  "opening_quest_catalog": "../../build-e2e/coming-to-uldah.json"
 }

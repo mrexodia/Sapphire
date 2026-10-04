@@ -12,8 +12,8 @@ from .support.worker import Bot, reward_values
 pytestmark = pytest.mark.live
 
 
-def test_natural_pugilist_level_two_true_strike(environment, live_worker):
-    path = environment.profile.get("combat_catalog")
+def test_natural_pugilist_level_two_true_strike(server, live_worker):
+    path = server.profile.get("combat_catalog")
     assert path, "progression requires a matching source-generated combat catalog"
     catalog = load_combat_catalog(path)
     bootshine, true_strike = catalog["bootshine"], catalog["true_strike"]
@@ -22,17 +22,16 @@ def test_natural_pugilist_level_two_true_strike(environment, live_worker):
     assert bootshine["level"] == 1 and true_strike["level"] == 2
     assert bootshine["base_exp"] == 50 and true_strike["cost"] == 50
 
-    population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    population = json.loads((server.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    server.require_navmesh(141, "w1f2")  # enemies cannot move without one
     spawn = population["LVD_BNPC_01"]["bnpcs"]["3746475"]
     assert spawn["baseInfo"]["baseId"] == 351 and spawn["baseInfo"]["level"] == 1
-    logs = "\n".join(p.read_text(errors="replace") for p in environment.runtime.glob("world*.log"))
-    assert re.search(r"141\s+\d+\s+1\s+w1f2\s+PUBLIC\s+NAVI\s+Central Thanalan", logs)
     position = list(spawn["baseInfo"]["position"])
     position[0] += 1.0
-    fixture = environment.fresh_character(position, 141, class_job=2)
+    fixture = server.fresh_character(position, 141, class_job=2)
 
     def fresh_auth():
-        return environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+        return server.relogin(fixture)
 
     def candidates(state, maximum=20):
         return [(key, actor) for key, actor in state["actors"].items()
@@ -43,9 +42,10 @@ def test_natural_pugilist_level_two_true_strike(environment, live_worker):
     def approach(player, observer, entity):
         reached = []
         for _ in range(6):
-            state = live_worker.snapshot(player.name)
+            # Marmots respawn 15s after a kill; wait for one rather than failing.
+            state = live_worker.wait_state(player.name, lambda s: bool(candidates(s)),
+                                           "healthy natural level-one target nearby (respawn)", 45)
             nearby = candidates(state)
-            assert nearby, "no bounded observed natural target for progression"
             target, actor = min(nearby,
                 key=lambda row: math.dist(row[1]["position"], state["predicted_position"]))
             if math.dist(actor["position"], state["predicted_position"]) < 2:
@@ -89,7 +89,7 @@ def test_natural_pugilist_level_two_true_strike(environment, live_worker):
         state = live_worker.wait_state(player.name,
             lambda s: s["actors"][str(entity)]["hp"] == s["actors"][str(entity)]["hp_max"] > 0,
             "naturally restored progression fighter", 60)
-        witness_fixture = environment.fresh_character(state["observed_position"], 141)
+        witness_fixture = server.fresh_character(state["observed_position"], 141)
         observer = Bot(live_worker, f"progression-witness-{kill_index}")
         observer.login_via_lobby(witness_fixture["auth"], witness_fixture["name"])
         live_worker.wait_state(observer.name, lambda s: str(entity) in s["actors"],
@@ -139,7 +139,6 @@ def test_natural_pugilist_level_two_true_strike(environment, live_worker):
                       "reward_delta": reward_delta})
         player.logout(wait_server_close=True)
         observer.logout(wait_server_close=True)
-        environment.restart_world()
 
     player = Bot(live_worker, "level-two-pugilist")
     state = player.login_via_lobby(fresh_auth(), fixture["name"])
@@ -150,7 +149,7 @@ def test_natural_pugilist_level_two_true_strike(environment, live_worker):
     state = live_worker.wait_state(player.name,
         lambda s: s["actors"][str(entity)]["hp"] == s["actors"][str(entity)]["hp_max"] > 0,
         "naturally restored level-two Pugilist", 60)
-    witness_fixture = environment.fresh_character(state["observed_position"], 141)
+    witness_fixture = server.fresh_character(state["observed_position"], 141)
     observer = Bot(live_worker, "level-two-witness")
     observer.login_via_lobby(witness_fixture["auth"], witness_fixture["name"])
     live_worker.wait_state(observer.name, lambda s: str(entity) in s["actors"],
@@ -196,7 +195,7 @@ def test_natural_pugilist_level_two_true_strike(environment, live_worker):
         "progression_player_sessions": 7,
         "independent_witness_sessions": 7,
         "fresh_http_authentications": 7,
-        "world_restarts": 6,
+        "relogins": 6,
         "class_job": 2,
         "work_index": 0,
         "level_before": 1,
@@ -211,7 +210,7 @@ def test_natural_pugilist_level_two_true_strike(environment, live_worker):
                         "after_hp": max(0, before_true_strike["hp"] - damage_value(true_strike_effect)),
                         "both_clients_verified": True},
     }
-    (environment.artifacts / "combat-level-two-true-strike.json").write_text(
+    (server.artifacts / "combat-level-two-true-strike.json").write_text(
         json.dumps(artifact, indent=2, sort_keys=True), encoding="utf-8")
     player.logout(wait_server_close=True)
     observer.logout(wait_server_close=True)

@@ -154,3 +154,41 @@ def combat_reward_delta(before, after, base_exp):
     if delta["4551"] not in {1, 2, 3}:
         raise ValueError("combat variable-quantity loot is out of range")
     return {"items": delta, "exp": base_exp, "level": 0, "currencies": {}}
+
+
+# --- choosing natural targets on a shared, long-running world -----------------
+# Enemies respawn on their own after their popInterval and heal fully when they
+# retreat to spawn, so scenarios wait for a healthy enemy instead of resetting
+# the world. Timeouts are generous enough to cover one respawn cycle.
+
+def healthy_enemies(state, base_id, level, maximum=60.0, origin=None):
+    """Full-HP enemies of one kind near the bot, nearest first."""
+    origin = origin if origin is not None else state["predicted_position"]
+    rows = [(key, actor) for key, actor in state["actors"].items()
+            if actor["kind"] == 2 and actor["base_id"] == base_id and actor["level"] == level
+            and actor["hp"] == actor["hp_max"] > 0
+            and math.dist(actor["position"], origin) <= maximum]
+    return sorted(rows, key=lambda row: math.dist(row[1]["position"], origin))
+
+
+def wait_healthy_enemy(worker, bot, base_id, level, maximum=60.0, timeout=90):
+    """Wait for a healthy enemy of one kind to be visible (covers one respawn)."""
+    state = worker.wait_state(bot.name, lambda s: bool(healthy_enemies(s, base_id, level, maximum)),
+                              f"healthy level-{level} enemy {base_id} within {maximum:.0f}m", timeout)
+    return healthy_enemies(state, base_id, level, maximum)[0]
+
+
+def approach_target(worker, bot, target, within=2.5, attempts=6, speed=6.0):
+    """Walk toward a (possibly roaming) enemy using only received positions."""
+    for _ in range(attempts):
+        state = worker.snapshot(bot.name)
+        actor = state["actors"].get(target)
+        if actor is None or actor["hp"] <= 0:
+            raise AssertionError(f"{bot.name}: target {target} disappeared during the approach")
+        if math.dist(actor["position"], state["predicted_position"]) < within:
+            return state
+        # Stop one metre beside the enemy, not on top of it: face() needs a direction.
+        destination = list(actor["position"])
+        destination[0] += 1.0
+        bot.walk_to(destination, speed, 30)
+    raise AssertionError(f"{bot.name}: could not reach target {target} in {attempts} legs")

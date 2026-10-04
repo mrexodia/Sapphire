@@ -134,15 +134,6 @@ class Worker:
                         safe_args = {key: args[key] for key, kind in
                                      (("target", int), ("name", str), ("message", str))
                                      if type(args.get(key)) is kind}
-                    if method == "development_place_registered":
-                        safe_args = {key: args[key] for key, kind in
-                                     (("administrative_setup", bool), ("approval_id", str), ("slot", int))
-                                     if type(args.get(key)) is kind}
-                        owner = args.get("expected_operator")
-                        if isinstance(owner, dict):
-                            safe_args["expected_operator"] = {key: owner[key] for key, kind in
-                                                              (("name", str), ("entity_id", int), ("character_id", int))
-                                                              if type(owner.get(key)) is kind}
                     if method == "cross_exit":
                         safe_args = {"exit_id": args["exit"]["id"], "territory": args["exit"]["territory"]}
                     self._actions.append({"id": identifier, "method": method, "bot": bot,
@@ -328,11 +319,26 @@ class Bot:
             lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
                       and s["scene"]["scene_id"] == 0,
             "matching gil-shop entry scene", timeout)
-        self.worker.request("choose_scene", self.name, **scene_arguments(state["scene"]), results=[0])
+        # The real client answers the entry scene with 1 (captured 2026-10-04).
+        self.worker.request("choose_scene", self.name, **scene_arguments(state["scene"]), results=[1])
         return self.worker.wait_state(self.name,
             lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
                       and s["scene"]["scene_id"] == 40,
             "matching gil-shop inventory scene", timeout)
+
+    def shop_buyback_request(self, event_id, index=0, count=1, price=0, timeout=10):
+        """Send the real client's buyback command (five results) and wait for the shop to re-list."""
+        state = self.worker.wait_state(self.name,
+            lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
+                      and s["scene"]["scene_id"] == 40,
+            "gil-shop scene before buyback", timeout)
+        token = state["scene"]["token"]
+        self.worker.request("choose_scene", self.name, **scene_arguments(state["scene"]),
+                            results=[0, 3, index, count, price])
+        return self.worker.wait_state(self.name,
+            lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
+                      and s["scene"]["scene_id"] == 40 and s["scene"]["token"] != token,
+            "shop re-listed after buyback command", timeout)
 
     def sell_shop_item(self, storage, slot, expected_item, expected_count=1):
         state = self.worker.snapshot(self.name)
@@ -409,7 +415,8 @@ class Bot:
             lambda s: s["scene"] is not None and s["scene"]["event_id"] == event_id
                       and s["scene"]["scene_id"] == 40,
             "refreshed gil-shop scene", timeout)
-        self.worker.request("choose_scene", self.name, **scene_arguments(state["scene"]), results=[0])
+        # The real client closes the shop with a single result of 1.
+        self.worker.request("choose_scene", self.name, **scene_arguments(state["scene"]), results=[1])
         return self.wait_event_finished(timeout)
 
     def choose_dialogue(self, catalog, choice, timeout=10):

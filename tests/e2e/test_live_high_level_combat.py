@@ -6,20 +6,22 @@ import re
 import pytest
 
 from .support.catalog import load_combat_catalog
-from .support.combat import combat_reward_delta, committed_damage, damage_value
+from .support.combat import (approach_target, combat_reward_delta, committed_damage, damage_value,
+                             wait_healthy_enemy)
 from .support.worker import Bot, reward_values
 
 pytestmark = pytest.mark.live
 
 
-def test_natural_multi_attacker_high_level_defeat(environment, live_worker):
-    path = environment.profile.get("combat_catalog")
+def test_natural_multi_attacker_high_level_defeat(server, live_worker):
+    path = server.profile.get("combat_catalog")
     assert path, "high-level combat requires matching source-generated action metadata"
     catalog = load_combat_catalog(path)
     reward = catalog["representative_high_level_enemy"]
     assert reward == {"level": 14, "base_exp": 115}
 
-    population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    population = json.loads((server.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    server.require_navmesh(141, "w1f2")  # enemies cannot move without one
     matches = [row for group in population.values()
                for layout_id, row in group.get("bnpcs", {}).items()
                if layout_id == "3749193"]
@@ -28,13 +30,11 @@ def test_natural_multi_attacker_high_level_defeat(environment, live_worker):
     assert spawn["baseInfo"]["baseId"] == 302
     assert spawn["baseInfo"]["level"] == reward["level"]
     assert spawn["popInfo"]["nonpop"] == 0
-    logs = "\n".join(p.read_text(errors="replace") for p in environment.runtime.glob("world*.log"))
-    assert re.search(r"141\s+\d+\s+1\s+w1f2\s+PUBLIC\s+NAVI\s+Central Thanalan", logs)
     position = list(spawn["baseInfo"]["position"])
     position[0] += 1.0
 
-    fixtures = [environment.fresh_character(position, 141) for _ in range(4)]
-    witness_fixture = environment.fresh_character(position, 141)
+    fixtures = [server.fresh_character(position, 141) for _ in range(4)]
+    witness_fixture = server.fresh_character(position, 141)
     fighters = [Bot(live_worker, f"high-level-fighter-{index}") for index in range(4)]
     witness = Bot(live_worker, "high-level-witness")
     states = [bot.login_via_lobby(fixture["auth"], fixture["name"])
@@ -43,20 +43,22 @@ def test_natural_multi_attacker_high_level_defeat(environment, live_worker):
     entities = [state["entity_id"] for state in states]
     witness_entity = witness_state["entity_id"]
 
-    def exact_target(state):
-        matches = [(key, actor) for key, actor in state["actors"].items()
-                   if actor["kind"] == 2 and actor["layout_id"] == 3749193
-                   and actor["base_id"] == 302 and actor["level"] == 14 and actor["hp"] > 0]
-        return matches[0] if len(matches) == 1 else None
-
     all_bots = [*fighters, witness]
     for bot in all_bots:
         live_worker.wait_state(bot.name,
-            lambda s: exact_target(s) is not None
-                      and all(str(entity) in s["actors"] for entity in entities)
+            lambda s: all(str(entity) in s["actors"] for entity in entities)
                       and str(witness_entity) in s["actors"],
-            "all ordinary clients and exact natural high-level target visible", 30)
-    target, target_before = exact_target(live_worker.snapshot(witness.name))
+            "all ordinary clients visible", 30)
+    # Any healthy level-14 enemy of this kind nearby will do; another scenario may
+    # have just killed the one beside the spawn point, and respawn takes 60s.
+    target, _ = wait_healthy_enemy(live_worker, witness, 302, 14, 60.0, 90)
+    for bot in all_bots:
+        approach_target(live_worker, bot, target)
+    for bot in all_bots:
+        live_worker.wait_state(bot.name,
+            lambda s: s["actors"].get(target, {}).get("hp", 0) == s["actors"].get(target, {}).get("hp_max") > 0,
+            "every client sees the chosen healthy target", 10)
+    target_before = live_worker.snapshot(witness.name)["actors"][target]
     assert target_before["hp"] == target_before["hp_max"] == 237
     before_rewards = {bot.name: reward_values(live_worker.snapshot(bot.name)["rewards"], 1)
                       for bot in all_bots}
@@ -72,12 +74,15 @@ def test_natural_multi_attacker_high_level_defeat(environment, live_worker):
             before = ready["actors"][target]
             assert before["hp"] == expected_hp > 0
             for observer in all_bots:
+                # The server does not echo a player's own movement, so the acting
+                # fighter judges its range from its predicted position.
                 live_worker.wait_state(observer.name,
-                    lambda s, e=entity, hp=expected_hp: target in s["actors"] and str(e) in s["actors"]
+                    lambda s, e=entity, hp=expected_hp, own=(observer is fighter):
+                              target in s["actors"] and str(e) in s["actors"]
                               and s["actors"][target]["hp"] == hp
                               and s["actors"][str(e)]["hp"] > 0
                               and math.dist(s["actors"][target]["position"],
-                                            s["actors"][str(e)]["position"]) < 3,
+                                            s["predicted_position"] if own else s["actors"][str(e)]["position"]) < 3,
                     "all clients see exact pre-hit HP and acting fighter in range", 10)
             effect = fighter.fast_blade(int(target))
             assert effect["source"] == entity and effect["action"] == 9 and damage_value(effect) > 0
@@ -117,10 +122,9 @@ def test_natural_multi_attacker_high_level_defeat(environment, live_worker):
     for bot in all_bots:
         bot.logout(wait_server_close=True)
 
-    environment.restart_world()
     persisted = {}
     for index, (fixture, prior) in enumerate(zip(fixtures, fighters)):
-        auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+        auth = server.relogin(fixture)
         bot = Bot(live_worker, f"high-level-reloaded-{index}")
         state = bot.login_via_lobby(auth, fixture["name"])
         after = reward_values(state["rewards"], 1)
@@ -130,7 +134,7 @@ def test_natural_multi_attacker_high_level_defeat(environment, live_worker):
         bot.logout(wait_server_close=True)
 
     artifact = {
-        "fixture": {"layout_id": 3749193, "base_id": 302, "level": 14,
+        "fixture": {"layout_id": target_before["layout_id"], "base_id": 302, "level": 14,
                     "hp": target_before["hp_max"], "source_base_exp": reward["base_exp"]},
         "ordinary_attackers": len(fighters),
         "independent_non_attacking_witness": True,
@@ -138,9 +142,9 @@ def test_natural_multi_attacker_high_level_defeat(environment, live_worker):
         "rewards": rewards,
         "witness_rewards_unchanged": witness_after,
         "persisted_rewards": persisted,
-        "world_restarts": 1,
+        "relogins": 1,
         "both_actor_and_witness_state_required": True,
         "scope": "one exact natural level-fourteen shared-hate defeat, not general scaling or capacity",
     }
-    (environment.artifacts / "combat-high-level-multi-attacker.json").write_text(
+    (server.artifacts / "combat-high-level-multi-attacker.json").write_text(
         json.dumps(artifact, indent=2, sort_keys=True), encoding="utf-8")

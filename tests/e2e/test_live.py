@@ -1,33 +1,21 @@
-"""Normal-network journeys against disposable servers, never synthetic peers."""
+"""Normal-network journeys against the running dev stack."""
 from concurrent.futures import ThreadPoolExecutor
 import json
 import math
 import pytest
-from .support.environment import HTTP_RECEIPT_SCOPE
+from .scenarios import logout_all, party, say_and_walk
 from .support.worker import Bot, WorkerError
 
 pytestmark = pytest.mark.live
 
 
-def test_rejected_credentials(environment):
-    result = environment.api(
-        "login", {"username": "absent_e2e_user", "pass": "invalid"}, expected=400)
-    receipt = environment.last_api_receipt
+def test_rejected_credentials(server):
+    result = server.api("login", {"username": "absent_e2e_user", "pass": "invalid"}, expected=400)
     assert isinstance(result, dict) and "sId" not in result
-    assert receipt == {
-        "version":1,
-        "scope":HTTP_RECEIPT_SCOPE,
-        "method":"login","expected_status":400,"received_status":400,
-        "response_bytes":receipt["response_bytes"],
-        "response_sha256":receipt["response_sha256"],"session_returned":False}
-    assert type(receipt["response_bytes"]) is int and receipt["response_bytes"] >= 0
-    assert len(receipt["response_sha256"]) == 64
-    (environment.artifacts / "rejected-credentials.json").write_text(
-        json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def test_login_idle_logout(environment, live_worker):
-    fixture = environment.fresh_character()
+def test_login_idle_logout(server, live_worker):
+    fixture = server.fresh_character()
     bot = Bot(live_worker, "login")
     state = bot.login_via_lobby(fixture["auth"], fixture["name"])
     assert state["territory"] != 0
@@ -40,12 +28,12 @@ def test_login_idle_logout(environment, live_worker):
     bot.close()
 
 
-def test_received_party_join_and_leave(environment, live_worker):
-    leader_fixture = environment.fresh_character()
-    member_fixture = environment.fresh_character()
-    third_fixture = environment.fresh_character()
-    extra_fixtures = [environment.fresh_character() for _ in range(5)]
-    outsider_fixture = environment.fresh_character()
+def test_received_party_join_and_leave(server, live_worker):
+    leader_fixture = server.fresh_character()
+    member_fixture = server.fresh_character()
+    third_fixture = server.fresh_character()
+    extra_fixtures = [server.fresh_character() for _ in range(5)]
+    outsider_fixture = server.fresh_character()
     leader, member = Bot(live_worker, "party-leader"), Bot(live_worker, "party-member")
     third = Bot(live_worker, "party-third")
     extras = [Bot(live_worker, f"party-extra-{index}") for index in range(5)]
@@ -170,8 +158,7 @@ def test_received_party_join_and_leave(environment, live_worker):
         "offline tell target despawned")
     assert member.tell_offline(rejoin_before["entity_id"], rejoin_fixture["name"],
                                "offline member exact tell") == {"name": rejoin_fixture["name"]}
-    rejoin_auth = environment.api("login", {"username": rejoin_fixture["username"],
-                                             "pass": rejoin_fixture["password"]})
+    rejoin_auth = server.relogin(rejoin_fixture)
     rejoined = Bot(live_worker, "party-extra-rejoined")
     rejoined_state = rejoined.login_via_lobby(rejoin_auth, rejoin_fixture["name"])
     assert rejoined_state["entity_id"] == rejoin_before["entity_id"]
@@ -210,9 +197,9 @@ def test_received_party_join_and_leave(environment, live_worker):
         bot.close()
 
 
-def test_observed_movement_and_position_persistence(environment, live_worker):
-    mover_fixture = environment.fresh_character()
-    observer_fixture = environment.fresh_character()
+def test_observed_movement_and_position_persistence(server, live_worker):
+    mover_fixture = server.fresh_character()
+    observer_fixture = server.fresh_character()
     mover, observer = Bot(live_worker, "mover"), Bot(live_worker, "observer")
     mover_state = mover.login_via_lobby(mover_fixture["auth"], mover_fixture["name"])
     observer.login_via_lobby(observer_fixture["auth"], observer_fixture["name"])
@@ -232,10 +219,21 @@ def test_observed_movement_and_position_persistence(environment, live_worker):
     observer.logout()
     mover.close()
     observer.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": mover_fixture["username"], "pass": mover_fixture["password"]})
+    auth = server.relogin(mover_fixture)
     reconnected = Bot(live_worker, "reconnected")
     state = reconnected.login_via_lobby(auth, mover_fixture["name"])
     assert math.dist(state["observed_position"], destination) < 0.1
     reconnected.logout()
     reconnected.close()
+
+
+# The watchable scenarios from `python -m tests.e2e.scenario`, run unattended.
+@pytest.mark.parametrize("run", [say_and_walk, party], ids=lambda fn: fn.__name__)
+def test_scenario(server, live_worker, run):
+    bots = run(server, live_worker, lambda line: None)
+    actors = [live_worker.snapshot(bot.name)["entity_id"] for bot in bots]
+    logout_all(bots[:-1])
+    witness = bots[-1]
+    live_worker.wait_state(witness.name, lambda s: all(str(a) not in s["actors"] for a in actors[:-1]),
+                           "witness sees the other bots despawn", timeout=30)
+    logout_all([witness])

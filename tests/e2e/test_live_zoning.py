@@ -10,10 +10,10 @@ from .support.worker import Bot
 pytestmark = pytest.mark.live
 
 
-def test_observed_living_return_action(environment, live_worker):
-    transition_path = environment.profile.get("transition_catalog")
-    respawn_path = environment.profile.get("respawn_catalog")
-    combat_path = environment.profile.get("combat_catalog")
+def test_observed_living_return_action(server, live_worker):
+    transition_path = server.profile.get("transition_catalog")
+    respawn_path = server.profile.get("respawn_catalog")
+    combat_path = server.profile.get("combat_catalog")
     assert transition_path and respawn_path and combat_path
     transition = load_transition_catalog(transition_path)["transition"]
     start = transition["destinations"][0]
@@ -23,9 +23,9 @@ def test_observed_living_return_action(environment, live_worker):
     assert metadata["cast_ms"] == 5000 and metadata["recast_ms"] == 900000
     assert metadata["recast_group"] == 57 and metadata["target_enemy"] is False
 
-    fixture = environment.fresh_character(start["position"], start["territory"])
-    source_fixture = environment.fresh_character(start["position"], start["territory"])
-    destination_fixture = environment.fresh_character(respawn["pop_range"]["position"],
+    fixture = server.fresh_character(start["position"], start["territory"])
+    source_fixture = server.fresh_character(start["position"], start["territory"])
+    destination_fixture = server.fresh_character(respawn["pop_range"]["position"],
                                                       respawn["territory"])
     player = Bot(live_worker, "living-returner")
     source = Bot(live_worker, "living-return-source")
@@ -67,13 +67,12 @@ def test_observed_living_return_action(environment, live_worker):
     for bot in (source, destination):
         bot.logout()
         bot.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     reloaded = Bot(live_worker, "living-return-reloaded")
     persisted = reloaded.login_via_lobby(auth, fixture["name"])
     assert persisted["territory"] == respawn["territory"]
     assert math.dist(persisted["observed_position"], respawn["pop_range"]["position"]) < 0.15
-    (environment.artifacts / "living-return.json").write_text(json.dumps({
+    (server.artifacts / "living-return.json").write_text(json.dumps({
         "action": metadata, "request": request,
         "source_position": start["position"],
         "destination_witness": destination_arrival["actors"][str(entity)]["position"],
@@ -86,8 +85,8 @@ def test_observed_living_return_action(environment, live_worker):
     reloaded.close()
 
 
-def test_observed_exit_crossing_and_territory_persistence(environment, live_worker):
-    path = environment.profile.get("transition_catalog")
+def test_observed_exit_crossing_and_territory_persistence(server, live_worker):
+    path = server.profile.get("transition_catalog")
     assert path, "zoning requires profile.transition_catalog generated from matching local assets"
     catalog = load_transition_catalog(path)
     transition = catalog["transition"]
@@ -95,10 +94,10 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     discovery, second_discovery = catalog["supported_discoveries"]
     destination = transition["destinations"][0]
     return_destination = return_transition["destinations"][0]
-    fixture = environment.fresh_character(catalog["route"][0])
-    source_fixture = environment.fresh_character(catalog["route"][0])
-    target_fixture = environment.fresh_character(destination["position"], destination["territory"])
-    discovery_observer_fixture = environment.fresh_character(second_discovery["route"][-1],
+    fixture = server.fresh_character(catalog["route"][0])
+    source_fixture = server.fresh_character(catalog["route"][0])
+    target_fixture = server.fresh_character(destination["position"], destination["territory"])
+    discovery_observer_fixture = server.fresh_character(second_discovery["route"][-1],
                                                               destination["territory"])
     player = Bot(live_worker, "traveler")
     source, target = Bot(live_worker, "source-observer"), Bot(live_worker, "target-observer")
@@ -181,7 +180,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     nonparty_source_to_traveler = player.expect_tell(
         source_state, "source to cross-zone nonparty traveler")
     assert nonparty_source_to_traveler["party_id"] == 0
-    (environment.artifacts / "cross-zone-social.json").write_text(json.dumps({
+    (server.artifacts / "cross-zone-social.json").write_text(json.dumps({
         "party_source_to_traveler": source_to_traveler,
         "party_traveler_to_source": traveler_to_source,
         "nonparty_traveler_to_source": nonparty_traveler_to_source,
@@ -236,7 +235,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     live_worker.wait_state(player.name,
         lambda s: all(s["heartbeats"][channel] > heartbeats[channel] for channel in ("zone", "chat")),
         "both channels remain live after reverse zoning")
-    (environment.artifacts / "bidirectional-transition.json").write_text(json.dumps({
+    (server.artifacts / "bidirectional-transition.json").write_text(json.dumps({
         "outbound_exit": transition["id"], "outbound_destination": destination,
         "return_exit": return_transition["id"], "return_destination": return_destination,
         "return_route_points": len(catalog["return_route"]),
@@ -253,8 +252,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
         bot.logout()
         bot.close()
     player.close()
-    environment.restart_world()
-    auth = environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+    auth = server.relogin(fixture)
     reloaded = Bot(live_worker, "traveler-reloaded")
     state = reloaded.login_via_lobby(auth, fixture["name"])
     assert state["territory"] == return_destination["territory"]
@@ -262,7 +260,7 @@ def test_observed_exit_crossing_and_territory_persistence(environment, live_work
     assert state["central_thanalan_discovery"] is True
     assert state["central_thanalan_discoveries"] == [1, 3]
     reloaded.expect_rewards(after_discovery, 1)
-    (environment.artifacts / "central-thanalan-discovery.json").write_text(json.dumps({
+    (server.artifacts / "central-thanalan-discovery.json").write_text(json.dumps({
         "bindings": [{"layout_id": discovery["id"], "part_id": discovery["discovery_index"],
                       "shape": discovery["shape"], "witness_position": target_arrival["actors"][actor]["position"]},
                      {"layout_id": second_discovery["id"], "part_id": second_discovery["discovery_index"],

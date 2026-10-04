@@ -12,10 +12,10 @@ from .support.worker import Bot
 pytestmark = pytest.mark.live
 
 
-def test_lobby_character_creation_and_opening_persistence(environment, live_worker):
+def test_lobby_character_creation_and_opening_persistence(server, live_worker):
     catalog = json.loads((Path(__file__).parent / "scene_catalog/opening_uldah.json").read_text())
     assert catalog["profile"] == "sapphire-3.3" and catalog["event_id"] == 1245187
-    opening_path = environment.profile.get("opening_quest_catalog")
+    opening_path = server.profile.get("opening_quest_catalog")
     assert opening_path, "creation journey requires a source-bound opening quest catalog"
     opening = load_opening_quest_catalog(opening_path)
     branches = [("choose_ring_4423", 4423, 1), ("choose_ring_4424", 4424, 2),
@@ -23,13 +23,13 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
     records = []
 
     for index, (choice, item_id, class_job) in enumerate(branches):
-        account = environment.fresh_account()
+        account = server.fresh_account()
         player = Bot(live_worker, f"new-character-{index}")
         state = player.create_character_via_lobby(account["auth"], account["name"], class_job)
         assert state["created_via_lobby"] is True and state["territory"] == 182
         duplicate_name_rejection = None
         if index == 0:
-            duplicate_account = environment.fresh_account()
+            duplicate_account = server.fresh_account()
             duplicate = Bot(live_worker, "new-character-duplicate-name")
             rejected = duplicate.expect_name_rejected(duplicate_account["auth"], account["name"])
             assert rejected["characters"] == []
@@ -65,6 +65,11 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                                    "acknowledgement_is_not_mutation_proof": True})
 
         player.start_uldah_opening()
+        first_scene = live_worker.wait_state(player.name, lambda s: s["scene"] is not None,
+                                             "first Ul'dah opening scene", 10)["scene"]
+        if first_scene["event_id"] != 1245187 or first_scene["scene_id"] != 0:
+            pytest.fail("the opening did not start at its first scene; this scenario needs "
+                        "SkipOpening = false in the world's config")
         player.choose_dialogue(catalog, choice)
         scene = live_worker.wait_state(player.name,
             lambda s: s["scene"] is not None and s["scene"]["event_id"] == 1245187
@@ -95,7 +100,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         player.logout(wait_server_close=True)
         player.close()
 
-        auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+        auth = server.relogin(account)
         reloaded = Bot(live_worker, f"new-character-reloaded-{index}")
         state = reloaded.login_via_lobby(auth, account["name"])
         assert state["created_via_lobby"] is False and state["territory"] == 182 and state["gm_rank"] == 0
@@ -165,11 +170,10 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                         "opening_quest_active": opening_quest_active,
                         "duplicate_name_rejection": duplicate_name_rejection})
 
-    environment.restart_world()
     evidence = []
     for index, record in enumerate(records):
         account = record["account"]
-        auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+        auth = server.relogin(account)
         restarted = Bot(live_worker, f"new-character-restarted-{index}")
         state = restarted.login_via_lobby(auth, account["name"])
         assert state["territory"] == 182 and state["gm_rank"] == 0
@@ -206,7 +210,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         restarted.logout(wait_server_close=True)
         restarted.close()
 
-        auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+        auth = server.relogin(account)
         roundtrip = Bot(live_worker, f"new-character-ring-roundtrip-{index}")
         state = roundtrip.login_via_lobby(auth, account["name"])
         assert state["territory"] == 182 and state["gm_rank"] == 0
@@ -224,8 +228,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         del ring2_expected["items"][str(record["item"])]
         roundtrip.logout(wait_server_close=True)
         roundtrip.close()
-        environment.restart_world()
-        auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+        auth = server.relogin(account)
         ring2_restarted = Bot(live_worker, f"new-character-ring2-restarted-{index}")
         state = ring2_restarted.login_via_lobby(auth, account["name"])
         state = ring2_restarted.expect_rewards(ring2_expected, record["work_index"])
@@ -234,7 +237,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
         assert receipt["acknowledged"] is True and receipt["inventory_change_verified"] is False
         ring2_restarted.logout(wait_server_close=True)
         ring2_restarted.close()
-        auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+        auth = server.relogin(account)
         ring2_final = Bot(live_worker, f"new-character-ring2-final-{index}")
         state = ring2_final.login_via_lobby(auth, account["name"])
         state = ring2_final.expect_rewards(final_expected, record["work_index"])
@@ -247,12 +250,12 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                            "acknowledgement_is_not_mutation_proof": True}
         deletion = None
         if index == 0:
-            auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+            auth = server.relogin(account)
             deleter = Bot(live_worker, "new-character-delete")
             deleted = deleter.delete_character_via_lobby(auth, account["name"])
             assert deleted["characters"] == [] and deleted["created_via_lobby"] is False
             deleter.close()
-            auth = environment.api("login", {"username": account["username"], "pass": account["password"]})
+            auth = server.relogin(account)
             absent = Bot(live_worker, "new-character-delete-verify")
             verified = absent.expect_character_absent(auth, account["name"])
             assert verified["characters"] == [] and verified["deleted_via_lobby"] is False
@@ -283,7 +286,7 @@ def test_lobby_character_creation_and_opening_persistence(environment, live_work
                          "opening_position_after_restart": record["opening_position"],
                          "scene_after_opening_sequence_2": 30 if record["opening_quest_active"] else None})
 
-    (environment.artifacts / "character-creation-opening.json").write_text(json.dumps({
+    (server.artifacts / "character-creation-opening.json").write_text(json.dumps({
         "branches": evidence, "created_via_lobby": True, "initial_territory": 182,
         "coming_to_uldah_completion_blocker": opening["completion_route_blocker"],
         "scope": "four canonical Ul'dah characters across Gladiator, Pugilist and Thaumaturge created through lobby reserve/finalize, all ring choices with persisted Ring1 and Ring2 equip/unequip round trips, one exact duplicate-name rejection and one normal deletion proved absent through fresh HTTP/lobby authentication, all five persisted Gladiator starter-equipment slots plus each distinct starter main hand, source-routed Coming to Ul'dah acceptance through scenes 0/1/2 and persisted sequence 255 plus opening scene 30; completion remains blocked by the missing navigation corridor"

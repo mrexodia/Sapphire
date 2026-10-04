@@ -12,15 +12,16 @@ from .support.worker import Bot, reward_values
 pytestmark = pytest.mark.live
 
 
-def test_natural_vision_aggro_without_player_action(environment, live_worker):
-    pursuit_path = environment.profile.get("pursuit_catalog")
-    respawn_path = environment.profile.get("respawn_catalog")
+def test_natural_vision_aggro_without_player_action(server, live_worker):
+    pursuit_path = server.profile.get("pursuit_catalog")
+    respawn_path = server.profile.get("respawn_catalog")
     assert pursuit_path and respawn_path, "proximity aggro requires source-bound pursuit and respawn catalogs"
     pursuit = load_pursuit_catalog(pursuit_path)
     respawn = load_respawn_catalog(respawn_path)
     bound = pursuit["proximity_enemy"]
 
-    population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    population = json.loads((server.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    server.require_navmesh(141, "w1f2")  # enemies cannot move without one
     matches = []
     for group in population.values():
         row = group.get("bnpcs", {}).get(str(bound["layout_id"]))
@@ -37,8 +38,8 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
     assert source["Behaviour"]["wanderingRange"] == bound["wandering_range"]
     assert source["popInfo"]["nonpop"] == source["popInfo"]["invalidRepop"] == 0
 
-    fighter_fixture = environment.fresh_character(pursuit["proximity_route"][0], 141)
-    witness_fixture = environment.fresh_character(pursuit["proximity_witness_position"], 141)
+    fighter_fixture = server.fresh_character(pursuit["proximity_route"][0], 141)
+    witness_fixture = server.fresh_character(pursuit["proximity_witness_position"], 141)
     witness = Bot(live_worker, "proximity-aggro-witness")
     witness.login_via_lobby(witness_fixture["auth"], witness_fixture["name"])
     fighter = Bot(live_worker, "proximity-aggro-fighter")
@@ -56,7 +57,8 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
                       and actor["level"] == bound["level"]
                       and actor["hp"] == actor["hp_max"] > 0
                       for actor in s["actors"].values()),
-        "source-bound living active-vision enemy", 20)
+        "source-bound living active-vision enemy (allow one respawn)",
+        source["popInfo"]["popInterval"] + 30)
     target = next(int(key) for key, actor in state["actors"].items()
                   if actor["layout_id"] == bound["layout_id"]
                   and actor["base_id"] == bound["base_id"]
@@ -127,9 +129,8 @@ def test_natural_vision_aggro_without_player_action(environment, live_worker):
     fighter.close()
     witness.logout()
     witness.close()
-    environment.restart_world()
 
-    (environment.artifacts / "combat-proximity-aggro.json").write_text(json.dumps({
+    (server.artifacts / "combat-proximity-aggro.json").write_text(json.dumps({
         "enemy": bound,
         "approach_route_length": pursuit["proximity_route_length"],
         "approach_start": pursuit["proximity_route"][0],

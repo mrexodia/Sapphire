@@ -6,14 +6,15 @@ import re
 import pytest
 
 from .support.catalog import load_combat_catalog
-from .support.combat import combat_reward_delta, committed_damage, damage_value
+from .support.combat import (approach_target, combat_reward_delta, committed_damage, damage_value,
+                             wait_healthy_enemy)
 from .support.worker import Bot, reward_values
 
 pytestmark = pytest.mark.live
 
 
-def test_natural_level_four_fast_blade_combo(environment, live_worker):
-    catalog = load_combat_catalog(environment.profile["combat_catalog"])
+def test_natural_level_four_fast_blade_combo(server, live_worker):
+    catalog = load_combat_catalog(server.profile["combat_catalog"])
     combo = catalog["first_fast_blade_combo"]
     reward = catalog["representative_high_level_enemy"]
     assert combo["action"] == 11 and combo["level"] == 4
@@ -21,28 +22,35 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
     assert combo["minimum_level_fourteen_defeats"] == 18
     assert reward == {"level": 14, "base_exp": 115}
 
-    population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
-    matches = [row for group in population.values()
-               for layout_id, row in group.get("bnpcs", {}).items() if layout_id == "3749193"]
-    assert len(matches) == 1
-    spawn = matches[0]
-    assert spawn["baseInfo"]["baseId"] == 302 and spawn["baseInfo"]["level"] == 14
-    assert spawn["popInfo"]["nonpop"] == 0
-    logs = "\n".join(path.read_text(errors="replace") for path in environment.runtime.glob("world*.log"))
-    assert re.search(r"141\s+\d+\s+1\s+w1f2\s+PUBLIC\s+NAVI\s+Central Thanalan", logs)
-    position = list(spawn["baseInfo"]["position"])
+    population = json.loads((server.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    server.require_navmesh(141, "w1f2")  # enemies cannot move without one
+    spawns = {layout_id: row for group in population.values()
+              for layout_id, row in group.get("bnpcs", {}).items()
+              if row["baseInfo"]["baseId"] == 302 and row["baseInfo"]["level"] == 14
+              and row["popInfo"]["nonpop"] == 0}
+    # Eighteen defeats at a 60s respawn would take too long against one spawn, so
+    # the fighters rotate across whichever level-14 enemy of this kind is healthy
+    # nearby. They start beside this one.
+    assert "3749193" in spawns and len(spawns) >= 2
+    position = list(spawns["3749193"]["baseInfo"]["position"])
     position[0] += 1.0
-    fixtures = [environment.fresh_character(position, 141) for _ in range(4)]
-    witness_fixture = environment.fresh_character(position, 141)
+    fixtures = [server.fresh_character(position, 141) for _ in range(4)]
+    witness_fixture = server.fresh_character(position, 141)
 
     def authenticate(fixture):
-        return environment.api("login", {"username": fixture["username"], "pass": fixture["password"]})
+        return server.relogin(fixture)
 
-    def target_in(state):
-        rows = [(key, actor) for key, actor in state["actors"].items()
-                if actor["kind"] == 2 and actor["layout_id"] == 3749193
-                and actor["base_id"] == 302 and actor["level"] == 14 and actor["hp"] > 0]
-        return rows[0] if len(rows) == 1 else None
+    def choose_and_approach(bots, witness):
+        # The witness picks the nearest healthy enemy; everyone walks beside it and
+        # confirms the same healthy target before the first hit.
+        target, _ = wait_healthy_enemy(live_worker, witness, 302, 14, 60.0, 90)
+        for bot in bots:
+            approach_target(live_worker, bot, target)
+        for bot in bots:
+            live_worker.wait_state(bot.name,
+                lambda s: s["actors"].get(target, {}).get("hp", 0) == s["actors"].get(target, {}).get("hp_max") > 0,
+                "every client sees the chosen healthy target", 10)
+        return target, live_worker.snapshot(witness.name)["actors"][target]
 
     def expected_progress(total_exp):
         level, remaining = 1, total_exp
@@ -63,6 +71,7 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
     expected_rewards = None
     expected_inventories = None
     cycles = []
+    targets = []
     for kill_index in range(combo["minimum_level_fourteen_defeats"]):
         fighters = [Bot(live_worker, f"combo-fighter-{kill_index}-{index}") for index in range(4)]
         witness = Bot(live_worker, f"combo-witness-{kill_index}")
@@ -82,12 +91,12 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
         all_bots = [*fighters, witness]
         for bot in all_bots:
             live_worker.wait_state(bot.name,
-                lambda s: target_in(s) is not None
-                          and all(str(entity) in s["actors"] for entity in entities)
+                lambda s: all(str(entity) in s["actors"] for entity in entities)
                           and str(witness_entity) in s["actors"],
-                "all combo-progression clients and target visible", 30)
-        target, target_before = target_in(live_worker.snapshot(witness.name))
+                "all combo-progression clients visible", 30)
+        target, target_before = choose_and_approach(all_bots, witness)
         assert target_before["hp"] == target_before["hp_max"] == 237
+        targets.append({"cycle": kill_index + 1, "layout_id": target_before["layout_id"]})
         before_rewards = [reward_values(live_worker.snapshot(bot.name)["rewards"], 1)
                           for bot in fighters]
         witness_before = reward_values(live_worker.snapshot(witness.name)["rewards"], 1)
@@ -106,12 +115,15 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
                 before = ready["actors"][target]
                 assert before["hp"] == expected_hp > 0
                 for observer in all_bots:
+                    # The server does not echo a player's own movement, so the acting
+                    # fighter judges its range from its predicted position.
                     live_worker.wait_state(observer.name,
-                        lambda s, e=entity, hp=expected_hp: target in s["actors"] and str(e) in s["actors"]
+                        lambda s, e=entity, hp=expected_hp, own=(observer is fighter):
+                                  target in s["actors"] and str(e) in s["actors"]
                                   and s["actors"][target]["hp"] == hp
                                   and s["actors"][str(e)]["hp"] > 0
                                   and math.dist(s["actors"][target]["position"],
-                                                s["actors"][str(e)]["position"]) < 3,
+                                                s["predicted_position"] if own else s["actors"][str(e)]["position"]) < 3,
                         "all combo-progression clients see exact pre-hit state", 10)
                 effect = fighter.fast_blade(int(target))
                 assert damage_value(effect) > 0
@@ -156,12 +168,8 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
                        "last_effect": effects[-1], "reward_deltas": deltas})
         expected_rewards, expected_inventories = after_rewards, after_inventories
         for bot in all_bots:
-            # The received logout acknowledgement is followed by an owned client
-            # close and complete world restart; transport-close timing is not
-            # treated as persistence evidence or retried.
-            bot.logout(timeout=30)
+            bot.logout(timeout=30, wait_server_close=True)
             bot.close()
-        environment.restart_world()
 
     fighters = [Bot(live_worker, f"combo-final-fighter-{index}") for index in range(4)]
     witness = Bot(live_worker, "combo-final-witness")
@@ -178,11 +186,10 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
     all_bots = [*fighters, witness]
     for bot in all_bots:
         live_worker.wait_state(bot.name,
-            lambda s: target_in(s) is not None
-                      and all(str(entity) in s["actors"] for entity in entities)
+            lambda s: all(str(entity) in s["actors"] for entity in entities)
                       and str(witness_entity) in s["actors"],
-            "final combo clients and target visible", 30)
-    target, _ = target_in(live_worker.snapshot(witness.name))
+            "final combo clients visible", 30)
+    target, final_target = choose_and_approach(all_bots, witness)
     actor, entity = fighters[0], entities[0]
     ready = actor.wait_fast_blade_ready(int(target), 45)
     before_fast = ready["actors"][target]
@@ -207,10 +214,10 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
     assert before_savage["hp"] > 0 and ready["actors"][str(entity)]["tp"] >= 60
     for observer in all_bots:
         live_worker.wait_state(observer.name,
-            lambda s: target in s["actors"] and str(entity) in s["actors"]
+            lambda s, own=(observer is actor): target in s["actors"] and str(entity) in s["actors"]
                       and s["actors"][target]["hp"] == before_savage["hp"]
                       and math.dist(s["actors"][target]["position"],
-                                    s["actors"][str(entity)]["position"]) < 3,
+                                    s["predicted_position"] if own else s["actors"][str(entity)]["position"]) < 3,
             "all clients see exact Savage Blade pre-state", 10)
     savage_effect = actor.savage_blade(int(target))
     assert damage_value(savage_effect) > 0
@@ -228,12 +235,13 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
         "received Savage Blade action start", 10)
 
     artifact = {
-        "fixture": {"layout_id": 3749193, "base_id": 302, "level": 14,
-                    "source_base_exp": 115},
+        "fixture": {"base_id": 302, "level": 14, "source_base_exp": 115,
+                    "start_layout_id": 3749193, "targets": targets,
+                    "final_target_layout_id": final_target["layout_id"]},
         "ordinary_attackers": 4,
         "independent_witnesses_per_cycle": 1,
         "defeats": len(cycles),
-        "world_restarts": len(cycles),
+        "relogins": len(cycles),
         "cycles": cycles,
         "persisted_level": started["rewards"]["level_by_index"][1],
         "persisted_exp": started["rewards"]["exp_by_index"][1],
@@ -244,12 +252,9 @@ def test_natural_level_four_fast_blade_combo(environment, live_worker):
                   "source_metadata": combo},
         "scope": "one exact naturally earned level-four Fast Blade to Savage Blade combo",
     }
-    (environment.artifacts / "combat-level-four-combo.json").write_text(
+    (server.artifacts / "combat-level-four-combo.json").write_text(
         json.dumps(artifact, indent=2, sort_keys=True), encoding="utf-8")
+    # The combo target is left alive and damaged; it heals itself when it retreats.
     for bot in all_bots:
         bot.logout(timeout=30)
         bot.close()
-    # This session intentionally leaves the combo target alive and damaged. Reset
-    # the owned world before the next allowlisted scenario; this is teardown, not
-    # a retry or combo assertion.
-    environment.restart_world()

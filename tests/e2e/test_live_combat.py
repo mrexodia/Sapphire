@@ -13,15 +13,15 @@ from .support.combat import combat_reward_delta, committed_damage, damage_value
 pytestmark = pytest.mark.live
 
 
-def test_observed_sprint_status_and_tp_debit(environment, live_worker):
-    path = environment.profile.get("combat_catalog")
+def test_observed_sprint_status_and_tp_debit(server, live_worker):
+    path = server.profile.get("combat_catalog")
     assert path, "Sprint requires profile.combat_catalog generated from matching local assets"
     sprint = load_combat_catalog(path)["sprint"]
     assert sprint == {"action": 3, "base_exp": 45, "cast_ms": 0, "category": 0,
                       "class_job": 0, "cost": 0, "cost_type": 18, "effect_type": 1,
                       "level": 0, "range": 0, "recast_group": 56,
                       "recast_ms": 30000, "target_enemy": False, "work_index": -1}
-    fixture, witness_fixture = environment.fresh_character(), environment.fresh_character()
+    fixture, witness_fixture = server.fresh_character(), server.fresh_character()
     player, observer = Bot(live_worker, "sprinter"), Bot(live_worker, "sprint-observer")
     state = player.login_via_lobby(fixture["auth"], fixture["name"])
     entity = state["entity_id"]
@@ -67,26 +67,25 @@ def test_observed_sprint_status_and_tp_debit(environment, live_worker):
     assert acted["phase"] == "ready"
 
 
-def test_observed_fast_blade_damage(environment, live_worker):
-    path = environment.profile.get("combat_catalog")
+def test_observed_fast_blade_damage(server, live_worker):
+    path = server.profile.get("combat_catalog")
     assert path, "combat requires profile.combat_catalog generated from matching local assets"
     catalog = load_combat_catalog(path)
     # Initial location is fixture setup, not a claim of walking here from Ul'dah.
     # Use the unchanged staged world population, not a hand-authored enemy spawn.
-    population = json.loads((environment.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    population = json.loads((server.runtime / "data/bnpcs/w1f2/w1f2.json").read_text())
+    server.require_navmesh(141, "w1f2")  # enemies cannot move without one
     spawn = population["LVD_BNPC_01"]["bnpcs"]["3746473"]
     assert spawn["baseInfo"]["baseId"] == 351 and spawn["baseInfo"]["level"] == 1
     assert spawn["popInfo"]["nonpop"] == 0
     # NPCs must really have compatible navigation, not silently run without it.
-    logs = "\n".join(p.read_text(errors="replace") for p in environment.runtime.glob("world*.log"))
-    assert re.search(r"141\s+\d+\s+1\s+w1f2\s+PUBLIC\s+NAVI\s+Central Thanalan", logs)
     position = list(spawn["baseInfo"]["position"])
     # Do not overlap the enemy's exact spawn: face() has no horizontal direction
     # for coincident actors. This one-metre lateral PLAYER placement is fixture
     # setup, not a walked route, enemy relocation or navigation assertion.
     position[0] += 1.0
-    fixture = environment.fresh_character(position, 141)
-    witness_fixture = environment.fresh_character(position, 141)
+    fixture = server.fresh_character(position, 141)
+    witness_fixture = server.fresh_character(position, 141)
     player, observer = Bot(live_worker, "fighter"), Bot(live_worker, "combat-observer")
     state = player.login_via_lobby(fixture["auth"], fixture["name"])
     entity = state["entity_id"]
@@ -106,7 +105,7 @@ def test_observed_fast_blade_damage(environment, live_worker):
     # never force its position, issue out-of-range attacks or fabricate a route.
     state = live_worker.wait_state(player.name,
         lambda s: bool(candidates(s)) and s["actors"][str(entity)]["tp"] >= 60,
-        "nearby level-one marmot and naturally regenerated TP", 30)
+        "nearby level-one marmot and naturally regenerated TP (respawn takes 15s)", 60)
     target, before = candidates(state)[0]
     fighter_before = state["actors"][str(entity)]
     assert fighter_before["hp"] == fighter_before["hp_max"] > 0
@@ -211,8 +210,8 @@ def test_observed_fast_blade_damage(environment, live_worker):
     assert pugilist_spawn["baseInfo"]["baseId"] == 351 and pugilist_spawn["baseInfo"]["level"] == 1
     pugilist_position = list(pugilist_spawn["baseInfo"]["position"])
     pugilist_position[0] += 1.0
-    pugilist_fixture = environment.fresh_character(pugilist_position, 141, class_job=2)
-    pugilist_witness_fixture = environment.fresh_character(pugilist_position, 141)
+    pugilist_fixture = server.fresh_character(pugilist_position, 141, class_job=2)
+    pugilist_witness_fixture = server.fresh_character(pugilist_position, 141)
     pugilist = Bot(live_worker, "pugilist-fighter")
     pugilist_witness = Bot(live_worker, "pugilist-witness")
     pugilist_state = pugilist.login_via_lobby(pugilist_fixture["auth"], pugilist_fixture["name"])
@@ -279,8 +278,8 @@ def test_observed_fast_blade_damage(environment, live_worker):
     assert caster_spawn["baseInfo"]["baseId"] == 351 and caster_spawn["baseInfo"]["level"] == 1
     caster_position = list(caster_spawn["baseInfo"]["position"])
     caster_position[0] += 1.0
-    caster_fixture = environment.fresh_character(caster_position, 141, class_job=7)
-    caster_witness_fixture = environment.fresh_character(caster_position, 141)
+    caster_fixture = server.fresh_character(caster_position, 141, class_job=7)
+    caster_witness_fixture = server.fresh_character(caster_position, 141)
     caster = Bot(live_worker, "thaumaturge-caster")
     caster_witness = Bot(live_worker, "thaumaturge-witness")
     caster_state = caster.login_via_lobby(caster_fixture["auth"], caster_fixture["name"])
@@ -296,7 +295,7 @@ def test_observed_fast_blade_damage(environment, live_worker):
 
     caster_state = live_worker.wait_state(caster.name,
         lambda s: bool(caster_candidates(s)) and s["actors"][str(caster_entity)]["mp"] >= 4,
-        "natural target and received Thaumaturge MP", 30)
+        "natural target and received Thaumaturge MP (respawn takes 15s)", 60)
     caster_target, caster_before = min(caster_candidates(caster_state),
         key=lambda row: math.dist(row[1]["position"], caster_state["predicted_position"]))
     caster_mp_before = caster_state["actors"][str(caster_entity)]["mp"]
@@ -324,7 +323,7 @@ def test_observed_fast_blade_damage(environment, live_worker):
     caster.logout()
     caster_witness.logout()
 
-    (environment.artifacts / "combat-defeat-rewards.json").write_text(json.dumps({
+    (server.artifacts / "combat-defeat-rewards.json").write_text(json.dumps({
         "attacks": evidence, "attempt_monotonic": attempts, "retaliation": retaliation,
         "fighter_hp_before_combat": fighter_before["hp"], "target_hp_after": 0,
         "target_removed_for_both_clients": True, "rewards_before": before_rewards,

@@ -1,32 +1,26 @@
-import json
-from pathlib import Path
 import pytest
 
-from .support.environment import Environment
+from .support.devserver import DevServer, load_profile
 from .support.worker import Worker
-from .support.timing import PhaseTiming
 
 
 def pytest_addoption(parser):
-    parser.addoption("--e2e-worker", help="Path to the headless worker (required for worker contract tests)")
-    parser.addoption("--e2e-profile", help="Local disposable-server profile JSON (opts into live E2E)")
-    parser.addoption("--e2e-timings", help="Write pytest setup/call/teardown durations to a NEW JSON file")
+    parser.addoption("--e2e-worker", help="Path to the headless worker (worker contract tests only)")
+    parser.addoption("--e2e-profile", help="Profile JSON pointing at the running dev stack (enables live tests)")
+    parser.addoption("--e2e-keep-bots", action="store_true",
+                     help="Do not purge bot_ accounts before or after the session (keeps bots and any bot_ test account you are using in game)")
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "live: requires matching game assets and isolated Sapphire servers")
-    path = config.getoption("--e2e-timings")
-    if path:
-        if Path(path).exists():
-            raise pytest.UsageError("--e2e-timings requires a new output path")
-        config.pluginmanager.register(PhaseTiming(path), "e2e-phase-timing")
+    config.addinivalue_line("markers", "live: needs a running local Sapphire stack with BotApi enabled")
 
 
 @pytest.fixture
 def worker_path(request):
     value = request.config.getoption("--e2e-worker")
     if not value:
-        pytest.skip("worker contract tests require explicit --e2e-worker")
+        pytest.skip("worker contract tests require --e2e-worker")
+    from pathlib import Path
     path = Path(value).resolve()
     if not path.is_file():
         pytest.fail(f"worker does not exist: {path}")
@@ -39,24 +33,28 @@ def worker(worker_path, tmp_path):
         yield instance
 
 
-@pytest.fixture
-def environment(request):
+@pytest.fixture(scope="session")
+def dev_server(request):
     profile_path = request.config.getoption("--e2e-profile")
     if not profile_path:
-        pytest.skip("live E2E requires explicit --e2e-profile; synthetic tests are not live coverage")
-    profile = json.loads(Path(profile_path).read_text(encoding="utf-8"))
-    instance = Environment(profile)
-    try:
-        instance.start()
-        yield instance
-    finally:
-        instance.close()
+        pytest.skip("live tests require --e2e-profile")
+    server = DevServer(load_profile(profile_path))
+    server.check_alive()
+    keep = request.config.getoption("--e2e-keep-bots")
+    if not keep:
+        server.purge_bots()
+    yield server
+    if not keep:
+        server.purge_bots()
 
 
 @pytest.fixture
-def live_worker(environment, request):
-    name = request.node.name.replace("/", "_")
-    with Worker(environment.worker, environment.artifacts / name,
-                environment.deadline_scale) as instance:
+def server(dev_server):
+    return dev_server
+
+
+@pytest.fixture
+def live_worker(server, request):
+    name = request.node.name.replace("/", "_").replace("[", "-").replace("]", "")
+    with Worker(server.worker, server.artifacts / name, server.deadline_scale) as instance:
         yield instance
-    environment.check_alive()
