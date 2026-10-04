@@ -125,7 +125,7 @@ namespace Sapphire::Testing
                                                             {"leader_index", 0}, {"members", Json::array()}}},
       {"discovery_reply", nullptr}, {"discovery_requests_sent", Json::array()},
       {"central_thanalan_discoveries", Json::array()}, {"central_thanalan_discovery", false},
-      {"heartbeat_replies", 0},
+      {"heartbeat_replies", 0}, {"last_warp", nullptr},
       {"heartbeats", {{"zone", 0}, {"chat", 0}}}, {"packets_received", 0}};
   }
   void Bot::event(const std::string& name, Json data)
@@ -742,6 +742,18 @@ namespace Sapphire::Testing
         }
       }
     }
+    else if(h.type == WS::FFXIVIpcWarp::_ServerIpcType && segment.header.source_actor == m_entity)
+    {
+      // A same-zone warp of this character: the server moved us without a zone change.
+      const auto p = readObject<WS::FFXIVIpcWarp>(segment.data, off);
+      const std::array<float, 3> position{p.x, p.y, p.z};
+      m_movement.cancel(); m_moving = false;
+      m_state["observed_position"] = position;
+      m_predicted = position;
+      m_state["predicted_position"] = m_predicted;
+      m_state["last_warp"] = {{"type", p.Type}, {"position", position}, {"token", m_seq + 1}};
+      event("warp", {{"type", p.Type}, {"position", position}});
+    }
     else if(h.type == WS::FFXIVIpcCondition::_ServerIpcType)
     {
       auto p = readObject<WS::FFXIVIpcCondition>(segment.data, off);
@@ -937,6 +949,16 @@ namespace Sapphire::Testing
       auto payload = openingWithinRangeRequest(m_state["territory"], args.at("event_id"),
                                                args.at("param"), m_predicted, position);
       sendZone(WC::FFXIVIpcEventHandlerWithinRange::_ServerIpcType, payload);
+      return Json::object();
+    }
+    if(method == "leave_uldah_opening_range")
+    {
+      if(m_moving || !m_state["event_id"].is_null() || !m_state["scene"].is_null())
+        throw ProtocolError("opening range requires an idle character");
+      const auto position = args.at("position").get<std::array<float, 3>>();
+      auto payload = openingOutsideRangeRequest(m_state["territory"], args.at("event_id"),
+                                                args.at("param"), m_predicted, position);
+      sendZone(WC::FFXIVIpcEventHandlerOutsideRange::_ServerIpcType, payload);
       return Json::object();
     }
     if(method == "discover_central_thanalan")

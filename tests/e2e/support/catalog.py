@@ -238,9 +238,16 @@ def validate_opening_quest_catalog(data):
                  for item in (4423, 4424, 4425, 4426)]:
         raise WorkerError("opening ring equipment source binding mismatch")
     ranges = data.get("opening_event_ranges")
-    if (not isinstance(ranges, list) or {row.get("id") for row in ranges} != {4101525, 4101535, 4101537}
-            or any(row.get("shape") != 1 or row.get("enabled") is not False for row in ranges)):
+    closed_exits = {4101525, 4101535, 4101537}
+    if (not isinstance(ranges, list) or {row.get("id") for row in ranges} != closed_exits | {4101587}
+            or any(row.get("shape") != 1 for row in ranges)
+            or any(row.get("enabled") is not False for row in ranges if row.get("id") in closed_exits)):
         raise WorkerError("opening event-range source binding mismatch")
+    returns = data.get("return_positions", {})
+    for row in ranges:
+        position = row.get("return_position")
+        if not isinstance(position, list) or len(position) != 3                 or position not in [pop.get("position") for pop in returns.values()]:
+            raise WorkerError("opening range return position does not bind a Level row")
     binding = data.get("supported_range", {})
     if ({key: binding.get(key) for key in ("event_id", "param", "expected_scene")} !=
             {"event_id": 1245187, "param": 4101537, "expected_scene": 20}):
@@ -249,6 +256,14 @@ def validate_opening_quest_catalog(data):
     source = next(row for row in ranges if row["id"] == 4101537)
     if math.dist(range_route[0], [42, 4, -157.6]) > 1 or math.dist(range_route[-1], source["position"]) > 0.25:
         raise WorkerError("opening range route does not bind source geometry")
+    if binding.get("return_position") != source["return_position"]             or math.dist(binding["return_position"], range_route[-1]) < 1:
+        raise WorkerError("opening range return position must be a distinct Level row")
+    arrival = data.get("closed_arrival_area", {})
+    arrival_range = next(row for row in ranges if row["id"] == 4101587)
+    if ({key: arrival.get(key) for key in ("event_id", "param", "expected_scene")} !=
+            {"event_id": 1245187, "param": 4101587, "expected_scene": 20}
+            or arrival.get("return_position") != arrival_range["return_position"]):
+        raise WorkerError("unsupported opening arrival-area binding")
     return data
 
 

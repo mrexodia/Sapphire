@@ -30,9 +30,31 @@ namespace Sapphire::Testing
         throw ProtocolError("opening range requires finite received geometry");
       distance += std::pow(current[i] - position[i], 2);
     }
-    if(territory != 182 || eventId != 1245187 || param != 4101537 || distance > 0.15f * 0.15f)
+    // The three closed city exits of the opening layout.
+    if(territory != 182 || eventId != 1245187 || distance > 0.15f * 0.15f ||
+       (param != 4101537 && param != 4101525 && param != 4101535))
       throw ProtocolError("unsupported or unreached opening range");
     Wire::WorldPackets::Client::FFXIVIpcEventHandlerWithinRange packet{};
+    packet.param1 = param; packet.eventId = eventId;
+    packet.position.x = position[0]; packet.position.y = position[1]; packet.position.z = position[2];
+    return objectBytes(packet);
+  }
+
+  Bytes openingOutsideRangeRequest(uint16_t territory, uint32_t eventId, uint32_t param,
+                                   const std::array<float, 3>& current,
+                                   const std::array<float, 3>& position)
+  {
+    float distance = 0;
+    for(size_t i = 0; i < 3; ++i)
+    {
+      if(!std::isfinite(current[i]) || !std::isfinite(position[i]))
+        throw ProtocolError("opening range requires finite received geometry");
+      distance += std::pow(current[i] - position[i], 2);
+    }
+    // The arrival area the client reports leaving during opening sequence 1.
+    if(territory != 182 || eventId != 1245187 || param != 4101587 || distance > 0.15f * 0.15f)
+      throw ProtocolError("unsupported or unreached opening range");
+    Wire::WorldPackets::Client::FFXIVIpcEventHandlerOutsideRange packet{};
     packet.param1 = param; packet.eventId = eventId;
     packet.position.x = position[0]; packet.position.y = position[1]; packet.position.z = position[2];
     return objectBytes(packet);

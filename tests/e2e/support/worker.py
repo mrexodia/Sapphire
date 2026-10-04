@@ -167,6 +167,12 @@ class Worker:
                 self._cv.notify_all()
         return response["result"]
 
+    def events(self, bot, since=0.0):
+        """Journal events of one bot received after the monotonic time `since`."""
+        with self._cv:
+            return [event for event in self._events
+                    if event["bot"] == bot and event["received_monotonic"] > since]
+
     def snapshot(self, bot):
         return self.request("snapshot", bot)
 
@@ -295,6 +301,18 @@ class Bot:
         self.worker.request("enter_uldah_opening_range", self.name,
                             event_id=binding["event_id"], param=binding["param"],
                             position=binding["route"][-1])
+
+    def leave_uldah_opening_range(self, binding, position):
+        """Report leaving the opening's arrival area from the bot's current position."""
+        self.worker.request("leave_uldah_opening_range", self.name,
+                            event_id=binding["event_id"], param=binding["param"], position=position)
+
+    def wait_warp(self, position, timeout=10):
+        """Wait until the server warps this character to `position` within the same zone."""
+        return self.worker.wait_state(self.name,
+            lambda s: s["last_warp"] is not None and math.dist(s["last_warp"]["position"], position) < 0.15
+                      and math.dist(s["observed_position"], position) < 0.15,
+            f"warp to {[round(v, 1) for v in position]}", timeout)
 
     def return_homepoint(self, territory, position, timeout=30):
         state = self.worker.snapshot(self.name)

@@ -2,6 +2,7 @@
 from copy import deepcopy
 import json
 import math
+import time
 from pathlib import Path
 
 import pytest
@@ -78,6 +79,20 @@ def test_lobby_character_creation_and_opening_persistence(server, live_worker):
         assert scene["territory"] == 182 and scene["gm_rank"] == 0
         player.choose_dialogue(catalog, "finish")
         player.wait_event_finished()
+
+        # Opening sequence 1: leaving the arrival area is answered by Wymond's line and a
+        # warp back to the layout's return spot.
+        arrival = opening["closed_arrival_area"]
+        player.leave_uldah_opening_range(arrival, live_worker.snapshot(player.name)["predicted_position"])
+        live_worker.wait_state(player.name,
+            lambda s: s["scene"] is not None and s["scene"]["event_id"] == 1245187
+                      and s["scene"]["scene_id"] == arrival["expected_scene"],
+            "arrival-area scene during opening sequence 1")
+        player.choose_dialogue(catalog, "finish")
+        player.wait_event_finished()
+        player.wait_warp(arrival["return_position"])
+
+        # A closed city exit: the same line, then a warp back to that exit's return spot.
         player.walk_route(opening["supported_range"]["route"], 2.0, 15)
         player.enter_uldah_opening_range(opening["supported_range"])
         scene = live_worker.wait_state(player.name,
@@ -86,6 +101,7 @@ def test_lobby_character_creation_and_opening_persistence(server, live_worker):
             "source-defined opening within-range scene")
         player.choose_dialogue(catalog, "finish")
         player.wait_event_finished()
+        player.wait_warp(opening["supported_range"]["return_position"])
         expected = deepcopy(before)
         expected["items"][str(item_id)] = 1
         for moved in unequipped:
@@ -104,7 +120,8 @@ def test_lobby_character_creation_and_opening_persistence(server, live_worker):
         reloaded = Bot(live_worker, f"new-character-reloaded-{index}")
         state = reloaded.login_via_lobby(auth, account["name"])
         assert state["created_via_lobby"] is False and state["territory"] == 182 and state["gm_rank"] == 0
-        assert math.dist(state["observed_position"], opening["supported_range"]["route"][-1]) < 0.15
+        # The warp-back position is what persisted, not the spot where the range was entered.
+        assert math.dist(state["observed_position"], opening["supported_range"]["return_position"]) < 0.15
         state = reloaded.expect_rewards(expected, work_index)
         inventory = deepcopy(state["rewards"]["inventory"])
         inventory_after_fresh = deepcopy(inventory)
@@ -156,6 +173,15 @@ def test_lobby_character_creation_and_opening_persistence(server, live_worker):
             reloaded.expect_quest_active(opening["quest"], 255)
             opening_position = opening["approach_route"][-1]
             opening_quest_active = True
+            # Opening sequence 2 (quest accepted): the client still reports the arrival area,
+            # but leaving it must now be silent, otherwise the line repeats on the way to Momodi.
+            mark = time.monotonic()
+            reloaded.leave_uldah_opening_range(arrival, live_worker.snapshot(reloaded.name)["predicted_position"])
+            live_worker.wait_state(reloaded.name,
+                lambda s: any(e["event"] == "event_finish" for e in live_worker.events(reloaded.name, mark)),
+                "arrival-area event finished")
+            journal = [e["event"] for e in live_worker.events(reloaded.name, mark)]
+            assert "scene" not in journal and "warp" not in journal, journal
         reloaded.logout(wait_server_close=True)
         reloaded.close()
         records.append({"account": account, "choice": choice, "item": item_id, "class_job": class_job,
