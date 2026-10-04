@@ -125,3 +125,41 @@ bool ShopMgr::sellGilShopItem( Entity::Player& player, uint16_t container, uint8
 
   return true;
 }
+
+bool ShopMgr::buybackGilShopItem( Entity::Player& player, uint32_t index, uint32_t quantity )
+{
+  auto& soldItems = *player.getSoldItems();
+  if( quantity == 0 || index >= soldItems.size() )
+    return false;
+
+  auto& entry = soldItems[ index ];
+  const auto itemId = entry.first;
+  if( quantity > entry.second )
+    return false;
+
+  auto& exdData = Common::Service< Data::ExdData >::ref();
+  auto item = exdData.getRow< Excel::Item >( itemId );
+  if( !item )
+    return false;
+
+  // The window shows the same unit price the sale paid out, so buying back is gil-neutral.
+  const uint64_t total = static_cast< uint64_t >( item->data().Price ) * quantity;
+  if( total > std::numeric_limits< uint32_t >::max() )
+    return false;
+  const auto price = static_cast< uint32_t >( total );
+
+  if( player.getCurrency( Common::CurrencyType::Gil ) < price )
+    return false;
+
+  if( !player.addItem( itemId, quantity ) )
+    return false;
+
+  player.removeCurrency( Common::CurrencyType::Gil, price );
+
+  if( quantity == entry.second )
+    soldItems.erase( soldItems.begin() + index );
+  else
+    entry.second -= static_cast< uint8_t >( quantity );
+
+  return true;
+}

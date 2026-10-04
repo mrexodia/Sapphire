@@ -58,12 +58,21 @@ private:
       return;
     }
 
-    // Anything else is a shop command this server does not implement yet, for
-    // example buyback (five results: 0, 3, slot, count, price). Finishing the
-    // event here closes the window under the player mid-action and leaves the
-    // client "occupied" until it relogs, so keep the shop open instead.
-    Logger::debug( "GilShop: unsupported shop command {} ({} results) from {}, re-listing",
-                   result.getResult( 1 ), result.numOfResults, player.getId() );
+    // buyback: five results, 0, 3, list index, quantity, unit price (captured from a real client)
+    if( result.numOfResults == 5 && result.getResult( 1 ) == 3 )
+    {
+      auto& shopMgr = Common::Service< Sapphire::World::Manager::ShopMgr >::ref();
+      shopMgr.buybackGilShopItem( player, result.getResult( 2 ), result.getResult( 3 ) );
+    }
+    else
+    {
+      // Finishing the event on an unknown command closes the window under the player
+      // mid-action and leaves the client "occupied" until it relogs, so keep the shop open.
+      Logger::debug( "GilShop: unsupported shop command {} ({} results) from {}, re-listing",
+                     result.getResult( 1 ), result.numOfResults, player.getId() );
+    }
+
+    // Re-list so the window shows the updated buyback entries, like after a buy or sell.
     eventMgr().playGilShop( player, result.eventId, SCENE_FLAGS, 0, [ & ]( Entity::Player& player, const Event::SceneResult& result )
     {
       shopInteractionCallback( player, result );

@@ -16,5 +16,7 @@ namespace Sapphire::World::Manager
 
     bool purchaseGilShopItem( Sapphire::Entity::Player& player, uint32_t shopId, uint16_t itemId, uint32_t quantity );
     bool sellGilShopItem( Sapphire::Entity::Player & player, uint16_t container, uint8_t fromSlot, uint16_t item, uint32_t quantity );
+    // Buy back entry `index` of the player's sold-item list (most recent first), as listed by the shop window.
+    bool buybackGilShopItem( Sapphire::Entity::Player& player, uint32_t index, uint32_t quantity );
   };
 }
