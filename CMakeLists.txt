@@ -39,10 +39,9 @@ add_custom_target( copy_runtime_files ALL
 file( COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} )
 
 option( SAPPHIRE_BUILD_TOOLKIT "Build the Sapphire Toolkit" ON )
-option( SAPPHIRE_BUILD_TEST_CLIENT "Build the headless bot worker used by tests/e2e" ON )
-if( SAPPHIRE_BUILD_TEST_CLIENT )
+option( SAPPHIRE_BUILD_E2E "Build the end-to-end bot scenario runner (src/e2e)" ON )
+if( SAPPHIRE_BUILD_E2E )
   include( CTest )
-  add_subdirectory( "src/test_client" )
 endif()
 
 ##############################
@@ -160,6 +159,9 @@ endif()
 ##############################
 set( CMAKE_FOLDER "" )
 add_subdirectory( "src/common" )
+if( SAPPHIRE_BUILD_E2E )
+  add_subdirectory( "src/e2e" )
+endif()
 add_subdirectory( "src/api" )
 add_subdirectory( "src/lobby" )
 add_subdirectory( "src/world" )

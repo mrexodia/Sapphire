@@ -5,8 +5,6 @@
 
 namespace Sapphire::Testing
 {
-  void requirePartyContext(const nlohmann::json& party, const nlohmann::json& pendingInvite,
-                           const nlohmann::json& args);
   Bytes partyInviteRequest(const nlohmann::json& actors, uint32_t targetEntity,
                            const std::string& targetName);
   Bytes partyAcceptRequest(const nlohmann::json& pendingInvite);
