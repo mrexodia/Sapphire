@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sstream>
 #include <Config/ConfigMgr.h>
-#include "DevelopmentBotPlacement.h"
 
 #include <Common.h>
 #include <Version.h>
@@ -133,7 +132,6 @@ DebugCommandMgr::DebugCommandMgr()
   registerCommand( "reload", &DebugCommandMgr::hotReload, "Reloads a resource", 1 );
   registerCommand( "facing", &DebugCommandMgr::facing, "Checks if you are facing an actor", 1 );
   registerCommand( "cbt", &DebugCommandMgr::cbt, "Create, bind and teleport to an instance", 1 );
-  registerCommand( "devbot", &DebugCommandMgr::developmentBot, "Opt-in registered development bot placement (administrative setup only)", 1 );
 }
 
 // clear all loaded commands
@@ -1605,78 +1603,6 @@ void DebugCommandMgr::hotReload( char* data, Sapphire::Entity::Player& player, s
   else
   {
     PlayerMgr::sendDebug( player, "Unknown sub command." );
-  }
-}
-
-void DebugCommandMgr::developmentBot( char* data, Entity::Player& player, std::shared_ptr< DebugCommand > command )
-{
-  // Invoked through the ordinary session input queue on the world update thread.
-  // Normal headless gameplay APIs cannot send debug commands. A separate GM
-  // operator authorizes fixture placement; no server network/admin API is added.
-  auto& config = Common::Service< Common::ConfigMgr >::ref();
-  if( !config.getValue( "DevelopmentBots", "Enabled", false ) || !player.getGmRank() )
-  {
-    PlayerMgr::sendUrgent( player, "Development bot placement is disabled." );
-    return;
-  }
-  try
-  {
-    std::istringstream args( extractCommandArgs( data, command->getName() ) );
-    std::string operation, approval, slot, extra;
-    if( !( args >> operation >> approval >> slot ) || args >> extra || operation != "place" ||
-        !Development::lowerHex( approval, 32 ) || ( slot != "0" && slot != "1" ) )
-      throw std::runtime_error( "Usage: devbot place <approval_id> <0|1>" );
-    const auto path = config.getValue< std::string >( "DevelopmentBots", "RegistryPath", "" );
-    if( path.empty() ) throw std::runtime_error( "No development bot registry configured" );
-    std::ifstream input( path, std::ios::binary );
-    if( !input ) throw std::runtime_error( "Development bot registry unavailable" );
-    std::string text( 65537, '\0' );
-    input.read( text.data(), text.size() );
-    if( input.bad() || input.gcount() > 65536 ) throw std::runtime_error( "Development bot registry unreadable/oversized" );
-    text.resize( static_cast< size_t >( input.gcount() ) );
-    const auto registry = Development::parsePlacementRegistry( nlohmann::json::parse( text ) );
-    if( registry.approvalId != approval ) throw std::runtime_error( "Development approval identity mismatch" );
-    const auto& binding = registry.bots[slot == "0" ? 0 : 1];
-    auto& server = Common::Service< WorldServer >::ref();
-    auto session = server.getSession( binding.characterId );
-    if( !session || !session->isValid() || !session->getPlayer() )
-      throw std::runtime_error( "Registered bot must have a live preparation session" );
-    auto target = session->getPlayer();
-    const bool busy = target->isInCombat() || target->getCurrentAction() ||
-      target->hasCondition( Common::PlayerCondition::BetweenAreas ) ||
-      target->hasCondition( Common::PlayerCondition::InNpcEvent ) ||
-      target->hasCondition( Common::PlayerCondition::EventAction ) ||
-      target->hasCondition( Common::PlayerCondition::Casting ) ||
-      target->hasCondition( Common::PlayerCondition::WatchingCutscene ) ||
-      target->hasCondition( Common::PlayerCondition::BoundByDuty );
-    const Development::PlacementState state{ target->getId(), target->getCharacterId(), target->getName(),
-      session->isValid() && target->isConnected(), target->isLoadingComplete(), busy,
-      target->getHp() > 0 && target->getStatus() != Common::ActorStatus::Dead,
-      target->getGmRank(), target->getPartyId(), target->getTerritoryTypeId() };
-    const auto key = approval + ":" + slot;
-    if( m_usedDevelopmentPlacements.size() >= 1024 ||
-        !Development::mayPlace( binding, state, true, player.getGmRank(), player.getCharacterId(),
-                                m_usedDevelopmentPlacements.count( key ) != 0 ) )
-      throw std::runtime_error( "Development bot identity/state/one-shot guard rejected placement" );
-    auto territory = Common::Service< TerritoryMgr >::ref().getTerritoryByTypeId( 130 );
-    if( !territory ) throw std::runtime_error( "Public Ul'dah destination is unavailable" );
-    m_usedDevelopmentPlacements.insert( key );
-    Logger::info( "DevelopmentBotPlacement requested approval={} provisioning={} slot={} operator={} character={} entity={} source={} destination=130 catalog={}; administrative setup, not gameplay proof",
-      approval, registry.provisioningRunId, slot, player.getCharacterId(), binding.characterId,
-      binding.entityId, state.territory, registry.catalogHash );
-    // This deliberately bypasses the opening as administrative fixture setup.
-    // It does not grant EXP/items/quests or reset any other player/world actor.
-    target->setCondition( Common::PlayerCondition::BetweenAreas );
-    target->setOpeningSequence( 2 );
-    Common::Service< WarpMgr >::ref().requestMoveTerritory( *target, Common::WarpType::WARP_TYPE_GM,
-      territory->getGuId(), { registry.position[0], registry.position[1], registry.position[2] }, 0.f );
-    PlayerMgr::sendDebug( player, "Development bot placement queued; require received state and fresh-login verification. Do not retry this approval." );
-  }
-  catch( const std::exception& )
-  {
-    // Do not echo registry text/path/parser errors into client logs.
-    Logger::warn( "DevelopmentBotPlacement rejected/failed operator={}; inspect configured registry, bot state and one-shot approval", player.getCharacterId() );
-    PlayerMgr::sendUrgent( player, "Development placement rejected/failed. Check enablement, registry, approval and idle bot session. Never retry an uncertain queued warp." );
   }
 }
 
