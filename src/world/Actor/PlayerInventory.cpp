@@ -573,7 +573,10 @@ void Player::writeInventory( InventoryType type )
   if( storage->isMultiStorage() )
     query += " AND storageId = " + std::to_string( static_cast< uint16_t >( type ) );
 
-  db.execute( query );
+  // Synchronous like writeItem: a swap or an in-bag move writes the same row
+  // twice in a row, and with several async DB threads the first (intermediate)
+  // write could land last and persist a duplicated or missing stack.
+  db.directExecute( query );
 }
 
 void Player::writeItem( ItemPtr pItem ) const
