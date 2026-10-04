@@ -1,5 +1,8 @@
 #include <Actor/Player.h>
 #include <ScriptObject.h>
+#include <Service.h>
+#include <Logging/Logger.h>
+#include <Exd/ExdData.h>
 
 using namespace Sapphire;
 
@@ -27,6 +30,7 @@ private:
   static constexpr auto NCUT_LIGHT_ALL = 2;
   static constexpr auto NCUT_LIGHT_WIL_1 = 147;
   static constexpr auto NCUT_LIGHT_WIL_2 = 145;
+  static constexpr auto QUEST_COMING_TO_ULDAH = 66130;
 
   void Scene00000( Entity::Player& player )
   {
@@ -75,9 +79,40 @@ private:
     eventMgr().playScene( player, getId(), 1, HIDE_HOTBAR | NO_DEFAULT_CAMERA, { 1, 0x32 } );
   }
 
-  void Scene00020( Entity::Player& player )
+  // Wymond turns the player around at a closed exit; once the line is acknowledged
+  // they are put back at the matching return position, as the opening's return
+  // spots in the layout intend. Without the warp the client re-enters the range
+  // on every step and the line repeats.
+  void Scene00020( Entity::Player& player, uint32_t returnPos )
   {
-    eventMgr().playScene( player, getId(), 20, HIDE_HOTBAR | NO_DEFAULT_CAMERA, { 1 } );
+    auto callback = [ this, returnPos ]( Entity::Player& player, const Event::SceneResult& result )
+    {
+      warpBack( player, returnPos );
+    };
+
+    eventMgr().playScene( player, getId(), 20, HIDE_HOTBAR | NO_DEFAULT_CAMERA, { 1 }, callback );
+  }
+
+  void warpBack( Entity::Player& player, uint32_t returnPos )
+  {
+    // The return spots are Level rows of the opening territory, not pop ranges in the layout.
+    auto& exdData = Common::Service< Data::ExdData >::ref();
+    auto level = exdData.getRow< Excel::Level >( returnPos );
+    if( !level || level->data().TerritoryType != player.getTerritoryTypeId() )
+    {
+      Logger::error( "OpeningUldah: return position {} is not a Level row of territory {}", returnPos,
+                     player.getTerritoryTypeId() );
+      return;
+    }
+    const auto& data = level->data();
+    warpMgr().requestWarp( player, Common::WarpType::WARP_TYPE_NORMAL, { data.TransX, data.TransY, data.TransZ },
+                           data.RotY );
+  }
+
+  // The exits stay closed until Momodi has finished Coming to Ul'dah.
+  bool exitsClosed( Entity::Player& player )
+  {
+    return player.getOpeningSequence() != 0 && !player.isQuestCompleted( QUEST_COMING_TO_ULDAH );
   }
 
   void Scene00030( Entity::Player& player )
@@ -113,16 +148,24 @@ public:
 
   void onOutsideRange( Entity::Player& player, uint32_t eventId, uint32_t param1, float x, float y, float z ) override
   {
-    if( param1 == ERANGE_SEQ_1_CLOSED_1 )
-      Scene00020( player );
+    // Leaving the arrival area is only blocked while Wymond still has to be spoken to (sequence 1).
+    // The client keeps reporting this range afterwards, which used to replay the line on
+    // the way up to Momodi.
+    if( param1 == ERANGE_SEQ_1_CLOSED_1 && player.getOpeningSequence() == 1 )
+      Scene00020( player, POS_SEQ_1_CLOSED_RETURN_1 );
   }
 
   void onWithinRange( Entity::Player& player, uint32_t eventId, uint32_t param1, float x, float y, float z ) override
   {
-    if( param1 == ERANGE_ALWAYS_CLOSED_1 || param1 == ERANGE_ALWAYS_CLOSED_2 || param1 == ERANGE_ALWAYS_CLOSED_3 )
-    {
-      Scene00020( player );
-    }
+    if( !exitsClosed( player ) )
+      return;
+
+    if( param1 == ERANGE_ALWAYS_CLOSED_1 )
+      Scene00020( player, POS_ALWAYS_CLOSED_RETURN_1 );
+    else if( param1 == ERANGE_ALWAYS_CLOSED_2 )
+      Scene00020( player, POS_ALWAYS_CLOSED_RETURN_2 );
+    else if( param1 == ERANGE_ALWAYS_CLOSED_3 )
+      Scene00020( player, POS_ALWAYS_CLOSED_RETURN_3 );
   }
 };
 
