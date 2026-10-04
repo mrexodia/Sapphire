@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     auto metadata = [&](uint32_t actionId)
     {
       if(actionId != 3 && actionId != 6 && actionId != 9 && actionId != 11 && actionId != 53 && actionId != 54 && actionId != 142)
-        throw std::runtime_error("action is not an enabled audited combat action");
+        throw std::runtime_error("action is not a supported combat action");
       auto row = data.getRow<Excel::Action>(actionId);
       if(!row) throw std::runtime_error("starting-class action missing");
       const auto& a = row->data();
