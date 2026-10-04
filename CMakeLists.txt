@@ -39,7 +39,7 @@ add_custom_target( copy_runtime_files ALL
 file( COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} )
 
 option( SAPPHIRE_BUILD_TOOLKIT "Build the Sapphire Toolkit" ON )
-option( SAPPHIRE_BUILD_TEST_CLIENT "Build the external headless E2E client" OFF )
+option( SAPPHIRE_BUILD_TEST_CLIENT "Build the headless bot worker used by tests/e2e" ON )
 if( SAPPHIRE_BUILD_TEST_CLIENT )
   include( CTest )
   add_subdirectory( "src/test_client" )
@@ -175,16 +175,3 @@ add_subdirectory( "src/scripts" )
 ##############################
 set( CMAKE_FOLDER "tools" )
 add_subdirectory( "src/tools" )
-
-# Provisioned gameplay CI needs the complete server/script set, but not GUI tools.
-if( SAPPHIRE_BUILD_TEST_CLIENT )
-  get_property( SAPPHIRE_SCRIPT_TARGETS DIRECTORY "${CMAKE_SOURCE_DIR}/src/scripts" PROPERTY BUILDSYSTEM_TARGETS )
-  add_custom_target( sapphire_gameplay_ci )
-  add_dependencies( sapphire_gameplay_ci api lobby server dbm copy_runtime_files
-                    sapphire_test_client ${SAPPHIRE_SCRIPT_TARGETS} )
-  if( BUILD_TESTING )
-    add_dependencies( sapphire_gameplay_ci sapphire_protocol_tests sapphire_reward_tests
-                      sapphire_combat_tests sapphire_navigation_tests sapphire_database_binding_tests
-                      sapphire_item_id_tests sapphire_dev_placement_tests )
-  endif()
-endif()

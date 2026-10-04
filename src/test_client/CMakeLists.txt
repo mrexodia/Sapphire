@@ -1,18 +1,6 @@
-# Also buildable on its own, without MySQL or game assets:
-# cmake -S src/test_client -B build-e2e
-cmake_minimum_required(VERSION 3.22)
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  project(SapphireTestClient LANGUAGES CXX)
-  include(CTest)
-endif()
+# Headless bot worker used by tests/e2e. Built as part of the normal tree; the
+# protocol/worker unit tests below need no game data or database.
 get_filename_component(SAPPHIRE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND BUILD_TESTING)
-  set(RECASTNAVIGATION_DEMO OFF CACHE BOOL "" FORCE)
-  set(RECASTNAVIGATION_TESTS OFF CACHE BOOL "" FORCE)
-  set(RECASTNAVIGATION_EXAMPLES OFF CACHE BOOL "" FORCE)
-  set(RECASTNAVIGATION_DT_POLYREF64 ON CACHE BOOL "" FORCE)
-  add_subdirectory("${SAPPHIRE_ROOT}/deps/recastnavigation" "${CMAKE_CURRENT_BINARY_DIR}/recast" EXCLUDE_FROM_ALL)
-endif()
 find_package(Threads REQUIRED)
 add_library(sapphire_test_protocol STATIC
   Protocol.cpp
@@ -39,7 +27,7 @@ target_include_directories(sapphire_test_protocol SYSTEM PUBLIC
   "${SAPPHIRE_ROOT}/deps/nlohmann/include")
 target_compile_definitions(sapphire_test_protocol PUBLIC ASIO_STANDALONE)
 if(WIN32)
-  target_compile_definitions(sapphire_test_protocol PUBLIC NOMINMAX _WIN32_WINNT=0x0601 _CRT_SECURE_NO_WARNINGS
+  target_compile_definitions(sapphire_test_protocol PUBLIC NOMINMAX _WIN32_WINNT=0x601 _CRT_SECURE_NO_WARNINGS
     _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
   if(MSVC)
     target_compile_options(sapphire_test_protocol PUBLIC /bigobj /utf-8)
@@ -47,7 +35,7 @@ if(WIN32)
   target_link_libraries(sapphire_test_protocol PUBLIC ws2_32 mswsock bcrypt)
 endif()
 target_link_libraries(sapphire_test_protocol PUBLIC Threads::Threads)
-if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+if(TRUE)
   add_executable(sapphire_test_combat_catalog CombatCatalog.cpp)
   target_link_libraries(sapphire_test_combat_catalog PRIVATE common)
   add_executable(sapphire_test_shop_catalog ShopCatalog.cpp NavigationRoute.cpp)
@@ -75,11 +63,6 @@ endif()
 add_executable(sapphire_test_client main.cpp Client.cpp)
 target_link_libraries(sapphire_test_client PRIVATE sapphire_test_protocol)
 if(BUILD_TESTING)
-  add_executable(sapphire_dev_placement_tests "${SAPPHIRE_ROOT}/tests/world/test_development_bot_placement.cpp")
-  target_compile_features(sapphire_dev_placement_tests PRIVATE cxx_std_17)
-  target_include_directories(sapphire_dev_placement_tests PRIVATE
-    "${SAPPHIRE_ROOT}/src/world" "${SAPPHIRE_ROOT}/deps/nlohmann/include")
-  add_test(NAME sapphire_dev_placement COMMAND sapphire_dev_placement_tests)
   add_executable(sapphire_item_id_tests "${SAPPHIRE_ROOT}/tests/world/test_item_id_allocator.cpp")
   target_compile_features(sapphire_item_id_tests PRIVATE cxx_std_17)
   target_include_directories(sapphire_item_id_tests PRIVATE "${SAPPHIRE_ROOT}/src/world")

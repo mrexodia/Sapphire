@@ -2,7 +2,6 @@
 #include "Protocol.h"
 #include "RewardsState.h"
 #include "CombatState.h"
-#include "DevelopmentPlacementActions.h"
 #include <asio.hpp>
 #include <nlohmann/json.hpp>
 #include <deque>
@@ -71,7 +70,6 @@ namespace Sapphire::Testing
     Json m_state;
     RewardsState m_rewards;
     CombatState m_combat;
-    DevelopmentPlacementActions m_developmentPlacements;
     uint32_t m_actionRequest = 0;
     std::chrono::steady_clock::time_point m_startingActionReady{}, m_fastBladeComboDeadline{};
     uint32_t m_fastBladeComboTarget = 0;

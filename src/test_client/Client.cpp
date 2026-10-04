@@ -32,14 +32,27 @@ namespace Sapphire::Testing
   namespace WC = Wire::WorldPackets::Client;
   namespace WS = Wire::WorldPackets::Server;
 
+  bool isLocalNetwork(const asio::ip::address& address)
+  {
+    if(address.is_loopback()) return true;
+    if(!address.is_v4()) return false;
+    const auto bytes = address.to_v4().to_bytes();
+    return bytes[0] == 10                                   // 10.0.0.0/8
+        || (bytes[0] == 172 && (bytes[1] & 0xF0) == 16)     // 172.16.0.0/12
+        || (bytes[0] == 192 && bytes[1] == 168)             // 192.168.0.0/16
+        || (bytes[0] == 169 && bytes[1] == 254);            // 169.254.0.0/16
+  }
+
   Channel::Channel(asio::io_service& io, Receive receive, std::function<void(const std::string&)> error) :
     m_socket(io), m_receive(std::move(receive)), m_error(std::move(error)) {}
 
   void Channel::connect(const std::string& host, uint16_t port, std::function<void()> ready)
   {
-    // The initial runner deliberately supports only local, disposable servers.
+    // Development servers only: loopback or a private-network address, never a
+    // public host.
     auto address = asio::ip::address::from_string(host);
-    if(!address.is_loopback() || !port) throw ProtocolError("test endpoints must be loopback with a nonzero port");
+    if(!isLocalNetwork(address) || !port)
+      throw ProtocolError("test endpoints must be loopback or private-network addresses with a nonzero port");
     m_socket.async_connect({address, port}, [self = shared_from_this(), ready](auto ec) {
       if(self->m_closed) return;
       if(ec) return self->error("connection failed: " + ec.message());
@@ -203,6 +216,10 @@ namespace Sapphire::Testing
   void Bot::sendZone(uint16_t opcode, const Bytes& payload, std::function<void()> complete)
   {
     if(!m_zone) throw ProtocolError("zone channel not initialized");
+    // Journal what goes out (except the chatty movement/ping traffic) so a server
+    // log can be compared against exactly what the client sent.
+    if(opcode != WC::FFXIVIpcUpdatePosition::_ServerIpcType && opcode != WC::FFXIVIpcPingHandler::_ServerIpcType)
+      event("tx", {{"channel", "zone"}, {"opcode", opcode}, {"size", payload.size()}});
     m_zone->send(frame(1, 3, ipc(opcode, payload), m_entity), std::move(complete));
   }
   void Bot::sendChat(uint16_t opcode, const Bytes& payload)
@@ -952,11 +969,24 @@ namespace Sapphire::Testing
       if(scene.is_null() || scene.at("token") != args.at("token") || scene.at("event_id") != args.at("event_id") ||
          scene.at("scene_id") != args.at("scene_id")) throw ProtocolError("scene identity/token mismatch");
       auto results = args.at("results").get<std::vector<uint32_t>>();
-      if(results.empty() || results.size() > 2) throw ProtocolError("only explicit one/two-result scenes supported");
-      WC::FFXIVIpcReturnEventScene2 p{};
-      p.handlerId = scene.at("event_id"); p.sceneId = scene.at("scene_id"); p.numOfResults = static_cast<uint8_t>(results.size());
-      std::copy(results.begin(), results.end(), p.results);
-      sendZone(p._ServerIpcType, objectBytes(p)); m_state["scene"] = nullptr;
+      if(results.empty() || results.size() > 8) throw ProtocolError("only explicit one to eight-result scenes supported");
+      // The real client picks the packet by result count: two slots for ordinary
+      // answers, eight for shop commands such as buyback.
+      if(results.size() <= 2)
+      {
+        WC::FFXIVIpcReturnEventScene2 p{};
+        p.handlerId = scene.at("event_id"); p.sceneId = scene.at("scene_id"); p.numOfResults = static_cast<uint8_t>(results.size());
+        std::copy(results.begin(), results.end(), p.results);
+        sendZone(p._ServerIpcType, objectBytes(p));
+      }
+      else
+      {
+        WC::FFXIVIpcReturnEventScene8 p{};
+        p.handlerId = scene.at("event_id"); p.sceneId = scene.at("scene_id"); p.numOfResults = static_cast<uint8_t>(results.size());
+        std::copy(results.begin(), results.end(), p.results);
+        sendZone(p._ServerIpcType, objectBytes(p));
+      }
+      m_state["scene"] = nullptr;
       return Json::object();
     }
     if(method == "sell_shop_item")
@@ -1484,19 +1514,6 @@ namespace Sapphire::Testing
       }
       sendChat(WC::FFXIVIpcChatTo::_ServerIpcType, payload);
       return Json::object();
-    }
-    if(method == "development_place_registered")
-    {
-      // Separate administrative API; ordinary Say and non-GM gameplay remain
-      // unable to send debug commands. Validate/consume on this Asio thread.
-      const auto message = m_developmentPlacements.consume(m_state, m_moving, args);
-      WC::FFXIVIpcChatHandler p{};
-      p.clientTimeValue = timeSeconds(); p.position.originEntityId = m_entity;
-      std::copy(m_predicted.begin(), m_predicted.end(), p.position.pos);
-      p.chatType = Common::ChatType::Say; copyText(p.message, message);
-      sendZone(p._ServerIpcType, objectBytes(p));
-      return {{"scope", "administrative-preparation-not-gameplay"},
-              {"publication", "local-only"}, {"placement_verified", false}};
     }
     if(method == "say")
     {
