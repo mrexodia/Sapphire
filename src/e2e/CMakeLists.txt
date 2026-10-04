@@ -57,6 +57,8 @@ add_executable(sapphire_e2e
   harness/GameData.cpp
   harness/Context.cpp
   harness/Content.cpp
+  harness/Transitions.cpp
+  harness/Opening.cpp
   harness/NavigationRoute.cpp
   ${SAPPHIRE_E2E_SCENARIOS})
 target_include_directories(sapphire_e2e PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
