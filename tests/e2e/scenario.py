@@ -1,6 +1,7 @@
 """Run one bot scenario against the running dev stack and watch it in game.
 
     python -m tests.e2e.scenario say_and_walk --profile .e2e-dev.json
+    python -m tests.e2e.scenario soak --duration 3600 --profile .e2e-dev.json
     python -m tests.e2e.scenario --list
 
 The bots stay logged in after the scenario until you press Ctrl+C, so you can
@@ -8,12 +9,19 @@ look at them from your own character. Bot accounts are named bot_* and are
 removed with --purge (or by the next pytest session).
 """
 import argparse
+import inspect
 import sys
 import time
 
 from .scenarios import SCENARIOS, logout_all
 from .support.devserver import DevServer, SetupError, load_profile
 from .support.worker import Worker, WorkerError
+
+
+def scenario_options(fn, **given):
+    """Keyword options the scenario accepts, dropping the ones left unset."""
+    accepted = inspect.signature(fn).parameters
+    return {key: value for key, value in given.items() if value is not None and key in accepted}
 
 
 def main(argv=None):
@@ -23,6 +31,8 @@ def main(argv=None):
     parser.add_argument("--list", action="store_true", help="list scenarios and exit")
     parser.add_argument("--no-hold", action="store_true", help="log the bots out as soon as the scenario is done")
     parser.add_argument("--purge", action="store_true", help="delete offline bot_* accounts first")
+    parser.add_argument("--duration", type=float, help="seconds to keep a long-running scenario (soak) going")
+    parser.add_argument("--bots", type=int, help="number of bots for scenarios that take a bot count")
     args = parser.parse_args(argv)
 
     if args.list or not args.name:
@@ -44,7 +54,8 @@ def main(argv=None):
             summary = server.purge_bots()
             log(f"purged {summary['deleted_accounts']} bot accounts")
         with Worker(server.worker, server.artifacts / args.name, server.deadline_scale) as worker:
-            bots = SCENARIOS[args.name](server, worker, log)
+            options = scenario_options(SCENARIOS[args.name], duration=args.duration, bots=args.bots)
+            bots = SCENARIOS[args.name](server, worker, log, **options)
             log(f"scenario {args.name} complete; worker journals in {worker.artifacts}")
             if not args.no_hold:
                 log("bots are standing in the world; press Ctrl+C to log them out")

@@ -64,6 +64,15 @@ Each pytest session purges offline `bot_*` accounts at start and end. Pass
 `--e2e-keep-bots` to keep them for a look in game, and
 `python -m tests.e2e.scenario --purge --list` to clean up later.
 
+## Soak runs
+
+`python -m tests.e2e.scenario soak --duration 3600 --bots 3 --profile .e2e-dev.json`
+cycles login, chat, walking, a gil shop open/close and logout for an hour. After
+each cycle it logs the world process's resident memory (needs `pip install psutil`),
+the slowest login and shop round trip and any keepalive replies that went missing,
+and appends the same numbers to `soak.jsonl` in the worker's artifacts directory.
+A world that grows without bound or stops finishing events shows up there.
+
 ## Watching bots from your own character
 
 Log in with your own (GM or not) character, then start a scenario. Bots are
@@ -83,8 +92,10 @@ Scenarios live in `scenarios.py`; add one by decorating a function with
 |---|---|
 | `test_live.py` | rejected credentials, login/keepalive/logout, Say and walking observed by a second bot, party of up to eight with chat, leadership, kick, disband |
 | `test_live_quest.py` | Motivational Speaking and Gil for Gold through their real scene exchanges, rewards, inventory move/swap/split/merge/discard, gil shop sale and purchases, persistence through a fresh login |
+| `test_live_shop.py` | gil shop buyback as the real client sends it: the sold item comes back for the sale price, phantom entries move nothing, the window stays open |
 | `test_live_zoning.py` | Return action, the Ul'dah to Central Thanalan exit crossing, discovery, cross-zone party chat and Tells |
-| `test_live_creation.py` | character creation through the lobby, the Ul'dah opening scenes, ring choice, starter gear round trips, duplicate-name rejection, deletion |
+| `test_live_creation.py` | character creation through the lobby, the Ul'dah opening scenes, ring choice, Wymond's closed exits and arrival area with the warp back and their sequence gating, starter gear round trips, duplicate-name rejection, deletion |
+| `test_live.py::test_soak_cycles` | one short pass of the `soak` scenario below, so the loop is known to work before an hour-long run |
 | `test_live_combat*.py`, `test_live_combo.py`, `test_live_progression.py`, `test_live_high_level_combat.py`, `test_live_aggro.py`, `test_live_player_defeat.py` | Fast Blade, Bootshine, Blizzard, combos, EXP and level progression, natural aggro, leash and player defeat with homepoint return |
 
 The combat scenarios need the world to have loaded a navmesh for Central

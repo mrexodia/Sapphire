@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 import json
 import math
 import pytest
-from .scenarios import logout_all, party, say_and_walk
+from .scenarios import logout_all, party, say_and_walk, soak, soak_report
 from .support.worker import Bot, WorkerError
 
 pytestmark = pytest.mark.live
@@ -237,3 +237,13 @@ def test_scenario(server, live_worker, run):
     live_worker.wait_state(witness.name, lambda s: all(str(a) not in s["actors"] for a in actors[:-1]),
                            "witness sees the other bots despawn", timeout=30)
     logout_all([witness])
+
+
+def test_soak_cycles(server, live_worker):
+    """Two short soak cycles: the loop itself must work before anyone runs it for an hour."""
+    bots = soak(server, live_worker, lambda line: None, duration=1, bots=2)
+    report = soak_report(live_worker)
+    assert len(report) >= 1 and all(len(sample["bots"]) == 2 for sample in report)
+    assert all(sample["missing_heartbeat_replies"] == 0 for sample in report), report
+    assert all(row["shop_s"] < 5 for sample in report for row in sample["bots"]), report
+    logout_all(bots)

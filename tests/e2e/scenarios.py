@@ -8,9 +8,12 @@ standing in the world until you press Ctrl+C.
 A scenario is a function `name(server, worker, log) -> list[Bot]`. `log` is a
 callable taking one line of progress text.
 """
+import json
 import math
+import time
 from concurrent.futures import ThreadPoolExecutor
 
+from .support.catalog import load_shop_catalog
 from .support.worker import Bot
 
 SCENARIOS = {}
@@ -81,6 +84,86 @@ def party(server, worker, log):
     leader.change_party_leader(member_state["entity_id"], member_state["name"])
     log("leadership handed to the member")
     return [leader, member, third]
+
+
+@scenario
+def soak(server, worker, log, duration=600, bots=3):
+    """Login churn, chat, walking and shop events in a loop while sampling the world's memory.
+
+    Every cycle each bot logs in, says a line, walks a short segment, opens and closes the
+    gil shop and logs out again; the next cycle logs the same characters back in. After each
+    cycle the world process's resident memory (psutil, if installed), the login and shop
+    round-trip times and any missing keepalive replies are logged and appended to soak.jsonl
+    in the worker's artifacts directory. Run it for an hour with
+    `python -m tests.e2e.scenario soak --duration 3600`; a world that grows without bound or
+    stops answering events shows up in that file."""
+    path = server.profile.get("shop_catalog")
+    if not path:
+        raise RuntimeError("the soak scenario needs profile.shop_catalog for its shop round trips")
+    shop = load_shop_catalog(path)
+    position = shop["route"][-1]
+    fixtures = [server.fresh_character(position, shop["territory"]) for _ in range(bots)]
+    log(f"{bots} bots created at the gil shop; starting memory "
+        f"{_memory_text(server.world_memory())}")
+    report = worker.artifacts / "soak.jsonl"
+    started = time.monotonic()
+    cycle = 0
+    active = []
+    while True:
+        cycle += 1
+        active = []
+        sample = {"cycle": cycle, "elapsed_s": round(time.monotonic() - started, 1), "bots": []}
+        for index, fixture in enumerate(fixtures):
+            bot = Bot(worker, f"soak-{index}")
+            auth = fixture["auth"] if cycle == 1 else server.relogin(fixture)
+            began = time.monotonic()
+            state = bot.login_via_lobby(auth, fixture["name"])
+            login_s = time.monotonic() - began
+            bot.say(f"soak cycle {cycle}")
+            step = list(state["observed_position"])
+            step[0] += 2.0
+            bot.walk_to(step)
+            bot.walk_to(state["observed_position"])
+            began = time.monotonic()
+            bot.open_gil_shop(shop["shop"]["layout_id"], shop["shop"]["event_id"])
+            bot.exit_gil_shop(shop["shop"]["event_id"])
+            shop_s = time.monotonic() - began
+            active.append(bot)
+            sample["bots"].append({"name": fixture["name"], "login_s": round(login_s, 2),
+                                   "shop_s": round(shop_s, 2)})
+        # Keepalives: every bot pings both channels every 3 s; a reply gap shows as sent > replies.
+        time.sleep(4)
+        gaps = 0
+        for bot, row in zip(active, sample["bots"]):
+            snapshot = worker.snapshot(bot.name)
+            sent = sum(snapshot["heartbeats"].values())
+            row["heartbeats_sent"] = sent
+            row["heartbeat_replies"] = snapshot["heartbeat_replies"]
+            gaps += max(0, sent - snapshot["heartbeat_replies"] - 2)
+        sample["missing_heartbeat_replies"] = gaps
+        sample["world_rss_mib"] = server.world_memory()
+        with report.open("a", encoding="utf-8") as handle:
+            print(json.dumps(sample), file=handle)
+        slowest = max(sample["bots"], key=lambda row: row["shop_s"])
+        log(f"cycle {cycle}: world {_memory_text(sample['world_rss_mib'])}, slowest login "
+            f"{max(row['login_s'] for row in sample['bots']):.1f}s, slowest shop {slowest['shop_s']:.1f}s, "
+            f"missing keepalive replies {gaps}")
+        if time.monotonic() - started >= duration:
+            break
+        logout_all(active)
+    return active
+
+
+def _memory_text(mib):
+    return "unknown (install psutil)" if mib is None else f"{mib:.0f} MiB"
+
+
+def soak_report(worker):
+    """The cycle samples the soak scenario wrote for this worker."""
+    path = worker.artifacts / "soak.jsonl"
+    if not path.is_file():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def logout_all(bots, timeout=35):

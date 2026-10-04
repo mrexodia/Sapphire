@@ -132,6 +132,24 @@ class DevServer:
             raise SetupError(f"the world loaded no navmesh for territory {territory} ({internal_name}); "
                              f"enemies there cannot move. Check MeshPath in world.ini.")
 
+    def world_memory(self):
+        """Resident set size in MiB of the world process running from <server_dir>, or None.
+
+        Needs psutil; the soak scenario reports memory growth from this."""
+        try:
+            import psutil
+        except ImportError:
+            return None
+        candidates = []
+        for process in psutil.process_iter(["name", "exe", "memory_info"]):
+            try:
+                exe = process.info["exe"]
+                if exe and Path(exe).parent.resolve() == self.runtime and process.info["name"]                         and process.info["name"].lower().startswith("server"):
+                    candidates.append(process.info["memory_info"].rss)
+            except (psutil.Error, OSError):
+                continue
+        return max(candidates) / (1024 * 1024) if candidates else None
+
     def list_bots(self):
         return self.api("listBots")["accounts"]
 
