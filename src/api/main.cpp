@@ -88,7 +88,6 @@ void reloadConfig()
   // setup api config
   m_config.network.listenPort = pConfig->getValue< uint16_t >( "Network", "ListenPort", 80 );
   m_config.network.listenIP = pConfig->getValue< std::string >( "Network", "ListenIp", "0.0.0.0" );
-  m_config.development.botApi = pConfig->getValue< bool >( "Development", "BotApi", false );
 }
 
 void print_request_info( shared_ptr< HttpServer::Request > request )
@@ -216,16 +215,13 @@ std::string buildHttpResponse( uint16_t rCode, const std::string& content = "", 
 
 
 // --- Development bot fixtures -------------------------------------------------
-// Local development only: gated by [Development] BotApi in api.ini and the
-// server secret. See tests/e2e/README.md.
+// Create, list and purge throwaway "bot_" accounts and characters for the
+// end-to-end scenarios in src/e2e. Guarded by the server secret like the other
+// privileged routes; Sapphire is a development server, there is no production
+// deployment to protect.
 
 bool authorizeBotApi( shared_ptr< HttpServer::Response > response, const nlohmann::json& json )
 {
-  if( !m_config.development.botApi )
-  {
-    *response << buildHttpResponse( 404, "{\"result\":\"bot_api_disabled\"}", JSON );
-    return false;
-  }
   if( !json.contains( "secret" ) || json[ "secret" ] != m_config.global.general.serverSecret )
   {
     *response << buildHttpResponse( 403, "{\"result\":\"invalid_secret\"}", JSON );
