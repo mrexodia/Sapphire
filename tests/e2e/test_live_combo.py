@@ -111,6 +111,8 @@ def test_natural_level_four_fast_blade_combo(server, live_worker):
                 live_worker.wait_state(fighter.name,
                     lambda s, hp=expected_hp: s["actors"].get(target, {}).get("hp") == hp,
                     "acting fighter receives exact committed high-level HP", 10)
+                # Enemies roam while idle; close the gap again before each hit.
+                approach_target(live_worker, fighter, target)
                 ready = fighter.wait_fast_blade_ready(int(target), 45)
                 before = ready["actors"][target]
                 assert before["hp"] == expected_hp > 0
@@ -191,6 +193,7 @@ def test_natural_level_four_fast_blade_combo(server, live_worker):
             "final combo clients visible", 30)
     target, final_target = choose_and_approach(all_bots, witness)
     actor, entity = fighters[0], entities[0]
+    approach_target(live_worker, actor, target)
     ready = actor.wait_fast_blade_ready(int(target), 45)
     before_fast = ready["actors"][target]
     for observer in all_bots:

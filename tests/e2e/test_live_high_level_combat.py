@@ -70,6 +70,8 @@ def test_natural_multi_attacker_high_level_defeat(server, live_worker):
         for fighter, entity in zip(fighters, entities):
             if expected_hp == 0:
                 break
+            # Enemies roam while idle; close the gap again before each hit.
+            approach_target(live_worker, fighter, target)
             ready = fighter.wait_fast_blade_ready(int(target), 45)
             before = ready["actors"][target]
             assert before["hp"] == expected_hp > 0
