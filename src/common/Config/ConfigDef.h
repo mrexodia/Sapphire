@@ -96,5 +96,11 @@ namespace Sapphire::Common::Config
       std::string listenIP;
       uint16_t listenPort;
     } network;
+
+    struct Development
+    {
+      // Enables the /sapphire-api/dev/* bot fixture routes. Off by default.
+      bool botApi;
+    } development;
   };
 }

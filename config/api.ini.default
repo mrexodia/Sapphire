@@ -1,3 +1,8 @@
 [Network]
 ListenIp = 0.0.0.0
 ListenPort = 80
+
+[Development]
+; Enables the /sapphire-api/dev/* routes used by tests/e2e to create and purge
+; throwaway "bot_" accounts and characters. Only for local development servers.
+BotApi = false

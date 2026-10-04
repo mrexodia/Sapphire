@@ -27,6 +27,7 @@
 #include <algorithm>
 
 #include "SapphireApi.h"
+#include "BotFixtures.h"
 
 #include <Util/CrashHandler.h>
 
@@ -87,6 +88,7 @@ void reloadConfig()
   // setup api config
   m_config.network.listenPort = pConfig->getValue< uint16_t >( "Network", "ListenPort", 80 );
   m_config.network.listenIP = pConfig->getValue< std::string >( "Network", "ListenIp", "0.0.0.0" );
+  m_config.development.botApi = pConfig->getValue< bool >( "Development", "BotApi", false );
 }
 
 void print_request_info( shared_ptr< HttpServer::Request > request )
@@ -210,6 +212,66 @@ std::string buildHttpResponse( uint16_t rCode, const std::string& content = "", 
     result += content;
 
   return result;
+}
+
+
+// --- Development bot fixtures -------------------------------------------------
+// Local development only: gated by [Development] BotApi in api.ini and the
+// server secret. See tests/e2e/README.md.
+
+bool authorizeBotApi( shared_ptr< HttpServer::Response > response, const nlohmann::json& json )
+{
+  if( !m_config.development.botApi )
+  {
+    *response << buildHttpResponse( 404, "{\"result\":\"bot_api_disabled\"}", JSON );
+    return false;
+  }
+  if( !json.contains( "secret" ) || json[ "secret" ] != m_config.global.general.serverSecret )
+  {
+    *response << buildHttpResponse( 403, "{\"result\":\"invalid_secret\"}", JSON );
+    return false;
+  }
+  return true;
+}
+
+template< typename Operation >
+void handleBotApi( shared_ptr< HttpServer::Response > response, shared_ptr< HttpServer::Request > request,
+                   Operation operation )
+{
+  print_request_info( request );
+  try
+  {
+    auto json = nlohmann::json::parse( request->content );
+    if( !authorizeBotApi( response, json ) )
+      return;
+    Api::BotFixtures fixtures( g_sapphireAPI );
+    *response << buildHttpResponse( 200, operation( fixtures, json ).dump( 1 ), JSON );
+  }
+  catch( std::invalid_argument& e )
+  {
+    nlohmann::json error = { { "result", "invalid_request" }, { "message", e.what() } };
+    *response << buildHttpResponse( 400, error.dump(), JSON );
+  }
+  catch( exception& e )
+  {
+    *response << buildHttpResponse( 500 );
+    Logger::error( e.what() );
+  }
+}
+
+void createBot( shared_ptr< HttpServer::Response > response, shared_ptr< HttpServer::Request > request )
+{
+  handleBotApi( response, request, []( Api::BotFixtures& fixtures, const nlohmann::json& json ) { return fixtures.create( json ); } );
+}
+
+void listBots( shared_ptr< HttpServer::Response > response, shared_ptr< HttpServer::Request > request )
+{
+  handleBotApi( response, request, []( Api::BotFixtures& fixtures, const nlohmann::json& ) { return fixtures.list(); } );
+}
+
+void purgeBots( shared_ptr< HttpServer::Response > response, shared_ptr< HttpServer::Request > request )
+{
+  handleBotApi( response, request, []( Api::BotFixtures& fixtures, const nlohmann::json& ) { return fixtures.purge(); } );
 }
 
 void getZoneName( shared_ptr< HttpServer::Response > response, shared_ptr< HttpServer::Request > request )
@@ -357,8 +419,11 @@ void createCharacter( shared_ptr< HttpServer::Response > response, shared_ptr< H
       }
       else
       {
+        // Characters created on bot accounts are ordinary players regardless of
+        // the server's default GM rank for new characters.
+        const bool isBot = g_sapphireAPI.getAccountName( result ).rfind( Api::BotFixtures::AccountPrefix, 0 ) == 0;
         int32_t charId = g_sapphireAPI.createCharacter( result, name, finalJson,
-                                                        m_config.global.general.defaultGMRank );
+                                                        isBot ? 0 : m_config.global.general.defaultGMRank );
 
         std::string json_string = "{\"result\":\"" + std::to_string( charId ) + "\"}";
         *response << buildHttpResponse( 200, json_string, JSON );
@@ -736,6 +801,9 @@ int main( int argc, char* argv[] )
   server.resource[ "^/sapphire-api/lobby/getNextEntityId" ][ "POST" ] = &getNextCharId;
   server.resource[ "^/sapphire-api/lobby/getNextCharaId" ][ "POST" ] = &getNextContentId;
   server.resource[ "^/sapphire-api/lobby/getCharacterList" ][ "POST" ] = &getCharacterList;
+  server.resource[ "^/sapphire-api/dev/createBot" ][ "POST" ] = &createBot;
+  server.resource[ "^/sapphire-api/dev/listBots" ][ "POST" ] = &listBots;
+  server.resource[ "^/sapphire-api/dev/purgeBots" ][ "POST" ] = &purgeBots;
   server.resource[ "^(/frontier-api/ffxivsupport/view/get_init)(.*)" ][ "GET" ] = &get_init;
   server.resource[ "^(/frontier-api/ffxivsupport/information/get_headline_all)(.*)" ][ "GET" ] = &get_headline_all;
 

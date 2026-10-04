@@ -171,35 +171,27 @@ int SapphireApi::createCharacter( const uint32_t accountId, const std::string& n
 
 void SapphireApi::deleteCharacter( std::string name, const uint32_t accountId )
 {
-  PlayerMinimal deletePlayer;
   auto charList = getCharList( accountId );
-  for( uint32_t i = 0; i < charList.size(); i++ )
+  for( auto& tmpPlayer : charList )
   {
-    PlayerMinimal tmpPlayer = charList.at( i );
-
     if( tmpPlayer.getName() == name )
     {
-      deletePlayer = tmpPlayer;
-      break;
+      deleteCharacterById( tmpPlayer.getCharacterId() );
+      return;
     }
   }
+}
 
-  auto id = deletePlayer.getCharacterId();
-
-  g_charaDb.execute( "DELETE FROM charainfo WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM characlass WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charaglobalitem WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charainfoblacklist WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charainfofriendlist WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charainfolinkshell WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charainfosearch WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charaitemcrystal WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charaiteminventory WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charaitemgearset WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charaquest WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charainfoachievement WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charaitemcurrency WHERE CharacterId = " + std::to_string( id ) + ";" );
-  g_charaDb.execute( "DELETE FROM charamonsternote WHERE CharacterId = " + std::to_string( id ) + ";" );
+void SapphireApi::deleteCharacterById( uint64_t characterId )
+{
+  const auto id = std::to_string( characterId );
+  for( const char* table : { "charainfo", "characlass", "charaglobalitem", "charainfoblacklist",
+                             "charainfofriendlist", "charainfolinkshell", "charainfosearch",
+                             "charaitemcrystal", "charaiteminventory", "charaitemgearset", "charaquest",
+                             "charainfoachievement", "charaitemcurrency", "charamonsternote" } )
+  {
+    g_charaDb.execute( "DELETE FROM " + std::string( table ) + " WHERE CharacterId = " + id + ";" );
+  }
 }
 
 std::vector< PlayerMinimal > SapphireApi::getCharList( uint32_t accountId )
@@ -291,4 +283,23 @@ bool SapphireApi::removeSession( const std::string& sId )
     m_sessionMap.erase( sId );
 
   return true;
+}
+
+void SapphireApi::removeSessionsForAccount( uint32_t accountId )
+{
+  for( auto it = m_sessionMap.begin(); it != m_sessionMap.end(); )
+  {
+    if( it->second && it->second->getAccountId() == accountId )
+      it = m_sessionMap.erase( it );
+    else
+      ++it;
+  }
+}
+
+std::string SapphireApi::getAccountName( uint32_t accountId )
+{
+  auto res = g_charaDb.query( "SELECT account_name FROM accounts WHERE account_id = " + std::to_string( accountId ) + ";" );
+  if( !res || !res->next() )
+    return {};
+  return res->getString( 1 );
 }

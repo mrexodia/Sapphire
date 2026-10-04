@@ -255,6 +255,10 @@ void WorldServer::init( int32_t argc, char *argv[ ] )
   Common::Service< Db::DbWorkerPool< Db::ZoneDbConnection > >::set( pDb );
   logInitStep( "Database init + set" );
 
+  // Nobody can be online before the first session of this process. Clear
+  // markers a previous crash may have left behind.
+  pDb->directExecute( pDb->getPreparedStatement( Db::ZoneDbStatements::CHARA_CLEAR_ONLINE ) );
+
   auto pRNGMgr = std::make_shared< Common::Random::RNGMgr >();
   Common::Service< Common::Random::RNGMgr >::set( pRNGMgr );
   logInitStep( "RNGMgr set" );
@@ -616,8 +620,18 @@ bool WorldServer::createSession( uint32_t sessionId )
 
   m_sessionMapById[ sessionId ] = newSession;
   m_sessionMapByCharacterId[ newSession->getPlayer()->getCharacterId() ] = newSession;
+  setCharacterOnline( newSession->getPlayer()->getCharacterId(), true );
 
   return true;
+}
+
+void WorldServer::setCharacterOnline( uint64_t characterId, bool online )
+{
+  auto& db = Common::Service< Db::DbWorkerPool< Db::ZoneDbConnection > >::ref();
+  auto stmt = db.getPreparedStatement( Db::ZoneDbStatements::CHARA_UP_ONLINE );
+  stmt->setInt( 1, online ? 1 : 0 );
+  stmt->setUInt64( 2, characterId );
+  db.directExecute( stmt );
 }
 
 void WorldServer::removeSession( uint32_t sessionId )
@@ -628,6 +642,7 @@ void WorldServer::removeSession( uint32_t sessionId )
 
   m_sessionMapById.erase( sessionId );
   m_sessionMapByCharacterId.erase( pSession->getPlayer()->getCharacterId() );
+  setCharacterOnline( pSession->getPlayer()->getCharacterId(), false );
 }
 
 SessionPtr WorldServer::getSession( uint32_t id )
@@ -656,6 +671,7 @@ void WorldServer::removeSession( const Entity::Player& player )
 {
   m_sessionMapById.erase( player.getId() );
   m_sessionMapByCharacterId.erase( player.getCharacterId() );
+  setCharacterOnline( player.getCharacterId(), false );
 }
 
 bool WorldServer::isRunning() const

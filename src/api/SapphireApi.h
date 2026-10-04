@@ -27,6 +27,8 @@ namespace Sapphire::Api
 
     void deleteCharacter( std::string name, uint32_t accountId );
 
+    void deleteCharacterById( uint64_t characterId );
+
     bool insertSession( uint32_t accountId, std::string& sId );
 
     std::vector< Api::PlayerMinimal > getCharList( uint32_t accountId );
@@ -40,6 +42,10 @@ namespace Sapphire::Api
     int32_t checkSession( const std::string& sId );
 
     bool removeSession( const std::string& sId );
+
+    void removeSessionsForAccount( uint32_t accountId );
+
+    std::string getAccountName( uint32_t accountId );
 
     SessionMap m_sessionMap;
 

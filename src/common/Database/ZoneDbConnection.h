@@ -136,6 +136,9 @@ namespace Sapphire::Db
     CHARA_SEL_BY_ACCOUNT_ID,
     CHARA_SEL_BY_NAME,
 
+    CHARA_UP_ONLINE,
+    CHARA_CLEAR_ONLINE,
+
     MAX_STATEMENTS
   };
 

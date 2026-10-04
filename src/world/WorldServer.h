@@ -37,6 +37,9 @@ namespace Sapphire::World
 
     void removeSession( const Entity::Player& player );
 
+    /// Persist the charainfo.Online marker the API bot fixtures consult.
+    void setCharacterOnline( uint64_t characterId, bool online );
+
     World::SessionPtr getSession( uint32_t id );
 
     World::SessionPtr getSession( uint64_t characterId );

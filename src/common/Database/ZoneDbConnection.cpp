@@ -445,4 +445,13 @@ void Sapphire::Db::ZoneDbConnection::doPrepareStatements()
                     "SELECT CharacterId FROM charainfo WHERE Name = ?;",
                     CONNECTION_SYNC );
 
+  // World-maintained presence marker, read by the API bot fixtures to refuse
+  // deleting a character the world still has cached.
+  prepareStatement( CHARA_UP_ONLINE,
+                    "UPDATE charainfo SET Online = ? WHERE CharacterId = ?;",
+                    CONNECTION_SYNC );
+  prepareStatement( CHARA_CLEAR_ONLINE,
+                    "UPDATE charainfo SET Online = 0 WHERE Online <> 0;",
+                    CONNECTION_SYNC );
+
 }
