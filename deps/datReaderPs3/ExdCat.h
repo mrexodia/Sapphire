@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <map>
+#include <mutex>
 
 #include <filesystem>
 
@@ -19,7 +20,7 @@ namespace xivps3
    namespace exd
    {
 
-      // Language in the exd files - note: chs/chinese is present in the languages array but not in the data files
+      // Physical EXH language descriptor values; presence is decided per sheet.
       enum Language : uint16_t
       {
          none = 0,
@@ -28,6 +29,8 @@ namespace xivps3
          de = 3,
          fr = 4,
          chs = 5,
+         cht = 6,
+         ko = 7,
       };
 
       class Exh;
@@ -54,12 +57,14 @@ namespace xivps3
          const Exd& get_data( Language language = Language::none ) const;
       protected:
          const std::string _name;
+         dat::GameData& _game_data;
+         mutable std::mutex _data_mutex;
 
          // The header file of the category *.exh
          std::shared_ptr<Exh> _header;
          // The data files of the category, indexed by language *.exd
          // Note that if we have multiple files for different range of IDs, they are merged here
-         std::map<Language, std::unique_ptr<Exd>> _data;
+         mutable std::map<Language, std::unique_ptr<Exd>> _data;
       };
 
    }

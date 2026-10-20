@@ -1,10 +1,9 @@
 #ifndef XIV_DAT_SQPACK_H
 #define XIV_DAT_SQPACK_H
 
-#include <fstream>
-
 #include <filesystem>
 
+#include "../SqPackStream.h"
 #include "bparse.h"
 
 
@@ -53,8 +52,8 @@ namespace xivps3::dat
     // Checks that a given block is valid iven its hash
     void isBlockValid( uint32_t i_offset, uint32_t i_size, const SqPackBlockHash& i_block_hash );
 
-    // File handle
-    std::ifstream m_handle;
+    // Normal file stream, or a transparently deframed plaintext SDAT stream.
+    xiv::io::SqPackStream m_handle;
   };
 
 }

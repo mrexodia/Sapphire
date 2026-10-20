@@ -27,7 +27,7 @@ namespace xivps3::dat
       uint32_t datNum;
       uint32_t dirHash;
       uint32_t filenameHash;
-      uint32_t datOffset;
+      uint64_t datOffset;
     };
 
     // HashTable has dir hashes -> filename hashes -> HashTableEntry

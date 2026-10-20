@@ -176,7 +176,7 @@ namespace xivps3::dat
   {
   }
 
-  std::unique_ptr< File > Dat::getFile( uint32_t i_offset )
+  std::unique_ptr< File > Dat::getFile( uint64_t i_offset )
   {
     std::unique_ptr< File > outputFile( new File() );
     {
@@ -236,7 +236,7 @@ namespace xivps3::dat
             auto& data_section = outputFile->_data_sections[ i ];
             data_section.reserve( mdlBlockInfo.uncompressed_sizes[ i ] );
 
-            uint32_t current_offset = i_offset + file_header.size + mdlBlockInfo.offsets[ i ];
+            uint64_t current_offset = i_offset + file_header.size + mdlBlockInfo.offsets[ i ];
             for( uint32_t j = 0; j < mdlBlockInfo.block_counts[ i ]; ++j )
             {
               extractBlock( current_offset, data_section );
@@ -278,7 +278,7 @@ namespace xivps3::dat
             auto& section_infos = texBlockInfo[ i ];
             data_section.reserve( section_infos.uncompressed_size );
 
-            uint32_t current_offset = i_offset + file_header.size + section_infos.offset;
+            uint64_t current_offset = i_offset + file_header.size + section_infos.offset;
             for( uint32_t j = 0; j < section_infos.block_count; ++j )
             {
               extractBlock( current_offset, data_section );
@@ -297,7 +297,7 @@ namespace xivps3::dat
     return outputFile;
   }
 
-  void Dat::extractBlock( uint32_t i_offset, std::vector< char >& o_data )
+  void Dat::extractBlock( uint64_t i_offset, std::vector< char >& o_data )
   {
     m_handle.seekg( i_offset );
 

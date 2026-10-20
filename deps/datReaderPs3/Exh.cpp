@@ -1,75 +1,46 @@
 #include "Exh.h"
-
-#include "stream.h"
-
 #include "File.h"
-#include <sstream>
-
-using xivps3::utils::bparse::extract;
+#include "ExdCat.h"
 
 namespace xivps3::exd
 {
-
-  Exh::Exh( const dat::File& i_file )
+  namespace
   {
-    // Get a stream from the file
-    std::vector< char > dataCpy = i_file.get_data_sections().front();
-    std::istringstream iss( std::string( dataCpy.begin(), dataCpy.end() ) );
-
-    // Extract header and skip to member definitions
-    _header = extract< ExhHeader >( iss );
-    iss.seekg( 0x20 );
-
-    // Extract all the members and feed the _members map
-    for( auto i = 0; i < _header.field_count; ++i )
+    const binary::Bytes& headerBytes( const dat::File& file )
     {
-      auto member = extract< ExhMember >( iss );
+      const auto& sections = file.get_data_sections();
+      if( sections.size() != 1 ) throw std::runtime_error( "EXH requires one data section" );
+      return sections.front();
+    }
+  }
+
+  Exh::Exh( const dat::File& file ) : Exh( headerBytes( file ) ) {}
+
+  Exh::Exh( const binary::Bytes& bytes ) : _binary( bytes )
+  {
+    std::memcpy( _header.magic, "EXHF", 4 );
+    _header.unknown = static_cast< uint16_t >( _binary.version );
+    _header.data_offset = static_cast< uint16_t >( _binary.fixedSize );
+    _header.field_count = static_cast< uint16_t >( _binary.columns.size() );
+    _header.exd_count = static_cast< uint16_t >( _binary.pages.size() );
+    _header.language_count = static_cast< uint16_t >( _binary.languages.size() );
+    _header.unknown1 = static_cast< uint16_t >( binary::be( bytes, 14, 2 ) );
+    _header.variant = static_cast< uint8_t >( _binary.keyCount );
+    for( const auto& c : _binary.columns )
+    {
+      ExhMember member{ static_cast< DataType >( c.type ), static_cast< uint16_t >( c.offset ) };
+      _exh_defs.push_back( member ); // retain all columns, including repeated offsets
       _members[ member.offset ] = member;
-      _exh_defs.push_back( member );
     }
-
-    // Extract all the exd_defs
-    _exd_defs.reserve( _header.exd_count );
-    for( auto i = 0; i < _header.exd_count; ++i )
-    {
-      _exd_defs.emplace_back( extract< ExhExdDef >( iss ) );
-    }
-
-    // Extract all the languages
-    _languages.reserve( _header.language_count );
-    for( auto i = 0; i < _header.language_count; ++i )
-    {
-      _languages.emplace_back( Language( extract< uint16_t >( iss, "language" ) ) );
-    }
+    for( const auto& p : _binary.pages ) _exd_defs.push_back( { p.start, p.count } );
+    for( auto language : _binary.languages ) _languages.push_back( static_cast< Language >( language ) );
   }
 
-  Exh::~Exh()
-  {
-  }
-
-  const ExhHeader& Exh::get_header() const
-  {
-    return _header;
-  }
-
-  const std::vector< ExhExdDef >& Exh::get_exd_defs() const
-  {
-    return _exd_defs;
-  }
-
-  const std::vector< Language >& Exh::get_languages() const
-  {
-    return _languages;
-  }
-
-  const std::map< uint32_t, ExhMember >& Exh::get_members() const
-  {
-    return _members;
-  }
-
-  const std::vector< ExhMember >& Exh::get_exh_members() const
-  {
-    return _exh_defs;
-  }
-
+  Exh::~Exh() = default;
+  const binary::Header& Exh::get_binary_header() const { return _binary; }
+  const ExhHeader& Exh::get_header() const { return _header; }
+  const std::vector< ExhExdDef >& Exh::get_exd_defs() const { return _exd_defs; }
+  const std::vector< Language >& Exh::get_languages() const { return _languages; }
+  const std::map< uint32_t, ExhMember >& Exh::get_members() const { return _members; }
+  const std::vector< ExhMember >& Exh::get_exh_members() const { return _exh_defs; }
 }

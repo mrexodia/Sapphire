@@ -74,9 +74,12 @@ namespace xivps3::dat
       // The dat number is found in the offset, last four bits
       //hashTableEntry.datNum = ( indexHashTableEntry.datOffset & 0xF ) / 0x2;
       hashTableEntry.datNum = 0;
+      hashTableEntry.dirHash = indexHashTableEntry.dirHash;
+      hashTableEntry.filenameHash = indexHashTableEntry.filenameHash;
       // The offset in the dat file, needs to strip the dat number indicator
       //hashTableEntry.datOffset = ( indexHashTableEntry.datOffset - ( indexHashTableEntry.datOffset & 0x000F ) ) * 0x08;
-      hashTableEntry.datOffset = indexHashTableEntry.datOffset * 128;
+      // PS3 offsets are 128-byte units; bg.dat0 in the monitor build exceeds 4 GiB.
+      hashTableEntry.datOffset = uint64_t{ indexHashTableEntry.datOffset } * 128;
     }
 
     // Come back to where we were before reading the HashTable

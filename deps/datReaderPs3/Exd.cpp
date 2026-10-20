@@ -1,385 +1,81 @@
 #include "Exd.h"
 
-#include "bparse.h"
-#include "stream.h"
-#include <fstream>
-#include "Exh.h"
-
-using xivps3::utils::bparse::extract;
-
-
 namespace xivps3::exd
 {
-  struct ExdHeader
+  const binary::Bytes& Exd::pageBytes( const dat::File& file )
   {
-    char magic[0x4];
-    uint16_t unknown;
-    uint16_t unknown2;
-    uint32_t index_size;
-  };
-
-  struct ExdRecordIndex
-  {
-    uint32_t id;
-    uint32_t offset;
-  };
-}
-
-namespace xivps3::utils::bparse {
-template<>
-  inline void reorder< xivps3::exd::ExdHeader >( xivps3::exd::ExdHeader& i_struct )
-  {
-    for( int32_t i = 0; i < 0x4; ++i )
-    {
-      xivps3::utils::bparse::reorder( i_struct.magic[ i ] );
-    }
-    i_struct.unknown = xivps3::utils::bparse::byteswap( i_struct.unknown );
-    xivps3::utils::bparse::reorder( i_struct.unknown );
-    i_struct.unknown2 = xivps3::utils::bparse::byteswap( i_struct.unknown2 );
-    xivps3::utils::bparse::reorder( i_struct.unknown2 );
-    i_struct.index_size = xivps3::utils::bparse::byteswap( i_struct.index_size );
-    xivps3::utils::bparse::reorder( i_struct.index_size );
+    const auto& sections = file.get_data_sections();
+    if( sections.size() != 1 ) throw std::runtime_error( "EXD requires one data section" );
+    return sections.front();
   }
 
-  template<>
-  inline void reorder< xivps3::exd::ExdRecordIndex >( xivps3::exd::ExdRecordIndex& i_struct )
+  Exd::Exd( std::shared_ptr< Exh > header, const std::vector< std::shared_ptr< dat::File > >& files ) : _exh( std::move( header ) )
   {
-    i_struct.id = xivps3::utils::bparse::byteswap( i_struct.id );
-    xivps3::utils::bparse::reorder( i_struct.id );
-    i_struct.offset = xivps3::utils::bparse::byteswap( i_struct.offset );
-    xivps3::utils::bparse::reorder( i_struct.offset );
-  }
-};
-
-namespace xivps3::exd
-{
-  Exd::Exd( std::shared_ptr< Exh > i_exh, const std::vector< std::shared_ptr< dat::File>>& i_files )
-  {
-    _exh = i_exh;
-    _files = i_files;
-
-
-    // Iterates over all the files
-    const uint32_t member_count = static_cast< uint32_t >( _exh->get_members().size() );
-    for( auto& file_ptr : _files )
+    if( !_exh ) throw std::runtime_error( "Missing EXH" );
+    for( const auto& file : files )
     {
-      // Get a stream
-      std::vector< char > dataCpy = file_ptr->get_data_sections().front();
-      std::istringstream iss( std::string( dataCpy.begin(), dataCpy.end() ) );
-
-      // Extract the header and skip to the record indices
-      auto exd_header = extract< ExdHeader >( iss );
-      iss.seekg( 0x20 );
-
-      // Preallocate and extract the record_indices
-      const uint32_t record_count = exd_header.index_size / sizeof( ExdRecordIndex );
-      std::vector< ExdRecordIndex > record_indices;
-      record_indices.reserve( record_count );
-      for( uint32_t i = 0; i < record_count; ++i )
+      if( !file ) throw std::runtime_error( "Missing EXD page" );
+      const auto& bytes = pageBytes( *file );
+      for( const auto& entry : binary::index( bytes ) )
       {
-        auto recordIndex = extract< ExdRecordIndex >( iss );
-        _idCache[ recordIndex.id ] = ExdCacheEntry{ file_ptr, recordIndex.offset };
+        binary::layout( _exh->get_binary_header(), bytes, entry.offset );
+        if( !_idCache.emplace( entry.id, ExdCacheEntry{ file, entry.offset } ).second )
+          throw std::runtime_error( "Duplicate EXD main ID: " + std::to_string( entry.id ) );
       }
     }
   }
 
-  Exd::~Exd()
+  const ExdCacheEntry& Exd::cache( uint32_t id ) const
   {
+    const auto it = _idCache.find( id );
+    if( it == _idCache.end() ) throw std::out_of_range( "Id not found: " + std::to_string( id ) );
+    return it->second;
   }
 
-  const std::vector< Field > Exd::get_row( uint32_t id, uint32_t subRow )
+  std::vector< Field > Exd::get_row( uint32_t id ) const { return get_row( id, 0 ); }
+  std::vector< Field > Exd::get_row( uint32_t id, uint32_t subRow ) const
   {
-
-    auto cacheEntryIt = _idCache.find( id );
-    if( cacheEntryIt == _idCache.end() )
-      throw std::runtime_error( "Id not found: " + std::to_string( id ) );
-
-    // Iterates over all the files
-    const uint32_t member_count = static_cast< uint32_t >( _exh->get_members().size() );
-    auto& file_ptr = cacheEntryIt->second.file;
-
-    std::vector< char > dataCpy = file_ptr->get_data_sections().front();
-    std::istringstream iss( std::string( dataCpy.begin(), dataCpy.end() ) );
-
-    // Get the vector fields for the given record and preallocate it
-    auto fields = _data[ id ];
-    fields.reserve( member_count );
-    iss.seekg( cacheEntryIt->second.offset + 6 );
-
-    uint8_t subRows = *reinterpret_cast< uint8_t* >( &dataCpy[ cacheEntryIt->second.offset + 5 ] );
-
-    if( subRow >= subRows )
-      throw std::runtime_error( "Out of bounds sub-row!" );
-
-    int offset = cacheEntryIt->second.offset + 6 + ( subRow * _exh->get_header().data_offset + 2 * ( subRow + 1 ) );
-
-    for( auto& member_entry : _exh->get_exh_members() )
+    if( subRow == 0 )
     {
-      // Seek to the position of the member to extract.
-      // 6 is because we have uint32_t/uint16_t at the start of each record
-      iss.seekg( offset + member_entry.offset );
-
-      // Switch depending on the type to extract
-      switch( member_entry.type )
-      {
-        case DataType::string:
-          // Extract the offset to the actual string
-          // Seek to it then extract the actual string
-        {
-          throw std::runtime_error( "String not implemented for variant 2!" );
-          //auto string_offset = extract<uint32_t>( iss, "string_offset", false );
-          //iss.seekg( cacheEntryIt->second.offset + 6 + _exh->get_header().data_offset + string_offset );
-          //fields.emplace_back( utils::bparse::extract_cstring( iss, "string" ) );
-        }
-          break;
-
-        case DataType::boolean:
-          fields.emplace_back( extract< bool >( iss, "bool" ) );
-          break;
-
-        case DataType::int8:
-          fields.emplace_back( extract< int8_t >( iss, "int8_t" ) );
-          break;
-
-        case DataType::uint8:
-          fields.emplace_back( extract< uint8_t >( iss, "uint8_t" ) );
-          break;
-
-        case DataType::int16:
-          fields.emplace_back( extract< int16_t >( iss, "int16_t", false ) );
-          break;
-
-        case DataType::uint16:
-          fields.emplace_back( extract< uint16_t >( iss, "uint16_t", false ) );
-          break;
-
-        case DataType::int32:
-          fields.emplace_back( extract< int32_t >( iss, "int32_t", false ) );
-          break;
-
-        case DataType::uint32:
-          fields.emplace_back( extract< uint32_t >( iss, "uint32_t", false ) );
-          break;
-
-        case DataType::float32:
-          fields.emplace_back( extract< float >( iss, "float", false ) );
-          break;
-
-        case DataType::uint64:
-          fields.emplace_back( extract< uint64_t >( iss, "uint64_t", false ) );
-          break;
-
-        default:
-          auto type = static_cast< uint16_t >( member_entry.type );
-          if( type < 0x19 || type > 0x20 )
-            throw std::runtime_error( "Unknown DataType: " + std::to_string( type ) );
-          uint64_t val = extract< uint64_t >( iss, "bool" );
-          int32_t shift = type - 0x19;
-          int32_t i = 1 << shift;
-          val &= i;
-          fields.emplace_back( ( val & i ) == i );
-          break;
-      }
+      const auto it = _data.find( id );
+      if( it != _data.end() ) return it->second;
     }
-    return fields;
-
+    const auto& entry = cache( id );
+    auto decoded = binary::row( _exh->get_binary_header(), pageBytes( *entry.file ), id, entry.offset, subRow );
+    if( subRow == 0 ) _data.emplace( id, decoded.fields );
+    return decoded.fields;
   }
 
-
-  const std::vector< Field > Exd::get_row( uint32_t id )
+  std::vector< uint16_t > Exd::get_subrow_keys( uint32_t id, uint32_t subRow ) const
   {
-
-    auto cacheEntryIt = _idCache.find( id );
-    if( cacheEntryIt == _idCache.end() )
-      throw std::runtime_error( "Id not found: " + std::to_string( id ) );
-
-    // Iterates over all the files
-    const uint32_t member_count =  static_cast< uint32_t >( _exh->get_members().size() );
-    auto& file_ptr = cacheEntryIt->second.file;
-
-    std::vector< char > dataCpy = file_ptr->get_data_sections().front();
-    std::istringstream iss( std::string( dataCpy.begin(), dataCpy.end() ) );
-
-    // Get the vector fields for the given record and preallocate it
-    auto fields = _data[ id ];
-    fields.reserve( member_count );
-    iss.seekg( cacheEntryIt->second.offset + 6 );
-
-    uint8_t subRows = *reinterpret_cast< uint8_t* >( &dataCpy[ cacheEntryIt->second.offset + 5 ] );
-
-    for( auto& member_entry : _exh->get_exh_members() )
-    {
-      // Seek to the position of the member to extract.
-      // 6 is because we have uint32_t/uint16_t at the start of each record
-      iss.seekg( cacheEntryIt->second.offset + 6 + member_entry.offset );
-
-      // Switch depending on the type to extract
-      switch( member_entry.type )
-      {
-        case DataType::string:
-          // Extract the offset to the actual string
-          // Seek to it then extract the actual string
-        {
-          auto string_offset = extract< uint32_t >( iss, "string_offset", false );
-          iss.seekg( cacheEntryIt->second.offset + 6 + _exh->get_header().data_offset + string_offset );
-          fields.emplace_back( utils::bparse::extract_cstring( iss, "string" ) );
-        }
-          break;
-
-        case DataType::boolean:
-          fields.emplace_back( extract< bool >( iss, "bool" ) );
-          break;
-
-        case DataType::int8:
-          fields.emplace_back( extract< int8_t >( iss, "int8_t" ) );
-          break;
-
-        case DataType::uint8:
-          fields.emplace_back( extract< uint8_t >( iss, "uint8_t" ) );
-          break;
-
-        case DataType::int16:
-          fields.emplace_back( extract< int16_t >( iss, "int16_t", false ) );
-          break;
-
-        case DataType::uint16:
-          fields.emplace_back( extract< uint16_t >( iss, "uint16_t", false ) );
-          break;
-
-        case DataType::int32:
-          fields.emplace_back( extract< int32_t >( iss, "int32_t", false ) );
-          break;
-
-        case DataType::uint32:
-          fields.emplace_back( extract< uint32_t >( iss, "uint32_t", false ) );
-          break;
-
-        case DataType::float32:
-          fields.emplace_back( extract< float >( iss, "float", false ) );
-          break;
-
-        case DataType::uint64:
-          fields.emplace_back( extract< uint64_t >( iss, "uint64_t", false ) );
-          break;
-
-        default:
-          auto type = static_cast< uint16_t >( member_entry.type );
-          if( type < 0x19 || type > 0x20 )
-            throw std::runtime_error( "Unknown DataType: " + std::to_string( type ) );
-          uint64_t val = extract< uint64_t >( iss, "bool" );
-          int32_t shift = type - 0x19;
-          int32_t i = 1 << shift;
-          val &= i;
-          fields.emplace_back( ( val & i ) == i );
-          break;
-      }
-    }
-    return fields;
-
+    const auto& entry = cache( id );
+    const auto& h = _exh->get_binary_header();
+    const auto& bytes = pageBytes( *entry.file );
+    const auto r = binary::layout( h, bytes, entry.offset );
+    if( subRow >= r.count ) throw std::out_of_range( "Subrow ordinal outside row" );
+    std::vector< uint16_t > keys;
+    for( unsigned k = 1; k < h.keyCount; ++k )
+      keys.push_back( static_cast< uint16_t >( binary::be( bytes, r.first + subRow * r.stride + 2 * ( k - 1 ), 2 ) ) );
+    return keys;
   }
 
-  // Get all rows
-  const std::map< uint32_t, std::vector< Field>>& Exd::get_rows()
+  size_t Exd::get_subrow_count( uint32_t id ) const
   {
-    // Iterates over all the files
-    const uint32_t member_count =  static_cast< uint32_t >( _exh->get_members().size() );
-    for( auto& file_ptr : _files )
-    {
-      // Get a stream
-      std::vector< char > dataCpy = file_ptr->get_data_sections().front();
-      std::istringstream iss( std::string( dataCpy.begin(), dataCpy.end() ) );
+    const auto& entry = cache( id );
+    return binary::layout( _exh->get_binary_header(), pageBytes( *entry.file ), entry.offset ).count;
+  }
 
-      // Extract the header and skip to the record indices
-      auto exd_header = extract< ExdHeader >( iss );
-      iss.seekg( 0x20 );
+  std::vector< uint32_t > Exd::get_ids() const
+  {
+    std::vector< uint32_t > ids;
+    ids.reserve( _idCache.size() );
+    for( const auto& entry : _idCache ) ids.push_back( entry.first );
+    return ids;
+  }
 
-      // Preallocate and extract the record_indices
-      const uint32_t record_count = exd_header.index_size / sizeof( ExdRecordIndex );
-      std::vector< ExdRecordIndex > record_indices;
-      record_indices.reserve( record_count );
-      for( uint32_t i = 0; i < record_count; ++i )
-      {
-        record_indices.emplace_back( extract< ExdRecordIndex >( iss ) );
-      }
-
-      for( auto& record_index : record_indices )
-      {
-        // Get the vector fields for the given record and preallocate it
-        auto& fields = _data[ record_index.id ];
-        fields.reserve( member_count );
-
-        for( auto& member_entry : _exh->get_exh_members() )
-          //for( auto& member_entry : _exh->get_members() )
-        {
-          // Seek to the position of the member to extract.
-          // 6 is because we have uint32_t/uint16_t at the start of each record
-          iss.seekg( record_index.offset + 6 + member_entry.offset );
-
-          // Switch depending on the type to extract
-          switch( member_entry.type )
-          {
-            case DataType::string:
-              // Extract the offset to the actual string
-              // Seek to it then extract the actual string
-            {
-              auto string_offset = extract< uint32_t >( iss, "string_offset", false );
-              iss.seekg( record_index.offset + 6 + _exh->get_header().data_offset + string_offset );
-              fields.emplace_back( utils::bparse::extract_cstring( iss, "string" ) );
-            }
-              break;
-
-            case DataType::boolean:
-              fields.emplace_back( extract< bool >( iss, "bool" ) );
-              break;
-
-            case DataType::int8:
-              fields.emplace_back( extract< int8_t >( iss, "int8_t" ) );
-              break;
-
-            case DataType::uint8:
-              fields.emplace_back( extract< uint8_t >( iss, "uint8_t" ) );
-              break;
-
-            case DataType::int16:
-              fields.emplace_back( extract< int16_t >( iss, "int16_t", false ) );
-              break;
-
-            case DataType::uint16:
-              fields.emplace_back( extract< uint16_t >( iss, "uint16_t", false ) );
-              break;
-
-            case DataType::int32:
-              fields.emplace_back( extract< int32_t >( iss, "int32_t", false ) );
-              break;
-
-            case DataType::uint32:
-              fields.emplace_back( extract< uint32_t >( iss, "uint32_t", false ) );
-              break;
-
-            case DataType::float32:
-              fields.emplace_back( extract< float >( iss, "float", false ) );
-              break;
-
-            case DataType::uint64:
-              fields.emplace_back( extract< uint64_t >( iss, "uint64_t", false ) );
-              break;
-
-            default:
-              auto type = static_cast< uint16_t >( member_entry.type );
-              if( type < 0x19 || type > 0x20 )
-                throw std::runtime_error( "Unknown DataType: " + std::to_string( type ) );
-              uint64_t val = extract< uint64_t >( iss, "bool" );
-              int32_t shift = type - 0x19;
-              int32_t i = 1 << shift;
-              val &= i;
-              fields.emplace_back( ( val & i ) == i );
-              break;
-          }
-        }
-      }
-    }
+  const std::map< uint32_t, std::vector< Field > >& Exd::get_rows() const
+  {
+    for( const auto& entry : _idCache ) get_row( entry.first );
     return _data;
   }
-
 }
-

@@ -2,6 +2,7 @@
 #define XIV_EXD_EXH_H
 
 #include <map>
+#include "ExcelBinary.h"
 
 #include "bparse.h"
 
@@ -17,7 +18,9 @@ namespace xivps3::exd
     uint16 = 5,
     int32 = 6,
     uint32 = 7,
+    float16 = 8,
     float32 = 9,
+    int64 = 10,
     uint64 = 11,
   };
 
@@ -105,6 +108,8 @@ namespace xivps3
     public:
       // The header file
       Exh( const dat::File& i_file );
+      explicit Exh( const binary::Bytes& bytes );
+      const binary::Header& get_binary_header() const;
 
       ~Exh();
 
@@ -114,12 +119,15 @@ namespace xivps3
 
       const std::vector< Language >& get_languages() const;
 
+      // Legacy offset lookup: lossy when packed booleans share an offset.
+      // For column order/count, always use get_exh_members() or get_binary_header().
       const std::map< uint32_t, ExhMember >& get_members() const;
 
       const std::vector< ExhMember >& get_exh_members() const;
 
     protected:
-      ExhHeader _header;
+      binary::Header _binary;
+      ExhHeader _header{};
       // Members of the datastruct ordered(indexed) by offset
       std::map< uint32_t, ExhMember > _members;
       std::vector< ExhMember > _exh_defs;

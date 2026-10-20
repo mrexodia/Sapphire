@@ -56,7 +56,7 @@ namespace xivps3::dat
 
   // Open the file
   SqPack::SqPack( const std::filesystem::path& path ) :
-    m_handle( path.string(), std::ios_base::in | std::ios_base::binary )
+    m_handle( path )
   {
     // Extract the header
     extract< SqPackHeader >( m_handle );
