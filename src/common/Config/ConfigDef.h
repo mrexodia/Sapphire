@@ -12,6 +12,7 @@ namespace Sapphire::Common::Config
     {
       std::string serverSecret;
       std::string dataPath;
+      std::string dataPathPs3;
       std::string dataVersion;
       uint16_t worldID;
 

@@ -10,6 +10,8 @@ AsyncThreads = 2
 [General]
 ServerSecret = default
 DataPath = C:\\SquareEnix\\FINAL FANTASY XIV - A Realm Reborn\\game\\sqpack
+; PS3 Toolkit SqPack path. Kept separate because PS3 archives require the PS3 parser.
+DataPathPs3 =
 WorldID = 67
 DefaultGMRank = 90
 LogLevel = 1

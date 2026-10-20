@@ -65,7 +65,7 @@ ServerState::ServerState( std::shared_ptr< Engine::ApplicationContext > pContext
   Sapphire::Common::Config::GlobalConfig globalConfig;
   if( configMgr.loadGlobalConfig( globalConfig ) )
   {
-    m_datLocation = globalConfig.general.dataPath;
+    m_datLocation = globalConfig.general.dataPathPs3;
     m_mysqlHost = globalConfig.database.host;
     m_mysqlUser = globalConfig.database.user;
     m_mysqlPassword = globalConfig.database.password;
