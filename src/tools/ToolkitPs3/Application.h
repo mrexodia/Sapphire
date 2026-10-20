@@ -75,6 +75,11 @@ namespace Engine
 
     std::shared_ptr< ApplicationContext > getContext() const;
 
+    void loadWindowState();
+    void restoreWindowState();
+    void captureWindowState();
+    void saveWindowState();
+
     virtual void onInit()
     {
     }
@@ -118,6 +123,11 @@ namespace Engine
 
     uint32_t m_resX;
     uint32_t m_resY;
+    int m_windowX{ 0 };
+    int m_windowY{ 0 };
+    bool m_windowMaximized{ false };
+    bool m_hasWindowPlacement{ false };
+    std::string m_windowStatePath;
 
     bool m_exiting;
     uint64_t m_lastRenderTick{ 0 };

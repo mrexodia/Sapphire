@@ -22,6 +22,8 @@
 
 #include <ZoneEditor.h>
 #include <LgbViewer.h>
+#include "ExcelBrowser.h"
+#include "DataGraphBrowser.h"
 
 namespace Client
 {
@@ -82,14 +84,18 @@ namespace Client
       NONE,
       ZONES,
       LGB,
+      EXCEL,
+      DATA_GRAPH,
     } m_editorMode{ ZONES };
 
-    std::string m_datLocation{ R"(E:\XIV_Patches\monitor\USRDIR\game\sqpack)" };
+    std::string m_datLocation;
 
     ImGuiID setupDockspace( bool& p_open, ImGuiIO& io ) const;
 
     ZoneEditor m_zoneEditor;
     LgbViewer m_lgbViewer;
+    ExcelBrowser m_excelBrowser;
+    DataGraphBrowser m_dataGraphBrowser;
 
     std::string m_mysqlHost{ "localhost" };
     std::string m_mysqlUser{ "root" };
@@ -107,5 +113,8 @@ namespace Client
     // Navigation mesh configuration
     std::string m_navMeshPath{ "./navmesh" };
     char m_navMeshPathBuffer[ 512 ];
+
+    std::string m_dataGraphPath;
+    char m_dataGraphPathBuffer[ 512 ];
   };
 }

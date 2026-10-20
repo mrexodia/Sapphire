@@ -3,6 +3,7 @@
 #endif // IMGUI_DEFINE_MATH_OPERATORS
 
 #include <iostream>
+#include <fstream>
 #include <cctype>
 #include <set>
 #include <string>

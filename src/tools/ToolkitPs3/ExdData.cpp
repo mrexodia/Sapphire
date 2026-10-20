@@ -2,20 +2,18 @@
 
 bool Data::ExdData::init( const std::string& path )
 {
-  m_data = std::make_shared< xivps3::dat::GameData >( path );
-
-  if( !m_data )
+  try
   {
+    auto data = std::make_shared< xivps3::dat::GameData >( path );
+    auto sheets = std::make_shared< xivps3::exd::ExdData >( *data );
+    // Keep the old catalog alive until its GameData reference can be released.
+    m_exd_data = std::move( sheets );
+    m_data = std::move( data );
+    return true;
+  }
+  catch( const std::exception& ex )
+  {
+    Sapphire::Logger::error( "Cannot load PS3 data from {}: {}", path, ex.what() );
     return false;
   }
-
-  m_exd_data = std::make_shared< xivps3::exd::ExdData >( *m_data );
-
-  if( !m_exd_data )
-  {
-    return false;
-  }
-
-  return true;
 }
-

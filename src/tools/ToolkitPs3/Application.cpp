@@ -16,6 +16,11 @@
 #include "backends/imgui_impl_opengl3.h"
 
 #include <utility>
+#include <algorithm>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 #include "ServerState.h"
 
@@ -122,13 +127,113 @@ Engine::Application::Application( const std::string& name ) :
   m_fullscreen = false;
   m_resX = 1920;
   m_resY = 1080;
+  m_windowStatePath = ( Sapphire::Common::Util::executableDir() / "window_state_ps3.txt" ).string();
   auto now = std::chrono::steady_clock::now();
   m_lastRenderTick = std::chrono::time_point_cast< std::chrono::milliseconds >( now ).time_since_epoch().count();
   m_lastUpdateTick = std::chrono::time_point_cast< std::chrono::milliseconds >( now ).time_since_epoch().count();
 }
 
+void Engine::Application::loadWindowState()
+{
+  std::ifstream input( m_windowStatePath );
+  if( !input ) return;
+
+  int x = 0, y = 0, width = 0, height = 0;
+  bool haveX = false, haveY = false, haveWidth = false, haveHeight = false;
+  std::string line;
+  try
+  {
+    while( std::getline( input, line ) )
+    {
+      const auto separator = line.find( '=' );
+      if( separator == std::string::npos ) continue;
+      const auto key = line.substr( 0, separator );
+      const auto value = line.substr( separator + 1 );
+      if( key == "x" ) { x = std::stoi( value ); haveX = true; }
+      else if( key == "y" ) { y = std::stoi( value ); haveY = true; }
+      else if( key == "width" ) { width = std::stoi( value ); haveWidth = true; }
+      else if( key == "height" ) { height = std::stoi( value ); haveHeight = true; }
+      else if( key == "maximized" ) m_windowMaximized = value == "1" || value == "true";
+    }
+  }
+  catch( const std::exception& ) { return; }
+
+  if( !haveX || !haveY || !haveWidth || !haveHeight || width < 640 || height < 480 ||
+      width > 32768 || height > 32768 ) return;
+  m_windowX = x;
+  m_windowY = y;
+  m_resX = static_cast< uint32_t >( width );
+  m_resY = static_cast< uint32_t >( height );
+  m_hasWindowPlacement = true;
+}
+
+void Engine::Application::restoreWindowState()
+{
+  if( !m_hasWindowPlacement || !m_context || !m_context->pGraphics ) return;
+  auto* window = m_context->pGraphics->getWindowHandle();
+  if( !window ) return;
+
+  bool visible = false;
+  int monitorCount = 0;
+  auto** monitors = glfwGetMonitors( &monitorCount );
+  for( int i = 0; i < monitorCount; ++i )
+  {
+    int x = 0, y = 0, width = 0, height = 0;
+    glfwGetMonitorWorkarea( monitors[ i ], &x, &y, &width, &height );
+    const auto overlapWidth = std::min( m_windowX + static_cast< int >( m_resX ), x + width ) - std::max( m_windowX, x );
+    const auto overlapHeight = std::min( m_windowY + static_cast< int >( m_resY ), y + height ) - std::max( m_windowY, y );
+    if( overlapWidth >= 64 && overlapHeight >= 64 ) { visible = true; break; }
+  }
+  if( !visible )
+  {
+    int x = 0, y = 0, width = 0, height = 0;
+    glfwGetMonitorWorkarea( glfwGetPrimaryMonitor(), &x, &y, &width, &height );
+    m_windowX = x + std::max( 0, ( width - static_cast< int >( m_resX ) ) / 2 );
+    m_windowY = y + std::max( 0, ( height - static_cast< int >( m_resY ) ) / 2 );
+  }
+
+  glfwSetWindowPos( window, m_windowX, m_windowY );
+  if( m_windowMaximized ) glfwMaximizeWindow( window );
+}
+
+void Engine::Application::captureWindowState()
+{
+  if( !m_context || !m_context->pGraphics ) return;
+  auto* window = m_context->pGraphics->getWindowHandle();
+  if( !window ) return;
+
+  m_windowMaximized = glfwGetWindowAttrib( window, GLFW_MAXIMIZED ) == GLFW_TRUE;
+  const bool iconified = glfwGetWindowAttrib( window, GLFW_ICONIFIED ) == GLFW_TRUE;
+  if( !m_windowMaximized && !iconified )
+  {
+    int width = 0, height = 0;
+    glfwGetWindowPos( window, &m_windowX, &m_windowY );
+    glfwGetWindowSize( window, &width, &height );
+    if( width >= 640 && height >= 480 )
+    {
+      m_resX = static_cast< uint32_t >( width );
+      m_resY = static_cast< uint32_t >( height );
+      m_hasWindowPlacement = true;
+    }
+  }
+}
+
+void Engine::Application::saveWindowState()
+{
+  captureWindowState();
+  if( !m_hasWindowPlacement || m_windowStatePath.empty() ) return;
+  std::ofstream output( m_windowStatePath, std::ios::trunc );
+  if( !output ) return;
+  output << "x=" << m_windowX << '\n'
+         << "y=" << m_windowY << '\n'
+         << "width=" << m_resX << '\n'
+         << "height=" << m_resY << '\n'
+         << "maximized=" << ( m_windowMaximized ? 1 : 0 ) << '\n';
+}
+
 void Engine::Application::exitApplication()
 {
+  saveWindowState();
   m_context->pGraphics->terminate();
 }
 
@@ -141,9 +246,11 @@ bool Engine::Application::init()
 {
   using namespace Engine::Rendering;
 
+  loadWindowState();
   m_context->pGraphics = std::make_shared< Graphics >();
   auto glsl_version = m_context->pGraphics->init( m_applicationName, m_resX, m_resY, m_fullscreen, !m_fullscreen ? true : false );
   Engine::Service< Graphics >::set( m_context->pGraphics );
+  restoreWindowState();
 
   auto device = m_context->pGraphics->getDeviceString();
   Engine::Logger::info( "{}", device );
@@ -209,6 +316,7 @@ void Engine::Application::mainLoop()
   while( !exit && !m_exiting && !m_context->pGraphics->shouldWindowClose() )
   {
 
+    captureWindowState();
     onMainLoop();
 
 
@@ -340,6 +448,29 @@ void Engine::Application::initImGui(const char* glsl_version)
   // NOTE: static lifetime to keep string pointer alive
   static auto imguiIniPath = ( Sapphire::Common::Util::executableDir() / "imgui.ini" ).string();
   io.IniFilename = imguiIniPath.c_str();
+
+#ifdef _WIN32
+  const auto* windowsDirectory = std::getenv( "WINDIR" );
+  const auto fontsDirectory = std::filesystem::path( windowsDirectory ? windowsDirectory : "C:/Windows" ) / "Fonts";
+  const auto baseFont = fontsDirectory / "segoeui.ttf";
+  if( !std::filesystem::is_regular_file( baseFont ) || !io.Fonts->AddFontFromFileTTF( baseFont.string().c_str(), 16.0f ) )
+    io.Fonts->AddFontDefault();
+  ImFontConfig mergeConfig;
+  mergeConfig.MergeMode = true;
+  mergeConfig.PixelSnapH = true;
+  for( const char* filename : { "meiryo.ttc", "YuGothM.ttc", "msgothic.ttc" } )
+  {
+    const auto japaneseFont = fontsDirectory / filename;
+    if( !std::filesystem::is_regular_file( japaneseFont ) ) continue;
+    io.Fonts->AddFontFromFileTTF( japaneseFont.string().c_str(), 16.0f, &mergeConfig, io.Fonts->GetGlyphRangesJapanese() );
+    break;
+  }
+  const auto chineseFont = fontsDirectory / "msyh.ttc";
+  if( std::filesystem::is_regular_file( chineseFont ) )
+    io.Fonts->AddFontFromFileTTF( chineseFont.string().c_str(), 16.0f, &mergeConfig, io.Fonts->GetGlyphRangesChineseSimplifiedCommon() );
+#else
+  io.Fonts->AddFontDefault();
+#endif
 
   ImGui_ImplGlfw_InitForOpenGL( graphics.getWindowHandle(), true );
   ImGui_ImplOpenGL3_Init( glsl_version );

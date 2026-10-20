@@ -21,7 +21,7 @@ target_include_directories( imgui1 PUBLIC
   ${PROJECT_SOURCE_DIR}/deps/imgui/examples
 )
 
-file( GLOB_RECURSE SOURCES
+file( GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
   *.cpp
   *.h
 )
@@ -33,6 +33,7 @@ target_link_libraries( ToolkitPs3 PRIVATE
   imgui1
   libglew_static
   glm
+  sqlite3
   xivdatps3
 )
 target_include_directories( ToolkitPs3 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} )
