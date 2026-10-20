@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "method": "case-folded CRC32(directory) and CRC32(filename), each XOR 0xFFFFFFFF, matched to raw PS3 index",
+  "path_list": "C:\\CodeBlocks\\Sapphire\\research\\ps3-monitor\\PathList.txt",
+  "path_list_sha256": "6e132d4569877b104802d5d87186fa9d43f0d577fa6cbff8c00e4a53b7c69bfd",
+  "index": "E:\\FFXIV-Monitor-PS3\\game\\sqpack\\ffxiv\\0b0000.ps3.d.index",
+  "index_sha256": "795fdd27eeb9e8b627707a76a312a93e51205454c748fe477b8b899ca498c51b",
+  "runtime_ledger_sha256": "0155e39355663ec11dc63a09f96003b0b536f021779e8b678eaefb8a405bcef2",
+  "dictionary_lines": 2411241,
+  "script_candidate_lines": 6992,
+  "matching_candidate_lines": 1933,
+  "archive_records": 1934,
+  "status_counts": {
+    "unique_dictionary_hash_pair_match": 1933,
+    "unmatched": 1
+  },
+  "named_payload_kinds": {
+    "lua51_bytecode": 1932,
+    "source_text_candidate": 1
+  },
+  "nonwrapper_debug_source_names": 3864,
+  "named_bytecode_with_matching_debug_basenames": 1932,
+  "output_directory": "build\\ps3-lua-named",
+  "limits": [
+    "Candidate dictionary match, not a mathematical proof against CRC collisions.",
+    "Preserved spelling/capitalization comes from PathList, not from the case-folded hashes.",
+    "A .luab resource can contain source text or bundle multiple original .cli.lua/.cmn.lua sources.",
+    "No guesses for unresolved records; no Lua execution or decompilation."
+  ],
+  "examples": [
+    {
+      "directory_hash": "06bc4074",
+      "filename_hash": "c151e0b5",
+      "recovered_path": "game_script/custom/000/CmnDefRetainerCall_00010.luab",
+      "debug_source_names": [
+        "=(luac)",
+        "@Custom/Cmn/Def/CmnDefRetainerCall_00010.cli.lua",
+        "@Custom/Cmn/Def/CmnDefRetainerCall_00010.cmn.lua"
+      ]
+    },
+    {
+      "directory_hash": "10e2eace",
+      "filename_hash": "79eaa126",
+      "recovered_path": "game_script/system/aetheryte.luab",
+      "debug_source_names": [
+        "=(luac)",
+        "@System/Aetheryte.cli.lua",
+        "@System/Aetheryte.cmn.lua"
+      ]
+    },
+    {
+      "directory_hash": "5e9a31c1",
+      "filename_hash": "79eaa126",
+      "recovered_path": "game_script/transport/Aetheryte.luab",
+      "debug_source_names": [
+        "=(luac)",
+        "@Transport/Aetheryte.cli.lua",
+        "@Transport/Aetheryte.cmn.lua"
+      ]
+    },
+    {
+      "directory_hash": "71bb70e2",
+      "filename_hash": "0472d814",
+      "recovered_path": "game_script/custom/001/CmnDefMateriaSlot_00174.luab",
+      "debug_source_names": [
+        "=(luac)",
+        "@Custom/Cmn/Def/CmnDefMateriaSlot_00174.cli.lua",
+        "@Custom/Cmn/Def/CmnDefMateriaSlot_00174.cmn.lua"
+      ]
+    },
+    {
+      "directory_hash": "71bb70e2",
+      "filename_hash": "26544b7f",
+      "recovered_path": "game_script/custom/001/CmnDefBeautySalon_00148.luab",
+      "debug_source_names": [
+        "=(luac)",
+        "@Custom/Cmn/Def/CmnDefBeautySalon_00148.cli.lua",
+        "@Custom/Cmn/Def/CmnDefBeautySalon_00148.cmn.lua"
+      ]
+    }
+  ],
+  "unresolved": [
+    {
+      "directory_hash": "10e2eace",
+      "filename_hash": "e4951b06",
+      "kind": "placeholder",
+      "status": "unmatched"
+    }
+  ]
+}

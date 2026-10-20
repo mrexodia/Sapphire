@@ -1,0 +1,1240 @@
+
+0x97a850 ._ZN6Client4Game6Object11EventObject27SetSharedGroupTimelineStateEtb
+
+0097A850  nop
+0097A854  crmove    4*cr4+lt, 4*cr4+lt
+0097A858  mflr      r0
+0097A85C  bl        sub_1262208
+0097A860  stdu      r1, back_chain(r1)
+0097A864  std       r0, 0x120+sender_lr(r1)
+0097A868  lis       r6, Client::Game::gGameMain@ha
+0097A86C  mr        r29, this
+0097A870  addic     r3, r6, Client::Game::gGameMain@l
+0097A874  clrlwi    r30, r4, 16
+0097A878  mr        r27, r5
+0097A87C  lhz       r28, 0x17A(this)
+0097A880  sth       state, 0x17A(this)
+0097A884  lbz       r3, (byte_1BF5C32 - 0x1BF5C04)(r3)
+0097A888  cmpwi     r3, 1
+0097A88C  beq       loc_97A9D4
+0097A890  lwz       r31, 0xF0(this)
+0097A894  cmpwi     r31, 0
+0097A898  beq       loc_97A9D4
+0097A89C  mr        r3, r31# this
+0097A8A0  bl        Client::LayoutEngine::ILayoutInstance::IsReady(void)
+0097A8A4  nop
+0097A8A8  cmpwi     r3, 0
+0097A8AC  beq       loc_97A9D4
+0097A8B0  clrlwi    r3, r27, 24# this
+0097A8B4  cmpwi     r3, 0
+0097A8B8  beq       loc_97A8DC
+0097A8BC  bl        Client::LayoutEngine::GameInterface::IsReadyTerrain(void)
+0097A8C0  nop
+0097A8C4  cmpwi     r3, 1
+0097A8C8  bne       loc_97A9D4
+0097A8CC  bl        Client::LayoutEngine::GameInterface::IsReadyScene(void)
+0097A8D0  nop
+0097A8D4  cmpwi     r3, 1
+0097A8D8  bne       loc_97A9D4
+0097A8DC  mr        r3, this# this
+0097A8E0  addic     r4, r1, 0x120+var_B0# eventHandlers
+0097A8E4  bl        Client::Game::Object::GameObject::GetDirectorOrEventHandlers(Client::Game::Event::EventHandler **)
+0097A8E8  nop
+0097A8EC  mr        r7, r3
+0097A8F0  lwz       r3, 0x120+var_B0(r1)
+0097A8F4  cmpwi     r7, 0
+0097A8F8  beq       loc_97A938
+0097A8FC  cmpwi     r7, 1
+0097A900  beq       loc_97A908
+0097A904  twu       r1, r1
+0097A908  lwz       r7, 0(r3)
+0097A90C  std       r2, 0x120+saved_toc(r1)
+0097A910  mr        r4, this
+0097A914  mr        r5, oldState
+0097A918  mr        r6, state
+0097A91C  lwz       r7, 0xF4(r7)
+0097A920  lwz       r8, 0(r7)
+0097A924  lwz       r2, 4(r7)
+0097A928  mtctr     r8
+0097A92C  bcctrl    20, 4*cr7+eq, 0
+0097A930  ld        r2, 0x120+saved_toc(r1)
+0097A934  b         loc_97A9D4
+0097A938  li        oldState, 0
+0097A93C  li        r29, 1
+0097A940  mr        r3, r31# this
+0097A944  slw       r29, r29, i
+0097A948  mr        r4, i# index
+0097A94C  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::IsEnableGeneralTimeline(uint)
+0097A950  nop
+0097A954  cmpwi     r3, 0
+0097A958  beq       loc_97A9C4
+0097A95C  clrlwi    r3, r29, 16
+0097A960  and       r3, r3, state
+0097A964  cmpwi     r3, 0
+0097A968  beq       loc_97A99C
+0097A96C  mr        r3, r31# this
+0097A970  mr        r4, i# index
+0097A974  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::IsPlayingGeneralTimeline(uint)
+0097A978  nop
+0097A97C  cmpwi     r3, 0
+0097A980  bne       loc_97A9C4
+0097A984  mr        r3, r31# this
+0097A988  mr        r4, i# index
+0097A98C  li        r5, 0# time
+0097A990  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::PlayGeneralTimeline(uint,uint)
+0097A994  nop
+0097A998  b         loc_97A9C4
+0097A99C  mr        r3, r31# this
+0097A9A0  mr        r4, i# index
+0097A9A4  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::IsPlayingGeneralTimeline(uint)
+0097A9A8  nop
+0097A9AC  cmpwi     r3, 0
+0097A9B0  beq       loc_97A9C4
+0097A9B4  mr        r3, r31# this
+0097A9B8  mr        r4, i# index
+0097A9BC  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::StopGeneralTimeline(uint)
+0097A9C0  nop
+0097A9C4  addic     i, i, 1
+0097A9C8  clrldi    i, i, 32
+0097A9CC  cmplwi    i, 0x10
+0097A9D0  blt       loc_97A93C
+0097A9D4  addi      r1, r1, 0x120
+0097A9D8  nop
+0097A9DC  crmove    4*cr4+lt, 4*cr4+lt
+0097A9E0  b         loc_1262258
+
+0x98d228 ._ZN6Client4Game5Event12EventHandler29OnSetSharedGroupTimelineStateERNS0_6Object10GameObjectEtt
+
+0098D228  nop
+0098D22C  crmove    4*cr4+lt, 4*cr4+lt
+0098D230  mflr      r0
+0098D234  bl        sub_12621F8
+0098D238  stdu      r1, back_chain(r1)
+0098D23C  std       r0, 0xC0+sender_lr(r1)
+0098D240  mr        r30, target
+0098D244  xor       r4, r5, r6
+0098D248  li        r24, 0
+0098D24C  and       r26, r4, r6
+0098D250  andc      r27, r4, r6
+0098D254  li        r28, 1
+0098D258  lwz       r23, 0xF0(target)
+0098D25C  mr        r29, this
+0098D260  clrlwi    r26, r26, 16
+0098D264  mr        r31, i
+0098D268  clrlwi    r27, r27, 16
+0098D26C  slw       r25, r28, r24
+0098D270  mr        r3, r23# this
+0098D274  clrlwi    bit, bit, 16
+0098D278  mr        r4, r24# index
+0098D27C  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::IsEnableGeneralTimeline(uint)
+0098D280  nop
+0098D284  cmpwi     r3, 0
+0098D288  beq       loc_98D2FC
+0098D28C  and       r3, bit, r26
+0098D290  cmpwi     r3, 0
+0098D294  beq       loc_98D2C8
+0098D298  mr        r3, r23# this
+0098D29C  mr        r4, r24# index
+0098D2A0  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::IsPlayingGeneralTimeline(uint)
+0098D2A4  nop
+0098D2A8  cmpwi     r3, 0
+0098D2AC  bne       loc_98D2FC
+0098D2B0  mr        r3, r23# this
+0098D2B4  mr        r4, r24# index
+0098D2B8  li        r5, 0# time
+0098D2BC  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::PlayGeneralTimeline(uint,uint)
+0098D2C0  nop
+0098D2C4  b         loc_98D2FC
+0098D2C8  and       r3, bit, r27
+0098D2CC  cmpwi     r3, 0
+0098D2D0  beq       loc_98D2FC
+0098D2D4  mr        r3, r23# this
+0098D2D8  mr        r4, r24# index
+0098D2DC  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::IsPlayingGeneralTimeline(uint)
+0098D2E0  nop
+0098D2E4  cmpwi     r3, 0
+0098D2E8  beq       loc_98D2FC
+0098D2EC  mr        r3, r23# this
+0098D2F0  mr        r4, r24# index
+0098D2F4  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::StopGeneralTimeline(uint)
+0098D2F8  nop
+0098D2FC  addic     r24, r24, 1
+0098D300  clrldi    i, i, 32
+0098D304  cmplwi    i, 0x10
+0098D308  blt       loc_98D26C
+0098D30C  lbz       r3, 0x40(this)
+0098D310  cntlzw    r4, r3
+0098D314  cmpwi     r3, 0
+0098D318  extrwi    r27, r4, 1,26
+0098D31C  xori      isRollbackOff, isRollbackOff, 1
+0098D320  beq       loc_98D374
+0098D324  lwz       r4, 0(target)
+0098D328  mr        r3, target
+0098D32C  std       r2, 0xC0+saved_toc(r1)
+0098D330  lwz       r4, 4(r4)
+0098D334  lwz       r5, 0(r4)
+0098D338  lwz       r2, 4(r4)
+0098D33C  mtctr     r5
+0098D340  bcctrl    20, 4*cr7+eq, 0
+0098D344  ld        r2, 0xC0+saved_toc(r1)
+0098D348  cmpwi     r3, 7
+0098D34C  bne       loc_98D374
+0098D350  mr        r3, target# this
+0098D354  bl        Client::Game::Object::EventObject::GetPopType(void)
+0098D358  nop
+0098D35C  mr        isRollbackOff, i
+0098D360  cmpwi     r3, 1
+0098D364  beq       loc_98D370
+0098D368  cmpwi     r3, 2
+0098D36C  bne       loc_98D374
+0098D370  mr        r27, r28
+0098D374  cmpwi     r27, 0
+0098D378  beq       loc_98D3A8
+0098D37C  mr        r5, target# gameObject
+0098D380  lwz       target, 4(this)
+0098D384  addic     r3, r1, 0xC0+var_50# this
+0098D388  mr        r4, r30# this
+0098D38C  bl        Client::Game::Event::EventSceneModule::FindCharacterData_(Client::Game::Object::GameObject &)
+0098D390  lwz       r3, 0x30(r30)
+0098D394  lwz       this, 0xC0+var_50(r1)
+0098D398  subfc     r3, r3, r29
+0098D39C  cmpwi     r3, 0
+0098D3A0  beq       loc_98D3A8
+0098D3A4  stb       i, 0x82(r29)
+0098D3A8  addi      r1, r1, 0xC0
+0098D3AC  nop
+0098D3B0  crmove    4*cr4+lt, 4*cr4+lt
+0098D3B4  b         loc_1262248
+
+0x9e27bc ._ZN6Client4Game5Event17QuestEventHandler29OnSetSharedGroupTimelineStateERNS0_6Object11EventObjectEtt
+
+009E27BC  nop
+009E27C0  crmove    4*cr4+lt, 4*cr4+lt
+009E27C4  mflr      r0
+009E27C8  bl        sub_1262210
+009E27CC  stdu      r1, back_chain(r1)
+009E27D0  std       r0, 0x90+sender_lr(r1)
+009E27D4  xor       this, r5, r6
+009E27D8  li        r30, 0
+009E27DC  lwz       r29, 0xF0(target)
+009E27E0  and       r31, r3, r6
+009E27E4  clrlwi    r31, r31, 16
+009E27E8  li        r3, 1
+009E27EC  slw       r3, r3, i
+009E27F0  clrlwi    r3, r3, 16
+009E27F4  and       r3, r3, r31
+009E27F8  cmpwi     r3, 0
+009E27FC  beq       loc_9E282C
+009E2800  mr        r3, r29# this
+009E2804  mr        r4, i# index
+009E2808  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::IsEnableGeneralTimeline(uint)
+009E280C  nop
+009E2810  cmpwi     r3, 0
+009E2814  beq       loc_9E282C
+009E2818  mr        r3, r29# this
+009E281C  mr        r4, i# index
+009E2820  li        r5, 0# time
+009E2824  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::PlayGeneralTimeline(uint,uint)
+009E2828  nop
+009E282C  addic     i, i, 1
+009E2830  clrldi    i, i, 32
+009E2834  cmplwi    i, 0x10
+009E2838  blt       loc_9E27E8
+009E283C  addi      r1, r1, 0x90
+009E2840  nop
+009E2844  crmove    4*cr4+lt, 4*cr4+lt
+009E2848  b         loc_1262260
+
+0x4545ac ._ZNK6Client12LayoutEngine5Group25SharedGroupLayoutInstance23IsEnableGeneralTimelineEj
+
+004545AC  nop
+004545B0  crmove    4*cr4+lt, 4*cr4+lt
+004545B4  mflr      r0
+004545B8  bl        sub_1262210
+004545BC  stdu      r1, back_chain(r1)
+004545C0  std       r0, 0x290+sender_lr(r1)
+004545C4  mr        r6, index
+004545C8  mr        r30, this
+004545CC  cmplwi    index, 0x10
+004545D0  blt       loc_454604
+004545D4  addic     r31, r1, 0x290+var_220
+004545D8  lis       r5, ..LNst._ZNK6Client12LayoutEngine5Group25SharedGroupLayoutInstance23IsEnableGeneralTimelineEj.0@ha
+004545DC  mr        r3, r31# dst
+004545E0  addic     r5, r5, ..LNst._ZNK6Client12LayoutEngine5Group25SharedGroupLayoutInstance23IsEnableGeneralTimelineEj.0@l# format
+004545E4  li        r4, 0x100# size
+004545E8  bl        sprintf_s(char *,uint,char const*,...)
+004545EC  li        r3, 2# level
+004545F0  mr        r4, r31# message
+004545F4  mr        r5, this# instance
+004545F8  bl        Client::LayoutEngine::ILayoutInstance::DebugLog(Client::System::Debug::LogLevel,char const*,Client::LayoutEngine::ILayoutInstance const*)
+004545FC  li        r3, 0
+00454600  b         loc_454674
+00454604  lwz       r4, 0x7C(this)
+00454608  li        r31, 0
+0045460C  cmpwi     r4, 0
+00454610  beq       loc_45462C
+00454614  lwz       r3, 0x80(this)
+00454618  subfc     r3, r4, r3
+0045461C  srawi     r3, r3, 2
+00454620  addze     r3, r3
+00454624  cmpwi     r3, 0
+00454628  bne       loc_45465C
+0045462C  addic     r29, r1, 0x290+var_120
+00454630  lis       r5, ..LNst._ZNK6Client12LayoutEngine5Group25SharedGroupLayoutInstance23IsEnableGeneralTimelineEj.1@ha
+00454634  mr        r3, r29# dst
+00454638  addic     r5, r5, ..LNst._ZNK6Client12LayoutEngine5Group25SharedGroupLayoutInstance23IsEnableGeneralTimelineEj.1@l# format
+0045463C  li        r4, 0x100# size
+00454640  bl        sprintf_s(char *,uint,char const*,...)
+00454644  li        r3, 1# level
+00454648  mr        r4, r29# message
+0045464C  mr        r5, this# instance
+00454650  bl        Client::LayoutEngine::ILayoutInstance::DebugLog(Client::System::Debug::LogLevel,char const*,Client::LayoutEngine::ILayoutInstance const*)
+00454654  mr        r3, r31
+00454658  b         loc_454674
+0045465C  addc      r3, this, r6
+00454660  clrldi    r3, r3, 32
+00454664  lbz       r3, 0xE4(r3)
+00454668  cntlzw    r3, r3
+0045466C  extrwi    r3, r3, 1,26
+00454670  xori      r3, r3, 1
+00454674  addi      r1, r1, 0x290
+00454678  nop
+0045467C  crmove    4*cr4+lt, 4*cr4+lt
+00454680  b         loc_1262260
+
+0xe9c584 ._ZNK6Common9Component5Excel8EXHeader14GetSubkeyCountEv
+
+00E9C584  lwz       r3, 4(r3)
+00E9C588  addic     r3, r3, 0x10
+00E9C58C  clrldi    r3, r3, 32
+00E9C590  lbz       r4, 0(r3)
+00E9C594  lbz       r3, 1(r3)
+00E9C598  insrwi    r3, r4, 8,16
+00E9C59C  extsh     r3, r3
+00E9C5A0  blr
+
+0xe9c5e4 ._ZNK6Common9Component5Excel8EXHeader8GetBlockEv
+
+00E9C5E4  lwz       r4, 4(r3)
+00E9C5E8  addic     r5, r4, 4
+00E9C5EC  addic     r3, r4, 8
+00E9C5F0  clrldi    r5, r5, 32
+00E9C5F4  clrldi    r3, r3, 32
+00E9C5F8  lbz       r6, 0(r5)
+00E9C5FC  lbz       r5, 1(r5)
+00E9C600  insrwi    r5, r6, 8,16
+00E9C604  cmpwi     r5, 3
+00E9C608  bge       loc_E9C620
+00E9C60C  lbz       r5, 0(r3)
+00E9C610  lbz       r3, 1(r3)
+00E9C614  insrwi    r3, r5, 8,16
+00E9C618  slwi      r3, r3, 1
+00E9C61C  b         loc_E9C630
+00E9C620  lbz       r5, 0(r3)
+00E9C624  lbz       r3, 1(r3)
+00E9C628  insrwi    r3, r5, 8,16
+00E9C62C  slwi      r3, r3, 2
+00E9C630  addc      r3, r4, r3
+00E9C634  addic     r3, r3, 0x20 # ' '
+00E9C638  clrldi    r3, r3, 32
+00E9C63C  blr
+
+0xe9c640 ._ZNK6Common9Component5Excel8EXHeader11GetLangDataEv
+
+00E9C640  stdu      r1, back_chain(r1)
+00E9C644  mflr      r0
+00E9C648  std       r0, 0x80+sender_lr(r1)
+00E9C64C  std       r31, 0x80+var_8(r1)
+00E9C650  mr        r31, r3
+00E9C654  bl        Common::Component::Excel::EXHeader::GetBlock(void)
+00E9C658  lwz       r4, 4(r31)
+00E9C65C  addic     r4, r4, 0xA
+00E9C660  clrldi    r4, r4, 32
+00E9C664  lbz       r5, 0(r4)
+00E9C668  lbz       r4, 1(r4)
+00E9C66C  insrwi    r4, r5, 8,16
+00E9C670  slwi      r4, r4, 3
+00E9C674  addc      r3, r3, r4
+00E9C678  clrldi    r3, r3, 32
+00E9C67C  ld        r0, 0x80+sender_lr(r1)
+00E9C680  mtlr      r0
+00E9C684  ld        r31, 0x80+var_8(r1)
+00E9C688  addi      r1, r1, 0x80
+00E9C68C  blr
+
+Packet::Order 0x19D mask path (partial function excerpt)
+
+00AF2FAC  lis       r3, Client::Game::Object::gStaticObjectManager@ha
+00AF2FB0  mr        r4, r27# entityId
+00AF2FB4  addic     r3, r3, Client::Game::Object::gStaticObjectManager@l# this
+00AF2FB8  bl        Client::Game::Object::StaticObjectManager::GetObjectFromEntityId(uint)
+00AF2FBC  nop
+00AF2FC0  clrldi    r27, r3, 32
+00AF2FC4  cmpwi     r27, 0
+00AF2FC8  beq       <noname>_156
+00AF2FCC  lwz       r4, 0(r27)
+00AF2FD0  std       r2, 0xD90+saved_toc(r1)
+00AF2FD4  mr        r3, r27
+00AF2FD8  lwz       r4, 4(r4)
+00AF2FDC  lwz       r5, 0(r4)
+00AF2FE0  lwz       r2, 4(r4)
+00AF2FE4  mtctr     r5
+00AF2FE8  bcctrl    20, 4*cr7+eq, 0
+00AF2FEC  ld        r2, 0xD90+saved_toc(r1)
+00AF2FF0  cmpwi     r3, 7
+00AF2FF4  bne       <noname>_156
+00AF2FF8  li        r30, 0
+00AF2FFC  li        r3, 1
+00AF3000  slw       r3, r3, i
+00AF3004  and       r3, r3, r25
+00AF3008  cmpwi     r3, 0
+00AF300C  beq       loc_AF3040
+00AF3010  mr        r3, r27# this
+00AF3014  mr        r4, i# index
+00AF3018  bl        Client::Game::Object::GameObject::IsPlaySharedGroupTimeline(uint)
+00AF301C  nop
+00AF3020  cmpwi     r3, 0
+00AF3024  bne       loc_AF3068
+00AF3028  mr        r3, r27# this
+00AF302C  mr        r4, i# index
+00AF3030  li        r5, 0# time
+00AF3034  bl        Client::Game::Object::GameObject::PlaySharedGroupTimeline(uint,uint)
+00AF3038  nop
+00AF303C  b         loc_AF3068
+00AF3040  mr        r3, r27# this
+00AF3044  mr        r4, i# index
+00AF3048  bl        Client::Game::Object::GameObject::IsPlaySharedGroupTimeline(uint)
+00AF304C  nop
+00AF3050  cmpwi     r3, 1
+00AF3054  bne       loc_AF3068
+00AF3058  mr        r3, r27# this
+00AF305C  mr        r4, i# index
+00AF3060  bl        Client::Game::Object::GameObject::StopSharedGroupTimeline(uint)
+00AF3064  nop
+00AF3068  addic     i, i, 1
+00AF306C  clrldi    i, i, 32
+00AF3070  cmplwi    i, 0x10
+00AF3074  blt       loc_AF2FFC
+00AF3078  sth       actionTimelineId, 0x17A(r27)
+00AF307C  b         <noname>_156
+
+0x48af94 ._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv
+0048AF94  nop
+0048AF98  crmove    4*cr4+lt, 4*cr4+lt
+0048AF9C  mflr      r0
+0048AFA0  bl        sub_1262200
+0048AFA4  stdu      r1, back_chain(r1)
+0048AFA8  std       r0, 0xB0+sender_lr(r1)
+0048AFAC  mr        r29, this
+0048AFB0  li        r25, 0
+0048AFB4  lwz       r4, 0x7C(this)
+0048AFB8  lwz       r3, 0x34(this)# pResource
+0048AFBC  cmpwi     r4, 0
+0048AFC0  cmpwi     cr1, r3, 0
+0048AFC4  beq       loc_48AFE4
+0048AFC8  lwz       r5, 0x80(this)
+0048AFCC  subfc     r4, r4, r5
+0048AFD0  srawi     r4, r4, 2
+0048AFD4  addze     r4, r4# Client::System::Resource::Handle::ResourceHandle *
+0048AFD8  cmpwi     r4, 0
+0048AFDC  beq       loc_48AFE4
+0048AFE0  twu       r1, r1
+0048AFE4  bne       cr1, loc_48AFEC
+0048AFE8  twu       r1, r1
+0048AFEC  bl        Client::LayoutEngine::LayoutBinaryParser::GetSceneBinary(Client::System::Resource::Handle::ResourceHandle const*)
+0048AFF0  mr        r31, r3
+0048AFF4  cmpwi     pScene, 0
+0048AFF8  bne       loc_48B014
+0048AFFC  lis       r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.1@ha
+0048B000  li        r3, 2# level
+0048B004  addic     r4, r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.1@l# message
+0048B008  mr        r5, this# instance
+0048B00C  bl        Client::LayoutEngine::ILayoutInstance::DebugLog(Client::System::Debug::LogLevel,char const*,Client::LayoutEngine::ILayoutInstance const*)
+0048B010  b         loc_48B780
+0048B014  lwz       r4, 0x2C(pScene)
+0048B018  mr        r30, r25
+0048B01C  cmpwi     r4, 0
+0048B020  beq       loc_48B02C
+0048B024  addc      r30, pScene, r4
+0048B028  clrldi    r30, r30, 32
+0048B02C  lwz       r4, 0xC0(this)
+0048B030  cmpwi     cr1, r30, 0
+0048B034  cmpwi     r4, 0
+0048B038  cror      eq, eq, 4*cr1+eq
+0048B03C  beq       loc_48B1BC
+0048B040  lwz       r3, 0x20(r4)
+0048B044  lwz       r5, 0x38(r30)
+0048B048  insrwi    r3, r5, 4,21
+0048B04C  stw       r3, 0x20(r4)
+0048B050  lwz       r3, 0xC0(this)
+0048B054  lbz       r4, 0x34(r30)
+0048B058  cntlzw    r4, r4
+0048B05C  lbz       r5, 0x21(r3)
+0048B060  rlwimi    r5, r4, 28,30,30
+0048B064  mr        r4, r25
+0048B068  stb       r5, 0x21(r3)
+0048B06C  lwz       r3, 0x30(r30)
+0048B070  lwz       r6, 0xC0(this)
+0048B074  addc      r3, r30, r3
+0048B078  clrldi    r3, r3, 32
+0048B07C  lbz       r7, 0x21(r6)
+0048B080  lbz       r3, 0(r3)
+0048B084  cmpwi     r3, 0
+0048B088  beq       loc_48B090
+0048B08C  li        r4, 1
+0048B090  rlwinm    r3, r7, 0,24,30
+0048B094  or        r3, r3, r4
+0048B098  mr        r4, r25
+0048B09C  stb       r3, 0x21(r6)
+0048B0A0  lwz       r3, 0x30(r30)
+0048B0A4  lwz       r6, 0xC0(this)
+0048B0A8  addc      r3, r30, r3
+0048B0AC  clrldi    r3, r3, 32
+0048B0B0  lbz       r7, 0x22(r6)
+0048B0B4  lbz       r3, 1(r3)
+0048B0B8  cmpwi     r3, 0
+0048B0BC  beq       loc_48B0C4
+0048B0C0  li        r4, 1
+0048B0C4  insrwi    r7, r4, 1,24
+0048B0C8  stb       r7, 0x22(r6)
+0048B0CC  lhz       r4, 0(r30)
+0048B0D0  lwz       r6, 0xC0(this)
+0048B0D4  clrlwi    r4, r4, 24
+0048B0D8  cmpwi     cr1, r6, 0
+0048B0DC  cmpwi     cr6, r4, 0
+0048B0E0  cmpdi     r4, 0xFF
+0048B0E4  bne       loc_48B0EC
+0048B0E8  twu       r1, r1
+0048B0EC  bne       cr1, loc_48B0F8
+0048B0F0  twu       r1, r1
+0048B0F4  b         loc_48B118
+0048B0F8  beq       cr6, loc_48B118
+0048B0FC  lbz       r5, 0x21(r6)
+0048B100  mr        r3, this# this
+0048B104  stb       r4, 1(r6)
+0048B108  ori       r4, r5, 0x80
+0048B10C  stb       r4, 0x21(r6)
+0048B110  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::UpdateHousingAssetColor(void)
+0048B114  lwz       r6, 0xC0(this)
+0048B118  lwz       r3, 0x28(r30)
+0048B11C  mr        r4, r6
+0048B120  addc      r3, r30, r3
+0048B124  clrldi    r3, r3, 32
+0048B128  lbz       pAssetPath, 0(pAssetPath)
+0048B12C  cmpwi     r3, 0
+0048B130  beq       loc_48B160
+0048B134  lbz       r4, 0x21(r6)
+0048B138  mr        r3, this# this
+0048B13C  ori       r4, r4, 0x20 # ' '
+0048B140  stb       r4, 0x21(r6)
+0048B144  lwz       r4, 0xC0(this)
+0048B148  lbz       r5, 0x21(r4)
+0048B14C  ori       r5, r5, 0x10
+0048B150  stb       r5, 0x21(r4)
+0048B154  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::UpdateHousingOBSetAssets(void)
+0048B158  lwz       r4, 0xC0(this)
+0048B15C  mr        r6, r4
+0048B160  cmpwi     r4, 0
+0048B164  beq       loc_48B190
+0048B168  lwz       r4, 4(r4)
+0048B16C  cmpwi     r4, 0
+0048B170  beq       loc_48B190
+0048B174  lwz       r4, 0(r4)
+0048B178  ld        r4, 0x10(r4)# crestId
+0048B17C  cmpdi     r4, -1
+0048B180  beq       loc_48B190
+0048B184  mr        r3, this# this
+0048B188  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetHousingCrest(ulong long)
+0048B18C  lwz       r6, 0xC0(this)
+0048B190  lwz       r3, 0x2C(r30)
+0048B194  mr        r4, r6
+0048B198  addc      r30, r30, r3
+0048B19C  cmpwi     r30, 0
+0048B1A0  beq       loc_48B1BC
+0048B1A4  clrldi    r3, r30, 32
+0048B1A8  lwz       r3, 0(r3)
+0048B1AC  lwz       r4, 0x20(r6)
+0048B1B0  insrwi    r4, r3, 4,17
+0048B1B4  stw       r4, 0x20(r6)
+0048B1B8  lwz       r4, 0xC0(this)
+0048B1BC  lwz       r3, 0x20(pScene)
+0048B1C0  cmpwi     cr1, r4, 0
+0048B1C4  addc      r30, pScene, r3
+0048B1C8  clrldi    r30, r30, 32
+0048B1CC  cmpwi     r30, 0
+0048B1D0  beq       loc_48B35C
+0048B1D4  lwz       r6, 0xCC(this)
+0048B1D8  lbz       r3, 0(r30)
+0048B1DC  li        r4, 0x1E
+0048B1E0  mr        r5, r6
+0048B1E4  stb       r25, 0xD8(this)
+0048B1E8  stb       r3, 0xD6(this)
+0048B1EC  rlwimi    r5, r25, 0,25,28
+0048B1F0  stb       r25, 0xD7(this)
+0048B1F4  stw       r5, 0xCC(this)
+0048B1F8  lwz       r7, 0x18(r30)
+0048B1FC  cmpwi     cr6, r7, 4
+0048B200  cmpwi     cr7, r7, 3
+0048B204  beq       cr1, loc_48B20C
+0048B208  li        r4, 0xA
+0048B20C  sth       r4, 0xDC(this)
+0048B210  sth       r4, 0xDA(this)
+0048B214  beq       cr6, loc_48B264
+0048B218  beq       cr7, loc_48B244
+0048B21C  cmpwi     r7, 2
+0048B220  beq       loc_48B2BC
+0048B224  cmpwi     r7, 1
+0048B228  beq       loc_48B234
+0048B22C  cmpwi     r7, 0
+0048B230  bne       loc_48B2BC
+0048B234  li        r3, 3
+0048B238  insrwi    r6, r3, 4,25
+0048B23C  stw       r6, 0xCC(this)
+0048B240  b         loc_48B2BC
+0048B244  lbz       r4, 1(r30)
+0048B248  stb       r4, 0xD7(this)
+0048B24C  cmpwi     cr6, r4, 0
+0048B250  lbz       r6, 2(r30)# Client::LayoutEngine::ILayoutInstance *
+0048B254  cmpwi     cr1, r6, 0
+0048B258  stb       r6, 0xD8(this)
+0048B25C  bne       cr6, loc_48B27C
+0048B260  b         <noname>_54
+0048B264  lhz       r3, 0x1C(r30)
+0048B268  sth       r3, 0xDA(this)
+0048B26C  lhz       r3, 0x1E(r30)
+0048B270  sth       r3, 0xDC(this)
+0048B274  b         loc_48B2BC
+0048B278  beq       cr1, loc_48B2BC
+0048B27C  xor       r3, r4, r6
+0048B280  cmpwi     r3, 0
+0048B284  bne       loc_48B2A0
+0048B288  lis       r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.2@ha
+0048B28C  li        r3, 2# level
+0048B290  addic     r4, r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.2@l# message
+0048B294  mr        r5, this# instance
+0048B298  bl        Client::LayoutEngine::ILayoutInstance::DebugLog(Client::System::Debug::LogLevel,char const*,Client::LayoutEngine::ILayoutInstance const*)
+0048B29C  b         loc_48B2BC
+0048B2A0  beq       cr6, loc_48B2A8
+0048B2A4  bne       cr1, loc_48B2BC
+0048B2A8  lis       r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.3@ha
+0048B2AC  li        r3, 2# level
+0048B2B0  addic     r4, r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.3@l# message
+0048B2B4  mr        r5, this# instance
+0048B2B8  bl        Client::LayoutEngine::ILayoutInstance::DebugLog(Client::System::Debug::LogLevel,char const*,Client::LayoutEngine::ILayoutInstance const*)
+0048B2BC  lwz       r3, 0xD0(this)
+0048B2C0  lis       r26, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.5@ha
+0048B2C4  rlwimi    r3, r25, 0,24,28
+0048B2C8  mr        r28, r30
+0048B2CC  mr        r30, r25
+0048B2D0  mr        r27, this
+0048B2D4  addic     r26, r26, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.5@l# "DATA_ERROR: "
+0048B2D8  stw       r3, 0xD0(this)
+0048B2DC  cmplwi    i, 0x10
+0048B2E0  blt       loc_48B2E8
+0048B2E4  twu       r1, r1
+0048B2E8  lbz       r7, 5(r28)
+0048B2EC  lbz       r4, 0xD7(this)
+0048B2F0  stb       r7, 0xE4(r27)
+0048B2F4  cmpwi     r7, 0
+0048B2F8  lbz       r6, 0xD8(this)# Client::LayoutEngine::ILayoutInstance *
+0048B2FC  beq       loc_48B318
+0048B300  lwz       r3, 0xD0(this)
+0048B304  extrwi    r5, r3, 5,24
+0048B308  addic     r5, r5, 1
+0048B30C  insrwi    r3, r5, 5,24
+0048B310  stw       r3, 0xD0(this)
+0048B314  lbz       r7, 0xE4(r27)
+0048B318  cmpwi     r7, 0
+0048B31C  beq       loc_48B348
+0048B320  xor       r3, r7, r4
+0048B324  cmpwi     r3, 0
+0048B328  beq       loc_48B338
+0048B32C  xor       r3, r7, r6
+0048B330  cmpwi     r3, 0
+0048B334  bne       loc_48B348
+0048B338  li        r3, 2# level
+0048B33C  mr        r4, r26# message
+0048B340  mr        r5, this# instance
+0048B344  bl        Client::LayoutEngine::ILayoutInstance::DebugLog(Client::System::Debug::LogLevel,char const*,Client::LayoutEngine::ILayoutInstance const*)
+0048B348  addic     i, i, 1
+0048B34C  addic     r28, r28, 1
+0048B350  addic     r27, r27, 1
+0048B354  cmplwi    i, 0x10
+0048B358  blt       loc_48B2DC
+0048B35C  lbz       r5, 0x21(this)
+0048B360  mr        r3, this# this
+0048B364  mr        r4, pScene# pScene
+0048B368  extrwi    r5, r5, 3,28
+0048B36C  addic     r5, r5, 1# hierarchy
+0048B370  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetupChildNodeInstance(Common::DevEnv::Generated::Scene_t const*,uchar)
+0048B374  cmpwi     r3, 0
+0048B378  bne       loc_48B390
+0048B37C  li        r3, 4
+0048B380  lwz       r4, 0xCC(this)
+0048B384  insrwi    r4, r3, 4,0
+0048B388  stw       r4, 0xCC(this)
+0048B38C  b         loc_48B780
+0048B390  addic     r30, this, 0x70 # 'p'
+0048B394  mr        r3, r30# this
+0048B398  bl        Client::LayoutEngine::Node::ChildNodeContainer::UpdateTransform(void)
+0048B39C  lbz       r3, 0xD0(this)
+0048B3A0  clrlwi    r3, r3, 31
+0048B3A4  cmpwi     r3, 0
+0048B3A8  bne       loc_48B3B8
+0048B3AC  mr        r3, r30# this
+0048B3B0  li        r4, 0# enable
+0048B3B4  bl        Client::LayoutEngine::Node::ChildNodeContainer::SetEnableCollision(bool)
+0048B3B8  lwz       r4, 8(this)
+0048B3BC  cmpwi     r4, 0
+0048B3C0  beq       loc_48B3D4
+0048B3C4  lwz       r3, 0x60(r4)
+0048B3C8  addic     r3, r3, -1
+0048B3CC  cmpwi     r3, 0
+0048B3D0  beq       loc_48B458
+0048B3D4  lwz       r3, 0x20(pScene)
+0048B3D8  addc      r3, pScene, r3
+0048B3DC  clrldi    r3, r3, 32
+0048B3E0  lwz       r4, 0x20(r3)
+0048B3E4  addc      r30, r3, r4
+0048B3E8  clrldi    r30, r30, 32
+0048B3EC  cmpwi     r30, 0
+0048B3F0  bne       loc_48B3FC
+0048B3F4  twu       r1, r1
+0048B3F8  b         loc_48B444
+0048B3FC  lwz       r3, 4(r30)
+0048B400  mr        r28, r25
+0048B404  cmpwi     r3, 0
+0048B408  ble       loc_48B444
+0048B40C  mr        r27, r25
+0048B410  lwz       r4, 0(r30)
+0048B414  mr        r3, this# this
+0048B418  addc      r4, r4, r30
+0048B41C  clrldi    r4, r4, 32
+0048B420  lwzx      r5, r4, r27
+0048B424  addc      r4, r4, r5
+0048B428  clrldi    r4, r4, 32# pSGAction
+0048B42C  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetupSGAction(Common::DevEnv::Generated::SGAction_t const*)
+0048B430  lwz       r3, 4(r30)
+0048B434  addic     r28, r28, 1
+0048B438  addic     r27, r27, 4
+0048B43C  cmpw      r28, r3
+0048B440  blt       loc_48B410
+0048B444  lwz       r4, 0x10(pScene)
+0048B448  mr        r3, this# this
+0048B44C  addc      r4, pScene, r4
+0048B450  clrldi    r4, r4, 32# pFolder
+0048B454  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::CreateTimeLineInstance(Common::DevEnv::Generated::SGTimelineFolder_t const*)
+0048B458  lbz       r3, 0xF4(this)
+0048B45C  cmpwi     cr1, r3, 3
+0048B460  cmpwi     cr6, r3, 2
+0048B464  cmpwi     cr7, r3, 1
+0048B468  cmpwi     r3, 4
+0048B46C  beq       loc_48B550
+0048B470  beq       cr1, loc_48B534
+0048B474  beq       cr6, loc_48B4B0
+0048B478  bne       cr7, loc_48B5F0
+0048B47C  lbz       r4, 0xF5(this)
+0048B480  mr        r3, this# this
+0048B484  li        r6, 0# obset
+0048B488  extrwi    r5, r4, 1,24
+0048B48C  extrwi    r4, r4, 1,25
+0048B490  cntlzw    r5, r5
+0048B494  cntlzw    r4, r4
+0048B498  extrwi    r5, r5, 1,26
+0048B49C  extrwi    r7, r4, 1,26
+0048B4A0  xori      r4, r5, 1# value
+0048B4A4  xori      r5, r7, 1# animation
+0048B4A8  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::PlayGeneralAction_Local(bool,bool,bool)
+0048B4AC  b         <noname>_55
+0048B4B0  lwz       r3, 0xCC(this)
+0048B4B4  extrwi    r3, r3, 4,25
+0048B4B8  cmpwi     r3, 3
+0048B4BC  bne       loc_48B4D4
+0048B4C0  lis       r3, Client::LayoutEngine::LayoutWorld::m_instance@ha
+0048B4C4  lwz       r3, Client::LayoutEngine::LayoutWorld::m_instance@l(r3)
+0048B4C8  lbz       r3, 0x38(r3)
+0048B4CC  cmpwi     r3, 0
+0048B4D0  bne       loc_48B5F0
+0048B4D4  lbz       r3, 0xF5(this)
+0048B4D8  lbz       r4, 0xD7(this)
+0048B4DC  extrwi    r5, r3, 1,24
+0048B4E0  extrwi    r3, r3, 1,25
+0048B4E4  cntlzw    r5, r5
+0048B4E8  cntlzw    r3, r3
+0048B4EC  extrwi    r5, r5, 1,26
+0048B4F0  extrwi    r3, r3, 1,26
+0048B4F4  cmpwi     r4, 0
+0048B4F8  xori      r4, r5, 1# value
+0048B4FC  xori      r5, r3, 1# animation
+0048B500  beq       loc_48B524
+0048B504  lbz       r3, 0xD8(this)
+0048B508  cmpwi     r3, 0
+0048B50C  beq       loc_48B524
+0048B510  mr        r3, this# this
+0048B514  li        r5, 1# animation
+0048B518  li        r6, 0# obset
+0048B51C  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetGeneralShowHide_Local(bool,bool,bool)
+0048B520  b         loc_48B530
+0048B524  mr        r3, this# this
+0048B528  li        r6, 0# obset
+0048B52C  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetGeneralShowHide_Local(bool,bool,bool)
+0048B530  b         <noname>_55
+0048B534  lwz       r4, 0xF4(this)
+0048B538  mr        r3, this# this
+0048B53C  lwz       r5, 0xFC(this)# time
+0048B540  li        r6, 0# obset
+0048B544  extrwi    r4, r4, 8,18# index
+0048B548  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::PlayGeneralTimeline_Local(uint,uint,bool)
+0048B54C  b         <noname>_55
+0048B550  lwz       r3, 0xF4(this)
+0048B554  lwz       r4, 0xF8(this)# globalMemberId
+0048B558  extrwi    r5, r3, 8,10
+0048B55C  lwz       r6, 0x7C(this)
+0048B560  xori      r30, r5, 0x80
+0048B564  cmpwi     r6, 0
+0048B568  lwz       r31, 0xFC(this)
+0048B56C  addic     r30, r30, -0x80
+0048B570  beq       loc_48B58C
+0048B574  lwz       r5, 0x80(this)
+0048B578  subfc     r5, r6, r5
+0048B57C  srawi     r5, r5, 2
+0048B580  addze     r5, r5
+0048B584  cmpwi     r5, 0
+0048B588  bne       loc_48B5A8
+0048B58C  li        r4, 4
+0048B590  insrwi    r3, r4, 8,0
+0048B594  insrwi    r3, r30, 8,10
+0048B598  stb       r4, 0xF4(this)
+0048B59C  li        r30, 1
+0048B5A0  stw       r3, 0xF4(this)
+0048B5A4  b         loc_48B5E4
+0048B5A8  addic     r3, this, 0xA0# this
+0048B5AC  bl        Client::LayoutEngine::Group::TimeLineContainer::FindInstance(uint)
+0048B5B0  cmpwi     r3, 0
+0048B5B4  bne       loc_48B5D4
+0048B5B8  lis       r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance12PlayTimeLineEjij.0@ha
+0048B5BC  li        r3, 2# level
+0048B5C0  addic     r4, r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance12PlayTimeLineEjij.0@l# message
+0048B5C4  mr        r5, this# instance
+0048B5C8  bl        Client::LayoutEngine::ILayoutInstance::DebugLog(Client::System::Debug::LogLevel,char const*,Client::LayoutEngine::ILayoutInstance const*)
+0048B5CC  mr        r30, r25
+0048B5D0  b         loc_48B5E4
+0048B5D4  mr        r4, r30# count
+0048B5D8  mr        r5, r31# time
+0048B5DC  bl        Client::LayoutEngine::Group::TimeLineLayoutInstance::Play(int,uint)
+0048B5E0  li        r30, 1
+0048B5E4  mr        r3, r30
+0048B5E8  cmpwi     result, 0
+0048B5EC  beq       loc_48B5F8
+0048B5F0  stb       r25, 0xF4(this)
+0048B5F4  b         loc_48B60C
+0048B5F8  lis       r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.6@ha
+0048B5FC  li        r3, 2# level
+0048B600  addic     r4, r4, ..LNst._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance23CreateChildNodeInstanceEv.6@l# message
+0048B604  mr        r5, this# instance
+0048B608  bl        Client::LayoutEngine::ILayoutInstance::DebugLog(Client::System::Debug::LogLevel,char const*,Client::LayoutEngine::ILayoutInstance const*)
+0048B60C  lwz       r3, 0xC0(this)
+0048B610  cmpwi     r3, 0
+0048B614  beq       loc_48B6E8
+0048B618  mr        r4, r3
+0048B61C  mr        r3, this# this
+0048B620  lbz       r4, 0x21(r4)
+0048B624  extrwi    r4, r4, 1,30
+0048B628  cntlzw    r4, r4
+0048B62C  extrwi    r4, r4, 1,26
+0048B630  xori      r4, r4, 1# value
+0048B634  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetHousingFurnitureEmissive(bool)
+0048B638  lwz       r4, 0xC0(this)
+0048B63C  mr        r3, this# this
+0048B640  lbz       r4, 0x21(r4)
+0048B644  extrwi    r4, r4, 1,30
+0048B648  cntlzw    r4, r4
+0048B64C  extrwi    r4, r4, 1,26
+0048B650  xori      r4, r4, 1# value
+0048B654  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetHousingFurnitureLight(bool)
+0048B658  lwz       r3, 0xC0(this)
+0048B65C  cmpwi     r3, 0
+0048B660  beq       loc_48B6E8
+0048B664  lwz       r3, 0x20(r3)
+0048B668  extrwi    r3, r3, 4,17
+0048B66C  cmpwi     r3, 0
+0048B670  beq       loc_48B6E8
+0048B674  mr        r3, this# this
+0048B678  li        r4, 0# animation
+0048B67C  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::UpdateEmploymentNpcVisibility(bool)
+0048B680  lis       r30, Client::LayoutEngine::LayoutDebug::m_instance@ha
+0048B684  lwz       r30, Client::LayoutEngine::LayoutDebug::m_instance@l(r30)
+0048B688  lbz       r3, 9(r30)
+0048B68C  cmpwi     r3, 0
+0048B690  beq       loc_48B6E8
+0048B694  lhz       r31, 0x664(r30)
+0048B698  mr        r28, r25
+0048B69C  lhz       r30, 0x666(r30)
+0048B6A0  mr        r3, this# this
+0048B6A4  mr        r4, i# slot
+0048B6A8  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::GetHousingCombinedFurnitureMember(uint)
+0048B6AC  cmpwi     r3, 0
+0048B6B0  beq       loc_48B6BC
+0048B6B4  mr        r4, r31# kind
+0048B6B8  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetHousingCombinedFurnitureKind(ushort)
+0048B6BC  mr        r3, this# this
+0048B6C0  mr        r4, i# slot
+0048B6C4  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::GetHousingCombinedFurnitureMember(uint)
+0048B6C8  cmpwi     r3, 0
+0048B6CC  beq       loc_48B6D8
+0048B6D0  mr        r4, r30# step
+0048B6D4  bl        Client::LayoutEngine::Group::SharedGroupLayoutInstance::SetHousingCombinedFurnitureStep(ushort)
+0048B6D8  addic     i, i, 1
+0048B6DC  clrldi    i, i, 32
+0048B6E0  cmplwi    i, 8
+0048B6E4  blt       loc_48B6A0
+0048B6E8  lwz       r8, 0x7C(this)
+0048B6EC  mr        r3, r25
+0048B6F0  cmpwi     r8, 0
+0048B6F4  beq       loc_48B708
+0048B6F8  lwz       r3, 0x80(this)
+0048B6FC  subfc     r3, r8, r3
+0048B700  srawi     r3, r3, 2
+0048B704  addze     r3, r3
+0048B708  mr        r4, r25
+0048B70C  cmpwi     r3, 0
+0048B710  beq       loc_48B770
+0048B714  mr        r7, r25
+0048B718  mr        r6, r25
+0048B71C  cmpwi     r8, 0
+0048B720  beq       loc_48B734
+0048B724  lwz       r5, 0x80(this)
+0048B728  subfc     r5, r8, r5
+0048B72C  srawi     r6, r5, 2
+0048B730  addze     r6, r6
+0048B734  cmplw     i, r6
+0048B738  blt       loc_48B740
+0048B73C  twu       r1, r1
+0048B740  addc      r5, r8, r7
+0048B744  addic     i, i, 1
+0048B748  clrldi    r5, r5, 32
+0048B74C  addic     r7, r7, 4
+0048B750  cmplw     i, r3
+0048B754  lwz       r5, 0(r5)
+0048B758  lwz       r5, 4(r5)
+0048B75C  lbz       r6, 0x21(r5)
+0048B760  ori       r6, r6, 1
+0048B764  stb       r6, 0x21(r5)
+0048B768  lwz       r8, 0x7C(this)
+0048B76C  blt       loc_48B718
+0048B770  li        r3, 2
+0048B774  lwz       i, 0xCC(this)
+0048B778  insrwi    r4, r3, 4,0
+0048B77C  stw       r4, 0xCC(this)
+0048B780  addi      r1, r1, 0xB0
+0048B784  nop
+0048B788  crmove    4*cr4+lt, 4*cr4+lt
+0048B78C  b         loc_1262250
+
+0x489160 ._ZN6Client12LayoutEngine5Group25SharedGroupLayoutInstance22CreateTimeLineInstanceEPKN6Common6DevEnv9Generated18SGTimelineFolder_tE
+00489160  nop
+00489164  crmove    4*cr4+lt, 4*cr4+lt
+00489168  mflr      r0
+0048916C  bl        sub_12621F4
+00489170  stdu      r1, back_chain(r1)
+00489174  std       r0, 0x100+sender_lr(r1)
+00489178  mr        r24, this
+0048917C  li        r22, 0
+00489180  mr        r23, pFolder
+00489184  lbz       r3, 0xCF(this)
+00489188  rlwimi    r3, r22, 0,24,24
+0048918C  stb       r3, 0xCF(this)
+00489190  lwz       r3, 4(pFolder)
+00489194  cmpwi     r3, 0
+00489198  beq       loc_489580
+0048919C  lbz       r3, 0x20(this)
+004891A0  extrwi    r3, r3, 1,24
+004891A4  cmpwi     r3, 1
+004891A8  beq       loc_489580
+004891AC  lwz       r3, 0x38(this)
+004891B0  cmpwi     r3, 0
+004891B4  beq       loc_4891BC
+004891B8  twu       r1, r1
+004891BC  mr        r3, this# pSGInstance
+004891C0  bl        Client::System::Scheduler::SchedulerInstanceObject::CreateSchedulerInstanceObjectForLayout(Client::LayoutEngine::Group::SharedGroupLayoutInstance *)
+004891C4  nop
+004891C8  cmpwi     r3, 0
+004891CC  stw       r3, 0x38(this)
+004891D0  bne       loc_4891DC
+004891D4  twu       r1, r1
+004891D8  b         loc_489580
+004891DC  lwz       r6, 0x7C(this)
+004891E0  cmpwi     r6, 0
+004891E4  beq       loc_489260
+004891E8  lwz       r7, 0x80(this)
+004891EC  subfc     r3, r6, r7
+004891F0  srawi     r31, r3, 2
+004891F4  addze     r31, r31
+004891F8  cmpwi     r31, 0
+004891FC  beq       loc_489260
+00489200  mr        r29, r22
+00489204  mr        r30, i
+00489208  mr        r5, r22
+0048920C  cmpwi     r6, 0
+00489210  beq       loc_489220
+00489214  subfc     r3, r6, r7
+00489218  srawi     r5, r3, 2
+0048921C  addze     r5, r5
+00489220  cmplw     r30, r5
+00489224  blt       loc_48922C
+00489228  twu       r1, r1
+0048922C  addc      r3, r6, i
+00489230  clrldi    r3, r3, 32
+00489234  lwz       r5, 0(r3)
+00489238  lwz       r3, 0x38(this)# this
+0048923C  lwz       r4, 4(r5)# pLayInstance
+00489240  bl        Client::System::Scheduler::Instance::LayoutSharedGroupObject::AddMemberInstance(Client::LayoutEngine::ILayoutInstance *)
+00489244  nop
+00489248  addic     r30, r30, 1
+0048924C  lwz       r6, 0x7C(this)
+00489250  lwz       r7, 0x80(this)
+00489254  addic     r29, r29, 4
+00489258  cmplw     r30, r31
+0048925C  blt       loc_489208
+00489260  lwz       r29, 4(this)
+00489264  lwz       r30, 8(this)
+00489268  cmpwi     r29, 0
+0048926C  bne       loc_4892B4
+00489270  lbz       r3, 0x20(this)
+00489274  extrwi    r3, r3, 1,24
+00489278  cmpwi     r3, 0
+0048927C  bne       loc_489284
+00489280  twu       r1, r1
+00489284  lis       r3, Client::LayoutEngine::LayoutWorld::m_instance@ha
+00489288  lwz       r3, Client::LayoutEngine::LayoutWorld::m_instance@l(r3)
+0048928C  lwz       r30, 0xC(r3)
+00489290  lwz       r3, 0x10(r30)
+00489294  cmpwi     r3, 1
+00489298  beq       loc_4892A0
+0048929C  twu       r1, r1
+004892A0  lis       r4, 0
+004892A4  mr        r3, r30# this
+004892A8  ori       r4, r4, 0xFFFF # 0xFFFF# layerId
+004892AC  bl        Client::LayoutEngine::LayoutManager::GetLayerManager(ushort)
+004892B0  mr        r29, r3
+004892B4  li        r3, -1
+004892B8  lwz       r31, 4(pFolder)
+004892BC  lwz       r28, 0x14(this)
+004892C0  cmplw     r31, r3
+004892C4  ble       loc_489398
+004892C8  addic     r27, r1, 0x100+var_90
+004892CC  lis       r4, std::vector<Client::LayoutEngine::Group::TimeLineLayoutInstance *,Client::System::Memory::BlockMemoryAllocator<Client::LayoutEngine::Group::TimeLineLayoutInstance *,901>>::_Xlen(void)::`string literal'@ha
+004892D0  mr        r3, r27# this
+004892D4  addic     r4, r4, std::vector<Client::LayoutEngine::Group::TimeLineLayoutInstance *,Client::System::Memory::BlockMemoryAllocator<Client::LayoutEngine::Group::TimeLineLayoutInstance *,901>>::_Xlen(void)::`string literal'@l# "vector<T> too long"
+004892D8  bl        std::string::string(char const*)
+004892DC  nop
+004892E0  lis       r3, off_191BA98@ha
+004892E4  li        r4, 0xF
+004892E8  stw       r22, 0x100+var_5C(r1)
+004892EC  addic     r26, r3, off_191BA98@l
+004892F0  stb       r22, 0x100+var_6C(r1)
+004892F4  lis       r3, -1
+004892F8  ori       r5, r3, 0xFFFF # 0xFFFFFFFF
+004892FC  stw       r4, 0x100+var_58(r1)
+00489300  addic     r3, r1, 0x100+var_70# this
+00489304  clrldi    r6, r5, 32# _Count
+00489308  stw       r26, 0x100+var_74(r1)
+0048930C  mr        r4, r27# _Right
+00489310  li        r5, 0# _Roff
+00489314  bl        std::string::assign(std::string const&,uint,uint)
+00489318  nop
+0048931C  lis       r4, off_191BAB0@ha
+00489320  addic     r3, r1, 0x100+var_74# this
+00489324  addic     r4, r4, off_191BAB0@l
+00489328  stw       r4, 0x100+var_74(r1)
+0048932C  bl        std::exception::_Raise(void)
+00489334  lwz       r3, 0x100+var_58(r1)
+00489338  stw       r26, 0x100+var_74(r1)
+0048933C  cmplwi    r3, 0x10
+00489340  blt       loc_489350
+00489344  lwz       r3, 0x100+var_6C(r1)# pAddr
+00489348  bl        operator delete(void *)
+0048934C  nop
+00489350  li        r4, 0xF
+00489354  stw       r22, 0x100+var_5C(r1)
+00489358  addic     r3, r1, 0x100+var_74# this
+0048935C  stb       r22, 0x100+var_6C(r1)
+00489360  stw       r4, 0x100+var_58(r1)
+00489364  bl        std::exception::~exception()
+00489368  nop
+0048936C  lwz       r3, 0x100+var_78(r1)
+00489370  cmplwi    r3, 0x10
+00489374  blt       loc_489384
+00489378  lwz       r3, 0x100+var_8C(r1)# pAddr
+0048937C  bl        operator delete(void *)
+00489380  nop
+00489384  li        r3, 0xF
+00489388  stw       r3, 0x100+var_78(r1)
+0048938C  stw       r22, 0x100+var_7C(r1)
+00489390  stb       r22, 0x100+var_8C(r1)
+00489394  b         loc_489464
+00489398  lwz       r6, 0xA8(this)# unsigned int
+0048939C  mr        r5, r22
+004893A0  cmpwi     r6, 0
+004893A4  beq       loc_4893B8
+004893A8  lwz       r3, 0xB0(this)
+004893AC  subfc     r3, r6, r3
+004893B0  srawi     r5, r3, 2
+004893B4  addze     r5, r5
+004893B8  cmplw     r5, r31
+004893BC  bge       loc_489464
+004893C0  slwi      r27, r31, 2
+004893C4  li        r5, 0x385# mem_id
+004893C8  li        r4, 0# _Hint
+004893CC  mr        r3, r27# _Count
+004893D0  bl        Client::System::Memory::BlockMemoryAllocatorManager::allocate(uint,void *,uint)
+004893D4  nop
+004893D8  lwz       r5, 0xA8(this)
+004893DC  lwz       r6, 0xAC(this)
+004893E0  mr        r26, r3
+004893E4  cmpw      r5, r6
+004893E8  beq       loc_48940C
+004893EC  cmpwi     r3, 0
+004893F0  beq       loc_4893FC
+004893F4  lwz       r4, 0(r5)
+004893F8  stw       r4, 0(r3)
+004893FC  addic     r5, r5, 4
+00489400  addic     r3, r3, 4
+00489404  cmpw      r5, r6
+00489408  bne       loc_4893EC
+0048940C  lwz       r3, 0xA8(this)# _Ptr
+00489410  mr        r25, r22
+00489414  cmpwi     r3, 0
+00489418  beq       loc_48944C
+0048941C  lwz       r6, 0xAC(this)
+00489420  li        r5, 0x385# mem_id
+00489424  lwz       r7, 0xB0(this)
+00489428  subfc     r6, r3, r6# unsigned int
+0048942C  subfc     r4, r3, r7
+00489430  srawi     r25, r6, 2
+00489434  addze     r25, r25
+00489438  srawi     r4, r4, 2
+0048943C  addze     r4, r4
+00489440  slwi      r4, r4, 2# _Count
+00489444  bl        Client::System::Memory::BlockMemoryAllocatorManager::deallocate(void *,uint,uint)
+00489448  nop
+0048944C  sldi      r3, r25, 2
+00489450  addc      r4, r26, r27
+00489454  addc      r3, r26, r3
+00489458  stw       r4, 0xB0(this)
+0048945C  stw       r3, 0xAC(this)
+00489460  stw       r26, 0xA8(this)
+00489464  cmpwi     r31, 0
+00489468  ble       loc_489580
+0048946C  mr        r27, r22
+00489470  addic     r26, this, 0xA0
+00489474  lwz       r3, 0(pFolder)
+00489478  addc      r3, r3, pFolder
+0048947C  addc      r9, r3, i
+00489480  clrldi    pSGTimeLine, pSGTimeLine, 32# pSGTimeLine
+00489484  lwz       r3, 0x10(pSGTimeLine)
+00489488  addc      r3, pSGTimeLine, r3
+0048948C  clrldi    r3, r3, 32
+00489490  lbz       r3, 0(r3)
+00489494  cmpwi     r3, 0
+00489498  bne       loc_4894A8
+0048949C  lbz       r3, 0xCF(this)
+004894A0  ori       r3, r3, 0x80
+004894A4  stb       r3, 0xCF(this)
+004894A8  lbz       r3, 0x21(this)
+004894AC  lwz       r25, 0(pSGTimeLine)
+004894B0  extrwi    r7, r3, 3,28
+004894B4  lwz       r5, 0x18(this)
+004894B8  addic     r7, r7, 1# hierarchy
+004894BC  cmpwi     cr1, r7, 4
+004894C0  cmpwi     r7, 0
+004894C4  ble       loc_4894CC
+004894C8  ble       cr1, loc_4894D0
+004894CC  twu       r1, r1
+004894D0  subfic    r4, r7, 4
+004894D4  mr        r3, r5
+004894D8  lwz       r10, 0x38(this)# pSchInstObj
+004894DC  sldi      r4, r4, 3
+004894E0  mr        r5, instanceId# instanceId
+004894E4  slw       r4, r25, r4
+004894E8  clrlwi    r8, r22, 24# childNodeIndex
+004894EC  or        r6, r4, r3
+004894F0  mr        r3, pLayerManager# pLayerManager
+004894F4  mr        r4, this# pParent
+004894F8  clrldi    globalMemberId, globalMemberId, 32# memberId
+004894FC  bl        Client::LayoutEngine::InstanceFactory::CreateTimeLineLayoutInstance(Client::LayoutEngine::Layer::LayerManager *,Client::LayoutEngine::Group::SharedGroupLayoutInstance *,uint,uint,uchar,uchar,Common::DevEnv::Generated::SGTimeline_t const*,Client::System::Scheduler::SchedulerInstanceObject *)
+00489500  mr        r25, r3
+00489504  lbz       r9, 0x20(this)
+00489508  cmpwi     pLayInstance, 0
+0048950C  lbz       r5, 0x20(pLayInstance)
+00489510  bne       loc_489518
+00489514  twu       r1, r1
+00489518  extrwi    r3, r9, 1,24
+0048951C  cntlzw    r3, r3
+00489520  extrwi    r3, r3, 1,26
+00489524  xori      r4, r3, 1
+00489528  mr        r3, r26# this
+0048952C  insrwi    r5, r4, 1,24
+00489530  mr        r4, pLayInstance# pTimeLine
+00489534  stb       r5, 0x20(pLayInstance)
+00489538  bl        Client::LayoutEngine::Group::TimeLineContainer::Add(Client::LayoutEngine::Group::TimeLineLayoutInstance *)
+0048953C  lbz       r3, 0x20(this)
+00489540  extrwi    r3, r3, 1,24
+00489544  cmpwi     r3, 0
+00489548  bne       loc_489570
+0048954C  lbz       r3, 0x21(this)
+00489550  extrwi    r3, r3, 4,24
+00489554  cmpwi     cr1, r3, 8
+00489558  cmpwi     r3, 9
+0048955C  beq       loc_489570
+00489560  beq       cr1, loc_489570
+00489564  mr        r3, r30# this
+00489568  mr        r4, pLayInstance# pInstance
+0048956C  bl        Client::LayoutEngine::LayoutManager::AddReferenceAssetContainer(Client::LayoutEngine::ILayoutInstance *)
+00489570  addic     r22, r22, 1
+00489574  addic     r27, r27, 0x2C # ','
+00489578  cmpw      r22, r31
+0048957C  blt       loc_489474
+00489580  addi      r1, r1, 0x100
+00489584  nop
+00489588  crmove    4*cr4+lt, 4*cr4+lt
+0048958C  b         loc_1262244
+
+Packet::Order arg0/arg1 register mapping (r5/r6 -> r31/r25)
+00AE9C78  lis       r29, Client::Game::Character::gCharacterManager@ha
+00AE9C7C  stw       r5, 0xD90+var_B0(r1)
+00AE9C80  li        r0, 0xCE0
+00AE9C84  li        r11, 0xE00
+00AE9C88  mr        r31, r5
+00AE9C8C  addc      r30, r1, r11
+00AE9C90  addic     r29, r29, Client::Game::Character::gCharacterManager@l
+00AE9C94  lvx       v30, r1, r0
+00AE9C98  li        r0, 0xCE0
+00AE9C9C  stw       r6, 0xD90+var_B0(r1)
+00AE9CA0  mr        r27, entity_id
+00AE9CA4  vspltw    v30, v30, 0
+00AE9CA8  ld        r5, 0(r30)
+00AE9CAC  mr        r26, id
+00AE9CB0  mr        entity_id, r29# this
+00AE9CB4  mr        id, r27# entity_id
+00AE9CB8  lvx       v31, r1, r0
+00AE9CBC  mr        r21, arg5
+00AE9CC0  mr        r22, arg4
+00AE9CC4  mr        r23, arg3
+00AE9CC8  mr        r24, arg2
+00AE9CCC  vspltw    v31, v31, 0
+00AE9CD0  mr        r25, r6
+00AE9CD4  mr        r30, r5
+
+Packet::CreateObject initialization from Args2 (excerpt)
+00AE3608  lhz       r4, 0x24(data)# fateId
+00AE360C  mr        r3, object# this
+00AE3610  bl        Client::Game::Object::GameObject::SetFateId(ushort)
+00AE3614  nop
+00AE3618  lwz       r4, 0x28(data)
+00AE361C  mr        r3, object# this
+00AE3620  li        r5, 1# checkLayoutReady
+00AE3624  clrlwi    r4, r4, 16# state
+00AE3628  bl        Client::Game::Object::EventObject::SetSharedGroupTimelineState(ushort,bool)
+00AE362C  nop
+00AE3630  lwz       r3, 0x2C(data)

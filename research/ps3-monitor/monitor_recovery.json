@@ -1,0 +1,1784 @@
+{
+  "schema_version": 1,
+  "paths": {
+    "indexed_entries": 745952,
+    "conservative_candidate_strings": 16248,
+    "entries_with_candidate_path_hash_match": 16191,
+    "archives": [
+      {
+        "index": "ffxiv/000000.ps3.d.index",
+        "entries": 220,
+        "entries_with_candidate_path_hash_match": 29,
+        "not_named_by_these_sources": 191
+      },
+      {
+        "index": "ffxiv/010000.ps3.d.index",
+        "entries": 16643,
+        "entries_with_candidate_path_hash_match": 961,
+        "not_named_by_these_sources": 15682
+      },
+      {
+        "index": "ffxiv/020000.ps3.d.index",
+        "entries": 203134,
+        "entries_with_candidate_path_hash_match": 363,
+        "not_named_by_these_sources": 202771
+      },
+      {
+        "index": "ffxiv/030000.ps3.d.index",
+        "entries": 12683,
+        "entries_with_candidate_path_hash_match": 1,
+        "not_named_by_these_sources": 12682
+      },
+      {
+        "index": "ffxiv/040000.ps3.d.index",
+        "entries": 432885,
+        "entries_with_candidate_path_hash_match": 103,
+        "not_named_by_these_sources": 432782
+      },
+      {
+        "index": "ffxiv/050000.ps3.d.index",
+        "entries": 283,
+        "entries_with_candidate_path_hash_match": 164,
+        "not_named_by_these_sources": 119
+      },
+      {
+        "index": "ffxiv/060000.ps3.d.index",
+        "entries": 34658,
+        "entries_with_candidate_path_hash_match": 17,
+        "not_named_by_these_sources": 34641
+      },
+      {
+        "index": "ffxiv/070000.ps3.d.index",
+        "entries": 10964,
+        "entries_with_candidate_path_hash_match": 12,
+        "not_named_by_these_sources": 10952
+      },
+      {
+        "index": "ffxiv/080000.ps3.d.index",
+        "entries": 19507,
+        "entries_with_candidate_path_hash_match": 2112,
+        "not_named_by_these_sources": 17395
+      },
+      {
+        "index": "ffxiv/0a0000.ps3.d.index",
+        "entries": 12443,
+        "entries_with_candidate_path_hash_match": 12427,
+        "not_named_by_these_sources": 16
+      },
+      {
+        "index": "ffxiv/0b0000.ps3.d.index",
+        "entries": 1934,
+        "entries_with_candidate_path_hash_match": 0,
+        "not_named_by_these_sources": 1934
+      },
+      {
+        "index": "ffxiv/0c0000.ps3.d.index",
+        "entries": 234,
+        "entries_with_candidate_path_hash_match": 2,
+        "not_named_by_these_sources": 232
+      },
+      {
+        "index": "ffxiv/120000.ps3.d.index",
+        "entries": 3,
+        "entries_with_candidate_path_hash_match": 0,
+        "not_named_by_these_sources": 3
+      },
+      {
+        "index": "ffxiv/130000.ps3.d.index",
+        "entries": 361,
+        "entries_with_candidate_path_hash_match": 0,
+        "not_named_by_these_sources": 361
+      }
+    ],
+    "complete": false,
+    "limits": [
+      "Exact index hash-pair matches are candidate-name evidence, not a collision-free proof of original spelling.",
+      "Only catalog/page paths, fixed binary literals, three decoded sheets and one SGB were used.",
+      "No general traversal of model/material/texture/sound dependencies or expansion of printf templates."
+    ]
+  },
+  "excel": {
+    "root_sheets": 2131,
+    "exact_name_and_size_row_struct_matches": 303,
+    "total_schema_columns": 16930,
+    "columns_with_one_debug_field_candidate": 10182,
+    "matched_row_struct_sheets": [
+      "Achievement",
+      "AchievementCategory",
+      "AchievementKind",
+      "Action",
+      "ActionCategory",
+      "ActionTimeline",
+      "Addon",
+      "Adventure",
+      "Aethernet",
+      "Aetheryte",
+      "AetheryteSystemDefine",
+      "AnimationLOD",
+      "ArrayEventHandler",
+      "AttackType",
+      "Ballista",
+      "Balloon",
+      "BaseParam",
+      "Battalion",
+      "BattleLeve",
+      "BattleLeveRule",
+      "BeastReputationRank",
+      "BeastTribe",
+      "Behavior",
+      "BehaviorPath",
+      "BGM",
+      "BGMFade",
+      "BGMFadeType",
+      "BGMScene",
+      "BGMSituation",
+      "BGMSystemDefine",
+      "BNpcBase",
+      "BNpcCustomize",
+      "BNpcName",
+      "BNpcParts",
+      "BNpcState",
+      "Buddy",
+      "BuddyAction",
+      "BuddyEquip",
+      "BuddyItem",
+      "BuddyRank",
+      "BuddySkill",
+      "Cabinet",
+      "Calendar",
+      "Carry",
+      "Channeling",
+      "CharaMakeClassEquip",
+      "CharaMakeCustomize",
+      "CharaMakeName",
+      "CharaMakeType",
+      "ChocoboTaxi",
+      "ChocoboTaxiStand",
+      "ClassJob",
+      "ClassJobCategory",
+      "Companion",
+      "CompanionMove",
+      "CompanyAction",
+      "CompanyLeve",
+      "CompanyLeveRule",
+      "CompleteJournal",
+      "CompleteJournalCategory",
+      "ConfigKey",
+      "ContentNpcTalk",
+      "ContentRoulette",
+      "ContentsNote",
+      "ContentsNoteCategory",
+      "ContentTalk",
+      "ContentTalkParam",
+      "ContentType",
+      "CraftAction",
+      "CraftCrystalType",
+      "CraftLeve",
+      "CraftLeveTalk",
+      "CraftType",
+      "CustomTalk",
+      "Cutscene",
+      "CutsceneMotion",
+      "CutsceneWorkIndex",
+      "CutScreenImage",
+      "CycleTime",
+      "DailySupplyItem",
+      "DefaultTalk",
+      "DefaultTalkLipSyncType",
+      "DeliveryQuest",
+      "DirectorSystemDefine",
+      "Emote",
+      "EmoteMode",
+      "ENpcBase",
+      "ENpcResident",
+      "EObj",
+      "EquipSlotCategory",
+      "EventAction",
+      "EventIconPriority",
+      "EventIconType",
+      "EventItem",
+      "EventSystemDefine",
+      "ExclusionPreload",
+      "ExportedSG",
+      "Fate",
+      "FateEvent",
+      "FCActivity",
+      "FCActivityCategory",
+      "FCAuthority",
+      "FCAuthorityCategory",
+      "FCCrestSymbol",
+      "FCDefine",
+      "FCHierarchy",
+      "FCProfile",
+      "FCRank",
+      "FCReputation",
+      "FCRights",
+      "Festival",
+      "FieldMarker",
+      "FieldMarkerText",
+      "FishingRecordType",
+      "FishingSpot",
+      "FishParameter",
+      "Frontline01",
+      "GardeningSeed",
+      "GatheringCondition",
+      "GatheringExp",
+      "GatheringItem",
+      "GatheringItemPoint",
+      "GatheringLeve",
+      "GatheringLeveRoute",
+      "GatheringLeveRule",
+      "GatheringNotebookList",
+      "GatheringNotebookRegion",
+      "GatheringPoint",
+      "GatheringPointBase",
+      "GatheringPointBonusType",
+      "GatheringPointName",
+      "GatheringType",
+      "GCShop",
+      "GCShopItemCategory",
+      "GCSupplyDefine",
+      "GCSupplyDuty",
+      "GCSupplyDutyReward",
+      "GeneralAction",
+      "GimmickAccessor",
+      "GimmickBill",
+      "GimmickJump",
+      "GimmickRect",
+      "GimmickYesNo",
+      "GrandCompany",
+      "GrandCompanyRank",
+      "GrandCompanySealShopItem",
+      "GuardianDeity",
+      "GuildleveAssignment",
+      "GuildleveAssignmentCategory",
+      "GuildleveAssignmentTalk",
+      "GuildleveEvaluation",
+      "GuildOrder",
+      "GuildOrderGuide",
+      "GuildOrderOfficer",
+      "HairMakeType",
+      "HousingEmploymentNpcType",
+      "HousingExterior",
+      "HousingFurniture",
+      "HousingInterior",
+      "HousingItemCategory",
+      "HousingLandSet",
+      "HousingLayoutLimit",
+      "HousingPreset",
+      "HousingYardObject",
+      "HowTo",
+      "HowToCategory",
+      "HowToPage",
+      "InfoError",
+      "InstanceContent",
+      "InstanceContentBuff",
+      "InstanceContentGuide",
+      "InstanceContentTextData",
+      "InstanceContentType",
+      "Item",
+      "ItemAction",
+      "ItemCategory",
+      "ItemFood",
+      "ItemLevel",
+      "ItemSearchCategory",
+      "ItemSearchClassFilter",
+      "ItemSeries",
+      "ItemSpecialBonus",
+      "ItemUICategory",
+      "Jingle",
+      "JournalCategory",
+      "JournalGenre",
+      "Knockback",
+      "LegacyQuest",
+      "Leve",
+      "LeveAssignmentType",
+      "LeveClient",
+      "Level",
+      "LeveRewardItem",
+      "LeveRewardItemGroup",
+      "LeveString",
+      "LeveSystemDefine",
+      "LeveVfx",
+      "LinkRace",
+      "Lobby",
+      "Lockon",
+      "LogFilter",
+      "LogKind",
+      "LogMessage",
+      "MacroIcon",
+      "MainCommand",
+      "MainCommandCategory",
+      "Map",
+      "MapMarker",
+      "MapSymbol",
+      "Marker",
+      "Materia",
+      "MateriaJoinRate",
+      "MateriaTomestoneRate",
+      "MobHunt",
+      "MobHuntRank",
+      "MobHuntTarget",
+      "ModelChara",
+      "ModelSkeleton",
+      "MonsterNote",
+      "MonsterNoteTarget",
+      "MotionTimeline",
+      "MotionTimelineAdvanceBlend",
+      "MotionTimelineBlendTable",
+      "Mount",
+      "MovieSubtitle",
+      "NotebookDivision",
+      "NpcEquip",
+      "NpcYell",
+      "Omen",
+      "OnlineStatus",
+      "Opening",
+      "OpeningSystemDefine",
+      "ParamGrow",
+      "PatchMark",
+      "Permission",
+      "Pet",
+      "PetAction",
+      "PhysicsGroup",
+      "PhysicsOffGroup",
+      "PhysicsWind",
+      "PlaceName",
+      "PresetCamera",
+      "PresetCameraAdjust",
+      "PvPAction",
+      "PvPRank",
+      "PvPTrait",
+      "Quest",
+      "QuestBattle",
+      "QuestBattleSystemDefine",
+      "QuestRepeatFlag",
+      "QuestSystemDefine",
+      "Race",
+      "Recipe",
+      "RecipeElement",
+      "RecipeLevelTable",
+      "RecipeNotebookList",
+      "RecommendContents",
+      "Relic",
+      "Relic3",
+      "Relic3Materia",
+      "Relic3Rate",
+      "Relic3RatePattern",
+      "RelicMateria",
+      "RelicNote",
+      "RelicNoteCategory",
+      "RelicNoteCategoryText",
+      "Resident",
+      "RetainerTask",
+      "RetainerTaskLvRange",
+      "RetainerTaskNormal",
+      "RetainerTaskParameter",
+      "RetainerTaskRandom",
+      "RetainerTaskRandomText",
+      "Role",
+      "ScreenImage",
+      "SE",
+      "Shop",
+      "ShopItem",
+      "SpecialShop",
+      "Stain",
+      "Status",
+      "Story",
+      "StorySystemDefine",
+      "SwitchTalk",
+      "TerritoryIntendedUse",
+      "TerritoryType",
+      "Title",
+      "Tomestones",
+      "Town",
+      "Trait",
+      "Transformation",
+      "Treasure",
+      "TreasureModel",
+      "TreasureSpot",
+      "Tribe",
+      "VFX",
+      "Warp",
+      "WarpCondition",
+      "WarpLogic",
+      "WeaponTimeline",
+      "Weather",
+      "World",
+      "WorldDCGroupType"
+    ],
+    "examples": [
+      {
+        "sheet": "EObj",
+        "row_type": "EObjStruct",
+        "columns": [
+          {
+            "column": 0,
+            "type": 0,
+            "type_name": "string",
+            "offset": 0,
+            "debug_field_candidates": [
+              "Text.SGL"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 1,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 8,
+            "debug_field_candidates": [
+              "Text.SGG"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 2,
+            "type": 0,
+            "type_name": "string",
+            "offset": 4,
+            "debug_field_candidates": [
+              "Text.PLR"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 3,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 9,
+            "debug_field_candidates": [
+              "Text.PLG"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 4,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 10,
+            "debug_field_candidates": [
+              "Text.VOW"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 5,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 11,
+            "debug_field_candidates": [
+              "Text.CNT"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 6,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 12,
+            "debug_field_candidates": [
+              "Text.GEN"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 7,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 13,
+            "debug_field_candidates": [
+              "Text.DEF"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 8,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 26,
+            "debug_field_candidates": [
+              "PopType"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 9,
+            "type": 7,
+            "type_name": "u32",
+            "offset": 20,
+            "debug_field_candidates": [
+              "EventHandler"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 10,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 27,
+            "debug_field_candidates": [
+              "Invisibility"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 11,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 24,
+            "debug_field_candidates": [
+              "SharedGroup"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 12,
+            "type": 25,
+            "type_name": "packed_bool",
+            "offset": 28,
+            "debug_field_candidates": [
+              "Target"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 13,
+            "type": 26,
+            "type_name": "packed_bool",
+            "offset": 28,
+            "debug_field_candidates": [
+              "DirectorControl"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 14,
+            "type": 27,
+            "type_name": "packed_bool",
+            "offset": 28,
+            "debug_field_candidates": [
+              "EyeCollision"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 15,
+            "type": 9,
+            "type_name": "f32",
+            "offset": 16,
+            "debug_field_candidates": [
+              "EventHighAddition"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          }
+        ]
+      },
+      {
+        "sheet": "Item",
+        "row_type": "ItemStruct",
+        "columns": [
+          {
+            "column": 0,
+            "type": 0,
+            "type_name": "string",
+            "offset": 0,
+            "debug_field_candidates": [
+              "Text.SGL"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 1,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 16,
+            "debug_field_candidates": [
+              "Text.SGG"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 2,
+            "type": 0,
+            "type_name": "string",
+            "offset": 4,
+            "debug_field_candidates": [
+              "Text.PLR"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 3,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 17,
+            "debug_field_candidates": [
+              "Text.PLG"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 4,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 18,
+            "debug_field_candidates": [
+              "Text.VOW"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 5,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 19,
+            "debug_field_candidates": [
+              "Text.CNT"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 6,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 20,
+            "debug_field_candidates": [
+              "Text.GEN"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 7,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 21,
+            "debug_field_candidates": [
+              "Text.DEF"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 8,
+            "type": 0,
+            "type_name": "string",
+            "offset": 8,
+            "debug_field_candidates": [
+              "Text.Help"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 9,
+            "type": 0,
+            "type_name": "string",
+            "offset": 12,
+            "debug_field_candidates": [
+              "Text.UIName"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 10,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 72,
+            "debug_field_candidates": [
+              "Icon"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 11,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 108,
+            "debug_field_candidates": [
+              "Level"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 12,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 109,
+            "debug_field_candidates": [
+              "EquipLevel"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 13,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 110,
+            "debug_field_candidates": [
+              "EquipPvPRank"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 14,
+            "type": 7,
+            "type_name": "u32",
+            "offset": 40,
+            "debug_field_candidates": [
+              "StackMax"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 15,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 111,
+            "debug_field_candidates": [
+              "Category"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 16,
+            "type": 7,
+            "type_name": "u32",
+            "offset": 44,
+            "debug_field_candidates": [
+              "CategoryArg"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 17,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 112,
+            "debug_field_candidates": [
+              "UICategory"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 18,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 113,
+            "debug_field_candidates": [
+              "SearchCategory"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 19,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 114,
+            "debug_field_candidates": [
+              "Rarity"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 20,
+            "type": 25,
+            "type_name": "packed_bool",
+            "offset": 152,
+            "debug_field_candidates": [
+              "HQ"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 21,
+            "type": 26,
+            "type_name": "packed_bool",
+            "offset": 152,
+            "debug_field_candidates": [
+              "Lot"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 22,
+            "type": 27,
+            "type_name": "packed_bool",
+            "offset": 152,
+            "debug_field_candidates": [
+              "Stain"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 23,
+            "type": 28,
+            "type_name": "packed_bool",
+            "offset": 152,
+            "debug_field_candidates": [
+              "Crest"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 24,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 115,
+            "debug_field_candidates": [
+              "MaterializeType"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 25,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 116,
+            "debug_field_candidates": [
+              "MateriaSocket"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 26,
+            "type": 29,
+            "type_name": "packed_bool",
+            "offset": 152,
+            "debug_field_candidates": [
+              "MateriaProhibition"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 27,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 117,
+            "debug_field_candidates": [
+              "Slot"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 28,
+            "type": 11,
+            "type_name": "u64",
+            "offset": 24,
+            "debug_field_candidates": [
+              "ModelId"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 29,
+            "type": 11,
+            "type_name": "u64",
+            "offset": 32,
+            "debug_field_candidates": [
+              "SubModelId"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 30,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 74,
+            "debug_field_candidates": [
+              "Trait"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 31,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 118,
+            "debug_field_candidates": [
+              "BonusType[0]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 32,
+            "type": 4,
+            "type_name": "i16",
+            "offset": 96,
+            "debug_field_candidates": [
+              "BonusValue[0]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 33,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 119,
+            "debug_field_candidates": [
+              "BonusType[1]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 34,
+            "type": 4,
+            "type_name": "i16",
+            "offset": 98,
+            "debug_field_candidates": [
+              "BonusValue[1]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 35,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 120,
+            "debug_field_candidates": [
+              "BonusType[2]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 36,
+            "type": 4,
+            "type_name": "i16",
+            "offset": 100,
+            "debug_field_candidates": [
+              "BonusValue[2]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 37,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 121,
+            "debug_field_candidates": [
+              "BonusType[3]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 38,
+            "type": 4,
+            "type_name": "i16",
+            "offset": 102,
+            "debug_field_candidates": [
+              "BonusValue[3]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 39,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 122,
+            "debug_field_candidates": [
+              "BonusType[4]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 40,
+            "type": 4,
+            "type_name": "i16",
+            "offset": 104,
+            "debug_field_candidates": [
+              "BonusValue[4]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 41,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 123,
+            "debug_field_candidates": [
+              "BonusType[5]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 42,
+            "type": 4,
+            "type_name": "i16",
+            "offset": 106,
+            "debug_field_candidates": [
+              "BonusValue[5]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 43,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 124,
+            "debug_field_candidates": [
+              "SpecialBonus"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 44,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 125,
+            "debug_field_candidates": [
+              "SpecialBonusType[0]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 45,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 141,
+            "debug_field_candidates": [
+              "SpecialBonusValue[0]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 46,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 126,
+            "debug_field_candidates": [
+              "SpecialBonusType[1]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 47,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 142,
+            "debug_field_candidates": [
+              "SpecialBonusValue[1]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 48,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 127,
+            "debug_field_candidates": [
+              "SpecialBonusType[2]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 49,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 143,
+            "debug_field_candidates": [
+              "SpecialBonusValue[2]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 50,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 128,
+            "debug_field_candidates": [
+              "SpecialBonusType[3]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 51,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 144,
+            "debug_field_candidates": [
+              "SpecialBonusValue[3]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 52,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 129,
+            "debug_field_candidates": [
+              "SpecialBonusType[4]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 53,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 145,
+            "debug_field_candidates": [
+              "SpecialBonusValue[4]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 54,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 130,
+            "debug_field_candidates": [
+              "SpecialBonusType[5]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 55,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 146,
+            "debug_field_candidates": [
+              "SpecialBonusValue[5]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 56,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 131,
+            "debug_field_candidates": [
+              "Repair"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 57,
+            "type": 6,
+            "type_name": "i32",
+            "offset": 64,
+            "debug_field_candidates": [
+              "RepairItem"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 58,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 132,
+            "debug_field_candidates": [
+              "Class"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 59,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 133,
+            "debug_field_candidates": [
+              "AttackType"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 60,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 76,
+            "debug_field_candidates": [
+              "Damage"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 61,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 78,
+            "debug_field_candidates": [
+              "MagicDamage"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 62,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 80,
+            "debug_field_candidates": [
+              "AttackInterval"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 63,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 134,
+            "debug_field_candidates": [
+              "AttackRange"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 64,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 82,
+            "debug_field_candidates": [
+              "ShieldRate"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 65,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 84,
+            "debug_field_candidates": [
+              "ShieldBlockRate"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 66,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 86,
+            "debug_field_candidates": [
+              "Defense"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 67,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 88,
+            "debug_field_candidates": [
+              "MagicDefense"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 68,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 135,
+            "debug_field_candidates": [
+              "CastTime"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 69,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 90,
+            "debug_field_candidates": [
+              "RecastTime"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 70,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 92,
+            "debug_field_candidates": [
+              "Action"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 71,
+            "type": 30,
+            "type_name": "packed_bool",
+            "offset": 152,
+            "debug_field_candidates": [
+              "DisableAbandon"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 72,
+            "type": 31,
+            "type_name": "packed_bool",
+            "offset": 152,
+            "debug_field_candidates": [
+              "OnlyOne"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 73,
+            "type": 32,
+            "type_name": "packed_bool",
+            "offset": 152,
+            "debug_field_candidates": [
+              "DisablePassedOthers"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 74,
+            "type": 25,
+            "type_name": "packed_bool",
+            "offset": 153,
+            "debug_field_candidates": [
+              "DisableSameAccount"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 75,
+            "type": 7,
+            "type_name": "u32",
+            "offset": 48,
+            "debug_field_candidates": [
+              "PriceMin"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 76,
+            "type": 7,
+            "type_name": "u32",
+            "offset": 52,
+            "debug_field_candidates": [
+              "Price"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 77,
+            "type": 7,
+            "type_name": "u32",
+            "offset": 56,
+            "debug_field_candidates": [
+              "PriceMax"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 78,
+            "type": 1,
+            "type_name": "bool",
+            "offset": 147,
+            "debug_field_candidates": [
+              "ConditionRace[0]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 79,
+            "type": 1,
+            "type_name": "bool",
+            "offset": 148,
+            "debug_field_candidates": [
+              "ConditionRace[1]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 80,
+            "type": 1,
+            "type_name": "bool",
+            "offset": 149,
+            "debug_field_candidates": [
+              "ConditionRace[2]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 81,
+            "type": 1,
+            "type_name": "bool",
+            "offset": 150,
+            "debug_field_candidates": [
+              "ConditionRace[3]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 82,
+            "type": 1,
+            "type_name": "bool",
+            "offset": 151,
+            "debug_field_candidates": [
+              "ConditionRace[4]"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 83,
+            "type": 26,
+            "type_name": "packed_bool",
+            "offset": 153,
+            "debug_field_candidates": [
+              "ConditionMale"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 84,
+            "type": 27,
+            "type_name": "packed_bool",
+            "offset": 153,
+            "debug_field_candidates": [
+              "ConditionFemale"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 85,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 136,
+            "debug_field_candidates": [
+              "CondClassJob"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 86,
+            "type": 7,
+            "type_name": "u32",
+            "offset": 60,
+            "debug_field_candidates": [
+              "SortId"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 87,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 137,
+            "debug_field_candidates": [
+              "Series"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 88,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 138,
+            "debug_field_candidates": [
+              "SellPriceParam"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 89,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 139,
+            "debug_field_candidates": [
+              "CondGrandCompany"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 90,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 140,
+            "debug_field_candidates": [
+              "Role"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 91,
+            "type": 28,
+            "type_name": "packed_bool",
+            "offset": 153,
+            "debug_field_candidates": [
+              "MateriaEffectOnlyInPvP"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 92,
+            "type": 6,
+            "type_name": "i32",
+            "offset": 68,
+            "debug_field_candidates": [
+              "MirageItem"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 93,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 94,
+            "debug_field_candidates": [
+              "Salvage"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          }
+        ]
+      },
+      {
+        "sheet": "TerritoryType",
+        "row_type": "TerritoryTypeStruct",
+        "columns": [
+          {
+            "column": 0,
+            "type": 0,
+            "type_name": "string",
+            "offset": 0,
+            "debug_field_candidates": [
+              "Name"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 1,
+            "type": 0,
+            "type_name": "string",
+            "offset": 4,
+            "debug_field_candidates": [
+              "LVB"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 2,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 40,
+            "debug_field_candidates": [
+              "BattalionMode"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 3,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 28,
+            "debug_field_candidates": [
+              "Region"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 4,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 30,
+            "debug_field_candidates": [
+              "SubRegion"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 5,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 32,
+            "debug_field_candidates": [
+              "Area"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 6,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 34,
+            "debug_field_candidates": [
+              "Map"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 7,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 41,
+            "debug_field_candidates": [
+              "ExclusiveType"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 8,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 42,
+            "debug_field_candidates": [
+              "IntendedUse"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 9,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 43,
+            "debug_field_candidates": [
+              "Breath"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 10,
+            "type": 25,
+            "type_name": "packed_bool",
+            "offset": 47,
+            "debug_field_candidates": [
+              "PCSearch"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 11,
+            "type": 26,
+            "type_name": "packed_bool",
+            "offset": 47,
+            "debug_field_candidates": [
+              "Stealth"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 12,
+            "type": 27,
+            "type_name": "packed_bool",
+            "offset": 47,
+            "debug_field_candidates": [
+              "Mount"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 13,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 36,
+            "debug_field_candidates": [
+              "BGM"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 14,
+            "type": 6,
+            "type_name": "i32",
+            "offset": 12,
+            "debug_field_candidates": [
+              "RegionIcon"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 15,
+            "type": 6,
+            "type_name": "i32",
+            "offset": 16,
+            "debug_field_candidates": [
+              "AreaIcon"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 16,
+            "type": 7,
+            "type_name": "u32",
+            "offset": 8,
+            "debug_field_candidates": [
+              "EventHandler"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 17,
+            "type": 5,
+            "type_name": "u16",
+            "offset": 38,
+            "debug_field_candidates": [
+              "QuestBattle"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 18,
+            "type": 6,
+            "type_name": "i32",
+            "offset": 20,
+            "debug_field_candidates": [
+              "Aetheryte"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 19,
+            "type": 6,
+            "type_name": "i32",
+            "offset": 24,
+            "debug_field_candidates": [
+              "FixedTime"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 20,
+            "type": 3,
+            "type_name": "u8",
+            "offset": 44,
+            "debug_field_candidates": [
+              "Resident"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 21,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 45,
+            "debug_field_candidates": [
+              "TreasureObtainedFlag"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 22,
+            "type": 2,
+            "type_name": "i8",
+            "offset": 46,
+            "debug_field_candidates": [
+              "AchievementIndex"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          },
+          {
+            "column": 23,
+            "type": 28,
+            "type_name": "packed_bool",
+            "offset": 47,
+            "debug_field_candidates": [
+              "IsPvPAction"
+            ],
+            "status": "metadata offset/width match; not a verified foreign key"
+          }
+        ]
+      }
+    ],
+    "foreign_key_graph_complete": false,
+    "warning": "Metadata-based candidate names; equal row size or integer values do not prove relationships."
+  },
+  "types": {
+    "imported_records": 26223,
+    "kinds": {
+      "udt": 19030,
+      "other": 4007,
+      "enum": 3186
+    },
+    "names_containing_Id_or_ID": 463,
+    "id_semantics_complete": false,
+    "warning": "ID-like names are a search heuristic. Enum records include unrelated enums and alternate views."
+  }
+}

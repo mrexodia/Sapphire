@@ -1,0 +1,557 @@
+
+1409EC750 sub_1409EC750
+00000001409EC750  mov     [rsp+arg_8], rbx
+00000001409EC755  mov     [rsp+arg_10], rbp
+00000001409EC75A  push    rsi
+00000001409EC75B  push    r12
+00000001409EC75D  push    r13
+00000001409EC75F  sub     rsp, 130h
+00000001409EC766  movzx   r13d, word ptr [rcx+1A2h]
+00000001409EC76E  mov     [rcx+1A2h], dx
+00000001409EC775  mov     rbx, rcx
+00000001409EC778  movzx   esi, dx
+00000001409EC77B  lea     rcx, unk_1415F61F0
+00000001409EC782  xor     edx, edx
+00000001409EC784  mov     r12, r9
+00000001409EC787  movzx   ebp, r8b
+00000001409EC78B  call    sub_1402B3AA0
+00000001409EC790  cmp     al, 1
+00000001409EC792  jz      loc_1409EC86E
+00000001409EC798  mov     [rsp+148h+arg_0], rdi
+00000001409EC7A0  mov     rdi, [rbx+108h]
+00000001409EC7A7  test    rdi, rdi
+00000001409EC7AA  jz      loc_1409EC866
+00000001409EC7B0  mov     rcx, rdi
+00000001409EC7B3  call    sub_1402B65A0
+00000001409EC7B8  test    al, al
+00000001409EC7BA  jz      loc_1409EC866
+00000001409EC7C0  test    bpl, bpl
+00000001409EC7C3  jz      short loc_1409EC7DF
+00000001409EC7C5  call    sub_1402CA0C0
+00000001409EC7CA  cmp     al, 1
+00000001409EC7CC  jnz     loc_1409EC866
+00000001409EC7D2  call    sub_1402BD2F0
+00000001409EC7D7  cmp     al, 1
+00000001409EC7D9  jnz     loc_1409EC866
+00000001409EC7DF  lea     rdx, [rsp+148h+var_118]
+00000001409EC7E4  mov     rcx, rbx
+00000001409EC7E7  call    sub_1409DE260
+00000001409EC7EC  test    eax, eax
+00000001409EC7EE  jz      short loc_1409EC810
+00000001409EC7F0  mov     rcx, [rsp+148h+var_118]
+00000001409EC7F5  movzx   r9d, si
+00000001409EC7F9  movzx   r8d, r13w
+00000001409EC7FD  mov     rax, [rcx]
+00000001409EC800  mov     rdx, rbx
+00000001409EC803  mov     [rsp+148h+var_128], r12
+00000001409EC808  call    qword ptr [rax+200h]
+00000001409EC80E  jmp     short loc_1409EC866
+00000001409EC810  xor     ebx, ebx
+00000001409EC812  mov     edx, ebx
+00000001409EC814  mov     rcx, rdi
+00000001409EC817  call    sub_1402C0D00
+00000001409EC81C  test    al, al
+00000001409EC81E  jz      short loc_1409EC85F
+00000001409EC820  mov     ecx, ebx
+00000001409EC822  mov     eax, 1
+00000001409EC827  mov     edx, ebx
+00000001409EC829  shl     ax, cl
+00000001409EC82C  mov     rcx, rdi
+00000001409EC82F  test    si, ax
+00000001409EC832  jz      short loc_1409EC84C
+00000001409EC834  call    sub_1402CD550
+00000001409EC839  test    al, al
+00000001409EC83B  jnz     short loc_1409EC85F
+00000001409EC83D  xor     r8d, r8d
+00000001409EC840  mov     edx, ebx
+00000001409EC842  mov     rcx, rdi
+00000001409EC845  call    sub_1402EDF40
+00000001409EC84A  jmp     short loc_1409EC85F
+00000001409EC84C  call    sub_1402CD550
+00000001409EC851  test    al, al
+00000001409EC853  jz      short loc_1409EC85F
+00000001409EC855  mov     edx, ebx
+00000001409EC857  mov     rcx, rdi
+00000001409EC85A  call    sub_1402CD4A0
+00000001409EC85F  inc     ebx
+00000001409EC861  cmp     ebx, 10h
+00000001409EC864  jb      short loc_1409EC812
+00000001409EC866  mov     rdi, [rsp+148h+arg_0]
+00000001409EC86E  lea     r11, [rsp+148h+var_18]
+00000001409EC876  mov     rbx, [r11+28h]
+00000001409EC87A  mov     rbp, [r11+30h]
+00000001409EC87E  mov     rsp, r11
+00000001409EC881  pop     r13
+00000001409EC883  pop     r12
+00000001409EC885  pop     rsi
+00000001409EC886  retn
+
+140652F30 sub_140652F30
+0000000140652F30  push    rbp
+0000000140652F32  push    rdi
+0000000140652F33  push    r12
+0000000140652F35  push    r14
+0000000140652F37  sub     rsp, 28h
+0000000140652F3B  mov     rdi, [rdx+108h]
+0000000140652F42  movzx   r12d, r9w
+0000000140652F46  mov     rbp, rdx
+0000000140652F49  mov     r14, rcx
+0000000140652F4C  test    rdi, rdi
+0000000140652F4F  jz      loc_14065303E
+0000000140652F55  mov     [rsp+48h+arg_0], rbx
+0000000140652F5A  xor     r8w, r9w
+0000000140652F5E  mov     [rsp+48h+arg_10], rsi
+0000000140652F63  mov     [rsp+48h+var_28], r13
+0000000140652F68  not     r12w
+0000000140652F6C  movzx   r13d, r8w
+0000000140652F70  and     r13w, r9w
+0000000140652F74  and     r12w, r8w
+0000000140652F78  xor     ebx, ebx
+0000000140652F7A  nop     word ptr [rax+rax+00h]
+0000000140652F80  mov     ecx, ebx
+0000000140652F82  mov     esi, 1
+0000000140652F87  mov     edx, ebx
+0000000140652F89  shl     si, cl
+0000000140652F8C  mov     rcx, rdi
+0000000140652F8F  call    sub_1402C0D00
+0000000140652F94  test    al, al
+0000000140652F96  jz      short loc_140652FD9
+0000000140652F98  test    r13w, si
+0000000140652F9C  jz      short loc_140652FBB
+0000000140652F9E  mov     edx, ebx
+0000000140652FA0  mov     rcx, rdi
+0000000140652FA3  call    sub_1402CD550
+0000000140652FA8  test    al, al
+0000000140652FAA  jnz     short loc_140652FD9
+0000000140652FAC  xor     r8d, r8d
+0000000140652FAF  mov     edx, ebx
+0000000140652FB1  mov     rcx, rdi
+0000000140652FB4  call    sub_1402EDF40
+0000000140652FB9  jmp     short loc_140652FD9
+0000000140652FBB  test    r12w, si
+0000000140652FBF  jz      short loc_140652FD9
+0000000140652FC1  mov     edx, ebx
+0000000140652FC3  mov     rcx, rdi
+0000000140652FC6  call    sub_1402CD550
+0000000140652FCB  test    al, al
+0000000140652FCD  jz      short loc_140652FD9
+0000000140652FCF  mov     edx, ebx
+0000000140652FD1  mov     rcx, rdi
+0000000140652FD4  call    sub_1402CD4A0
+0000000140652FD9  inc     ebx
+0000000140652FDB  cmp     ebx, 10h
+0000000140652FDE  jb      short loc_140652F80
+0000000140652FE0  cmp     byte ptr [r14+74h], 0
+0000000140652FE5  mov     r13, [rsp+48h+var_28]
+0000000140652FEA  mov     rsi, [rsp+48h+arg_10]
+0000000140652FEF  setnz   al
+0000000140652FF2  test    al, al
+0000000140652FF4  jz      short loc_140653039
+0000000140652FF6  mov     rax, [rbp+0]
+0000000140652FFA  mov     rcx, rbp
+0000000140652FFD  call    qword ptr [rax+8]
+0000000140653000  cmp     eax, 7
+0000000140653003  jnz     short loc_140653015
+0000000140653005  mov     rcx, rbp
+0000000140653008  call    sub_1409EC890
+000000014065300D  cmp     al, 1
+000000014065300F  jz      short loc_140653015
+0000000140653011  cmp     al, 2
+0000000140653013  jnz     short loc_140653039
+0000000140653015  mov     rbx, [r14+28h]
+0000000140653019  lea     rdx, [rsp+48h+arg_8]
+000000014065301E  mov     r8, rbp
+0000000140653021  mov     rcx, rbx
+0000000140653024  call    sub_14064A930
+0000000140653029  mov     r11, [rsp+48h+arg_8]
+000000014065302E  cmp     r11, [rbx+60h]
+0000000140653032  jz      short loc_140653039
+0000000140653034  and     dword ptr [r11+78h], 0FFFFFFEFh
+0000000140653039  mov     rbx, [rsp+48h+arg_0]
+000000014065303E  add     rsp, 28h
+0000000140653042  pop     r14
+0000000140653044  pop     r12
+0000000140653046  pop     rdi
+0000000140653047  pop     rbp
+0000000140653048  retn
+
+1402C0D00 sub_1402C0D00
+00000001402C0D00  mov     r8, rcx
+00000001402C0D03  cmp     edx, 10h
+00000001402C0D06  jb      short loc_1402C0D0B
+00000001402C0D08  xor     al, al
+00000001402C0D0A  retn
+00000001402C0D0B  mov     rax, [rcx+98h]
+00000001402C0D12  cmp     [rcx+90h], rax
+00000001402C0D19  jz      short loc_1402C0D08
+00000001402C0D1B  xor     eax, eax
+00000001402C0D1D  mov     ecx, edx
+00000001402C0D1F  cmp     [rcx+r8+168h], al
+00000001402C0D27  setnz   al
+00000001402C0D2A  retn
+
+1402CD550 sub_1402CD550
+00000001402CD550  mov     r10, rcx
+00000001402CD553  cmp     edx, 10h
+00000001402CD556  jnb     short loc_1402CD5BB
+00000001402CD558  mov     eax, edx
+00000001402CD55A  movzx   edx, byte ptr [rax+rcx+168h]
+00000001402CD562  test    dl, dl
+00000001402CD564  jz      short loc_1402CD5BB
+00000001402CD566  movzx   eax, byte ptr [rcx+30h]
+00000001402CD56A  mov     r8, [r10+0F0h]
+00000001402CD571  mov     ecx, 4
+00000001402CD576  sub     r8, [r10+0E8h]
+00000001402CD57D  shr     al, 4
+00000001402CD580  movzx   r9d, dl
+00000001402CD584  and     al, 7
+00000001402CD586  sar     r8, 3
+00000001402CD58A  inc     al
+00000001402CD58C  sub     ecx, eax
+00000001402CD58E  shl     ecx, 3
+00000001402CD591  shl     r9d, cl
+00000001402CD594  xor     ecx, ecx
+00000001402CD596  or      r9d, [r10+20h]
+00000001402CD59A  test    r8, r8
+00000001402CD59D  jz      short loc_1402CD5BB
+00000001402CD59F  mov     rax, [r10+0E8h]
+00000001402CD5A6  mov     rdx, [rax]
+00000001402CD5A9  cmp     [rdx+20h], r9d
+00000001402CD5AD  jz      short loc_1402CD5BE
+00000001402CD5AF  inc     rcx
+00000001402CD5B2  add     rax, 8
+00000001402CD5B6  cmp     rcx, r8
+00000001402CD5B9  jb      short loc_1402CD5A6
+00000001402CD5BB  xor     al, al
+00000001402CD5BD  retn
+00000001402CD5BE  add     rdx, 38h ; '8'
+00000001402CD5C2  cmp     qword ptr [rdx], 0
+00000001402CD5C6  jz      short loc_1402CD5BB
+00000001402CD5C8  mov     rcx, cs:qword_14181A568
+00000001402CD5CF  jmp     sub_140D84640
+
+1402EDF40 sub_1402EDF40
+00000001402EDF40  xor     r9d, r9d
+00000001402EDF43  jmp     sub_1402EA9D0
+
+1402EA9D0 sub_1402EA9D0
+00000001402EA9D0  mov     [rsp+arg_8], rbx
+00000001402EA9D5  push    rdi
+00000001402EA9D6  sub     rsp, 20h
+00000001402EA9DA  mov     edi, r8d
+00000001402EA9DD  mov     rbx, rcx
+00000001402EA9E0  cmp     edx, 10h
+00000001402EA9E3  jb      short loc_1402EA9F2
+00000001402EA9E5  xor     al, al
+00000001402EA9E7  mov     rbx, [rsp+28h+arg_8]
+00000001402EA9EC  add     rsp, 20h
+00000001402EA9F0  pop     rdi
+00000001402EA9F1  retn
+00000001402EA9F2  mov     rax, [rcx+98h]
+00000001402EA9F9  cmp     [rcx+90h], rax
+00000001402EAA00  jnz     short loc_1402EAA23
+00000001402EAA02  mov     byte ptr [rcx+178h], 3
+00000001402EAA09  mov     [rcx+181h], dl
+00000001402EAA0F  mov     [rcx+188h], r8d
+00000001402EAA16  mov     al, 1
+00000001402EAA18  mov     rbx, [rsp+28h+arg_8]
+00000001402EAA1D  add     rsp, 20h
+00000001402EAA21  pop     rdi
+00000001402EAA22  retn
+00000001402EAA23  mov     eax, edx
+00000001402EAA25  movzx   ecx, byte ptr [rax+rcx+168h]
+00000001402EAA2D  test    cl, cl
+00000001402EAA2F  jz      short loc_1402EA9E5
+00000001402EAA31  mov     [rsp+28h+arg_0], rsi
+00000001402EAA36  movzx   esi, cl
+00000001402EAA39  mov     rcx, rbx
+00000001402EAA3C  mov     edx, esi
+00000001402EAA3E  call    sub_1402E7910
+00000001402EAA43  test    al, al
+00000001402EAA45  jnz     short loc_1402EAA99
+00000001402EAA47  movzx   eax, byte ptr [rbx+30h]
+00000001402EAA4B  mov     ecx, 4
+00000001402EAA50  shr     al, 4
+00000001402EAA53  and     al, 7
+00000001402EAA55  inc     al
+00000001402EAA57  sub     ecx, eax
+00000001402EAA59  shl     ecx, 3
+00000001402EAA5C  shl     esi, cl
+00000001402EAA5E  lea     rcx, [rbx+0E0h]
+00000001402EAA65  or      esi, [rbx+20h]
+00000001402EAA68  mov     edx, esi
+00000001402EAA6A  call    sub_1402C0E60
+00000001402EAA6F  test    rax, rax
+00000001402EAA72  jnz     short loc_1402EAA84
+00000001402EAA74  mov     rsi, [rsp+28h+arg_0]
+00000001402EAA79  mov     rbx, [rsp+28h+arg_8]
+00000001402EAA7E  add     rsp, 20h
+00000001402EAA82  pop     rdi
+00000001402EAA83  retn
+00000001402EAA84  or      byte ptr [rbx+154h], 1
+00000001402EAA8B  mov     r8d, edi
+00000001402EAA8E  or      edx, 0FFFFFFFFh
+00000001402EAA91  mov     rcx, rax
+00000001402EAA94  call    sub_1402CDC40
+00000001402EAA99  mov     rsi, [rsp+28h+arg_0]
+00000001402EAA9E  mov     rbx, [rsp+28h+arg_8]
+00000001402EAAA3  mov     al, 1
+00000001402EAAA5  add     rsp, 20h
+00000001402EAAA9  pop     rdi
+00000001402EAAAA  retn
+
+1402CD4A0 sub_1402CD4A0
+00000001402CD4A0  sub     rsp, 28h
+00000001402CD4A4  mov     r10, rcx
+00000001402CD4A7  cmp     edx, 10h
+00000001402CD4AA  jnb     short loc_1402CD515
+00000001402CD4AC  mov     eax, edx
+00000001402CD4AE  movzx   edx, byte ptr [rax+rcx+168h]
+00000001402CD4B6  test    dl, dl
+00000001402CD4B8  jz      short loc_1402CD515
+00000001402CD4BA  movzx   eax, byte ptr [rcx+30h]
+00000001402CD4BE  mov     r8, [r10+0F0h]
+00000001402CD4C5  mov     ecx, 4
+00000001402CD4CA  sub     r8, [r10+0E8h]
+00000001402CD4D1  shr     al, 4
+00000001402CD4D4  movzx   r9d, dl
+00000001402CD4D8  and     al, 7
+00000001402CD4DA  sar     r8, 3
+00000001402CD4DE  inc     al
+00000001402CD4E0  sub     ecx, eax
+00000001402CD4E2  shl     ecx, 3
+00000001402CD4E5  shl     r9d, cl
+00000001402CD4E8  xor     ecx, ecx
+00000001402CD4EA  or      r9d, [r10+20h]
+00000001402CD4EE  test    r8, r8
+00000001402CD4F1  jz      short loc_1402CD515
+00000001402CD4F3  mov     rax, [r10+0E8h]
+00000001402CD4FA  nop     word ptr [rax+rax+00h]
+00000001402CD500  mov     rdx, [rax]
+00000001402CD503  cmp     [rdx+20h], r9d
+00000001402CD507  jz      short loc_1402CD51C
+00000001402CD509  inc     rcx
+00000001402CD50C  add     rax, 8
+00000001402CD510  cmp     rcx, r8
+00000001402CD513  jb      short loc_1402CD500
+00000001402CD515  xor     al, al
+00000001402CD517  add     rsp, 28h
+00000001402CD51B  retn
+00000001402CD51C  mov     byte ptr [rdx+64h], 3
+00000001402CD520  add     rdx, 38h ; '8'
+00000001402CD524  cmp     qword ptr [rdx], 0
+00000001402CD528  jz      short loc_1402CD539
+00000001402CD52A  mov     rcx, cs:qword_14181A568
+00000001402CD531  xor     r8d, r8d
+00000001402CD534  call    sub_140D84330
+00000001402CD539  mov     al, 1
+00000001402CD53B  add     rsp, 28h
+00000001402CD53F  retn
+
+1409DE910 sub_1409DE910
+00000001409DE910  mov     [rsp+arg_0], rbx
+00000001409DE915  mov     [rsp+arg_8], rsi
+00000001409DE91A  push    rdi
+00000001409DE91B  sub     rsp, 20h
+00000001409DE91F  mov     rbx, rcx
+00000001409DE922  mov     edi, edx
+00000001409DE924  lea     rcx, unk_1415F61F0
+00000001409DE92B  xor     edx, edx
+00000001409DE92D  mov     esi, r8d
+00000001409DE930  call    sub_1402B3AA0
+00000001409DE935  cmp     al, 1
+00000001409DE937  jz      short loc_1409DE96A
+00000001409DE939  test    byte ptr [rbx+9Ah], 80h
+00000001409DE940  jz      short loc_1409DE96A
+00000001409DE942  mov     rcx, [rbx+108h]
+00000001409DE949  test    rcx, rcx
+00000001409DE94C  jz      short loc_1409DE96A
+00000001409DE94E  mov     edx, edi
+00000001409DE950  call    sub_1402C0D00
+00000001409DE955  test    al, al
+00000001409DE957  jz      short loc_1409DE96A
+00000001409DE959  mov     rcx, [rbx+108h]
+00000001409DE960  mov     r8d, esi
+00000001409DE963  mov     edx, edi
+00000001409DE965  call    sub_1402EDF40
+00000001409DE96A  mov     rbx, [rsp+28h+arg_0]
+00000001409DE96F  mov     rsi, [rsp+28h+arg_8]
+00000001409DE974  add     rsp, 20h
+00000001409DE978  pop     rdi
+00000001409DE979  retn
+
+1409DE980 sub_1409DE980
+00000001409DE980  mov     [rsp+arg_0], rbx
+00000001409DE985  push    rdi
+00000001409DE986  sub     rsp, 20h
+00000001409DE98A  mov     rbx, rcx
+00000001409DE98D  mov     edi, edx
+00000001409DE98F  lea     rcx, unk_1415F61F0
+00000001409DE996  xor     edx, edx
+00000001409DE998  call    sub_1402B3AA0
+00000001409DE99D  cmp     al, 1
+00000001409DE99F  jz      short loc_1409DE9E1
+00000001409DE9A1  test    byte ptr [rbx+9Ah], 80h
+00000001409DE9A8  jz      short loc_1409DE9E1
+00000001409DE9AA  mov     rcx, [rbx+108h]
+00000001409DE9B1  test    rcx, rcx
+00000001409DE9B4  jz      short loc_1409DE9E1
+00000001409DE9B6  mov     edx, edi
+00000001409DE9B8  call    sub_1402C0D00
+00000001409DE9BD  test    al, al
+00000001409DE9BF  jz      short loc_1409DE9E1
+00000001409DE9C1  mov     rcx, [rbx+108h]
+00000001409DE9C8  mov     edx, edi
+00000001409DE9CA  call    sub_1402CD550
+00000001409DE9CF  test    al, al
+00000001409DE9D1  jz      short loc_1409DE9E1
+00000001409DE9D3  mov     rcx, [rbx+108h]
+00000001409DE9DA  mov     edx, edi
+00000001409DE9DC  call    sub_1402CD4A0
+00000001409DE9E1  mov     rbx, [rsp+28h+arg_0]
+00000001409DE9E6  add     rsp, 20h
+00000001409DE9EA  pop     rdi
+00000001409DE9EB  retn
+
+1409DEA00 sub_1409DEA00
+00000001409DEA00  mov     [rsp+arg_0], rbx
+00000001409DEA05  push    rdi
+00000001409DEA06  sub     rsp, 20h
+00000001409DEA0A  mov     rbx, rcx
+00000001409DEA0D  mov     edi, edx
+00000001409DEA0F  lea     rcx, unk_1415F61F0
+00000001409DEA16  xor     edx, edx
+00000001409DEA18  call    sub_1402B3AA0
+00000001409DEA1D  cmp     al, 1
+00000001409DEA1F  jnz     short loc_1409DEA2E
+00000001409DEA21  xor     al, al
+00000001409DEA23  mov     rbx, [rsp+28h+arg_0]
+00000001409DEA28  add     rsp, 20h
+00000001409DEA2C  pop     rdi
+00000001409DEA2D  retn
+00000001409DEA2E  test    byte ptr [rbx+9Ah], 80h
+00000001409DEA35  jz      short loc_1409DEA21
+00000001409DEA37  mov     rcx, [rbx+108h]
+00000001409DEA3E  test    rcx, rcx
+00000001409DEA41  jz      short loc_1409DEA21
+00000001409DEA43  mov     edx, edi
+00000001409DEA45  call    sub_1402C0D00
+00000001409DEA4A  test    al, al
+00000001409DEA4C  jz      short loc_1409DEA21
+00000001409DEA4E  mov     rcx, [rbx+108h]
+00000001409DEA55  mov     edx, edi
+00000001409DEA57  mov     rbx, [rsp+28h+arg_0]
+00000001409DEA5C  add     rsp, 20h
+00000001409DEA60  pop     rdi
+00000001409DEA61  jmp     sub_1402CD550
+
+CreateObject Args2 callsite
+0000000140CC5EC0  call    Client__Game__Object__GameObject__SetContentId; PS3 Monitor: idb://ffxivgame.ppu.elf.i64:0097DEF8
+0000000140CC5EC5  mov     r11d, [rbx+14h]
+0000000140CC5EC9  mov     rcx, rdi
+0000000140CC5ECC  mov     [rdi+84h], r11d
+0000000140CC5ED3  movzx   edx, word ptr [rbx+24h]
+0000000140CC5ED7  call    sub_1409DE4D0
+0000000140CC5EDC  movzx   edx, word ptr [rbx+28h]
+0000000140CC5EE0  xor     r9d, r9d
+0000000140CC5EE3  mov     r8b, 1
+0000000140CC5EE6  mov     rcx, rdi
+0000000140CC5EE9  call    sub_1409EC750
+0000000140CC5EEE  mov     r11d, [rbx+2Ch]
+0000000140CC5EF2  mov     [rdi+1A4h], r11d
+0000000140CC5EF9  cmp     dword ptr [rbx+18h], 0
+0000000140CC5EFD  jnz     short loc_140CC5F62
+0000000140CC5EFF  mov     rax, [rdi]
+0000000140CC5F02  movss   xmm1, dword ptr [rbx+1Ch]
+
+ActorControl 0x199 and 0x19D case bodies
+0000000140CD1AF2  test    rax, rax
+0000000140CD1AF5  jz      loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1AFB  mov     rax, [rax]
+0000000140CD1AFE  mov     rcx, rbx
+0000000140CD1B01  call    qword ptr [rax+8]
+0000000140CD1B04  cmp     eax, 7
+0000000140CD1B07  jz      short loc_140CD1B23
+0000000140CD1B09  cmp     eax, 0Ch
+0000000140CD1B0C  jnz     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1B12  movzx   edx, r14w
+0000000140CD1B16  mov     rcx, rbx
+0000000140CD1B19  call    sub_140E11BA0
+0000000140CD1B1E  jmp     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1B23  xor     r9d, r9d
+0000000140CD1B26  xor     r8d, r8d
+0000000140CD1B29  movzx   edx, r14w
+0000000140CD1B2D  mov     rcx, rbx
+0000000140CD1B30  call    sub_1409EC750
+0000000140CD1B35  jmp     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1B3A  lea     rcx, Client__Game__Object__gStaticObjectManager; jumptable 0000000140CC9697 case 410
+0000000140CD1B41  mov     edx, ebx
+0000000140CD1B43  call    sub_1409EBA50
+0000000140CD1B48  mov     rbx, rax
+0000000140CD1B4B  test    rax, rax
+0000000140CD1B4E  jz      loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1B54  mov     rdx, [rax]
+0000000140CD1B57  mov     rcx, rax
+0000000140CD1B5A  call    qword ptr [rdx+8]
+0000000140CD1B5D  cmp     eax, 7
+0000000140CD1B60  jz      short loc_140CD1B6B
+0000000140CD1B62  cmp     eax, 0Ch
+0000000140CD1B65  jnz     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1B6B  mov     r8d, r13d
+0000000140CD1B6E  mov     edx, r14d
+0000000140CD1B71  mov     rcx, rbx
+0000000140CD1B74  call    sub_1409DE910
+0000000140CD1B79  jmp     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1B7E  test    rax, rax; jumptable 0000000140CC9697 case 411
+0000000140CD1B81  jz      loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1B87  xor     r8d, r8d
+0000000140CD1B8A  xor     edx, edx
+0000000140CD1B8C  mov     rcx, rax
+0000000140CD1B8F  call    sub_1409F2150
+0000000140CD1B94  jmp     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1B99  test    rax, rax; jumptable 0000000140CC9697 cases 407,412
+0000000140CD1B9C  jz      loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1BA2  xor     r9d, r9d
+0000000140CD1BA5  xor     r8d, r8d
+0000000140CD1BA8  mov     edx, r14d
+0000000140CD1BAB  mov     rcx, rax
+0000000140CD1BAE  call    sub_1409FA100
+0000000140CD1BB3  jmp     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1BB8  lea     rcx, Client__Game__Object__gStaticObjectManager; jumptable 0000000140CC9697 case 413
+0000000140CD1BBF  mov     edx, ebx
+0000000140CD1BC1  call    sub_1409EBA50
+0000000140CD1BC6  mov     rbx, rax
+0000000140CD1BC9  test    rax, rax
+0000000140CD1BCC  jz      loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1BD2  mov     rdx, [rax]
+0000000140CD1BD5  mov     rcx, rax
+0000000140CD1BD8  call    qword ptr [rdx+8]
+0000000140CD1BDB  cmp     eax, 7
+0000000140CD1BDE  jnz     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1BE4  xor     edi, edi
+0000000140CD1BE6  lea     r15d, [rax-6]
+0000000140CD1BEA  nop     word ptr [rax+rax+00h]
+0000000140CD1BF0  mov     edx, edi
+0000000140CD1BF2  mov     rcx, rbx
+0000000140CD1BF5  call    sub_1409DEA00
+0000000140CD1BFA  test    r13d, r15d
+0000000140CD1BFD  jz      short loc_140CD1C12
+0000000140CD1BFF  test    al, al
+0000000140CD1C01  jnz     short loc_140CD1C20
+0000000140CD1C03  xor     r8d, r8d
+0000000140CD1C06  mov     edx, edi
+0000000140CD1C08  mov     rcx, rbx
+0000000140CD1C0B  call    sub_1409DE910
+0000000140CD1C10  jmp     short loc_140CD1C20
+0000000140CD1C12  cmp     al, 1
+0000000140CD1C14  jnz     short loc_140CD1C20
+0000000140CD1C16  mov     edx, edi
+0000000140CD1C18  mov     rcx, rbx
+0000000140CD1C1B  call    sub_1409DE980
+0000000140CD1C20  inc     edi
+0000000140CD1C22  rol     r15d, 1
+0000000140CD1C25  cmp     edi, 10h
+0000000140CD1C28  jb      short loc_140CD1BF0
+0000000140CD1C2A  mov     [rbx+1A2h], r14w
+0000000140CD1C32  jmp     loc_140CD399E; jumptable 0000000140CC9697 cases 42,206,916
+0000000140CD1C37  test    rax, rax; jumptable 0000000140CC9697 case 258

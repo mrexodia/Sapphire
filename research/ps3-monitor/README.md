@@ -4,6 +4,116 @@ This directory records cross-architecture function matches between the FFXIV
 2.3 PS3 Monitor development build and the Windows 3.x client used by Sapphire.
 Addresses are tied to the exact binaries and hashes in `packet_matches.json`.
 
+## Event-object and data-format research
+
+See [`EOBJ_EXD_RESULTS.md`](EOBJ_EXD_RESULTS.md) for the Sastasha grate's
+asset-confirmed timeline masks, packet argument distinctions, EXD coverage,
+archive addressing fixes, and remaining format/decryption boundaries. The new
+headless [`Ps3DataInspector`](../../src/tools/Ps3DataInspector/README.md) scans
+all root-listed sheets, inventories every PS3 index, extracts by path or hash,
+and reports SGB general-purpose timeline mappings. `ida_asset_export.py`
+exports all imported IDB types/symbols and candidate debug/resource paths.
+[`WINDOWS_EOBJ_MAPPING.md`](WINDOWS_EOBJ_MAPPING.md) records the verified Windows
+setter (`0x1409EC750`), its `+0x1A2` state field, supporting functions and saved
+IDB annotations.
+
+For a guided explanation, open
+[`eobj-flow-explainer.html`](eobj-flow-explainer.html) directly in a browser.
+It is self-contained and works offline, with file/ID flow diagrams, the
+Sastasha slot mapping, packet-path distinctions, and an interactive mask
+simulator. The mechanism is general; slot meanings belong to each SGB asset,
+not a global dungeon animation enum.
+
+Validate local links and browser behavior with:
+
+```bash
+python research/ps3-monitor/validate_eobj_explainer.py --static-only
+python research/ps3-monitor/validate_eobj_explainer.py
+```
+
+The full check requires Python Playwright and Edge (auto-detected on Windows)
+or Playwright Chromium; `--browser PATH` selects another Chromium executable.
+It checks example transitions, all 24,576 modeled low-four-bit transitions,
+input validation, offline operation and mobile overflow. Screenshots stay in
+`build/`. This explainer does not change production timeline behavior.
+
+## Toolkit integration, path names and Excel semantics
+
+ToolkitPs3 now shares the inspector's decoder and adds **Tools > Excel** plus
+**Tools > Data Graph** for exact symbols, SQLite FTS/ID search, all 1,933
+recovered/authentic Lua source files plus their 1,932 backing bytecode resources,
+confidence-qualified EXD links, source hits, hierarchical assets, placements
+and SGB timelines. Recovered Lua is shown as the primary readable source while
+preserving bytecode provenance. Excel and graph rows now pivot in both
+directions; the Excel view overlays semantic names without replacing its live
+PS3 SqPack values.
+See [its feature matrix](../../src/tools/ToolkitPs3/README.md) and
+[`TOOLKIT_DATA_STATUS.md`](TOOLKIT_DATA_STATUS.md) for tests and boundaries.
+The full library-path scan independently exercises the API used by Toolkit:
+2,131 sheets, 10,295 pages/languages, 1,021,511 row/subrow instances, zero errors.
+
+The measured recovery pass finds candidate names matching 16,191 of 745,952
+indexed entries, exact name/size row-struct matches for 303 sheets and 10,182
+single-name debug column candidates. These are lower bounds / metadata
+candidates, not complete path recovery or a verified foreign-key graph.
+Regenerate [`monitor_recovery.json`](monitor_recovery.json) with
+`python research/ps3-monitor/build_monitor_recovery_report.py`; full ledgers
+remain under `build/`.
+
+[`DATA_GRAPH_RESULTS.md`](DATA_GRAPH_RESULTS.md) documents the new SQLite/FTS
+semantic graph and the reproduced “satasha dungeon what is involved?” and
+`2000182` magic-ID investigations. The graph joins selected-language EXD rows,
+evidence-qualified fields and links, Sapphire source references, all 273
+referenced LVB files, 1,711 LVB-to-LGB links, 370,647 unique LGB placements,
+2,817 unique LGB-to-SGB links, and bounded timeline details for 1,752 SGB files.
+Build and query it with
+`build_excel_semantic_schema.py` and `ps3_data_graph.py`; uncertain numeric
+coincidences remain searchable but are not promoted to graph edges.
+
+## Lua and timeline runtime starting points
+
+[`LUA_TIMELINE_START.md`](LUA_TIMELINE_START.md) corrects the earlier SDAT
+encryption claim: both local SDATs are debug/plain, and all 1,934 script / 283
+shader records validate after keyless deframing. The standard-library-only
+`inspect_monitor_scripts.py` parses all 1,932 Lua 5.1 chunks, inventories scene
+and static API operands, and optionally extracts hash-named scripts without
+executing them. It documents Lua loader/binding/resume and timeline scheduler
+symbol anchors, retained debug information and a practical vertical-slice plan.
+General SDAT support and integration into the C++ backend remain separate work.
+
+## Original Lua filename recovery
+
+[`LUA_FILENAME_RECOVERY.md`](LUA_FILENAME_RECOVERY.md) records direct PathList
+matching against both CRCs in the raw PS3 script index: all 1,932 compiled
+chunks and the one source-text record have unique dictionary paths. Named,
+byte-identical payloads are under `build/ps3-lua-named/game_script/`, with a
+full hash/path manifest. Only the non-Lua placeholder remains unnamed.
+All compiled basenames also agree with embedded `.cli.lua` / `.cmn.lua` debug
+sources. `recover_lua_paths.py` reproduces the mapping and copies;
+`test_recover_lua_paths.py` verifies the matching rules. The supplied decompiler
+was tested on five named samples; outputs stay under `build/`.
+
+## Full Lua decompilation
+
+[`LUA_DECOMPILATION.md`](LUA_DECOMPILATION.md) compares the included 2015 unluac,
+a newer official jar and cLuaDecompiler across all 1,932 compiled resources.
+Browse `build/ps3-lua-decompiled/recommended/game_script/`: all 1,932 syntax-valid
+reconstructed resources plus the authentic Gld10000 source. The
+[manual ChocoboTaxiStand repair](CHOCOBO_TAXI_RECONSTRUCTION.md) closes the final
+exception and recompiles to the same seven ordered instruction/constant trees. The original jars/payloads
+are untouched; compilation checks do not execute game scripts.
+
+### Binding-annotated Lua
+
+[`LUA_BINDING_ANNOTATIONS.md`](LUA_BINDING_ANNOTATIONS.md) documents the separate
+`research/ps3-monitor/game_script/` corpus (generated copy under
+`build/ps3-lua-annotated/game_script/`): handler Name/Value pairs and referenced
+shared-table candidates appear near reads. Native constants live in 13
+`defines/*.lua` reference modules; script comments link to them. Redundant
+Lua-literal comments and unused shared/native header inventories are omitted. All 1,933 files preserve their input's code tokens and pass Lua 5.1
+syntax checks. Stored numbers are concrete dataset facts, not a claim of
+immutable runtime fields or proven scope/override precedence.
+
 ## Initial result
 
 The zone-down and chat-down packet dispatchers were matched with high confidence:

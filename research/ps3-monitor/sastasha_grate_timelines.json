@@ -1,0 +1,123 @@
+{
+  "timelines": [
+    {
+      "member_id": 12,
+      "name": "open",
+      "timeline_id": 0,
+      "auto_play": 0,
+      "loop_playback": 0,
+      "collision_state": 0
+    },
+    {
+      "member_id": 14,
+      "name": "close",
+      "timeline_id": 0,
+      "auto_play": 0,
+      "loop_playback": 0,
+      "collision_state": 0
+    },
+    {
+      "member_id": 15,
+      "name": "vfx_on",
+      "timeline_id": 0,
+      "auto_play": 0,
+      "loop_playback": 0,
+      "collision_state": 0
+    },
+    {
+      "member_id": 16,
+      "name": "vfx_off",
+      "timeline_id": 0,
+      "auto_play": 0,
+      "loop_playback": 0,
+      "collision_state": 0
+    }
+  ],
+  "general_purpose_slots": [
+    {
+      "index": 0,
+      "mask": 1,
+      "member_id": 12,
+      "name": "open"
+    },
+    {
+      "index": 1,
+      "mask": 2,
+      "member_id": 14,
+      "name": "close"
+    },
+    {
+      "index": 2,
+      "mask": 4,
+      "member_id": 15,
+      "name": "vfx_on"
+    },
+    {
+      "index": 3,
+      "mask": 8,
+      "member_id": 16,
+      "name": "vfx_off"
+    },
+    {
+      "index": 4,
+      "mask": 16,
+      "member_id": 0
+    },
+    {
+      "index": 5,
+      "mask": 32,
+      "member_id": 0
+    },
+    {
+      "index": 6,
+      "mask": 64,
+      "member_id": 0
+    },
+    {
+      "index": 7,
+      "mask": 128,
+      "member_id": 0
+    },
+    {
+      "index": 8,
+      "mask": 256,
+      "member_id": 0
+    },
+    {
+      "index": 9,
+      "mask": 512,
+      "member_id": 0
+    },
+    {
+      "index": 10,
+      "mask": 1024,
+      "member_id": 0
+    },
+    {
+      "index": 11,
+      "mask": 2048,
+      "member_id": 0
+    },
+    {
+      "index": 12,
+      "mask": 4096,
+      "member_id": 0
+    },
+    {
+      "index": 13,
+      "mask": 8192,
+      "member_id": 0
+    },
+    {
+      "index": 14,
+      "mask": 16384,
+      "member_id": 0
+    },
+    {
+      "index": 15,
+      "mask": 32768,
+      "member_id": 0
+    }
+  ],
+  "asset": "bg/ffxiv/sea_s1/shared/for_bg/sgbg_s1d1_m1_bos1.sgb"
+}

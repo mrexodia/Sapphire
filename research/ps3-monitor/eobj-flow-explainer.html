@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FFXIV event objects: from EXD and SGB to timeline masks</title>
+<style>
+:root{--ink:#192d43;--muted:#53677b;--paper:#f3f6fa;--card:#fff;--line:#d6e0ea;--blue:#1467b2;--teal:#086e63;--amber:#895800;--mono:ui-monospace,Consolas,"Liberation Mono",monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--blue)}a:hover{text-decoration-thickness:2px}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #e89c28;outline-offset:3px}
+header{background:linear-gradient(120deg,#14283c,#164d6c);color:white;padding:58px max(24px,calc((100vw - 1100px)/2));border-bottom:5px solid #45c9b4}header .eyebrow{color:#8ee6d5;font-size:13px;letter-spacing:.13em;text-transform:uppercase}h1{font-size:clamp(32px,4vw,53px);line-height:1.14;max-width:940px;margin:14px 0 20px}header p{max-width:850px;color:#dceaf6;margin:0}header .tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}header .tags span{font-size:13px;border:1px solid #739cb5;border-radius:99px;padding:4px 12px}
+.layout{max-width:1160px;margin:32px auto;display:grid;grid-template-columns:205px minmax(0,1fr);gap:30px;padding:0 24px}nav{position:sticky;top:24px;align-self:start;font-size:14px}nav strong{display:block;margin-bottom:12px}nav a{display:block;margin:9px 0;text-decoration:none}main{min-width:0}section{scroll-margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;margin-bottom:24px}h2{font-size:28px;line-height:1.25;margin:0 0 18px}h3{font-size:21px;line-height:1.3;margin:25px 0 12px}p{margin:12px 0}code{font-family:var(--mono);font-size:.9em;background:#edf2f7;padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}pre{background:#102739;color:#e7f2fa;border-radius:9px;padding:18px;overflow:auto;font:14px/1.6 var(--mono)}pre code{background:none;color:inherit;padding:0;font-size:inherit;overflow-wrap:normal}.note{border-left:4px solid var(--teal);background:#eef9f6;padding:13px 17px;margin:20px 0;border-radius:0 7px 7px 0}.warning{border-color:#ce9423;background:#fff8e8}.muted{color:var(--muted)}.small{font-size:14px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;margin:16px 0;font-size:15px}th,td{border-bottom:1px solid var(--line);text-align:left;vertical-align:top;padding:10px 12px}th{background:#edf3f8;font-size:13px;letter-spacing:.03em}td code{white-space:nowrap}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.card{border:1px solid var(--line);padding:16px;border-radius:8px;background:#f8fafc}.card strong{display:block;margin-bottom:8px}.card p{font-size:15px;margin:0}.flow{list-style:none;counter-reset:flow;padding:0;margin:20px 0}.flow>li{counter-increment:flow;position:relative;padding:15px 16px 15px 60px;border:1px solid var(--line);background:#f8fbfd;border-radius:8px;margin-bottom:15px}.flow>li::before{content:counter(flow);position:absolute;left:16px;top:16px;border-radius:50%;background:var(--blue);color:white;width:28px;height:28px;text-align:center;line-height:28px;font-size:14px;font-weight:700}.flow>li:not(:last-child)::after{content:"↓";position:absolute;bottom:-24px;left:22px;color:var(--blue);font-size:20px;z-index:1}.flow p{font-size:15px;margin:6px 0 0}.pill{display:inline-block;background:#e7f6f1;color:var(--teal);border:1px solid #bfdfd6;border-radius:99px;padding:1px 9px;font-size:12px;font-weight:600}.pill.asset{background:#edf3fb;color:#235c99;border-color:#cfdeef}details{border:1px solid var(--line);border-radius:8px;margin:16px 0;padding:12px 16px}summary{cursor:pointer;font-weight:650}details p:last-child{margin-bottom:0}.sim{border:1px solid #a9c9e1;border-radius:9px;padding:20px;background:#f5faff}.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.controls label{display:block;font-size:14px;font-weight:600}.controls input,.controls select{display:block;width:100%;margin-top:6px;padding:9px 11px;border:1px solid #8097af;border-radius:5px;background:white;color:var(--ink);font:15px var(--mono)}.controls input:disabled{background:#e5ecf3;color:#6c7b89}.controls input[aria-invalid="true"]{border:2px solid #ab2f37}.checkline{font-size:14px;margin-top:14px}.presets{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}button{padding:8px 12px;border:1px solid #8eb1ce;border-radius:6px;background:white;color:#184d78;cursor:pointer;font-size:13px;font-weight:600}button:hover{background:#e5f1fc}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric{background:white;padding:12px;border:1px solid var(--line);border-radius:6px}.metric span{display:block;font-size:12px;color:var(--muted)}.metric strong{font:19px var(--mono)}.on{color:#075e51;font-weight:700}.off{color:#687789}.actions{font-size:14px}.sim-error{color:#a02530;font-weight:600;min-height:1.6em}.query-results{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.query-results>div{background:white;border:1px solid var(--line);padding:10px;font:13px var(--mono)}.query-results strong{display:block;margin-top:6px}.legend{font-size:13px;color:var(--muted)}footer{max-width:1100px;margin:30px auto 50px;padding:0 24px;color:var(--muted);font-size:14px}.skip{position:absolute;left:12px;top:-60px;background:white;padding:12px;z-index:5}.skip:focus{top:12px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}nav{position:static;display:flex;flex-wrap:wrap;gap:6px 16px}nav strong{flex-basis:100%;margin:0}nav a{margin:0}section{padding:22px}.cards{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){body{font-size:16px}.layout{padding:0 12px;gap:16px}section{padding:18px}header{padding:36px 20px}.controls{grid-template-columns:1fr}.query-results{grid-template-columns:repeat(2,1fr)}th,td{padding:8px}h2{font-size:24px}.sim{padding:12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{nav,.presets,.skip{display:none}.layout{display:block;max-width:none;margin:0;padding:0}header{background:white;color:black;padding:20px;border-bottom:2px solid black}header p,header .eyebrow{color:black}section{break-inside:avoid;border-radius:0}body{font-size:12px;background:white}pre{background:#eee;color:black;white-space:pre-wrap}a{color:black}.sim{background:white}}
+</style>
+</head>
+<body>
+<a class="skip" href="#short-answer">Skip to explanation</a>
+<header>
+<div class="eyebrow">Sapphire research · PS3 Monitor and Windows 3.3</div>
+<h1>A bit is a slot.<br>The asset gives that slot its meaning.</h1>
+<p>How an event object goes from an EXD row and a placed shared-group asset to a network-controlled animation mask—with the Sastasha grates as a concrete, verified example.</p>
+<div class="tags"><span>Disassembly-backed</span><span>Asset-backed</span><span>Offline interactive example</span><span>No external dependencies</span></div>
+</header>
+<div class="layout">
+<nav aria-label="Chapters">
+<strong>Read in this order</strong>
+<a href="#short-answer">1. Is the enum general?</a>
+<a href="#files">2. What each file does</a>
+<a href="#identity">3. The different IDs</a>
+<a href="#loading">4. How data becomes an object</a>
+<a href="#slots">5. From a bit to a timeline</a>
+<a href="#packets">6. Network update paths</a>
+<a href="#execution">7. What the client executes</a>
+<a href="#simulator">8. Try a mask transition</a>
+<a href="#server">9. What Sapphire should track</a>
+<a href="#evidence">10. Evidence and limits</a>
+</nav>
+<main>
+<section id="short-answer">
+<h2>1. General mechanism, asset-specific meanings</h2>
+<p><strong>The client does not have a universal “Sastasha animation enum.”</strong> It has a general <em>16-slot shared-group timeline mechanism</em>. A 16-bit value selects slots. The loaded asset defines which timeline belongs to each slot.</p>
+<div class="cards">
+<div class="card"><strong>Engine convention <span class="pill">general</span></strong><p>Slots 0–15. Slot <code>i</code> is selected by <code>1 &lt;&lt; i</code>. The client can test, play and stop that slot.</p></div>
+<div class="card"><strong>Asset configuration <span class="pill asset">per SGB</span></strong><p>Each slot maps to a timeline MemberID. For this grate, slot 0 maps to the timeline named <code>open</code>.</p></div>
+<div class="card"><strong>Gameplay policy <span class="pill asset">per encounter/script</span></strong><p>The server decides when to select those timelines, whether an interaction is allowed, and whether enemies should spawn.</p></div>
+</div>
+<p>Your constants are useful <strong>human-readable names for this asset’s slots</strong>:</p>
+<pre><code>// A convenient server-side naming scheme, not a recovered global enum.
+namespace SastashaGrate {
+  constexpr uint16_t Open   = 1 &lt;&lt; 0; // 0x0001
+  constexpr uint16_t Close  = 1 &lt;&lt; 1; // 0x0002
+  constexpr uint16_t VfxOn  = 1 &lt;&lt; 2; // 0x0004
+  constexpr uint16_t VfxOff = 1 &lt;&lt; 3; // 0x0008
+}</code></pre>
+<div class="note"><strong>More precise than “per dungeon”:</strong> the mapping is <em>per shared-group asset</em>. Different objects in one dungeon can use different SGBs and therefore different meanings for <code>0x0001</code>. Multiple placed instances—or multiple territories—can reuse one SGB and share its mapping.</div>
+<p>For an unrelated asset, slot 0 could mean something entirely different, or be disabled. The engine knows “slot 0”; it does not infer “open a grate” from the bit itself.</p>
+</section>
+
+<section id="files">
+<h2>2. Four layers of data, four different jobs</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Layer</th><th>What it contributes</th><th>What it does not establish</th></tr></thead>
+<tbody>
+<tr><td><code>.index</code> / <code>.dat</code><br><strong>SqPack storage</strong></td><td>An asset path is hashed; the index locates its payload in a DAT file. The reader retrieves/decompresses the payload.</td><td>The meaning of a grate’s animation bits. This is storage infrastructure, not the gameplay schema.</td></tr>
+<tr><td><code>exd/root.exl</code><br><code>.exh</code> / <code>.exd</code><br><strong>Excel-style sheets</strong></td><td>Sheet names, column types/offsets, pages/languages and row values. EObj provides object metadata; TerritoryType helps identify the territory’s level assets.</td><td>The four “open / close / VFX” slot meanings. Those were found in the SGB, not the EObj row.</td></tr>
+<tr><td><code>.lvb</code> / <code>.lgb</code><br><strong>Level and placement data</strong></td><td>The territory references level groups; a group contains placed instances with IDs, transforms and asset references. A placed shared group points to an SGB.</td><td>Which bit the server should send at a particular boss phase. That is a gameplay decision.</td></tr>
+<tr><td><code>.sgb</code><br><strong>Shared-group asset</strong></td><td>A reusable group of child objects, settings and timelines. General-purpose slot IDs connect the mask to authored timeline records.</td><td>The entire server encounter, enemy spawning logic, or authoritative interaction rules.</td></tr>
+</tbody></table></div>
+<h3>What “EXD format” means here</h3>
+<p>Think of EXD as a collection of typed spreadsheets stored in binary form. <code>root.exl</code> is a catalog. An <code>.exh</code> describes the layout of a sheet, and its <code>.exd</code> pages carry the rows. The schema contains physical types and offsets, not necessarily friendly names or complete foreign-key semantics.</p>
+<pre><code>exd/root.exl
+  └─ EObj
+      ├─ eobj.exh                  column layout, pages, languages
+      └─ eobj_2000000_en.exd        English rows in this page
+          └─ row 2000405           metadata for one unnatural-ripples EObj</code></pre>
+<p>In the PS3 row we decoded, <code>EObj[2000405]</code> includes the name “unnatural ripples,” an <code>EventHandler</code> value of <code>0x000F0043</code>, and a <code>SharedGroup</code> value of <code>0</code>. It also has visibility/pop/target-related fields. <strong>It does not contain the four timeline-mask constants.</strong></p>
+<details><summary>Binary-file layout is not the same thing as the in-memory C++ layout</summary>
+<p>In PS3 EXH v3, columns refer to offsets in fixed row data. String cells contain offsets into a string pool. Packed boolean columns can share one byte. Multi-key rows include subkeys and share a string pool after all their fixed subrecords.</p>
+<p>The PS3 numerics we decoded are big-endian. Loading may resolve strings, cache rows and construct runtime objects. A stored string offset is not a live host pointer. Likewise, PS3 DWARF struct offsets are not automatically valid in the Windows client: pointer sizes and class layouts differ.</p>
+<p>The relevant PS3 EObj fixed data is 32 bytes, but the live <code>EventObject</code> is a separate class containing many additional runtime fields. The mask is a field of that live object, not an extra column hidden in the EObj sheet.</p>
+</details>
+</section>
+
+<section id="identity">
+<h2>3. Don’t mix up the IDs</h2>
+<p>An EObj, its placed visual group and a timeline inside that group belong to different ID spaces.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>ID</th><th>Purpose</th><th>Sastasha example</th></tr></thead>
+<tbody>
+<tr><td><strong>BaseId</strong></td><td>Selects metadata such as an EObj sheet row.</td><td><code>2000405</code> identifies the first unnatural-ripples EObj definition.</td></tr>
+<tr><td><strong>EntityId / actor ID</strong></td><td>Identifies the live network object. Ordinary ActorControl updates target this live object.</td><td>Assigned by the server; not the EObj row number.</td></tr>
+<tr><td><strong>LayoutId / InstanceID</strong></td><td>Identifies a placed object in the layout-related ID space.</td><td>Sapphire’s first ripple setup uses <code>3741845</code> as its EObj instance ID. This is a script value, not a slot number.</td></tr>
+<tr><td><strong>BindLayoutId</strong></td><td>Connects the EObj to an existing placed shared group.</td><td><code>3992454</code> is the first bound grate group; this placement was found in the monitor’s <code>bg.lgb</code>.</td></tr>
+<tr><td><strong>General-purpose slot</strong></td><td>A local selector in the range 0–15.</td><td>Slot <code>2</code> is selected by mask <code>0x0004</code>.</td></tr>
+<tr><td><strong>Timeline MemberID</strong></td><td>Identifies a timeline member inside this shared group; the client incorporates hierarchy when resolving it.</td><td>Slot 2 maps to MemberID <code>15</code>, named <code>vfx_on</code>.</td></tr>
+</tbody></table></div>
+<p>The four placements below reference <strong>the same SGB</strong>. Their live EObj states can still differ independently.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Sapphire EObj name</th><th>BaseId</th><th>Bound group ID</th><th>Resolved asset</th></tr></thead>
+<tbody>
+<tr><td>Unnaturalripples</td><td>2000405</td><td>3992454</td><td rowspan="4"><code>bg/ffxiv/sea_s1/shared/for_bg/sgbg_s1d1_m1_bos1.sgb</code></td></tr>
+<tr><td>Unnaturalripples_1</td><td>2000406</td><td>3992452</td></tr>
+<tr><td>Unnaturalripples_2</td><td>2000407</td><td>3992449</td></tr>
+<tr><td>Unnaturalripples_3</td><td>2000408</td><td>3992453</td></tr>
+</tbody></table></div>
+<div class="note">The mask is <strong>not</strong> a MemberID. To play <code>vfx_on</code> through the mask path, select <code>1 &lt;&lt; 2</code>, not <code>1 &lt;&lt; 15</code>. To use the single-slot API, pass index <code>2</code>, not mask <code>4</code>.</div>
+</section>
+
+<section id="loading">
+<h2>4. How the files meet the network object</h2>
+<p>There are two streams that converge: <strong>loaded visual assets</strong> and <strong>the server’s live EObj description</strong>. This is a dependency diagram, not a claim that all I/O happens synchronously in this exact order.</p>
+<ol class="flow">
+<li><strong>The client identifies the territory’s level assets.</strong><p>In the monitor data, TerritoryType row <code>157</code> points to level name/path <code>s1d1</code> / <code>ffxiv/sea_s1/dun/s1d1/level/s1d1</code>. The corresponding LVB references level groups including <code>bg.lgb</code>.</p></li>
+<li><strong>The layout engine loads placed shared groups.</strong><p>The Sastasha <code>bg.lgb</code> contains the bound grate IDs listed above. Each of those placements references <code>sgbg_s1d1_m1_bos1.sgb</code>. The SGB supplies child assets, settings and authored timelines.</p></li>
+<li><strong>Shared-group settings become runtime slot mappings.</strong><p>The asset’s <code>GeneralPurposeTimelineIDs[16]</code> is copied into the live shared-group instance. Timeline records become timeline instances which the scheduler can play. On Windows, the slot-ID array is at shared-group <code>+0x168</code>.</p></li>
+<li><strong>A CreateObject message describes a live EObj.</strong><p>The packet carries values including BaseId, EntityId, LayoutId, BindLayoutId, position and Args2. The client creates/sets up its EventObject and looks up EObj metadata by BaseId.</p></li>
+<li><strong>The EObj binds to the visual shared group.</strong><p>For these grates, BindLayoutId supplies the connection to the existing placement. This is why an EObj row with <code>SharedGroup = 0</code> can still control a shared-group asset.</p></li>
+<li><strong>The initial stored timeline mask comes from Args2.</strong><p>The mapped CreateObject handler passes the low 16 bits of Args2 to <code>SetSharedGroupTimelineState</code>. The setter stores the mask first, then checks whether the asset/layout is ready for playback.</p></li>
+<li><strong>Later server messages update the state or playback.</strong><p>The client uses the already-loaded/cached metadata and asset instances. The setter does not reopen the EXD/SGB from disk every time the server changes a mask.</p></li>
+</ol>
+<details><summary>What if an EObj is not bound to an existing placement?</summary>
+<p>The PS3 EventObject setup code also has a path that looks up <code>ExportedSG</code> metadata using the EObj row’s <code>SharedGroup</code> value. That provides an asset reference for creating a shared group instead of relying on an existing bound layout placement. The bound Sastasha grates take the placement-based route.</p>
+<p>These are alternate ways to obtain the visual group. Once the live shared group exists, the same general slot/mask mechanism can be used.</p>
+</details>
+<div class="note warning"><strong>Loading/readiness matters.</strong> A cached mask and an executing animation are not the same thing. The setter can store the new mask before the shared group is ready, with no immediate playback. Initializing/reapplying state must account for readiness; “a packet was sent” does not alone prove that a visible effect has already started.</div>
+</section>
+
+<section id="slots">
+<h2>5. The actual lookup: bit → slot → member → timeline</h2>
+<pre><code>mask = 0x0004
+       │
+       └─ bit 2 is set
+              │
+              └─ slot index 2
+                    │ GeneralPurposeTimelineIDs[2]
+                    └─ MemberID 15
+                         │ resolve timeline in this shared group
+                         └─ timeline named "vfx_on"
+                              └─ scheduler executes authored timeline content</code></pre>
+<div class="table-wrap"><table>
+<thead><tr><th>Slot</th><th>Mask</th><th>SGB mapping byte</th><th>Timeline name</th></tr></thead>
+<tbody>
+<tr><td>0</td><td><code>0x0001</code></td><td>12 (<code>0x0C</code>)</td><td>open</td></tr>
+<tr><td>1</td><td><code>0x0002</code></td><td>14 (<code>0x0E</code>)</td><td>close</td></tr>
+<tr><td>2</td><td><code>0x0004</code></td><td>15 (<code>0x0F</code>)</td><td>vfx_on</td></tr>
+<tr><td>3</td><td><code>0x0008</code></td><td>16 (<code>0x10</code>)</td><td>vfx_off</td></tr>
+<tr><td>4–15</td><td><code>0x0010</code> … <code>0x8000</code></td><td>0</td><td>Disabled for this asset</td></tr>
+</tbody></table></div>
+<p>The asset bytes are <code>0C 0E 0F 10 00 …</code>, <strong>not</strong> a list of <code>01 02 04 08</code> flags. The flags follow from the engine’s <code>1 &lt;&lt; slot</code> rule. In the PS3 SGB structure, this sixteen-byte mapping starts at <code>SGSettings + 0x05</code>.</p>
+<p>A MemberID is also not the same thing as the separate <code>SGTimeline_t::TimelineID</code> field: those TimelineID values are zero in this asset. The slot dispatch resolves the member mapping.</p>
+<h3>What is inside a timeline?</h3>
+<p>Below the general-purpose slot API, the scheduler plays authored content affecting members of the group. Such content can animate geometry, control effects or involve sound. The grate asset contains embedded timeline data and references to grate models, a VFX resource and opening/closing/water-splash sounds.</p>
+<p>We recovered the timeline names and slot mapping; we have <strong>not exhaustively decoded every clip’s exact effect lifetime or collision behavior</strong>. The names are useful evidence, but they are not a substitute for tracing every authored clip.</p>
+<div class="note warning"><strong>“Off” is an authored timeline, not a negative bit.</strong> Selecting <code>vfx_off</code> means selecting slot 3. Clearing slot 2 asks the engine to stop that timeline if it is playing. Those are distinct operations. Do not assume that stopping a timeline reverses every effect it previously created.</div>
+</section>
+
+<section id="packets">
+<h2>6. Three network commands that look similar</h2>
+<p>These numbers are <strong>ActorControl IDs inside the Order message</strong>, not the outer IPC packet opcodes. In particular, an outer CreateObject opcode named <code>0x019D</code> is not the same dispatch layer as ActorControl <code>0x19D</code>.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>ActorControl ID</th><th>Arguments</th><th>Client behavior</th></tr></thead>
+<tbody>
+<tr><td><code>0x199</code><br>SetSharedGroupTimelineState</td><td><code>arg0 = stored mask</code></td><td>Calls the EventObject setter. Saves old state, writes new state, then follows the handler or fallback playback path.</td></tr>
+<tr><td><code>0x19A</code><br>Single timeline play</td><td><code>arg0 = slot index</code><br><code>arg1 = start time</code></td><td>Uses the single-slot GameObject playback wrapper. This is not the mask setter.</td></tr>
+<tr><td><code>0x19D</code><br>PlaySharedGroupTimeline</td><td><code>arg0 = stored mask</code><br><code>arg1 = playback mask</code></td><td>Directly reconciles the 16 playback slots against arg1, then writes arg0’s low 16 bits into the EventObject state field.</td></tr>
+</tbody></table></div>
+<p><strong>The two masks in <code>0x19D</code> can differ.</strong> If arg0 is <code>0x000A</code> while arg1 is <code>0x0004</code>, the object’s stored state says close + VFX-off, while the direct playback request selects VFX-on. The client code permits that distinction; gameplay code should decide whether it actually wants it.</p>
+<pre><code>// Existing Sapphire API in this checkout:
+eobj.playSharedGroupTimeline(flag, animationFlag);
+// Sends ActorControl 0x19D:
+//   first parameter  → arg0 → stored timeline state
+//   second parameter → arg1 → playback selection
+// Neither parameter is the separate getState() spawn Flag byte.</code></pre>
+<div class="note">For a simple “stored state should match what I request to play” operation, the two masks would normally agree. That is a <em>server API design decision</em>, not a requirement imposed by the client’s packet format.</div>
+</section>
+
+<section id="execution">
+<h2>7. What happens inside the setter?</h2>
+<p>Windows <code>0x1409EC750</code> corresponds to PS3 <code>0x0097A850</code>. The following is a simplified explanation of its behavior, not a literal source reconstruction:</p>
+<pre><code>oldState = eventObject.timelineState;
+eventObject.timelineState = newState; // uint16; Windows +0x1A2
+
+if (playbackDisabled || !sharedGroup || !sharedGroupReady)
+  return; // the stored state has already changed
+
+if (checkLayoutReady &amp;&amp; !terrainAndSceneReady)
+  return;
+
+if (objectHasAnOwningEventHandler)
+  handler.onSetSharedGroupTimelineState(oldState, newState, ...);
+else
+  reconcileEnabledSlotsWith(newState);</code></pre>
+<h3>A. No owning handler: reconcile against the new mask</h3>
+<p>For each enabled slot: if its bit is set and it is not playing, play it; if its bit is clear and it is playing, stop it. This compares the request to the current playback status, not just old state to new state.</p>
+<h3>B. Base event handler: react to changed bits</h3>
+<pre><code>changed = oldState ^ newState;
+rising  = changed &amp; newState;   // bits that turned on
+falling = changed &amp; ~newState;  // bits that turned off
+
+// For enabled slots:
+// rising bit  + not already playing → play
+// falling bit + currently playing   → stop</code></pre>
+<p>The base callback is Windows <code>0x140652F30</code> / PS3 <code>0x0098D228</code>. It also performs event-scene rollback bookkeeping.</p>
+<p><strong>Derived handlers can change the policy.</strong> We observed a PS3 quest override that plays rising bits, and a Windows override with additional mask handling. We have not established the exact owning-handler subclass/replay policy for every Sastasha interaction.</p>
+<h3>C. Direct <code>0x19D</code>: reconcile against its playback mask</h3>
+<p>The Order branch asks the GameObject wrappers to play/stop each slot according to arg1, then stores arg0. It does not call the setter’s old/new handler callback path for that update.</p>
+<div class="note warning"><strong>Why the same value can behave differently:</strong> sending <code>0x0004 → 0x0004</code> gives the base handler no rising bits. If a one-shot timeline already finished, it may not replay there. The no-handler fallback or direct playback-mask path can ask to play the selected slot again when it is no longer playing. A stored mask is not an “animation is still running” flag.</div>
+<h3>The useful Sastasha transition</h3>
+<pre><code>old = 0x0004  // slot 2: vfx_on
+new = 0x000A  // slots 1 and 3: close + vfx_off
+
+rising  = 0x000A // select close and vfx_off
+falling = 0x0004 // deselect vfx_on</code></pre>
+<p>This explains why your code <em>replaces</em> the mask with <code>Close | VfxOff</code>. Merely OR-ing in <code>VfxOff</code> would produce <code>0x000C</code>, leaving the <code>VfxOn</code> bit selected too.</p>
+</section>
+
+<section id="simulator">
+<h2>8. Try it: masks, edges and playback are different</h2>
+<p>This small simulator models the three policies above for this asset’s four enabled slots. <strong>It does not execute real animation clips</strong>, model lingering VFX, or choose a real event-handler subclass. It assumes the live object exists and other playback gates permit the operation.</p>
+<noscript><div class="note warning">JavaScript is disabled. The explanation and tables still work; enable it to use the mask simulator.</div></noscript>
+<div class="sim">
+<div class="controls">
+<label for="mode">Update policy<select id="mode"><option value="base">Setter + base event handler (edges)</option><option value="fallback">Setter, no handler (reconcile)</option><option value="direct">ActorControl 0x19D (separate arg1)</option></select></label>
+<label for="old">Old stored mask · hexadecimal<input id="old" value="0x0004" spellcheck="false" autocomplete="off"></label>
+<label for="next">New stored mask / arg0 · hexadecimal<input id="next" value="0x000A" spellcheck="false" autocomplete="off"></label>
+<label for="playing">Slots currently playing · hexadecimal<input id="playing" value="0x0004" spellcheck="false" autocomplete="off"></label>
+<label for="playback">0x19D playback mask / arg1 · hexadecimal<input id="playback" value="0x000A" spellcheck="false" autocomplete="off" disabled></label>
+<label for="query">Condition query mask · hexadecimal<input id="query" value="0x0004" spellcheck="false" autocomplete="off"></label>
+</div>
+<div class="checkline"><label><input type="checkbox" id="ready" checked> Playback available in this model (asset loaded and relevant gates satisfied)</label></div>
+<div class="presets" aria-label="Example transitions">
+<button type="button" data-preset="seal">Seal the bubbling grate</button>
+<button type="button" data-preset="same">Selected, but already finished</button>
+<button type="button" data-preset="split">Different arg0 / arg1</button>
+<button type="button" data-preset="or">OR in off without clearing on</button>
+</div>
+<div id="sim-error" class="sim-error" role="alert"></div>
+<div class="metrics">
+<div class="metric"><span>Stored state after update</span><strong id="stored-result">0x000A</strong></div>
+<div class="metric"><span>Rising bits (old → new)</span><strong id="rising-result">0x000A</strong></div>
+<div class="metric"><span>Falling bits (old → new)</span><strong id="falling-result">0x0004</strong></div>
+<div class="metric"><span>Modelled playing slots after</span><strong id="playing-result">0x000A</strong></div>
+</div>
+<div id="actions" class="actions" aria-live="polite"></div>
+<div class="table-wrap"><table id="slot-table"><thead><tr><th>Slot / asset name</th><th>MemberID</th><th>Old bit</th><th>New stored bit</th><th>Playback request bit</th><th>Modelled action</th></tr></thead><tbody id="slot-rows"></tbody></table></div>
+<p class="legend">Only slots 0–3 are enabled. “New stored bit” can differ from playback, especially with 0x19D. A “play” result means a scheduler request in this model—not a claim that an effect stays alive indefinitely.</p>
+<h3>Conditions on the stored mask</h3>
+<div class="query-results">
+<div>state == query<strong id="q-exact"></strong></div>
+<div>(state &amp; query) != 0<strong id="q-any"></strong></div>
+<div>(state &amp; query) == query<strong id="q-all"></strong></div>
+<div>(state &amp; query) == 0<strong id="q-none"></strong></div>
+</div>
+<p id="query-note" class="small muted"></p>
+<div id="sim-warning" class="note warning" hidden></div>
+</div>
+</section>
+
+<section id="server">
+<h2>9. What this means for Sapphire code</h2>
+<h3>Keep at least these concepts separate</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Concept</th><th>Where it belongs</th><th>How to think about it</th></tr></thead>
+<tbody>
+<tr><td><strong>Object state byte</strong><br><code>getState()</code> / spawn <code>Flag</code></td><td>Existing Sapphire EObj state field.</td><td>A separate field. Do not reinterpret every existing state comparison as a shared-group timeline-mask comparison.</td></tr>
+<tr><td><strong>Stored timeline mask</strong><br><code>timelineState</code></td><td>Client EventObject; a server implementation should deliberately mirror its intended value.</td><td>A 16-bit selection/state value. Initial CreateObject Args2 and later control messages must be consistent with the server’s chosen contract.</td></tr>
+<tr><td><strong>Requested/current playback</strong></td><td>Client scheduler and, for 0x19D, a distinct packet argument.</td><td>Selected slots, running timelines and resulting persistent visuals are not necessarily identical.</td></tr>
+<tr><td><strong>Gameplay state</strong></td><td>Encounter/script logic.</td><td>Whether the grate is dangerous, an interaction succeeded, or an enemy should spawn. Use explicit server logic rather than assuming every visual bit proves gameplay state.</td></tr>
+</tbody></table></div>
+<p>In this checkout, <code>EventObject::spawn()</code> sends <code>Args2 = 0</code>, and the class has <code>playSharedGroupTimeline()</code> but not the <code>getAnimation()/setAnimation()</code> methods from your example. Therefore a full implementation needs intentional mask storage and synchronization, not just a condition-parser change.</p>
+<h3>Use bit conditions for bit questions</h3>
+<pre><code>// Specific slot selected, even if other slots are selected too:
+const bool vfxOnSelected = (state &amp; SastashaGrate::VfxOn) != 0;
+
+// All requested slots selected:
+const bool closeAndOffSelected =
+  (state &amp; (SastashaGrate::Close | SastashaGrate::VfxOff)) ==
+           (SastashaGrate::Close | SastashaGrate::VfxOff);
+
+// A genuinely exact state question still uses equality:
+const bool exactlyCloseAndOff = state == 0x000A;</code></pre>
+<p>For example, <code>state == 0x0004</code> is false when state is <code>0x0006</code>, but <code>(state &amp; 0x0004) != 0</code> is true. The second expression correctly asks whether that slot is selected.</p>
+<p>Use <code>hasAny</code>, <code>hasAll</code> and <code>hasNone</code> deliberately; they are different predicates. In particular, <code>hasAll(state, 0)</code> is always true. Use exact equality if you mean “the mask is zero.”</p>
+<h3>A practical implementation checklist</h3>
+<ol>
+<li>Give the server’s timeline-mask field an explicit name and width; do not silently reuse the EObj state byte.</li>
+<li>Keep descriptive constants near the script/asset mapping, not in a global enum that implies every bit has the same action everywhere.</li>
+<li>Decide which update path the API uses: the setter path, the single-slot path, or the direct stored-mask/playback-mask path.</li>
+<li>When an API means “set the desired selection,” update the server’s cached mask and send arguments consistent with that intent.</li>
+<li>Initialize CreateObject Args2 from the cached mask so later-arriving players receive the current intended state.</li>
+<li>Test existing players, late arrivals, asset readiness, repeated identical updates and combined-bit values.</li>
+<li>Track gameplay state separately if the encounter needs stronger facts than “a client timeline slot was selected.”</li>
+</ol>
+<div class="note warning">The client timeline does not itself implement your server’s boss AI. Sending <code>vfx_on</code> is not a replacement for scheduling an add spawn; sending a log message is not the same operation as changing a visual group.</div>
+<details><summary>There are several things called “timeline”</summary>
+<p><strong>Sapphire encounter timelines</strong> schedule server gameplay operations. <strong>SGB general-purpose timelines</strong> are client visual/scheduler content selected by these slots. Character action timelines are another system again. Their shared name does not make them one data format or one state variable.</p>
+</details>
+</section>
+
+<section id="evidence">
+<h2>10. What is proven—and what still needs care</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Fact</th><th>Evidence</th></tr></thead>
+<tbody>
+<tr><td>The stored value is a 16-bit mask.</td><td>PS3 store/load at EventObject <code>+0x17A</code>; Windows store/load at <code>+0x1A2</code>; 16-slot bit tests in both setters.</td></tr>
+<tr><td>The four names are asset-specific.</td><td>Extracted Sastasha SGB slot array and timeline MemberID/name records. All four bound grate placements reference that asset.</td></tr>
+<tr><td>The base handler detects rising/falling bits.</td><td>PPC <code>xor / and / andc</code>; x64 <code>xor / not / and</code>. Independently matching playback and scene-rollback behavior.</td></tr>
+<tr><td>0x19D separates stored state from playback.</td><td>Both Packet::Order implementations use arg1 in the slot loop and write arg0 to the stored state afterward.</td></tr>
+<tr><td>EXD schemas and rows can be decoded throughout this monitor corpus.</td><td>2,131 root-listed EXH v3 sheets; 10,295 pages/languages; 1,021,511 decoded row/subrow instances; zero scan errors.</td></tr>
+</tbody></table></div>
+<p><strong>Not claimed:</strong> a complete global animation enum, identical layouts across every client version, the exact Sastasha handler subclass for every event, or full decoding of every embedded animation clip. Later verification found the local game-script and shader SDAT containers are debug/plain: removing framing without keys yields valid SqPack streams. A separate Python helper validates all records; the C++ backend does not yet integrate that logical reader. See <a href="LUA_TIMELINE_START.md">Lua/timeline runtime research</a>. Archive enumeration is not equivalent to complete semantic decoding.</p>
+<h3>Addresses to inspect in IDA</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Function / field</th><th>PS3 Monitor</th><th>Windows 3.3</th></tr></thead>
+<tbody>
+<tr><td>EventObject::SetSharedGroupTimelineState</td><td><code>0x0097A850</code></td><td><code>0x1409EC750</code></td></tr>
+<tr><td>EventHandler::OnSetSharedGroupTimelineState</td><td><code>0x0098D228</code></td><td><code>0x140652F30</code></td></tr>
+<tr><td>SharedGroupLayoutInstance::IsEnableGeneralTimeline</td><td><code>0x004545AC</code></td><td><code>0x1402C0D00</code></td></tr>
+<tr><td>SharedGroupLayoutInstance::PlayGeneralTimeline</td><td><code>0x00454580</code></td><td><code>0x1402EDF40</code></td></tr>
+<tr><td>Packet::CreateObject</td><td><code>0x00AE3438</code></td><td><code>0x140CC5D20</code></td></tr>
+<tr><td>Packet::Order</td><td><code>0x00AE9C48</code></td><td><code>0x140CC9600</code></td></tr>
+<tr><td>Stored state offset</td><td><code>EventObject +0x17A</code></td><td><code>EventObject +0x1A2</code></td></tr>
+<tr><td>Runtime slot-ID array offset</td><td><code>SharedGroup +0xE4</code></td><td><code>SharedGroup +0x168</code></td></tr>
+</tbody></table></div>
+<p>The Windows IDB now has readable names and partial known-field types for these mappings. The extra fourth Windows setter argument is still labelled <code>unknownHandlerArg</code>; its complete contract and the original Windows return declaration have not been established.</p>
+<h3>Source material and reproduction</h3>
+<ul>
+<li><a href="EOBJ_EXD_RESULTS.md">PS3 asset, mask and EXD findings</a></li>
+<li><a href="WINDOWS_EOBJ_MAPPING.md">Windows mapping and saved IDB annotations</a></li>
+<li><a href="sastasha_grate_timelines.json">Extracted SGB slot/member/name mapping</a></li>
+<li><a href="eobj_excel_disassembly.txt">PS3 address-bearing disassembly</a> · <a href="windows_eobj_disassembly.txt">Windows disassembly</a></li>
+<li><a href="data_coverage.json">Compact coverage report and source/index fingerprints</a></li>
+<li><a href="../../src/tools/Ps3DataInspector/README.md">Inspector build and command reference</a></li>
+</ul>
+<pre><code>bin/tools/ps3_data_inspector.exe sgb-timelines \
+  E:/FFXIV-Monitor-PS3/game/sqpack \
+  bg/ffxiv/sea_s1/shared/for_bg/sgbg_s1d1_m1_bos1.sgb \
+  build/grate-timelines.json</code></pre>
+<p class="small muted">The line continuations above are shell-style; run the command on one line in Windows cmd. This page opens directly from disk and does not fetch JSON, fonts, scripts or other network resources. Research links are optional local files.</p>
+</section>
+</main>
+</div>
+<footer>Takeaway: <strong>EXD describes the object. LGB locates its visual group. SGB defines its timeline slots. Network messages select those slots. The client executes them. The server still owns the gameplay rules.</strong></footer>
+<script>
+'use strict';
+const slots = [
+  {index: 0, mask: 1, member: 12, name: 'open'},
+  {index: 1, mask: 2, member: 14, name: 'close'},
+  {index: 2, mask: 4, member: 15, name: 'vfx_on'},
+  {index: 3, mask: 8, member: 16, name: 'vfx_off'}
+];
+const enabled = 0x000f;
+const byId = id => document.getElementById(id);
+const hex = value => '0x' + (value & 0xffff).toString(16).toUpperCase().padStart(4, '0');
+function parseMask(input) {
+  const text = input.value.trim();
+  const valid = /^(?:0x)?[0-9a-f]{1,4}$/i.test(text);
+  input.setAttribute('aria-invalid', String(!valid));
+  if (!valid) throw new Error('Enter one to four hexadecimal digits (optionally prefixed with 0x), from 0x0000 to 0xFFFF.');
+  return parseInt(text.replace(/^0x/i, ''), 16);
+}
+// This is a scheduler-selection model, not a game/VFX simulation.
+function transition(mode, old, next, playing, playback, ready) {
+  const rising = (old ^ next) & next & 0xffff;
+  const falling = (old ^ next) & ~next & 0xffff;
+  const requested = mode === 'direct' ? playback : next;
+  let play = 0, stop = 0;
+  if (ready) {
+    if (mode === 'base') {
+      play = rising & enabled & ~playing;
+      stop = falling & enabled & playing;
+    } else {
+      play = requested & enabled & ~playing;
+      stop = ~requested & enabled & playing;
+    }
+  }
+  return {stored: next, rising, falling, requested, play, stop,
+          after: ((playing & enabled & ~stop) | play) & 0xffff};
+}
+function names(mask) {
+  return slots.filter(slot => mask & slot.mask).map(slot => slot.name).join(', ') || 'none';
+}
+function putBool(id, value) {
+  const target = byId(id);
+  target.textContent = String(value);
+  target.className = value ? 'on' : 'off';
+}
+function render() {
+  const mode = byId('mode').value;
+  byId('playback').disabled = mode !== 'direct';
+  try {
+    const old = parseMask(byId('old'));
+    const next = parseMask(byId('next'));
+    const playing = parseMask(byId('playing'));
+    const query = parseMask(byId('query'));
+    const playback = mode === 'direct' ? parseMask(byId('playback')) : next;
+    const ready = byId('ready').checked;
+    const result = transition(mode, old, next, playing, playback, ready);
+    byId('sim-error').textContent = '';
+    byId('stored-result').textContent = hex(result.stored);
+    byId('rising-result').textContent = hex(result.rising);
+    byId('falling-result').textContent = hex(result.falling);
+    byId('playing-result').textContent = hex(result.after);
+    byId('actions').textContent = ready
+      ? 'Modelled play requests: ' + names(result.play) + '. Stop requests: ' + names(result.stop) + '.'
+      : 'No modelled playback requests: playback availability is disabled in the model. The stored mask still changes to ' + hex(next) + '.';
+    const body = byId('slot-rows');
+    body.replaceChildren();
+    for (const slot of slots) {
+      const row = document.createElement('tr');
+      const action = (result.play & slot.mask) ? 'play' : (result.stop & slot.mask) ? 'stop' : 'no change';
+      const values = [slot.index + ' · ' + slot.name, String(slot.member),
+                      (old & slot.mask) ? '1' : '0', (next & slot.mask) ? '1' : '0',
+                      (result.requested & slot.mask) ? '1' : '0', action];
+      values.forEach((value, index) => {
+        const td = document.createElement('td');
+        td.textContent = value;
+        if ((index >= 2 && index <= 4 && value === '1') || (index === 5 && value !== 'no change')) td.className = 'on';
+        row.appendChild(td);
+      });
+      body.appendChild(row);
+    }
+    putBool('q-exact', next === query);
+    putBool('q-any', (next & query) !== 0);
+    putBool('q-all', (next & query) === query);
+    putBool('q-none', (next & query) === 0);
+    byId('query-note').textContent = query === 0
+      ? 'Query mask is zero: hasAll and hasNone are both true; hasAny is false. Exact equality asks whether stored state itself is zero.'
+      : 'Querying ' + hex(query) + ' against stored state ' + hex(next) + ', not against currently playing slots or actual persistent VFX.';
+    const warnings = [];
+    if ((next & 3) === 3) warnings.push('Both open and close bits are selected. The engine does not enforce semantic exclusivity.');
+    if ((next & 12) === 12) warnings.push('Both vfx_on and vfx_off bits are selected. OR-ing in off did not clear on.');
+    if (mode === 'direct' && next !== playback) warnings.push('Stored state and playback mask differ: condition results can disagree with playback selection.');
+    if (((next | playback | playing) & ~enabled) !== 0) warnings.push('Bits 4–15 are disabled in this asset; they have no enabled timeline here. The model ignores them for playback.');
+    byId('sim-warning').hidden = warnings.length === 0;
+    byId('sim-warning').textContent = warnings.join(' ');
+  } catch (error) {
+    byId('sim-error').textContent = error.message;
+    ['stored-result', 'rising-result', 'falling-result', 'playing-result'].forEach(id => { byId(id).textContent = '—'; });
+    ['q-exact', 'q-any', 'q-all', 'q-none'].forEach(id => { byId(id).textContent = '—'; });
+    byId('slot-rows').replaceChildren();
+    byId('actions').textContent = 'Correct the input to calculate a transition.';
+    byId('query-note').textContent = '';
+    byId('sim-warning').hidden = true;
+  }
+}
+const presets = {
+  seal:  {mode: 'base', old: 4, next: 10, playing: 4, playback: 10},
+  same:  {mode: 'base', old: 4, next: 4, playing: 0, playback: 4},
+  split: {mode: 'direct', old: 4, next: 10, playing: 4, playback: 4},
+  or:    {mode: 'base', old: 4, next: 12, playing: 4, playback: 12}
+};
+document.querySelectorAll('[data-preset]').forEach(button => {
+  button.addEventListener('click', () => {
+    const preset = presets[button.dataset.preset];
+    byId('mode').value = preset.mode;
+    ['old', 'next', 'playing', 'playback'].forEach(id => { byId(id).value = hex(preset[id]); });
+    byId('query').value = '0x0004';
+    byId('ready').checked = true;
+    render();
+  });
+});
+['mode', 'old', 'next', 'playing', 'playback', 'query', 'ready'].forEach(id => {
+  byId(id).addEventListener('input', render);
+  byId(id).addEventListener('change', render);
+});
+render();
+</script>
+</body>
+</html>

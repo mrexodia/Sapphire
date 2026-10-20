@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "sheets": {
+    "Action": {
+      "display_field": "Name",
+      "labels": {
+        "0": { "name": "Name", "confidence": "legacy_struct_candidate", "evidence": "PS3 ActionTextStruct.Name matches string offset 0 and localized action-name values" },
+        "1": { "name": "Help", "confidence": "legacy_struct_candidate", "evidence": "PS3 ActionTextStruct.Help matches string offset 4 and localized help-text values" },
+        "2": { "name": "Icon", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "3": { "name": "Category", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "4": { "name": "CastTimeline", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "5": { "name": "CastVFX", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "6": { "name": "Timeline", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "7": { "name": "HitTimeline", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "8": { "name": "ArcherTimeline", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "9": { "name": "Learn", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "10": { "name": "Level", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "11": { "name": "SelectRange", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "12": { "name": "SelectMyPet", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "13": { "name": "SelectGround", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "14": { "name": "SelectENpc", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "15": { "name": "SelectOthers", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "16": { "name": "SelectEnemy", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "17": { "name": "SelectAlliance", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "18": { "name": "SelectParty", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "19": { "name": "SelectMyself", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "20": { "name": "PvPOnly", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "21": { "name": "SelectCorpse", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "22": { "name": "InvalidMove", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "23": { "name": "Silence", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "24": { "name": "EffectType", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "25": { "name": "EffectRange", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "26": { "name": "EffectWidth", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "27": { "name": "ComboContinue", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "28": { "name": "CostType", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "29": { "name": "CostValue", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "30": { "name": "Cond", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "31": { "name": "CondArg", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "32": { "name": "ComboParent", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "33": { "name": "EffectEnemy", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "34": { "name": "CastTime", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "35": { "name": "RecastTime", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "36": { "name": "RecastGroup", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "37": { "name": "AttackType", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "38": { "name": "Element", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "39": { "name": "ProcStatus", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "40": { "name": "ResetStatus", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "41": { "name": "CheckDir", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "42": { "name": "Lay", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "43": { "name": "Reward", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "44": { "name": "Init", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "45": { "name": "UseClassJob", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "46": { "name": "Omen", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches fixed size, offset and physical type" },
+        "47": { "name": "SelectPartyPet", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "48": { "name": "IsTargetLine", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "49": { "name": "HideCastBar", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "50": { "name": "ForceVFX", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "51": { "name": "LogExec", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "52": { "name": "LogMiss", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "53": { "name": "LogCast", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "54": { "name": "IsMove", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" },
+        "55": { "name": "IsAvoid", "confidence": "legacy_struct_candidate", "evidence": "PS3 typed Action reader matches packed-bit offset and bit index" }
+      }
+    },
+    "LogMessage": {
+      "consumers": [
+        {
+          "kind": "network_runtime",
+          "lookup": "direct messageId",
+          "confidence": "disassembly_confirmed",
+          "evidence": "EventPacket::ReceiveLogMessage at 0xADC8D0 forwards the server-supplied messageId unchanged to EventFramework::OnLogMessage at 0xA59D98, which passes it unchanged to RaptureLogModule::PushLog"
+        },
+        {
+          "kind": "lua_runtime",
+          "lookup": "direct numeric argument",
+          "confidence": "disassembly_confirmed",
+          "evidence": "EventSceneModuleUsualImpl::LogMessageImpl at 0x9B38EC reads Lua argument 2 as an integer and passes it unchanged as message_id to RaptureLogModule::PushLog"
+        }
+      ]
+    },
+    "GimmickAccessor": {
+      "fields": {
+        "Param0": [
+          {
+            "targets": ["GimmickYesNo"],
+            "when": { "field": "Type", "values": [2, 3, 5, 6] },
+            "confidence": "disassembly_confirmed",
+            "evidence": "PS3 GimmickAccessor::OnGimmickTalk branches on Type 2/3/5/6 and passes Param0 to the GimmickYesNo loader"
+          },
+          {
+            "targets": ["LogMessage"],
+            "when": { "field": "Type", "values": [4, 7] },
+            "confidence": "conditional_candidate",
+            "evidence": "Type 4 observed rows use Param0 as matching interaction LogMessage IDs; the sole Type 7 row resolves to its engraving message. These server-handled meanings are data-correlated, not consumed by the local talk branch"
+          },
+          {
+            "targets": ["LogMessage"],
+            "lookup": "main_key_plus_2",
+            "source_rows": [67, 68, 69, 70],
+            "when": { "field": "Type", "values": [4] },
+            "confidence": "content_workflow_candidate",
+            "evidence": "Sastasha GimmickAccessor rows 67-70 are the four unnatural ripples and directly identify LogMessage 2039. The immediately contiguous content sequence is 2039 'nothing out of the ordinary', 2040 bubbles forming, 2041 evil presence gone, and 2042 an enemy appears. This supports navigation from those ripple interactions to 2041, but does not prove that the client computes Param0+2; the retail server can send 2041 directly"
+          }
+        ],
+        "Param1": {
+          "targets": ["LogMessage"],
+          "when": { "field": "Type", "values": [3] },
+          "confidence": "conditional_candidate",
+          "evidence": "Observed Type 3 locked-door rows use Param1 as matching refusal LogMessage IDs; this lookup is not consumed by the local talk branch"
+        }
+      }
+    },
+    "TerritoryType": {
+      "display_field": "Name",
+      "fields": {
+        "Region": { "targets": ["PlaceName"], "confidence": "metadata_candidate", "evidence": "Monitor field name and territory place-name usage" },
+        "SubRegion": { "targets": ["PlaceName"], "confidence": "metadata_candidate", "evidence": "Monitor field name and territory place-name usage" },
+        "Area": { "targets": ["PlaceName"], "confidence": "source_code_confirmed", "evidence": "TerritoryMgr.cpp resolves territoryData.Area with getRow<PlaceName>" },
+        "Map": { "targets": ["Map"], "confidence": "source_code_confirmed", "evidence": "Toolkit and e2e territory flows resolve TerritoryType.Map as a Map row" },
+        "IntendedUse": { "targets": ["TerritoryIntendedUse"], "confidence": "metadata_candidate", "evidence": "Typed monitor field and DataManager getter surface" },
+        "BGM": { "targets": ["BGM"], "confidence": "metadata_candidate", "evidence": "Typed monitor field and DataManager getter surface" },
+        "QuestBattle": { "targets": ["QuestBattle"], "confidence": "source_code_confirmed", "evidence": "TerritoryMgr.cpp compares this field to QuestBattle row IDs" },
+        "Aetheryte": { "targets": ["Aetheryte"], "confidence": "source_code_confirmed", "evidence": "Player.cpp resolves TerritoryType.Aetheryte with getRow<Aetheryte>" }
+      }
+    },
+    "EObj": {
+      "display_field": "Text.SGL",
+      "fields": {
+        "SharedGroup": { "targets": ["ExportedSG"], "confidence": "disassembly_confirmed", "sentinels": [0], "evidence": "PS3 EventObject setup path resolves EObj.SharedGroup through ExportedSG" }
+      }
+    },
+    "ExportedSG": { "display_field": "SGFilePath" },
+    "PlaceName": { "display_field": "Text.SGL" },
+    "BNpcName": { "display_field": "Text.SGL" },
+    "ENpcResident": { "display_field": "Text.SGL" },
+    "InstanceContent": {
+      "display_field": "Text.Name",
+      "fields": {
+        "TerritoryType": { "targets": ["TerritoryType"], "confidence": "source_code_confirmed", "evidence": "ContentFinder and TerritoryMgr use InstanceContent.TerritoryType as a territory row ID" },
+        "Music": { "targets": ["BGM"], "confidence": "metadata_candidate", "evidence": "Monitor field name" },
+        "ClearMusic": { "targets": ["BGM"], "confidence": "metadata_candidate", "evidence": "Monitor field name" }
+      }
+    },
+    "Map": {
+      "display_field": "Path",
+      "fields": {
+        "TerritoryType": { "targets": ["TerritoryType"], "confidence": "metadata_candidate", "evidence": "Monitor field name and e2e map/territory usage" }
+      }
+    },
+    "Level": {
+      "fields": {
+        "TerritoryType": { "targets": ["TerritoryType"], "confidence": "source_code_confirmed", "evidence": "Server and e2e code use Level.TerritoryType for territory lookup/filtering" },
+        "Map": { "targets": ["Map"], "confidence": "metadata_candidate", "evidence": "Monitor field name" },
+        "BaseId": { "targets": ["EObj", "BNpcBase", "ENpcResident"], "confidence": "conditional_candidate", "evidence": "Target depends on Level.eAssetType; server code dispatches BaseId by placement type" }
+      }
+    },
+    "BNpcBase": {
+      "fields": {
+        "NormalAI": { "targets": ["NormalAI"], "confidence": "metadata_candidate", "evidence": "Monitor field and sheet names" },
+        "Model": { "targets": ["ModelChara"], "confidence": "metadata_candidate", "evidence": "Monitor field and sheet names" },
+        "Customize": { "targets": ["BNpcCustomize"], "confidence": "metadata_candidate", "evidence": "Monitor field and sheet names" },
+        "Equipment": { "targets": ["NpcEquip"], "confidence": "metadata_candidate", "evidence": "Monitor field and sheet names" },
+        "Parts": { "targets": ["BNpcParts"], "confidence": "metadata_candidate", "evidence": "Monitor field and sheet names" }
+      }
+    }
+  }
+}

@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "source_elf_sha256": "99ed4e57ea8d7a05c691c843e996ab85a9df51c239b2adc9d10ffe1acaa01537",
+  "exd": {
+    "root_listed_sheets": 2131,
+    "validated_pages": 10295,
+    "decoded_rows_including_languages_and_subrows": 1021511,
+    "errors": 0,
+    "column_types": {
+      "bool": 637,
+      "f32": 167,
+      "i16": 39,
+      "i32": 2418,
+      "i8": 266,
+      "packed_bool": 736,
+      "string": 4266,
+      "u16": 822,
+      "u32": 5369,
+      "u64": 36,
+      "u8": 2174
+    },
+    "subrow_sheets": [
+      "Behavior",
+      "GatheringItemPoint",
+      "Resident",
+      "TreasureSpot"
+    ]
+  },
+  "sqpack": {
+    "index_count": 14,
+    "entry_count": 745952,
+    "errors": 0,
+    "archives": [
+      {
+        "index": "ffxiv/000000.ps3.d.index",
+        "sha256": "7c81c6fa4d477fda3afa825bba3d372db6f2702c9f963c20ee3e092a4b5aa903",
+        "entries": 220,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/000000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/010000.ps3.d.index",
+        "sha256": "8b2381d596bcf03550148a3ac7cf6fd1c0607d4d6c8eefd15efc2af80d088e48",
+        "entries": 16643,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/010000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/020000.ps3.d.index",
+        "sha256": "b3b115cd20ca77c0939e0b81980d06bcfd19ddc01938bacf58abf56cc98bf403",
+        "entries": 203134,
+        "offsets_above_4gib": 14880,
+        "data_files": [
+          {
+            "path": "ffxiv/020000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/030000.ps3.d.index",
+        "sha256": "02ddd4ccac5725eec7cc5d9c35f977cacb7c0a8f1cea89689017ca10d21d117a",
+        "entries": 12683,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/030000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/040000.ps3.d.index",
+        "sha256": "2b8cbab4dd0a730ebe258f9bff3dafeb503318478ffda3b4e68b4725ac12fdab",
+        "entries": 432885,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/040000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/050000.ps3.d.index",
+        "sha256": "84054ac5a37e623c7a209474ac1ea68d7e9ad156d90c0bb40a4949aa4859220e",
+        "entries": 283,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/050000.ps3.d.dat0",
+            "present": false,
+            "encrypted_sdat_present": true
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/060000.ps3.d.index",
+        "sha256": "0a613655e882f0241ebd9e44e9523e27b2562ae3e214fc4a067b3a8e944fee96",
+        "entries": 34658,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/060000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/070000.ps3.d.index",
+        "sha256": "f49856ba833f056a837d6869bdbe681ca10320697174507451a2541c0cb40907",
+        "entries": 10964,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/070000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/080000.ps3.d.index",
+        "sha256": "1e51d94a0ce6079adfddeba25a42ee0b23b71e7713f93020aec975b7b67f3f0a",
+        "entries": 19507,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/080000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/0a0000.ps3.d.index",
+        "sha256": "b1bade0bc3719f7804bb568770a126b847572ccdd3f8bf1396c705039fa8d716",
+        "entries": 12443,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/0a0000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/0b0000.ps3.d.index",
+        "sha256": "795fdd27eeb9e8b627707a76a312a93e51205454c748fe477b8b899ca498c51b",
+        "entries": 1934,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/0b0000.ps3.d.dat0",
+            "present": false,
+            "encrypted_sdat_present": true
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/0c0000.ps3.d.index",
+        "sha256": "8b7dae1b522700a8cfbde3835b0803120d97edf8cb1e69f09b350d644f2717c8",
+        "entries": 234,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/0c0000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/120000.ps3.d.index",
+        "sha256": "3c3784e46981852159eecb0362f13e11461ecf6f2ccef68ea58785d12caa7cec",
+        "entries": 3,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/120000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      },
+      {
+        "index": "ffxiv/130000.ps3.d.index",
+        "sha256": "352b1064080bb7cb1029a238b5e15e2a7aaf63c82ae14eab60c588c8982f5b00",
+        "entries": 361,
+        "offsets_above_4gib": 0,
+        "data_files": [
+          {
+            "path": "ffxiv/130000.ps3.d.dat0",
+            "present": true,
+            "encrypted_sdat_present": false
+          }
+        ],
+        "raw_index_crosscheck": "passed"
+      }
+    ]
+  },
+  "idb_metadata": {
+    "types": 26223,
+    "symbols": 229766,
+    "candidate_paths": 8707
+  },
+  "limits": [
+    "Only EXH v3 is decoded; all root-listed sheets in this corpus use v3.",
+    "TYPE_F16 is retained as raw bits; TYPE_BIN and other unsupported types fail explicitly.",
+    "C++ backend lacks SDAT framing support; both local containers were later verified as debug/plain by inspect_monitor_scripts.py. General integrity/decryption is unsupported.",
+    "Archive inventory is not proof of complete model/texture/audio/etc. format decoding.",
+    "Imported IDB types are PS3 ABI metadata, not verified Windows or file layouts."
+  ]
+}

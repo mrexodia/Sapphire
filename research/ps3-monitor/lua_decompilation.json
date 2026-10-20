@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "bytecode_records": 1932,
+  "source_text_records": [
+    {
+      "path": "C:\\CodeBlocks\\Sapphire\\build\\ps3-lua-decompiled\\original-source\\game_script\\leve\\Gld10000.lua",
+      "sha256": "26fc11950ff328cad2fef16a7f47f75f0a7764ae3cc16c2097ee6ea474ee011d",
+      "kind": "authentic_source_payload"
+    }
+  ],
+  "seconds": 245.2,
+  "counts": {
+    "unluac": {
+      "process_statuses": {
+        "ok": 1932
+      },
+      "validation": {
+        "syntax_ok": 1930,
+        "matching_prototype_bodies": 31796,
+        "original_prototypes_in_syntax_valid_files": 37138,
+        "recompiled_prototypes": 37138,
+        "syntax_nonzero_exit": 2
+      }
+    },
+    "unluac-2015": {
+      "process_statuses": {
+        "ok": 1932
+      },
+      "validation": {
+        "syntax_nonzero_exit": 35,
+        "syntax_ok": 1897,
+        "exact_instruction_constant_tree_match": 1877,
+        "matching_prototype_bodies": 36965,
+        "original_prototypes_in_syntax_valid_files": 36989,
+        "recompiled_prototypes": 36989
+      }
+    },
+    "cLuaDecompiler": {
+      "process_statuses": {
+        "ok": 1932
+      },
+      "validation": {
+        "syntax_nonzero_exit": 1932
+      }
+    },
+    "disassembly": {
+      "ok": 1932
+    },
+    "preferred": {
+      "unluac": 34,
+      "unluac-2015": 1897,
+      "manual": 1
+    }
+  },
+  "input_manifest_sha256": "5576cb83ba56bebcd0e85f9aa7f2c408af5e0229d658579112d53c00dc2a6f42",
+  "tools": {
+    "java": {
+      "path": "C:\\jdk-21.0.2\\bin\\java.exe",
+      "sha256": "638a1fa85ec764d5ebeb749047868a36d4cc3bccd26d2caebc20f0f6e4adbdc1"
+    },
+    "unluac": {
+      "path": "C:\\CodeBlocks\\Sapphire\\build\\unluac-current.jar",
+      "sha256": "98be0fa84ac73ca66dce2842a2e4512226f4c611b6500dc96415571fc5538fcc"
+    },
+    "legacy_unluac": {
+      "path": "C:\\CodeBlocks\\Sapphire\\bin\\tools\\unluac_2015_06_13.jar",
+      "sha256": "c3533ad8d67905d449555edf5497a9898083fc966d247b8e7a39ab64b5218115"
+    },
+    "clua": {
+      "path": "C:\\CodeBlocks\\Sapphire\\build\\cLuaDecompiler.exe",
+      "sha256": "ee1f5c8ac3ab29bf4c18442d667b9d577ba7cf0c453527cf4ad93f06d713ac7f"
+    },
+    "luac": {
+      "path": "C:\\CodeBlocks\\Sapphire\\build\\lua51-reference\\luac51.exe",
+      "sha256": "4ada29bcb76da411da697f427963ed177c667f2d6f3fd9dc1a4de74a5c96bf10"
+    }
+  },
+  "reference_lua": {
+    "version": "5.1.5",
+    "source_url": "https://www.lua.org/ftp/lua-5.1.5.tar.gz",
+    "source_sha256": "2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333"
+  },
+  "current_unluac_source": "https://sourceforge.net/projects/unluac/files/Unstable/unluac_2025_12_23.jar",
+  "output_directory": "C:\\CodeBlocks\\Sapphire\\build\\ps3-lua-decompiled",
+  "validation_scope": [
+    "Lua 5.1 syntax checked by compilation only; no game script execution.",
+    "Tree fingerprint includes arity, raw instructions, constants and ordered children.",
+    "Debug info, stack size and vararg flags excluded; matching is not full behavior proof.",
+    "Nonmatching trees can be equivalent; differences are not automatic bug verdicts.",
+    "Matching prototype bodies are unordered multiset counts, not function-identity proof.",
+    "Recommended candidate: syntax-valid, then exact tree, then most matching bodies; ties favor current unluac."
+  ],
+  "unresolved": [],
+  "manual_reconstructions": [
+    {
+      "path": "game_script/transport/ChocoboTaxiStand.luab",
+      "input_sha256": "011d0a510845a9bc9f1bd6df83af0ba95ce59b003d046e922f8e513dadc5b66f",
+      "original_tree_sha256": "9f539a2f94e4f4d295923590fa871ebf6d4634f0a48b4aecda0041bd20d0584f",
+      "source": "build\\ps3-lua-decompiled\\manual\\game_script\\transport\\ChocoboTaxiStand.lua",
+      "source_sha256": "2e3ec24f531ecc253b286d517c57fd5ea4a3aaaede36d1712039c665ecfd3894",
+      "validation": {
+        "return_code": 0,
+        "seconds": 0.0,
+        "stderr": "build\\ps3-lua-decompiled\\diagnostics\\manual\\game_script\\transport\\ChocoboTaxiStand.luac.stderr.txt",
+        "stderr_bytes": 0,
+        "syntax_status": "ok",
+        "instruction_constant_tree_match": true,
+        "recompiled_tree_sha256": "9f539a2f94e4f4d295923590fa871ebf6d4634f0a48b4aecda0041bd20d0584f",
+        "recompiled_stats": {
+          "prototypes": 7,
+          "code_words": 234
+        },
+        "matching_prototype_bodies": 7,
+        "bytecode": "build\\ps3-lua-decompiled\\recompiled\\manual\\game_script\\transport\\ChocoboTaxiStand.luac"
+      },
+      "execution_header_differences": [
+        {
+          "prototype_preorder_index": 0,
+          "original": {
+            "nups": 0,
+            "params": 0,
+            "vararg_flags": 0,
+            "maxstack": 1
+          },
+          "recompiled": {
+            "nups": 0,
+            "params": 0,
+            "vararg_flags": 2,
+            "maxstack": 2
+          }
+        },
+        {
+          "prototype_preorder_index": 1,
+          "original": {
+            "nups": 0,
+            "params": 0,
+            "vararg_flags": 2,
+            "maxstack": 2
+          },
+          "recompiled": {
+            "nups": 0,
+            "params": 0,
+            "vararg_flags": 0,
+            "maxstack": 2
+          }
+        },
+        {
+          "prototype_preorder_index": 3,
+          "original": {
+            "nups": 0,
+            "params": 0,
+            "vararg_flags": 2,
+            "maxstack": 2
+          },
+          "recompiled": {
+            "nups": 0,
+            "params": 0,
+            "vararg_flags": 0,
+            "maxstack": 2
+          }
+        }
+      ],
+      "header_difference_scope": "Unused vararg capability in wrappers with no VARARG opcode; root stack 1 -> 2. Scene and helpers exact.",
+      "basis": "Manual recovery of scene PCs 78..125; other code retained from verified raw output."
+    }
+  ]
+}
