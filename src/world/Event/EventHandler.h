@@ -106,8 +106,8 @@ namespace Sapphire::Event
       InstanceContentGuide = 0x001D,
       HousingAethernet = 0x001E,
       SwitchTalk = 0x001F,
-      Adventure = 0x0020,
-      DailyQuestSupply = 0x0021,
+      Adventure = 0x0020, // TODO: is this correct? (PS3 has 0x21)
+      DailyQuestSupply = 0x0021, // TODO: is this correct? (PS3 has 0x22)
       TripleTriad = 0x0023,
       ICDirector = 0x8003,
       QuestBattleDirector = 0x8006,
